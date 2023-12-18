@@ -1,23 +1,16 @@
 import { type NextApiResponse } from 'next';
 
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Types as MongooseTypes } from 'mongoose';
 
 import { type NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import { formatIds, trimTask } from '@/lib/utils';
-import { type ITask } from 'backend/models/interfaces';
+import { formatIds } from '@/lib/utils';
+import ExpenseModel from 'backend/models/Expense';
+import { Image } from 'backend/models/Image';
 import TaskModel from 'backend/models/Task';
-import UserModel, { type User } from 'backend/models/User';
-
-const newS3: S3Client = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-    },
-});
+import { type User } from 'backend/models/User';
+import { createImageSignedUrl } from 'backend/s3Client';
 
 const TaskController = {
     putTask: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -133,42 +126,100 @@ const TaskController = {
     getTechTasks: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();
 
-        const { userId } = req;
-        const docUser = await UserModel.findById(userId);
-        if (docUser == null)
-            return res.json({ statusCode: 500, error: 'User not found' });
-        const allTasks = await docUser.getTasks();
+        const tasks = await TaskModel.find({
+            deleted: false,
+            assigned: req.user._id.toString(),
+            status: req.query.status,
+        })
+            .populate([
+                {
+                    path: 'branch',
+                    select: 'number',
+                    populate: {
+                        path: 'client',
+                        select: 'name',
+                    },
+                },
+                {
+                    path: 'business',
+                    select: 'name',
+                },
+            ])
+            .lean()
+            .exec();
 
-        const tasks = formatIds(allTasks);
-        const trimmedTasks = tasks.map((task: ITask) => trimTask(task));
+        res.status(200).json({ data: tasks });
+    },
+    getTechTaskById: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        await dbConnect();
 
-        for (let i = 0; i < trimmedTasks.length; i++) {
-            const task = trimmedTasks[i];
+        const task = await TaskModel.findOne({
+            deleted: false,
+            _id: new MongooseTypes.ObjectId(req.query.id as string),
+            assigned: req.user._id.toString(),
+        })
+            .populate([
+                {
+                    path: 'branch',
+                    select: 'number',
+                    populate: {
+                        path: 'client',
+                        select: 'name',
+                    },
+                },
+                {
+                    path: 'business',
+                    select: 'name',
+                },
+                {
+                    path: 'image',
+                },
+            ])
+            .lean()
+            .exec();
 
-            const images = task.image;
-            console.log(images);
-
-            if (images) {
-                for (let j = 0; j < images.length; j++) {
-                    const image = images[j];
-                    const s3ObjectUrl = image.url;
-                    const key = s3ObjectUrl.split('/').pop();
-
-                    const command = new GetObjectCommand({
-                        Bucket: process.env.AWS_S3_BUCKET_NAME as string,
-                        Key: key,
-                    });
-
-                    const url = await getSignedUrl(newS3, command, {
-                        expiresIn: 3600, // 1 hour,
-                    });
-
-                    images[j].url = url;
-                }
-            }
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
         }
 
-        res.json({ statusCode: 200, data: { tasks: trimmedTasks } });
+        let images = task.image as undefined | Pick<Image, 'url' | '_id'>[];
+        if (!images) {
+            images = [];
+        } else {
+            images = await Promise.all(
+                images.map(async (image) => {
+                    const url = await createImageSignedUrl(image);
+
+                    return {
+                        ...image,
+                        url,
+                    };
+                }),
+            );
+        }
+
+        const expenses = await ExpenseModel.find({
+            task: task._id,
+            deleted: false,
+        })
+            .populate([
+                {
+                    path: 'image',
+                    select: 'url',
+                },
+                {
+                    path: 'auditor',
+                    select: 'name',
+                },
+            ])
+            .lean()
+            .exec();
+
+        (task as any).images = images;
+        (task as any).expenses = expenses;
+        delete task.image;
+
+        res.status(200).json({ data: task });
     },
     postTechTask: async (req: NextConnectApiRequest) => {
         const { body } = req;

@@ -1,7 +1,10 @@
 import { NextApiResponse } from 'next';
 
+import { NextHandler } from 'next-connect';
+
 import { getPayload } from '@/lib/jwt';
 import { NextConnectApiRequest } from 'backend/controllers/interfaces';
+import UserModel from 'backend/models/User';
 
 import { type Role } from '../models/types';
 
@@ -15,9 +18,9 @@ import { type Role } from '../models/types';
 // e.g. only an Auditor should be able to change the status of a Task or Expense from Sent to Approved
 
 const accessControl = async (
-    req: NextConnectApiRequest,
+    req: NextConnectApiRequest<true>,
     res: NextApiResponse,
-    next: any,
+    next: NextHandler,
 ): Promise<void> => {
     const { headers, cookies } = req;
 
@@ -26,22 +29,37 @@ const accessControl = async (
             ? headers.authorization
             : cookies.ras_access_token;
 
-    if (jwt === undefined)
-        return res.status(401).json({ error: "You're not logged in", statusCode: 403 });
-    const result = getPayload(jwt); // it's verified with the secret key
+    if (jwt === undefined) {
+        return res.status(401).json({ error: "You're not logged in" });
+    }
 
-    if (result === undefined)
-        return res.status(401).json({ error: 'No user found', statusCode: 403 });
+    const result = getPayload(jwt);
+    if (!result) {
+        return res.status(401).json({ error: "You're not logged in" });
+    }
 
-    if (!isAuthorized(req.url as string, result.payload.userRoles as Role[])) {
-        return res.status(401).json({
+    const userId = result.payload.userId;
+    if (!userId) {
+        return res.status(401).json({ error: "You're not logged in" });
+    }
+
+    const user = await UserModel.findById(userId);
+    const url = req.url as string;
+
+    if (!user) {
+        return res.status(401).json({ error: "You're not logged in" });
+    }
+
+    if (!isAuthorized(url, user.roles)) {
+        return res.status(403).json({
             error: "You're not authorized to access this resource",
             statusCode: 403,
         });
     }
-    req.userId = result.payload.userId;
 
-    next();
+    req.userId = userId;
+    req.user = user;
+    return next();
 };
 
 // takes a pathname and the user's list of roles, it checks that the user has the role the pathname is accessing

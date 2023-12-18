@@ -14,7 +14,10 @@ export type Month =
     | 'Noviembre'
     | 'Diciembre';
 
-export type ExpenseStatus = 'Enviado' | 'Aprobado';
+export enum ExpenseStatus {
+    Enviado = 'Enviado',
+    Aprobado = 'Aprobado',
+}
 
 export type ExpenseType =
     | 'Comida'
@@ -58,8 +61,6 @@ export const months: Month[] = [
 ];
 
 export const frequencies: Frequency[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-
-export const expenseStatuses: ExpenseStatus[] = ['Enviado', 'Aprobado'];
 
 export const expenseTypes: ExpenseType[] = [
     'Combustible',

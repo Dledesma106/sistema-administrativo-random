@@ -9,3 +9,9 @@ export default router.handler({
     onError,
     onNoMatch,
 });
+
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};

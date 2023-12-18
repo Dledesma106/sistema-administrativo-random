@@ -79,7 +79,7 @@ export class Expense {
     static async findUndeleted(
         this: ReturnModelType<typeof Expense>,
         filter: FilterQuery<Expense> = {},
-    ): Promise<Expense[]> {
+    ) {
         return await this.find({ ...filter, deleted: false }).populate(
             this.getPopulateParameters(),
         );
