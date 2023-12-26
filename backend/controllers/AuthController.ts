@@ -151,14 +151,13 @@ const AuthController = {
     changePassword: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const {
             body: { currentPassword, newPassword },
-            userId,
+            user,
         } = req;
-        const user = await UserModel.findById(userId).select('+password');
-        if (user == null)
-            return res.status(403).json({ error: 'no user found', statusCode: 403 });
+
         if (!user.comparePassword(currentPassword)) {
-            return res.status(403).json({ statusCode: 403, error: 'Wrong password' });
+            return res.status(403).json({ message: 'Wrong password' });
         }
+
         user.password = newPassword;
         await user.save();
         return res

@@ -1,9 +1,10 @@
 import { type NextApiResponse } from 'next';
 
+import { NextConnectApiRequest } from './interfaces';
+
 import dbConnect from '@/lib/dbConnect';
 import { formatIds } from '@/lib/utils';
 import BusinessModel from 'backend/models/Business';
-import { NextConnectApiRequest } from './interfaces';
 
 const BusinessController = {
     putBusiness: async (req: NextConnectApiRequest, res: NextApiResponse) => {

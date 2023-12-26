@@ -85,6 +85,41 @@ const BranchController = {
             res.json({ data: { message: 'deleted branch succesfully' } });
         } catch (error) {}
     },
+    getTech: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        await dbConnect();
+
+        const branches = await BranchModel.find({
+            deleted: false,
+        })
+            .populate([
+                {
+                    path: 'city',
+                    select: 'name',
+                    populate: [
+                        {
+                            path: 'province',
+                            select: 'name',
+                        },
+                    ],
+                },
+                {
+                    path: 'client',
+                    select: 'name',
+                },
+                {
+                    path: 'businesses',
+                    select: 'name',
+                },
+            ])
+            .lean()
+            .exec();
+
+        if (!branches) {
+            return res.status(500).json({ message: 'could not get branches' });
+        }
+
+        return res.status(200).json({ data: branches });
+    },
 };
 
 export default BranchController;
