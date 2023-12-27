@@ -5,6 +5,14 @@ import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
 import { BsFillXCircleFill } from 'react-icons/bs';
 
 import { Button } from '@/components/ui/button';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
@@ -16,6 +24,7 @@ import {
     type IUser,
 } from 'backend/models/interfaces';
 import * as types from 'backend/models/types';
+import { useForm } from 'react-hook-form';
 
 export interface IPreventiveForm {
     _id: string;
@@ -56,6 +65,7 @@ const PreventiveForm = ({
     technicians,
 }: Props): JSX.Element => {
     const router = useRouter();
+    const formMethods = useForm<IPreventiveForm>();
     const [errors, setErrors] = useState<IPreventiveFormErrors>(
         {} as IPreventiveFormErrors,
     );
@@ -273,309 +283,289 @@ const PreventiveForm = ({
 
     return (
         <>
-            <form
-                id="task"
-                className="mx-auto my-4 flex w-1/2 flex-col rounded-3xl bg-gray-50 p-4"
-                onSubmit={handleSubmit}
-            >
-                <h2 className="text-lg">
-                    {newPreventive ? 'Agregar Preventivo' : 'Editar Preventivo'}
-                </h2>
-                <hr className="my-2" />
-                <div id="select-client">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="clients"
-                            value="Elegi al cliente"
-                            className="text-lg"
-                        />
-                    </div>
-                    <Select
-                        id="clients"
-                        required={true}
-                        onChange={selectClient}
-                        name="select-client"
-                        defaultValue={'default'}
-                        color={errors.branch !== undefined ? 'failure' : ''}
-                    >
-                        <option value="default" hidden disabled>
-                            {newPreventive ? 'Seleccione un cliente...' : `${client}`}
-                        </option>
-                        {clients.map((client, index) => (
-                            <option key={index}>{client.name}</option>
-                        ))}
-                    </Select>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="branch"
-                            value={errors.client}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div id="select-branch">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="branch"
-                            value="Elegi la sucursal"
-                            className="text-lg"
-                        />
-                    </div>
-                    <Select
-                        id="branches"
-                        required={true}
-                        onChange={selectBranch}
-                        name="branch"
-                        defaultValue="default"
-                        color={errors.branch !== undefined ? 'failure' : ''}
-                    >
-                        <option value="default" hidden disabled>
-                            {newPreventive
-                                ? 'Seleccione una sucursal...'
-                                : `${preventiveForm.branch.number.toString()}, ${
-                                      preventiveForm.branch.city.name
-                                  }`}
-                        </option>
-                        {filteredBranches?.map((branch, index) => (
-                            <option
-                                key={index}
-                            >{`${branch.number}, ${branch.city.name}`}</option>
-                        ))}
-                    </Select>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="branch"
-                            value={errors.branch}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div id="select-business">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="business"
-                            value="Elegi la empresa"
-                            className="text-lg"
-                        />
-                    </div>
-
-                    <Select
-                        id="businesses"
-                        required={true}
-                        onChange={selectBusiness}
-                        name="business"
-                        defaultValue="default"
-                        color={errors.business !== undefined ? 'failure' : ''}
-                    >
-                        <option value="default" hidden disabled>
-                            {newPreventive
-                                ? 'Seleccione una empresa...'
-                                : preventiveForm.business.name}
-                        </option>
-                        {form.branch?.businesses !== undefined &&
-                            form.branch.businesses.map((business, index) => (
-                                <option key={index}>{business.name}</option>
-                            ))}
-                    </Select>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="branch"
-                            value={errors.business}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div id="select-frequency">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="frequency"
-                            value="Elegi la frequencia con la que se realizara el preventivo"
-                            className="text-lg"
-                        />
-                    </div>
-                    <Select
-                        id="frequency"
-                        required={true}
-                        onChange={selectFrequency}
-                        name="frequency"
-                        defaultValue="default"
-                        color={errors.frequency !== undefined ? 'failure' : ''}
-                    >
-                        <option value="default" hidden disabled>
-                            {newPreventive
-                                ? 'Seleccione la frequencia'
-                                : preventiveForm.frequency !== undefined
-                                  ? preventiveForm.frequency > 1
-                                      ? `Cada ${preventiveForm.frequency} meses`
-                                      : 'Todos los meses'
-                                  : 'Seleccione la frequencia'}
-                        </option>
-                        {types.frequencies.map((frequency, index) => (
-                            <option key={index} value={frequency}>
-                                {frequency > 1
-                                    ? `Cada ${frequency} meses`
-                                    : 'Todos los meses'}
-                            </option>
-                        ))}
-                    </Select>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="frequency error"
-                            value={errors.frequency}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div id="textarea">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="observations"
-                            value="Agregue observaciones respecto al preventivo"
-                            className="text-lg"
-                        />
-                    </div>
-                    <Textarea
-                        id="observations"
-                        name="observations"
-                        onChange={changeObservations}
-                        placeholder={
-                            newPreventive
-                                ? 'Observaciones...'
-                                : preventiveForm.observations
-                        }
-                        required={true}
-                        value={form.observations}
-                        rows={4}
-                        color="white"
-                    />
-                </div>
-                <div id="select-technician">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="assigned"
-                            value="Elegi a los tecnicos responsables de este preventivo"
-                            className="text-lg"
-                        />
-                    </div>
-
-                    <div className="w-full">
+            <Form {...formMethods}>
+                <form
+                    id="task"
+                    className="mx-auto my-4 flex w-1/2 flex-col rounded-3xl bg-gray-50 p-4"
+                    onSubmit={handleSubmit}
+                >
+                    <h2 className="text-lg">
+                        {newPreventive ? 'Agregar Preventivo' : 'Editar Preventivo'}
+                    </h2>
+                    <hr className="my-2" />
+                    <div id="select-client">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="clients" className="text-lg" />
+                        </div>
                         <Select
-                            id="technicians"
-                            onChange={addTechnician}
-                            value="default"
-                            className="mb-4"
-                            color={errors.assigned !== undefined ? 'failure' : ''}
+                            id="clients"
+                            required={true}
+                            onChange={selectClient}
+                            name="select-client"
+                            defaultValue={'default'}
+                            color={errors.branch !== undefined ? 'failure' : ''}
                         >
-                            <option value="default" disabled hidden>
-                                Seleccione un tecnico para agregar
+                            <option value="default" hidden disabled>
+                                {newPreventive ? 'Seleccione un cliente...' : `${client}`}
                             </option>
-                            {technicians.map((technician, index) => (
-                                <option key={index} value={technician.fullName}>
-                                    {technician.fullName}
-                                </option>
+                            {clients.map((client, index) => (
+                                <option key={index}>{client.name}</option>
                             ))}
                         </Select>
+                        <div className="mb-2 block">
+                            <FormLabel
+                                htmlFor="branch"
+                                className="text-lg"
+                                color="failure"
+                            />
+                        </div>
                     </div>
-
-                    <ul>
-                        {form.assigned.map((technician, index) => {
-                            return (
-                                <li
-                                    className="mb-2 mr-1 inline-block rounded-full bg-gray-300 px-3 py-2"
-                                    key={index}
-                                >
-                                    <div className="flex items-center justify-between gap-2 font-semibold">
-                                        {technician.fullName}
-                                        <button
-                                            className="rounded-full bg-white "
-                                            type="button"
-                                            onClick={() =>
-                                                deleteTechnician(technician._id as string)
-                                            }
-                                        >
-                                            <BsFillXCircleFill color="gray" size={20} />
-                                        </button>
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="assigned error"
-                            value={errors.assigned}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div id="select-month">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="assigned"
-                            value="Meses impuestos por el cliente"
-                            className="text-lg"
-                        />
-                    </div>
-                    <div className="">
+                    <div id="select-branch">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="branch" className="text-lg" />
+                        </div>
                         <Select
-                            id="months"
-                            onChange={addMonth}
-                            value="default"
-                            className="mb-4"
+                            id="branches"
+                            required={true}
+                            onChange={selectBranch}
+                            name="branch"
+                            defaultValue="default"
+                            color={errors.branch !== undefined ? 'failure' : ''}
+                        >
+                            <option value="default" hidden disabled>
+                                {newPreventive
+                                    ? 'Seleccione una sucursal...'
+                                    : `${preventiveForm.branch.number.toString()}, ${
+                                          preventiveForm.branch.city.name
+                                      }`}
+                            </option>
+                            {filteredBranches?.map((branch, index) => (
+                                <option
+                                    key={index}
+                                >{`${branch.number}, ${branch.city.name}`}</option>
+                            ))}
+                        </Select>
+                        <div className="mb-2 block">
+                            <FormLabel
+                                htmlFor="branch"
+                                className="text-lg"
+                                color="failure"
+                            />
+                        </div>
+                    </div>
+                    <div id="select-business">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="business" className="text-lg" />
+                        </div>
+
+                        <Select
+                            id="businesses"
+                            required={true}
+                            onChange={selectBusiness}
+                            name="business"
+                            defaultValue="default"
+                            color={errors.business !== undefined ? 'failure' : ''}
+                        >
+                            <option value="default" hidden disabled>
+                                {newPreventive
+                                    ? 'Seleccione una empresa...'
+                                    : preventiveForm.business.name}
+                            </option>
+                            {form.branch?.businesses !== undefined &&
+                                form.branch.businesses.map((business, index) => (
+                                    <option key={index}>{business.name}</option>
+                                ))}
+                        </Select>
+                        <div className="mb-2 block">
+                            <FormLabel
+                                htmlFor="branch"
+                                className="text-lg"
+                                color="failure"
+                            />
+                        </div>
+                    </div>
+                    <div id="select-frequency">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="frequency" className="text-lg" />
+                        </div>
+                        <Select
+                            id="frequency"
+                            required={true}
+                            onChange={selectFrequency}
+                            name="frequency"
+                            defaultValue="default"
                             color={errors.frequency !== undefined ? 'failure' : ''}
                         >
-                            <option value="default" disabled hidden>
-                                Seleccione un mes para agregar
+                            <option value="default" hidden disabled>
+                                {newPreventive
+                                    ? 'Seleccione la frequencia'
+                                    : preventiveForm.frequency !== undefined
+                                      ? preventiveForm.frequency > 1
+                                          ? `Cada ${preventiveForm.frequency} meses`
+                                          : 'Todos los meses'
+                                      : 'Seleccione la frequencia'}
                             </option>
-                            {types.months.map((month, index) => (
-                                <option key={index} value={month}>
-                                    {month}
+                            {types.frequencies.map((frequency, index) => (
+                                <option key={index} value={frequency}>
+                                    {frequency > 1
+                                        ? `Cada ${frequency} meses`
+                                        : 'Todos los meses'}
                                 </option>
                             ))}
                         </Select>
+                        <div className="mb-2 block">
+                            <FormLabel
+                                htmlFor="frequency error"
+                                className="text-lg"
+                                color="failure"
+                            />
+                        </div>
                     </div>
-                    <ul>
-                        {form.months.map((month, index) => {
-                            return (
-                                <li
-                                    className="mb-2 mr-1 inline-block rounded-full bg-gray-300 px-3 py-2"
-                                    key={index}
-                                >
-                                    <div className="flex items-center justify-between gap-2 font-semibold">
+                    <div id="textarea">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="observations" className="text-lg" />
+                        </div>
+                        <Textarea
+                            id="observations"
+                            name="observations"
+                            onChange={changeObservations}
+                            placeholder={
+                                newPreventive
+                                    ? 'Observaciones...'
+                                    : preventiveForm.observations
+                            }
+                            required={true}
+                            value={form.observations}
+                            rows={4}
+                            color="white"
+                        />
+                    </div>
+                    <div id="select-technician">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="assigned" className="text-lg" />
+                        </div>
+
+                        <div className="w-full">
+                            <Select
+                                id="technicians"
+                                onChange={addTechnician}
+                                value="default"
+                                className="mb-4"
+                                color={errors.assigned !== undefined ? 'failure' : ''}
+                            >
+                                <option value="default" disabled hidden>
+                                    Seleccione un tecnico para agregar
+                                </option>
+                                {technicians.map((technician, index) => (
+                                    <option key={index} value={technician.fullName}>
+                                        {technician.fullName}
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
+
+                        <ul>
+                            {form.assigned.map((technician, index) => {
+                                return (
+                                    <li
+                                        className="mb-2 mr-1 inline-block rounded-full bg-gray-300 px-3 py-2"
+                                        key={index}
+                                    >
+                                        <div className="flex items-center justify-between gap-2 font-semibold">
+                                            {technician.fullName}
+                                            <button
+                                                className="rounded-full bg-white "
+                                                type="button"
+                                                onClick={() =>
+                                                    deleteTechnician(
+                                                        technician._id as string,
+                                                    )
+                                                }
+                                            >
+                                                <BsFillXCircleFill
+                                                    color="gray"
+                                                    size={20}
+                                                />
+                                            </button>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                        <div className="mb-2 block">
+                            <FormLabel
+                                htmlFor="assigned error"
+                                className="text-lg"
+                                color="failure"
+                            />
+                        </div>
+                    </div>
+                    <div id="select-month">
+                        <div className="mb-2 block">
+                            <FormLabel htmlFor="assigned" className="text-lg" />
+                        </div>
+                        <div className="">
+                            <Select
+                                id="months"
+                                onChange={addMonth}
+                                value="default"
+                                className="mb-4"
+                                color={errors.frequency !== undefined ? 'failure' : ''}
+                            >
+                                <option value="default" disabled hidden>
+                                    Seleccione un mes para agregar
+                                </option>
+                                {types.months.map((month, index) => (
+                                    <option key={index} value={month}>
                                         {month}
-                                        <button
-                                            className="rounded-full bg-white "
-                                            type="button"
-                                            onClick={() => deleteMonth(month)}
-                                        >
-                                            <BsFillXCircleFill color="gray" size={20} />
-                                        </button>
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
-                <div className="mb-2 block">
-                    <Label
-                        htmlFor="months error"
-                        value={errors.frequency}
-                        className="text-lg"
-                        color="failure"
-                    />
-                </div>
-                <div className="flex flex-row justify-between">
-                    <Button variant="secondary" onClick={handleNavigate} type="button">
-                        Cancelar
-                    </Button>
-                    <Button type="submit">Guardar</Button>
-                </div>
-            </form>
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
+                        <ul>
+                            {form.months.map((month, index) => {
+                                return (
+                                    <li
+                                        className="mb-2 mr-1 inline-block rounded-full bg-gray-300 px-3 py-2"
+                                        key={index}
+                                    >
+                                        <div className="flex items-center justify-between gap-2 font-semibold">
+                                            {month}
+                                            <button
+                                                className="rounded-full bg-white "
+                                                type="button"
+                                                onClick={() => deleteMonth(month)}
+                                            >
+                                                <BsFillXCircleFill
+                                                    color="gray"
+                                                    size={20}
+                                                />
+                                            </button>
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                    <div className="mb-2 block">
+                        <FormLabel
+                            htmlFor="months error"
+                            className="text-lg"
+                            color="failure"
+                        />
+                    </div>
+                    <div className="flex flex-row justify-between">
+                        <Button
+                            variant="secondary"
+                            onClick={handleNavigate}
+                            type="button"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit">Guardar</Button>
+                    </div>
+                </form>
+            </Form>
         </>
     );
 };

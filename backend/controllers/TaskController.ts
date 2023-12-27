@@ -230,7 +230,7 @@ const TaskController = {
             .lean()
             .exec();
 
-        res.status(200).json({ data: tasks });
+        res.status(200).json({ data: tasks, message: "ok" });
     },
     getTechTaskById: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();

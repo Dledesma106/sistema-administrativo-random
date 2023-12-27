@@ -6,6 +6,7 @@ const contentType = 'application/json';
 
 const fetcher = {
     post: async function (data: any, url: string) {
+        console.log(data);
         const modUrl = getFullUrl(url);
         const res: Response = await fetch(modUrl, {
             method: 'POST',

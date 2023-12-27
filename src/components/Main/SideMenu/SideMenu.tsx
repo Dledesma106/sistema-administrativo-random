@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router'
 
 import {
     RiDashboardFill,
@@ -10,6 +11,7 @@ import {
     RiFileWarningLine,
     RiCustomerService2Line,
 } from 'react-icons/ri';
+
 
 import { Button } from '@/components/ui/button';
 import { useUserContext } from '@/context/userContext/UserProvider';
@@ -90,9 +92,12 @@ const items: IItem[] = [
     },
 ];
 
-export default function SideMenu(): JSX.Element {
-    const { user } = useUserContext();
 
+
+export default function SideMenu(): JSX.Element {
+    const router = useRouter()
+    const { user } = useUserContext();
+console.log(router.asPath)
     return (
         <div className="flex h-screen w-80 flex-col border-r border-gray-200">
             <div className="space-y-4 pt-4">
@@ -105,7 +110,7 @@ export default function SideMenu(): JSX.Element {
                         return (
                             <Link className="block" href={item.path} key={item.id}>
                                 <Button
-                                    variant="ghost"
+                                    variant= {router.asPath === item.path? "default" : "ghost"}
                                     className="flex w-full items-center justify-start space-x-2"
                                 >
                                     {item.icon}

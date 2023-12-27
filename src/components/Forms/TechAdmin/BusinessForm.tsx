@@ -1,13 +1,22 @@
 import { useRouter } from 'next/navigation';
-
-import { Label, TextInput } from 'flowbite-react';
-import { type ChangeEvent, useEffect, useState, type FormEvent } from 'react';
-
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
+import Link from 'next/link';
+import { TypographyH1 } from '@/components/ui/typography';
+import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 
 export interface IBusinessForm {
     _id: string;
@@ -29,13 +38,8 @@ export default function BusinessForm({
 }: Props): JSX.Element {
     const router = useRouter();
     const { stopLoading, startLoading } = useLoading();
-    const [form, setForm] = useState<IBusinessForm>({
-        _id: businessForm._id,
-        name: businessForm.name,
-    });
+    const form = useForm<IBusinessForm>({ defaultValues: businessForm });
     const { triggerAlert } = useAlert();
-    const [submitted, setSubmitted] = useState<boolean>(false);
-    const [errors, setErrors] = useState<IBusinessFormErrors>({} as IBusinessFormErrors);
 
     const postData = async (form: IBusinessForm): Promise<void> => {
         try {
@@ -75,85 +79,47 @@ export default function BusinessForm({
         }
     };
 
-    function handleChange(e: ChangeEvent<HTMLInputElement>): void {
-        const { value } = e.target;
-
-        setForm({ ...businessForm, name: value });
-    }
-
-    useEffect(() => {
-        if (submitted) formValidate();
-    }, [form]);
-
-    const formValidate = (): IBusinessFormErrors => {
-        const err: IBusinessFormErrors = {
-            name: '',
-        };
-        if (form.name === '') err.name = 'Se debe especificar un nombre';
-        setErrors(err);
-        return err;
+    const onSubmit: SubmitHandler<IBusinessForm> = (data) => {
+        if (newBusiness) {
+            postData(data);
+        } else putData(data);
     };
 
-    async function goBack(): Promise<void> {
-        startLoading();
-        await router.push('/tech-admin/businesses');
-        stopLoading();
-    }
-    const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-        setSubmitted(true);
-        e.preventDefault();
-        const errs = formValidate();
-        if (errs.name === '') {
-            if (newBusiness) void postData(form);
-            else void putData(form);
-        }
-    };
-
-    const handleNavigate = (): void => {
-        void goBack();
-    };
     return (
-        <>
-            <form
-                className="mx-auto my-4 flex w-1/2 flex-col gap-4 rounded-3xl bg-gray-50 p-4"
-                onSubmit={handleSubmit}
-            >
-                <h2 className="text-lg">
-                    {newBusiness ? 'Agregar Empresa' : 'Editar Empresa'}
-                </h2>
-                <hr className="mb-2" />
-                <div>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="name"
-                            value="Nombre de la empresa"
-                            className="text-lg"
-                        />
-                    </div>
-                    <TextInput
-                        id="name"
-                        type="text"
-                        sizing="md"
-                        color={errors.name !== undefined ? 'failure' : ''}
-                        placeholder={businessForm.name}
-                        onChange={handleChange}
+        <main>
+            <TypographyH1 className="mb-8">
+                {newBusiness ? 'Agregar Empresa' : 'Editar Empresa'}
+            </TypographyH1>
+            <Form {...form}>
+                <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                    <FormField
+                        name="name"
+                        render={({ field }) => {
+                            return (
+                                <FormItem>
+                                    <FormLabel>Nombre</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Nombre de la Empresa"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
+                        control={form.control}
+                        rules={{ required: 'Este campo es requerido' }}
                     />
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="name error"
-                            value={errors.name}
-                            className="text-lg"
-                            color="failure"
-                        />
+
+                    <div className="flex flex-row justify-between">
+                        <Button variant="secondary" type="button" asChild>
+                            <Link href="/tech-admin/businesses">Cancelar</Link>
+                        </Button>
+                        <ButtonWithSpinner type="submit">Guardar</ButtonWithSpinner>
                     </div>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <Button variant="secondary" onClick={handleNavigate} type="button">
-                        Cancelar
-                    </Button>
-                    <Button type="submit">Guardar</Button>
-                </div>
-            </form>
-        </>
+                </form>
+            </Form>
+        </main>
     );
 }
