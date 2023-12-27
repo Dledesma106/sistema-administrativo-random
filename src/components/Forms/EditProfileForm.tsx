@@ -108,9 +108,9 @@ export default function EditProfileForm() {
 
     return (
         <Form {...formMethods}>
-            <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-8">
-                <TypographyH1>Ajustes</TypographyH1>
+            <TypographyH1>Ajustes</TypographyH1>
 
+            <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={formMethods.control}
                     name="currentPassword"

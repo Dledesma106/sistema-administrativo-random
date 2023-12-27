@@ -56,6 +56,17 @@ const BusinessController = {
         await deletedBusiness.softDelete();
         res.json({ data: { message: 'deleted Business succesfully' } });
     },
+    getTech: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        await dbConnect();
+
+        const { branchId } = req.query;
+        const businesses = await BusinessModel.find({
+            deleted: false,
+            branch: branchId?.toString(),
+        });
+
+        return res.json({ data: businesses });
+    },
 };
 
 export default BusinessController;

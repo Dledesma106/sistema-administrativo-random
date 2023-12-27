@@ -28,7 +28,7 @@ const DataTableComboboxFilter = (props: Props) => {
     const [open, setOpen] = useState(false);
 
     return (
-        <div className="ml-2 mt-2">
+        <div>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <Button

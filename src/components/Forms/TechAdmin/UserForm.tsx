@@ -1,38 +1,58 @@
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Label, TextInput, Select, Checkbox } from 'flowbite-react';
-import { useState, type ChangeEvent, useEffect, type FormEvent } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { useMutation } from 'react-query';
 
+import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
+import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
+import { FancyMultiSelect } from '@/components/MultiSelect';
 import { Button } from '@/components/ui/button';
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { type IProvince, type ICity } from 'backend/models/interfaces';
-import { type Role, roles } from 'backend/models/types';
+import { roles, type Role } from 'backend/models/types';
 
-export interface IUserForm {
+interface Props {
+    cities: ICity[];
+    newUser?: boolean;
+    userForm?: UserFormValues;
+}
+
+export type UserFormValues = {
     _id: string;
     firstName: string;
     lastName: string;
-    city: ICity;
+    city: string;
+    roles: {
+        value: Role;
+        label: Role;
+    }[];
+    email: string;
+    password: string;
+};
+
+type PostOrPutUserMutationVariables = {
+    firstName: string;
+    lastName: string;
+    city: string;
     roles: Role[];
     email: string;
     password: string;
-}
-
-interface IUserFormErrors {
-    firstName: string;
-    lastName: string;
-    roles: string;
-    email: string;
-}
-
-interface Props {
-    userForm: IUserForm;
-    cities: ICity[];
-    newUser: boolean;
-}
+};
 
 export default function UserForm({
     userForm,
@@ -40,282 +60,229 @@ export default function UserForm({
     cities,
 }: Props): JSX.Element {
     const router = useRouter();
-    const [form, setForm] = useState<IUserForm>({
-        _id: userForm._id,
-        firstName: userForm.firstName,
-        lastName: userForm.lastName,
-        city: userForm.city,
-        roles: userForm.roles,
-        email: userForm.email,
-        password: '',
+    const form = useForm<UserFormValues>({
+        defaultValues: userForm || {},
     });
-    const [errors, setErrors] = useState<IUserFormErrors>({} as IUserFormErrors);
-    const [submitted, setSubmitted] = useState<boolean>(false);
     const { stopLoading, startLoading } = useLoading();
     const { triggerAlert } = useAlert();
-    const postData = async (form: IUserForm): Promise<void> => {
-        try {
+
+    const postUserMutation = useMutation({
+        mutationFn: (form: PostOrPutUserMutationVariables) =>
+            fetcher.post(form, api.techAdmin.users),
+        onSuccess: (data, variables) => {
             startLoading();
-            await fetcher.post(form, api.techAdmin.users);
-            await router.push('/tech-admin/users');
-            stopLoading();
             triggerAlert({
                 type: 'Success',
-                message: `El usuario ${form.firstName} ${form.lastName} fue creado correctamente`,
+                message: `El usuario ${variables.firstName} ${variables.lastName} fue creado correctamente`,
             });
-        } catch (error) {
+            router.push('/tech-admin/users');
             stopLoading();
+        },
+        onError: (error, variables) => {
             triggerAlert({
                 type: 'Failure',
-                message: `No se pudo crear el usuario ${form.firstName} ${form.lastName}`,
+                message: `No se pudo crear el usuario ${variables.firstName} ${variables.lastName}`,
             });
-        }
-    };
+        },
+    });
 
-    const putData = async (form: IUserForm): Promise<void> => {
-        try {
+    const putUserMutation = useMutation({
+        mutationFn: (form: PostOrPutUserMutationVariables) =>
+            fetcher.put(form, api.techAdmin.users),
+        onSuccess: (data, variables) => {
             startLoading();
-            await fetcher.put(form, api.techAdmin.users);
-            await router.push('/tech-admin/users');
-            stopLoading();
             triggerAlert({
                 type: 'Success',
-                message: `El usuario ${form.firstName} ${form.lastName} fue actualizado correctamente`,
+                message: `El usuario ${variables.firstName} ${variables.lastName} fue actualizado correctamente`,
             });
-        } catch (error) {
+            router.push('/tech-admin/users');
             stopLoading();
+        },
+        onError: (error, variables) => {
             triggerAlert({
                 type: 'Failure',
-                message: `No se pudo actualizar el usuario ${form.firstName} ${form.lastName}`,
+                message: `No se pudo actualizar el usuario ${variables.firstName} ${variables.lastName}`,
             });
-        }
-    };
+        },
+    });
 
-    function selectCity(e: ChangeEvent<HTMLSelectElement>): void {
-        const { value } = e.target;
-        const city = cities.filter(
-            (city) => city.name === value.slice(0, value.indexOf(',')),
-        );
-        setForm({ ...form, city: city[0] });
-    }
-
-    function checkboxChange(e: ChangeEvent<HTMLInputElement>): void {
-        const { id } = e.target;
-
-        if (form.roles.includes(id as Role)) {
-            const newForm = form;
-            newForm.roles = form.roles.filter((role) => role !== id);
-            setForm(newForm);
-        } else {
-            const newForm = form;
-            newForm.roles.push(id as Role);
-            setForm(newForm);
-        }
-    }
-
-    function handleChange(e: ChangeEvent<HTMLInputElement>): void {
-        const { value, name } = e.target;
-        setForm({ ...form, [name]: value });
-    }
-
-    const formValidate = (): IUserFormErrors => {
-        const err: IUserFormErrors = {
-            firstName: '',
-            lastName: '',
-            email: '',
-            roles: '',
+    const onSubmit: SubmitHandler<UserFormValues> = (data) => {
+        const form: PostOrPutUserMutationVariables = {
+            ...data,
+            roles: data.roles?.map((role) => role.value) || [],
         };
-        if (form.firstName === '') err.firstName = 'El nombre es requerido';
-        if (form.lastName === '') err.lastName = 'El apellido es requerido';
-        if (form.email === '') err.email = 'La direccion de email es requerida';
-        if (form.roles.length < 1)
-            err.roles = 'Se le debe asignar al menos un rol al usuario';
-        setErrors(err);
-        return err;
-    };
-
-    useEffect(() => {
-        if (submitted) formValidate();
-    }, [form]);
-
-    const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
-        setSubmitted(true);
-        e.preventDefault();
-        const errors = formValidate();
-
-        if (
-            errors.firstName === '' &&
-            errors.lastName === '' &&
-            errors.email === '' &&
-            errors.roles === ''
-        ) {
-            // setForm({...form, password:'webada2020'})
-            if (newUser) void postData(form);
-            else void putData(form);
+        if (newUser) {
+            postUserMutation.mutate(form);
+        } else {
+            putUserMutation.mutate(form);
         }
-    };
-
-    async function goBack(): Promise<void> {
-        startLoading();
-        await router.push('/tech-admin/users');
-        stopLoading();
-    }
-
-    const handleNavigate = (): void => {
-        void goBack();
     };
 
     return (
-        <>
-            <form
-                className="mx-auto mt-4 flex w-1/2 flex-col gap-4 rounded-3xl bg-gray-50 p-4"
-                onSubmit={handleSubmit}
-            >
-                <h2 className="text-lg">
-                    {newUser ? 'Crear usuario' : 'Editar usuario'}
-                </h2>
-                <hr className="mb-2" />
-                <div>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="firstName"
-                            value="Nombre del usuario"
-                            className="text-lg"
-                        />
-                    </div>
-                    <TextInput
-                        id="firstName"
+        <main className="pr-8">
+            <TypographyH1 className="mb-8">
+                {newUser ? 'Crear usuario' : 'Editar usuario'}
+            </TypographyH1>
+
+            <Form {...form}>
+                <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                    <FormField
                         name="firstName"
-                        type="text"
-                        sizing="md"
-                        placeholder={userForm.firstName}
-                        onChange={handleChange}
-                        value={form.firstName}
-                        color={errors.firstName !== undefined ? 'failure' : ''}
+                        control={form.control}
+                        rules={{
+                            required: 'Este campo es requerido',
+                            minLength: {
+                                value: 2,
+                                message: 'El nombre debe tener al menos 2 caracteres',
+                            },
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nombre</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Bruce" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="name error"
-                            value={errors.firstName}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="lastName"
-                            value="Apellido del usuario"
-                            className="text-lg"
-                        />
-                    </div>
-                    <TextInput
-                        id="lastName"
+
+                    <FormField
                         name="lastName"
-                        type="text"
-                        sizing="md"
-                        placeholder={userForm.lastName}
-                        onChange={handleChange}
-                        value={form.lastName}
-                        color={errors.lastName !== undefined ? 'failure' : ''}
+                        control={form.control}
+                        rules={{
+                            required: 'Este campo es requerido',
+                            minLength: {
+                                value: 2,
+                                message: 'El apellido debe tener al menos 2 caracteres',
+                            },
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Apellido</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Wayne" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="name error"
-                            value={errors.lastName}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="email"
-                            value="Email del usuario"
-                            className="text-lg"
-                        />
-                    </div>
-                    <TextInput
-                        id="email"
+
+                    <FormField
                         name="email"
-                        type="email"
-                        sizing="md"
-                        placeholder={userForm.email}
-                        onChange={handleChange}
-                        value={form.email}
-                        color={errors.email !== undefined ? 'failure' : ''}
+                        control={form.control}
+                        rules={{
+                            required: 'Este campo es requerido',
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="ejemplo@gmail.com" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="email error"
-                            value={errors.email}
-                            className="text-lg"
-                            color="failure"
+
+                    {newUser && (
+                        <FormField
+                            name="password"
+                            control={form.control}
+                            rules={{
+                                required: 'Este campo es requerido',
+                                minLength: {
+                                    value: 8,
+                                    message:
+                                        'La contraseña debe tener al menos 8 caracteres',
+                                },
+                            }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Contraseña</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="********"
+                                            type="password"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Al menos 8 caracteres
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
-                </div>
-                <div className="mb-2 block">
-                    <Label value="Roles del usuario" className="text-lg" />
-                </div>
-                <div className="flex flex-col gap-4" id="checkbox">
-                    {roles.map((role, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                            <Checkbox
-                                id={`${role}`}
-                                defaultChecked={userForm.roles.includes(role)}
-                                onChange={checkboxChange}
-                                color={errors.roles !== '' ? 'failure' : ''}
-                            />
-                            <Label htmlFor={role}>{role}</Label>
-                        </div>
-                    ))}
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="roles error"
-                            value={errors.roles}
-                            className="text-lg"
-                            color="failure"
-                        />
-                    </div>
-                </div>
-                <div id="select-city">
-                    <div className="mb-2 block">
-                        <Label
-                            htmlFor="city"
-                            value="En que ciudad reside el usuario?"
-                            className="text-lg"
-                        />
-                    </div>
-                    <Select
-                        id="cities"
-                        onChange={selectCity}
+                    )}
+
+                    <FormField
                         name="city"
-                        defaultValue="default"
-                    >
-                        <option value="default" disabled hidden>
-                            {newUser
-                                ? 'Seleccione una ciudad'
-                                : userForm.city !== undefined &&
-                                  `${userForm.city.name}, ${
-                                      (userForm.city.province as IProvince).name
-                                  }`}
-                        </option>
-                        {cities.map((city, index) => (
-                            <option key={index}>{`${city.name}, ${
-                                (city.province as IProvince).name
-                            }`}</option>
-                        ))}
-                    </Select>
-                </div>
-                <div className="flex flex-row justify-between">
-                    <Button onClick={handleNavigate} type="button" variant="secondary">
-                        Cancelar
-                    </Button>
-                    <Button type="submit">Guardar</Button>
-                </div>
-            </form>
-        </>
+                        control={form.control}
+                        rules={{
+                            required: 'Este campo es requerido',
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Ciudad</FormLabel>
+                                <FormControl>
+                                    <DataTableComboboxFilter
+                                        searchPlaceholder="Buscar ciudad"
+                                        selectPlaceholder="Seleccione una ciudad"
+                                        items={cities.map((city) => {
+                                            return {
+                                                value: city._id.toString(),
+                                                label: `${city.name}, ${
+                                                    (city.province as IProvince).name
+                                                }`,
+                                            };
+                                        })}
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        name="roles"
+                        control={form.control}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Roles</FormLabel>
+                                <FormControl>
+                                    <FancyMultiSelect
+                                        placeholder="Añade roles"
+                                        options={roles.map((role) => {
+                                            return {
+                                                value: role,
+                                                label: role,
+                                            };
+                                        })}
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <div className="flex justify-between space-x-8">
+                        <Button asChild type="button" variant="secondary">
+                            <Link href="/tech-admin/users">Cancelar</Link>
+                        </Button>
+
+                        <ButtonWithSpinner
+                            showSpinner={
+                                postUserMutation.isLoading || putUserMutation.isLoading
+                            }
+                        >
+                            Guardar
+                        </ButtonWithSpinner>
+                    </div>
+                </form>
+            </Form>
+        </main>
     );
 }

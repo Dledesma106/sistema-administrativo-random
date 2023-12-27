@@ -1,12 +1,11 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import UserForm, { type IUserForm } from '@/components/Forms/TechAdmin/UserForm';
+import UserForm, { UserFormValues } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
 import { formatIds } from '@/lib/utils';
-import City from 'backend/models/City';
+import CityModel from 'backend/models/City';
 import { type ICity, type IUser } from 'backend/models/interfaces';
-import { type Role } from 'backend/models/types';
-import User from 'backend/models/User';
+import UserModel from 'backend/models/User';
 
 interface props {
     cities: ICity[];
@@ -14,13 +13,16 @@ interface props {
 }
 
 export default function EditUser({ cities, user }: props): JSX.Element {
-    const userForm: IUserForm = {
+    const userForm: UserFormValues = {
         _id: user._id as string,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        roles: user.roles as Role[],
-        city: user.city as ICity,
+        roles:
+            user.roles?.map((role) => {
+                return { label: role, value: role };
+            }) || [],
+        city: user.city?._id as string,
         password: '',
     };
 
@@ -33,7 +35,9 @@ export async function getServerSideProps(
     const { params } = ctx;
     if (params?.id === undefined) return { props: {} as props };
     await dbConnect();
-    const docUser = await User.findById(params.id).populate(User.getPopulateParameters());
-    const docCities = await City.findUndeleted({});
+    const docUser = await UserModel.findById(params.id).populate(
+        UserModel.getPopulateParameters(),
+    );
+    const docCities = await CityModel.findUndeleted({});
     return { props: { cities: formatIds(docCities), user: formatIds(docUser) } };
 }
