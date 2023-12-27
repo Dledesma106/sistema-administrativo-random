@@ -33,7 +33,9 @@ export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
 ): Promise<{ props: props }> {
     const { params } = ctx;
-    if (params?.id === undefined) return { props: {} as props };
+    if (params?.id === undefined) {
+        return { props: {} as props };
+    }
     await dbConnect();
     const docUser = await UserModel.findById(params.id).populate(
         UserModel.getPopulateParameters(),

@@ -22,14 +22,20 @@ export default function Filter({
 
     function onSelectType(e: ChangeEvent<HTMLSelectElement>): void {
         selectType(e);
-        if (entityRef.current == null) return;
+        if (entityRef.current == null) {
+            return;
+        }
         entityRef.current.selectedIndex = 0;
     }
 
     function onClearFilter(): void {
         clearFilter();
-        if (typeRef.current == null) return;
-        if (entityRef.current == null) return;
+        if (typeRef.current == null) {
+            return;
+        }
+        if (entityRef.current == null) {
+            return;
+        }
         typeRef.current.selectedIndex = 0;
         entityRef.current.selectedIndex = 0;
     }

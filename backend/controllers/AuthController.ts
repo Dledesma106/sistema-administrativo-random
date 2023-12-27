@@ -25,10 +25,11 @@ const AuthController = {
                         '+password',
                     );
 
-                    if (docUser == null)
+                    if (docUser == null) {
                         return res
                             .status(403)
                             .json({ statusCode: 403, error: 'Wrong password/email' });
+                    }
                     if (!docUser.comparePassword(password)) {
                         return res
                             .status(403)
@@ -59,15 +60,17 @@ const AuthController = {
                 const docUser = await UserModel.findOne({ email }).select(
                     '+password',
                 ); /* find user by email */
-                if (docUser == null)
+                if (docUser == null) {
                     return res
                         .status(403)
                         .json({ statusCode: 403, error: 'Wrong password/email' });
+                }
                 const passwordMatch = docUser.comparePassword(password);
-                if (!passwordMatch)
+                if (!passwordMatch) {
                     return res
                         .status(403)
                         .json({ statusCode: 403, error: 'Wrong password/email' });
+                }
                 const keyPair = new RSA({ b: 2048 });
                 await docUser.setPrivateKey(keyPair.exportKey('private'));
                 const { _id, firstName, lastName, fullName, roles } = docUser;
@@ -100,7 +103,9 @@ const AuthController = {
     logout: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const { userId } = req;
         const user = await UserModel.findOne({ _id: userId });
-        if (user === null) return;
+        if (user === null) {
+            return;
+        }
         await user.removePrivateKey();
         res.setHeader(
             'Set-Cookie',
@@ -135,15 +140,17 @@ const AuthController = {
             userId,
         } = req;
         const user = await UserModel.findById(userId).select('+password +privateKey');
-        if (user == null)
+        if (user == null) {
             return res.status(403).json({ error: 'no user found', statusCode: 403 });
+        }
         const key = new RSA();
         const privateKey = getPayload(user.privateKey).payload as string;
         key.importKey(privateKey, 'private');
         const decryptedPassword = key.decrypt(currentPassword, 'utf8');
         const passwordMatch = user.comparePassword(decryptedPassword);
-        if (!passwordMatch)
+        if (!passwordMatch) {
             return res.status(403).json({ statusCode: 403, error: 'Wrong password' });
+        }
         return res
             .status(200)
             .json({ statusCode: 200, data: { message: 'Correct password' } });

@@ -1,5 +1,9 @@
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
 import { useForm, SubmitHandler } from 'react-hook-form';
+
+import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -10,13 +14,11 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import Link from 'next/link';
-import { TypographyH1 } from '@/components/ui/typography';
-import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 
 export interface IBusinessForm {
     _id: string;
@@ -82,7 +84,9 @@ export default function BusinessForm({
     const onSubmit: SubmitHandler<IBusinessForm> = (data) => {
         if (newBusiness) {
             postData(data);
-        } else putData(data);
+        } else {
+            putData(data);
+        }
     };
 
     return (

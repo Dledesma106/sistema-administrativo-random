@@ -80,13 +80,17 @@ export default function ClientForm({ clientForm, newClient = true }: Props): JSX
         const err: IClientFormErrors = {
             name: '',
         };
-        if (form.name === '') err.name = 'Se debe especificar un nombre';
+        if (form.name === '') {
+            err.name = 'Se debe especificar un nombre';
+        }
         setErrors(err);
         return err;
     };
 
     useEffect(() => {
-        if (submitted) formValidate();
+        if (submitted) {
+            formValidate();
+        }
     }, [form]);
 
     async function goBack(): Promise<void> {
@@ -100,8 +104,11 @@ export default function ClientForm({ clientForm, newClient = true }: Props): JSX
         setSubmitted(true);
         const errs = formValidate();
         if (errs.name === '') {
-            if (newClient) void postData(form);
-            else void putData(form);
+            if (newClient) {
+                void postData(form);
+            } else {
+                void putData(form);
+            }
         } else {
             setErrors(errs);
         }

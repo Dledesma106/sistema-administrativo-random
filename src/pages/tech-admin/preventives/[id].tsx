@@ -65,12 +65,16 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     const { params } = ctx;
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    if (params == null) return { props: {} as props };
+    if (params == null) {
+        return { props: {} as props };
+    }
     await dbConnect();
     const preventive = await Preventive.findById(params.id).populate(
         Preventive.getPopulateParameters(),
     );
-    if (preventive == null) return { props: {} as props };
+    if (preventive == null) {
+        return { props: {} as props };
+    }
     console.log(preventive);
 
     const branches = await Branch.findUndeleted({});

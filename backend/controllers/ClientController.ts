@@ -18,8 +18,9 @@ const ClientController = {
             new: true,
             runValidators: true,
         });
-        if (newClient == null)
+        if (newClient == null) {
             return res.json({ statusCode: 500, error: 'could not update Client' });
+        }
         const client = formatIds(newClient);
         res.json({ data: { client, message: 'updated Client succesfully' } });
     },
@@ -37,8 +38,9 @@ const ClientController = {
             });
         }
         const newClient = await ClientModel.create(clientForm);
-        if (newClient === undefined)
+        if (newClient === undefined) {
             return res.json({ statusCode: 500, error: 'could not create Client' });
+        }
 
         const client = formatIds(newClient);
         res.json({ data: { client, message: 'created Client succesfully' } });
@@ -47,8 +49,9 @@ const ClientController = {
         const { body: _id } = req;
         await dbConnect();
         const deletedClient = await ClientModel.findById(_id);
-        if (deletedClient == null)
+        if (deletedClient == null) {
             return res.json({ statusCode: 500, error: 'could not delete Client' });
+        }
         await deletedClient.softDelete();
         res.json({ data: { message: 'deleted Client succesfully' } });
     },

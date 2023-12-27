@@ -18,8 +18,9 @@ const CityController = {
             new: true,
             runValidators: true,
         });
-        if (newCity == null)
+        if (newCity == null) {
             return res.json({ statusCode: 500, error: 'could not update city' });
+        }
         const city = formatIds(newCity);
         res.json({ data: { city, message: 'updated city succesfully' } });
     },
@@ -52,8 +53,9 @@ const CityController = {
 
         await dbConnect();
         const deletedCity = await CityModel.findById(_id);
-        if (deletedCity == null)
+        if (deletedCity == null) {
             return res.json({ statusCode: 500, error: 'could not delete city' });
+        }
         await deletedCity.softDelete();
 
         res.json({ data: { message: 'deleted city succesfully' } });

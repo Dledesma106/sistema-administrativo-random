@@ -49,7 +49,9 @@ const DataTableComboboxFilter = (props: Props) => {
                         filter={(value, search) => {
                             const item = items.find((item) => item.value === value);
 
-                            if (item === undefined) return 0;
+                            if (item === undefined) {
+                                return 0;
+                            }
                             const matches = item.label
                                 .toLowerCase()
                                 .includes(search?.toLowerCase());

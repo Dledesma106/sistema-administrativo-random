@@ -83,7 +83,9 @@ export default function CityForm({
     function selectProvince(e: ChangeEvent<HTMLSelectElement>): void {
         const { value } = e.target;
         const province = provinces.find((province) => province.name === value);
-        if (province != null) setForm({ ...form, province });
+        if (province != null) {
+            setForm({ ...form, province });
+        }
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>): void {
@@ -102,9 +104,12 @@ export default function CityForm({
             name: '',
             province: '',
         };
-        if (form.name === '') err.name = 'Se debe especificar un nombre';
-        if (Object.keys(form.province).length < 1)
+        if (form.name === '') {
+            err.name = 'Se debe especificar un nombre';
+        }
+        if (Object.keys(form.province).length < 1) {
             err.province = 'Se debe especificar la provincia';
+        }
 
         return err;
     };
@@ -114,8 +119,11 @@ export default function CityForm({
         const errors = formValidate();
 
         if (errors.name === '') {
-            if (newCity) void postData(form);
-            else void putData(form);
+            if (newCity) {
+                void postData(form);
+            } else {
+                void putData(form);
+            }
         } else {
             setErrors(errors);
         }

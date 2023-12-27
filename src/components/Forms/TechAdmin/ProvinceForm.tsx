@@ -79,7 +79,9 @@ export default function ProvinceForm({
     }
 
     useEffect(() => {
-        if (submitted) formValidate();
+        if (submitted) {
+            formValidate();
+        }
     }, [form]);
 
     const formValidate = (): IProvinceFormErrors => {
@@ -87,7 +89,9 @@ export default function ProvinceForm({
             name: '',
         };
 
-        if (form.name === '') err.name = 'Se debe especificar un nombre';
+        if (form.name === '') {
+            err.name = 'Se debe especificar un nombre';
+        }
         setErrors(err);
         return err;
     };
@@ -99,8 +103,11 @@ export default function ProvinceForm({
         const errors = formValidate();
 
         if (errors.name === '') {
-            if (newProvince) void postData(form);
-            else void putData(form);
+            if (newProvince) {
+                void postData(form);
+            } else {
+                void putData(form);
+            }
         } else {
             setErrors(errors);
         }

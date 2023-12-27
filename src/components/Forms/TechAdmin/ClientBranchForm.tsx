@@ -100,7 +100,9 @@ export default function ClientBranchForm({
         const { value } = e.target;
         const cityName = value.slice(0, value.indexOf(','));
         const city = cities.find((city) => city.name === cityName);
-        if (city != null) setForm({ ...form, city });
+        if (city != null) {
+            setForm({ ...form, city });
+        }
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>): void {
@@ -109,7 +111,9 @@ export default function ClientBranchForm({
     }
 
     useEffect(() => {
-        if (submitted) formValidate();
+        if (submitted) {
+            formValidate();
+        }
     }, [form]);
 
     const formValidate = (): IClientBranchFormErrors => {
@@ -118,10 +122,15 @@ export default function ClientBranchForm({
             city: '',
             businesses: '',
         };
-        if (form.number === '') err.number = 'Se debe proporcionar un numero';
-        if (Object.keys(form.city).length < 1) err.city = 'Se debe especificar la ciudad';
-        if (form.businesses.length < 1)
+        if (form.number === '') {
+            err.number = 'Se debe proporcionar un numero';
+        }
+        if (Object.keys(form.city).length < 1) {
+            err.city = 'Se debe especificar la ciudad';
+        }
+        if (form.businesses.length < 1) {
             err.businesses = 'Se debe seleccionar al menos una empresa';
+        }
         setErrors(err);
         return err;
     };
@@ -130,8 +139,11 @@ export default function ClientBranchForm({
         setSubmitted(true);
         const errors = formValidate();
         if (errors.number === '' && errors.city === '') {
-            if (newBranch) void postData(form);
-            else void putData(form);
+            if (newBranch) {
+                void postData(form);
+            } else {
+                void putData(form);
+            }
         }
     };
 

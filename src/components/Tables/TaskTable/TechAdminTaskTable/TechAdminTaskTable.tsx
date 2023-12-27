@@ -75,7 +75,9 @@ export default function TechAdminTaskTable({
                 },
                 header: 'Empresa',
                 filterFn: (row, id, businessID) => {
-                    if (!businessID) return true;
+                    if (!businessID) {
+                        return true;
+                    }
 
                     const business = row.getValue<ITask['business']>(id);
                     return business._id === businessID;
@@ -95,7 +97,9 @@ export default function TechAdminTaskTable({
                 },
                 header: 'Sucursal',
                 filterFn: (row, id, cityID) => {
-                    if (!cityID) return true;
+                    if (!cityID) {
+                        return true;
+                    }
 
                     const branch = row.getValue<ITask['branch']>(id);
                     return branch.city._id === cityID;
@@ -111,7 +115,9 @@ export default function TechAdminTaskTable({
                 },
                 header: 'Tecnico Asignado',
                 filterFn: (row, id, userId) => {
-                    if (!userId) return true;
+                    if (!userId) {
+                        return true;
+                    }
 
                     const assignedList = row.getValue<ITask['assigned']>(id);
                     const idIsInAssignedList = assignedList.some(

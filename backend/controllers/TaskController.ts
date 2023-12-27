@@ -127,8 +127,9 @@ const TaskController = {
                 new: true,
                 runValidators: true,
             });
-            if (newTask == null)
+            if (newTask == null) {
                 res.json({ statusCode: 500, error: 'could not update Task' });
+            }
 
             res.json({
                 statusCode: 200,
@@ -174,8 +175,9 @@ const TaskController = {
         };
         try {
             const newTask = await TaskModel.create(taskForm);
-            if (newTask === undefined)
+            if (newTask === undefined) {
                 return res.json({ statusCode: 500, error: 'could not create Task' });
+            }
 
             return res.json({
                 statusCode: 200,
@@ -189,8 +191,9 @@ const TaskController = {
         const { body } = req;
         await dbConnect();
         const deletedTask = await TaskModel.findById(body._id);
-        if (deletedTask == null)
+        if (deletedTask == null) {
             return res.json({ statusCode: 500, error: 'could not delete Task' });
+        }
         await deletedTask.softDelete();
         res.json({ statusCode: 200, data: { message: 'deleted Task succesfully' } });
     },
@@ -230,7 +233,7 @@ const TaskController = {
             .lean()
             .exec();
 
-        res.status(200).json({ data: tasks, message: "ok" });
+        res.status(200).json({ data: tasks, message: 'ok' });
     },
     getTechTaskById: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();

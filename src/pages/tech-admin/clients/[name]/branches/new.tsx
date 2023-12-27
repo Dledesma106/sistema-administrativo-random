@@ -1,14 +1,14 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import Business from 'backend/models/Business';
-import CityModel from 'backend/models/City';
-import Client from 'backend/models/Client';
-import { type IBusiness, type ICity, type IClient } from 'backend/models/interfaces';
 import ClientBranchForm, {
     type IClientBranchForm,
 } from '@/components/Forms/TechAdmin/ClientBranchForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, formatIds } from '@/lib/utils';
+import Business from 'backend/models/Business';
+import CityModel from 'backend/models/City';
+import Client from 'backend/models/Client';
+import { type IBusiness, type ICity, type IClient } from 'backend/models/interfaces';
 
 interface props {
     cities: ICity[];
@@ -45,7 +45,9 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
-    if (params == null) return { props: {} as props };
+    if (params == null) {
+        return { props: {} as props };
+    }
     await dbConnect();
     const cities = await CityModel.findUndeleted({});
     const client = await Client.findOne({ name: deSlugify(params.name as string) });

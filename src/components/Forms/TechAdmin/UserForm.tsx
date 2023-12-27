@@ -18,7 +18,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { TypographyH1 } from '@/components/ui/typography';
+import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
@@ -119,10 +119,10 @@ export default function UserForm({
     };
 
     return (
-        <main className="pr-8">
-            <TypographyH1 className="mb-8">
-                {newUser ? 'Crear usuario' : 'Editar usuario'}
-            </TypographyH1>
+        <main>
+            <TypographyH2 className="mb-4" asChild>
+                <h1>{newUser ? 'Crear usuario' : 'Editar usuario'}</h1>
+            </TypographyH2>
 
             <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>

@@ -201,23 +201,32 @@ const TechAdminTaskForm = ({
             // openedAt:'',
             // status:''}
         };
-        if (Object.keys(form.branch).length < 1)
+        if (Object.keys(form.branch).length < 1) {
             err.branch = 'Se debe especificar una sucursal';
-        if (Object.keys(form.branch).length < 1)
+        }
+        if (Object.keys(form.branch).length < 1) {
             err.client = 'Se debe especificar un cliente';
-        if (Object.keys(form.business).length < 1)
+        }
+        if (Object.keys(form.business).length < 1) {
             err.business = 'Se debe especificar una empresa';
-        if (form.assigned.length < 1)
+        }
+        if (form.assigned.length < 1) {
             err.assigned = 'Al menos un tecnico debe ser asignado';
-        if (form.taskType === '')
+        }
+        if (form.taskType === '') {
             err.taskType = 'Se debe especificar el tipo de la tarea';
-        if (form.description === '') err.description = 'Se debe proveer una descripcion';
+        }
+        if (form.description === '') {
+            err.description = 'Se debe proveer una descripcion';
+        }
         setErrors(err);
         return err;
     };
 
     useEffect(() => {
-        if (submitted) formValidate();
+        if (submitted) {
+            formValidate();
+        }
     }, [form]);
 
     const handleSubmit = (): void => {
@@ -230,8 +239,11 @@ const TechAdminTaskForm = ({
             errs.taskType === '' &&
             errs.description === ''
         ) {
-            if (newTask) void postData(form);
-            else void putData(form);
+            if (newTask) {
+                void postData(form);
+            } else {
+                void putData(form);
+            }
         }
     };
 

@@ -67,14 +67,24 @@ const RegisterForm = (): JSX.Element => {
             email: '',
             roles: [],
         };
-        if (form.password === '') err.password = 'password is required';
-        if (form.email === '') err.email = 'email is required';
-        if (form.firstName === '') err.firstName = 'first name is required';
-        if (form.lastName === '') err.lastName = 'last name is required';
-        if (form.confirmPassword === '')
+        if (form.password === '') {
+            err.password = 'password is required';
+        }
+        if (form.email === '') {
+            err.email = 'email is required';
+        }
+        if (form.firstName === '') {
+            err.firstName = 'first name is required';
+        }
+        if (form.lastName === '') {
+            err.lastName = 'last name is required';
+        }
+        if (form.confirmPassword === '') {
             err.confirmPassword = 'Please confirm your password';
-        if (form.password !== form.confirmPassword)
+        }
+        if (form.password !== form.confirmPassword) {
             err.confirmPassword = 'passwords dont match';
+        }
 
         return err;
     };

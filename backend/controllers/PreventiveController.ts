@@ -46,8 +46,9 @@ const PreventiveController = {
                     runValidators: true,
                 },
             );
-            if (newPreventive == null)
+            if (newPreventive == null) {
                 res.json({ statusCode: 500, error: 'could not update Preventive' });
+            }
 
             res.json({
                 statusCode: 200,
@@ -106,11 +107,12 @@ const PreventiveController = {
                 });
             }
             const newPreventive = await Preventive.create(preventiveForm);
-            if (newPreventive === undefined)
+            if (newPreventive === undefined) {
                 return res.json({
                     statusCode: 500,
                     error: 'could not create Preventive',
                 });
+            }
 
             return res.json({
                 statusCode: 200,
@@ -127,8 +129,9 @@ const PreventiveController = {
         const { body } = req;
         await dbConnect();
         const deletedPreventive = await Preventive.findById(body._id);
-        if (deletedPreventive == null)
+        if (deletedPreventive == null) {
             return res.json({ statusCode: 500, error: 'could not delete Preventive' });
+        }
         await deletedPreventive.softDelete();
         res.json({
             statusCode: 200,

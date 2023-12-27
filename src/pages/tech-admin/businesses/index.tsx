@@ -1,9 +1,9 @@
-import Business from 'backend/models/Business';
-import { type IBusiness } from 'backend/models/interfaces';
 import BusinessTable from '@/components/Tables/BusinessTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { formatIds } from '@/lib/utils';
+import Business from 'backend/models/Business';
+import { type IBusiness } from 'backend/models/interfaces';
 
 interface props {
     businesses: IBusiness[];

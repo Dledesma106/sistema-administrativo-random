@@ -47,7 +47,9 @@ export async function getServerSideProps(): Promise<{
     // res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
     const preventives = await Preventive.findUndeleted({});
-    if (preventives === null) return { props: {} as IPreventiveProps };
+    if (preventives === null) {
+        return { props: {} as IPreventiveProps };
+    }
     const cities = await City.findUndeleted({});
     const provinces = await Province.findUndeleted({});
     const techs = await User.findUndeleted({ roles: 'Tecnico' });

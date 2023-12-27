@@ -15,8 +15,9 @@ const UserController = {
         await dbConnect();
         try {
             const docUser = await UserModel.findById(req.userId);
-            if (docUser == null)
+            if (docUser == null) {
                 return res.json({ error: 'no user found', statusCode: 402 });
+            }
             res.status(200).json({
                 data: { user: formatIds(docUser), message: 'User found' },
                 statusCode: 200,
@@ -48,10 +49,11 @@ const UserController = {
                 runValidators: true,
             },
         );
-        if (docUser == null)
+        if (docUser == null) {
             return res
                 .status(400)
                 .json({ error: 'failed to update user', statusCode: 400 });
+        }
         res.status(200).json({ data: { user: formatIds(docUser) }, statusCode: 200 });
     },
     postUser: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -78,10 +80,11 @@ const UserController = {
         }
         try {
             const docUser = await UserModel.create(newUser);
-            if (docUser === undefined)
+            if (docUser === undefined) {
                 return res
                     .status(400)
                     .json({ error: 'failed to create user', statusCode: 400 });
+            }
             await Mailer.sendNewUserPassword(newUser);
             res.status(200).json({ data: { user: formatIds(docUser) }, statusCode: 200 });
         } catch (e) {
@@ -94,10 +97,11 @@ const UserController = {
         } = req;
         await dbConnect();
         const docUser = await UserModel.findById(_id);
-        if (docUser == null)
+        if (docUser == null) {
             return res
                 .status(400)
                 .json({ error: 'failed to delete user', statusCode: 400 });
+        }
         await docUser.softDelete();
         res.status(200).json({ data: { user: formatIds(docUser) }, statusCode: 200 });
     },
@@ -107,7 +111,9 @@ const UserController = {
         } = req;
         await dbConnect();
         const user = await UserModel.findById(_id);
-        if (user == null) return res.json({ error: 'no user found', statusCode: 400 });
+        if (user == null) {
+            return res.json({ error: 'no user found', statusCode: 400 });
+        }
         const newPassword = nanoid(10);
         user.password = newPassword;
         const { firstName, lastName, fullName, email, password } = user;

@@ -55,7 +55,9 @@ export function FancyMultiSelect({
     );
 
     const selectables = options.filter((option) => {
-        if (!selected) return true;
+        if (!selected) {
+            return true;
+        }
 
         return !selected.find((s) => s.value === option.value);
     });

@@ -18,8 +18,9 @@ const BusinessController = {
             new: true,
             runValidators: true,
         });
-        if (newBusiness == null)
+        if (newBusiness == null) {
             return res.json({ statusCode: 500, error: 'could not update Business' });
+        }
         const business = formatIds(newBusiness);
         res.status(200).json({
             data: { business, message: 'updated Business succesfully' },
@@ -39,8 +40,9 @@ const BusinessController = {
             });
         }
         const newBusiness = await BusinessModel.create(businessForm);
-        if (newBusiness === undefined)
+        if (newBusiness === undefined) {
             return res.json({ statusCode: 500, error: 'could not create Business' });
+        }
 
         const business = formatIds(newBusiness);
         res.json({ data: { business, message: 'created Business succesfully' } });
@@ -50,8 +52,9 @@ const BusinessController = {
 
         await dbConnect();
         const deletedBusiness = await BusinessModel.findById(_id);
-        if (deletedBusiness == null)
+        if (deletedBusiness == null) {
             return res.json({ statusCode: 500, error: 'could not delete Business' });
+        }
         // const Business = formatIds(newBusiness)
         await deletedBusiness.softDelete();
         res.json({ data: { message: 'deleted Business succesfully' } });

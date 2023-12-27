@@ -67,7 +67,9 @@ export async function getServerSideProps(
     const docTask = await Task.findById(params?.id).populate(
         Task.getPopulateParameters(),
     );
-    if (docTask == null) return { props: {} as props };
+    if (docTask == null) {
+        return { props: {} as props };
+    }
     const task = formatIds(docTask);
     const docBranches = await Branch.findUndeleted({});
     const docClients = await Client.findUndeleted({});

@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
 
+import { LogOut, User } from 'lucide-react';
 import {
     RiDashboardFill,
     RiTaskLine,
@@ -12,9 +13,20 @@ import {
     RiCustomerService2Line,
 } from 'react-icons/ri';
 
-
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useUserContext } from '@/context/userContext/UserProvider';
+import useLoading from '@/hooks/useLoading';
+import * as apiEndpoints from '@/lib/apiEndpoints';
+import fetcher from '@/lib/fetcher';
 
 interface IItem {
     id: number;
@@ -92,12 +104,26 @@ const items: IItem[] = [
     },
 ];
 
-
-
 export default function SideMenu(): JSX.Element {
-    const router = useRouter()
-    const { user } = useUserContext();
-console.log(router.asPath)
+    const { user, logoutUser } = useUserContext();
+    const { startLoading, stopLoading } = useLoading();
+    const router = useRouter();
+    const logout = async (): Promise<void> => {
+        startLoading();
+
+        try {
+            await fetcher.post({}, apiEndpoints.logoutUrl);
+            logoutUser();
+            await router.push('/login');
+        } catch (error) {
+            console.log(error);
+            stopLoading();
+            alert('Falló al intentar desloguear al usuario');
+        }
+
+        stopLoading();
+    };
+
     return (
         <div className="flex h-screen w-80 flex-col border-r border-gray-200">
             <div className="space-y-4 pt-4">
@@ -105,12 +131,14 @@ console.log(router.asPath)
                     Random SRL
                 </h2>
 
-                <div className="space-y-1">
+                <div className="space-y-1 pr-4">
                     {items.map((item: IItem) => {
                         return (
                             <Link className="block" href={item.path} key={item.id}>
                                 <Button
-                                    variant= {router.asPath === item.path? "default" : "ghost"}
+                                    variant={
+                                        router.asPath === item.path ? 'default' : 'ghost'
+                                    }
                                     className="flex w-full items-center justify-start space-x-2"
                                 >
                                     {item.icon}
@@ -123,16 +151,51 @@ console.log(router.asPath)
                 </div>
             </div>
 
-            <div className="mt-auto flex items-center space-x-4 px-4 pb-6">
-                <svg
-                    className="h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 512 512"
-                >
-                    <path d="M399 384.2C376.9 345.8 335.4 320 288 320H224c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z" />
-                </svg>
+            <div className="mt-auto pb-6 pr-4">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            className="flex w-full items-center justify-start space-x-4"
+                            variant="ghost"
+                        >
+                            <svg
+                                className="h-6 w-6"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 512 512"
+                            >
+                                <path d="M399 384.2C376.9 345.8 335.4 320 288 320H224c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z" />
+                            </svg>
 
-                <p className="text-sm">{user.email}</p>
+                            <p className="text-sm">{user.email}</p>
+                        </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem asChild>
+                                <Link
+                                    href="edit-profile"
+                                    className="flex w-full cursor-pointer"
+                                >
+                                    <User className="mr-2 h-4 w-4" />
+                                    <span>Perfil</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuItem asChild>
+                            <Button
+                                onClick={logout}
+                                className="w-full cursor-pointer justify-start"
+                                variant="ghost"
+                            >
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Cerrar sesión</span>
+                            </Button>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
     );

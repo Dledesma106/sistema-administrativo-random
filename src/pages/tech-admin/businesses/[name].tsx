@@ -1,12 +1,12 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import Business from 'backend/models/Business';
-import { type IBusiness } from 'backend/models/interfaces';
 import BusinessForm, {
     type IBusinessForm,
 } from '@/components/Forms/TechAdmin/BusinessForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, formatIds } from '@/lib/utils';
+import Business from 'backend/models/Business';
+import { type IBusiness } from 'backend/models/interfaces';
 
 interface props {
     business: IBusiness;
@@ -29,7 +29,9 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
-    if (params == null) return { props: {} as props };
+    if (params == null) {
+        return { props: {} as props };
+    }
 
     await dbConnect();
     const docBusiness = await Business.findOneUndeleted({

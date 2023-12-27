@@ -12,12 +12,21 @@ module.exports = {
     theme: {
         container: {
             center: true,
-            padding: '2rem',
+            padding: '1rem',
             screens: {
                 '2xl': '1400px',
+                '3xl': '1600px',
+                '4xl': '1800px',
+                '5xl': '2000px',
             },
         },
         extend: {
+            screens: {
+                '2xl': '1400px',
+                '3xl': '1600px',
+                '4xl': '1800px',
+                '5xl': '2000px',
+            },
             fontFamily: {
                 sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
             },

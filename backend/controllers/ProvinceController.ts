@@ -19,8 +19,9 @@ const ProvinceController = {
             new: true,
             runValidators: true,
         });
-        if (newProvince == null)
+        if (newProvince == null) {
             return res.json({ statusCode: 500, error: 'could not update province' });
+        }
         const province = formatIds(newProvince);
         res.json({ data: { province, message: 'updated province succesfully' } });
     },
@@ -38,8 +39,9 @@ const ProvinceController = {
             });
         }
         const newProvince = await Province.create(provinceForm);
-        if (newProvince === undefined)
+        if (newProvince === undefined) {
             return res.json({ statusCode: 500, error: 'could not create province' });
+        }
 
         const province = formatIds(newProvince);
         res.json({ data: { province, message: 'created province succesfully' } });
@@ -51,8 +53,9 @@ const ProvinceController = {
 
         await dbConnect();
         const deletedProvince = await Province.findById(_id);
-        if (deletedProvince == null)
+        if (deletedProvince == null) {
             return res.json({ statusCode: 500, error: 'could not delete province' });
+        }
         await deletedProvince.softDelete();
         res.json({ data: { message: 'deleted province succesfully' } });
     },

@@ -30,8 +30,9 @@ const BranchController = {
                 new: true,
                 runValidators: true,
             });
-            if (newBranch == null)
+            if (newBranch == null) {
                 res.json({ statusCode: 500, error: 'could not update branch' });
+            }
 
             const branch = formatIds(newBranch);
             res.json({ data: { branch, message: 'updated branch succesfully' } });
@@ -63,8 +64,9 @@ const BranchController = {
                 return res.json({ data: { message: 'created branch succesfully' } });
             }
             const newBranch = await BranchModel.create(branchForm);
-            if (newBranch === undefined)
+            if (newBranch === undefined) {
                 return res.json({ statusCode: 500, error: 'could not create branch' });
+            }
             return res.json({ data: { message: 'created branch succesfully' } });
         } catch (error) {
             return res.json({ statusCode: 500, error: 'could not create branch' });
@@ -78,8 +80,9 @@ const BranchController = {
         try {
             const deletedBranch = await BranchModel.findById(_id);
 
-            if (deletedBranch == null)
+            if (deletedBranch == null) {
                 return res.json({ statusCode: 500, error: 'could not delete Branch' });
+            }
             await deletedBranch.softDelete();
             // const branch = formatIds(newBranch)
             res.json({ data: { message: 'deleted branch succesfully' } });

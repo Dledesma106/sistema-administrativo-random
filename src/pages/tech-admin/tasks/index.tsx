@@ -45,7 +45,9 @@ export async function getServerSideProps(): Promise<{
     // res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
     const tasks = await Task.findUndeleted({});
-    if (tasks === null) return { props: {} as props };
+    if (tasks === null) {
+        return { props: {} as props };
+    }
     // const pendingTasks = allTasks.filter((task) => task.status === 'Pendiente')
     // const sentTasks = allTasks.filter((task) => task.status === 'Finalizada')
     // const tasks = pendingTasks.concat(sentTasks)

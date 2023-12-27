@@ -48,8 +48,12 @@ const LoginForm = () => {
     /* Makes sure pet info is filled for pet name, owner name, species, and image url */
     const formValidate = (): UserLoginForm => {
         const err: UserLoginForm = { email: '', password: '' };
-        if (form.email === '') err.email = 'email is required';
-        if (form.password === '') err.password = 'password is required';
+        if (form.email === '') {
+            err.email = 'email is required';
+        }
+        if (form.password === '') {
+            err.password = 'password is required';
+        }
 
         return err;
     };

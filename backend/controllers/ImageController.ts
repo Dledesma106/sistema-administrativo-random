@@ -40,7 +40,9 @@ const ImageController = {
             _id: id,
         })) as DocumentType<Expense>;
 
-        if (!expense) return false;
+        if (!expense) {
+            return false;
+        }
 
         await ExpenseModel.findOneAndUpdate(
             { _id: id },
@@ -65,7 +67,9 @@ const ImageController = {
             key: imageKey,
         });
 
-        if (!image) return res.status(500).json({ error: 'Could not create Image' });
+        if (!image) {
+            return res.status(500).json({ error: 'Could not create Image' });
+        }
         console.log(req.query);
         console.log(image);
         console.log(imageKey);

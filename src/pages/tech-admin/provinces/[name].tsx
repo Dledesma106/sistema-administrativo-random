@@ -31,7 +31,9 @@ export async function getServerSideProps(
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     await dbConnect();
-    if (params == null) return { props: {} as props };
+    if (params == null) {
+        return { props: {} as props };
+    }
     const docProvince = await Province.findOne({
         name: deSlugify(params.name as string),
     });

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useContext } from 'react';
-import { createContext } from 'react';
+import { useState, useMemo, useEffect, useContext, createContext } from 'react';
 
 import useLoading from '@/hooks/useLoading';
 import { type IUser } from 'backend/models/interfaces';
@@ -33,7 +32,9 @@ const UserProvider = ({ children }: ProviderProps): JSX.Element => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     function loginUser(user: IUser): void {
-        if (user === undefined) return;
+        if (user === undefined) {
+            return;
+        }
         startLoading();
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);

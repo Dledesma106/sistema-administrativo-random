@@ -2,6 +2,7 @@ import { useRouter } from 'next/navigation';
 
 import { Label, Select, Textarea } from 'flowbite-react';
 import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { BsFillXCircleFill } from 'react-icons/bs';
 
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,6 @@ import {
     type IUser,
 } from 'backend/models/interfaces';
 import * as types from 'backend/models/types';
-import { useForm } from 'react-hook-form';
 
 export interface IPreventiveForm {
     _id: string;
@@ -91,7 +91,9 @@ const PreventiveForm = ({
     //
 
     useEffect(() => {
-        if (submitted) formValidate();
+        if (submitted) {
+            formValidate();
+        }
     }, [form]);
 
     const { stopLoading, startLoading } = useLoading();
@@ -195,10 +197,12 @@ const PreventiveForm = ({
             err.branch = 'Se debe especificar la sucursal';
             err.client = 'Se debe seleccionar el cliente';
         }
-        if (Object.keys(form.business).length < 1)
+        if (Object.keys(form.business).length < 1) {
             err.business = 'Se debe especificar la empresa';
-        if (form.assigned.length < 1)
+        }
+        if (form.assigned.length < 1) {
             err.assigned = 'Se requiere al menos un tecnico asignado';
+        }
         if (form.frequency === undefined && form.months.length < 1) {
             err.frequency =
                 'Se debe definir o la frecuencia o los meses impuestos por el cliente';
@@ -219,8 +223,11 @@ const PreventiveForm = ({
             errs.client === '' &&
             errs.frequency === ''
         ) {
-            if (newPreventive) void postData(form);
-            else void putData(form);
+            if (newPreventive) {
+                void postData(form);
+            } else {
+                void putData(form);
+            }
         } else {
             stopLoading();
         }

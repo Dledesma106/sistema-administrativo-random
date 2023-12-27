@@ -68,7 +68,9 @@ switch for the role part of the pathname, it checks that the role is included in
 */
 const isAuthorized = (pathname: string, roles: Role[]): boolean => {
     const rolePath = pathname.slice(5, pathname.indexOf('/', 5));
-    if (rolePath === 'auth') return true;
+    if (rolePath === 'auth') {
+        return true;
+    }
     switch (rolePath) {
         case 'tech-admin':
             return roles.includes('Administrativo Tecnico');

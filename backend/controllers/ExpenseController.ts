@@ -76,7 +76,9 @@ const ExpenseController = {
                     keyof PostTechFormData['fields'],
                     keyof PostTechFormData['files']
                 >(req, (err, fields, files) => {
-                    if (err) return reject(err);
+                    if (err) {
+                        return reject(err);
+                    }
                     resolve({
                         fields: fields as any,
                         files: files as any,
