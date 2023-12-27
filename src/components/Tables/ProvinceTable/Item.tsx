@@ -31,7 +31,12 @@ export default function Item({ province, deleteProvince }: Props): JSX.Element {
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: province._id }, apiEndpoints.techAdmin.provinces);
+            await fetcher.delete(
+                {
+                    _id: province._id,
+                },
+                apiEndpoints.techAdmin.provinces,
+            );
             deleteProvince(province._id as string);
             triggerAlert({
                 type: 'Success',

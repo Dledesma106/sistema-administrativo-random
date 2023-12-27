@@ -36,7 +36,12 @@ export default function TechAdminTaskActions({ task, deleteTask }: Props): JSX.E
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: task._id }, api.techAdmin.tasks);
+            await fetcher.delete(
+                {
+                    _id: task._id,
+                },
+                api.techAdmin.tasks,
+            );
             deleteTask(task._id as string);
             triggerAlert({
                 type: 'Success',

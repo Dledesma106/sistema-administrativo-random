@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
 import {
     RiDashboardFill,
@@ -26,7 +28,7 @@ import {
 import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
+import fetcher, { axiosInstance } from '@/lib/fetcher';
 
 interface IItem {
     id: number;
@@ -108,20 +110,36 @@ export default function SideMenu(): JSX.Element {
     const { user, logoutUser } = useUserContext();
     const { startLoading, stopLoading } = useLoading();
     const router = useRouter();
-    const logout = async (): Promise<void> => {
-        startLoading();
 
-        try {
-            await fetcher.post({}, apiEndpoints.logoutUrl);
+    const logoutMutation = useMutation<unknown, AxiosError>({
+        mutationFn: () => {
+            return axiosInstance.post(apiEndpoints.logoutUrl);
+        },
+        onSuccess: () => {
             logoutUser();
-            await router.push('/login');
-        } catch (error) {
-            console.log(error);
-            stopLoading();
-            alert('Falló al intentar desloguear al usuario');
-        }
+            router.push('/login');
+        },
+        onError: (error) => {
+            const { response } = error;
+            const statusCode = response?.status;
 
-        stopLoading();
+            if (statusCode === 401) {
+                logoutUser();
+                router.push('/login');
+            } else {
+                alert('Falló al intentar desloguear al usuario');
+            }
+        },
+        onMutate: () => {
+            startLoading();
+        },
+        onSettled: () => {
+            stopLoading();
+        },
+    });
+
+    const logout = () => {
+        logoutMutation.mutate();
     };
 
     return (
@@ -131,7 +149,7 @@ export default function SideMenu(): JSX.Element {
                     Random SRL
                 </h2>
 
-                <div className="space-y-1 pr-4">
+                <div className="space-y-2 pr-4">
                     {items.map((item: IItem) => {
                         return (
                             <Link className="block" href={item.path} key={item.id}>

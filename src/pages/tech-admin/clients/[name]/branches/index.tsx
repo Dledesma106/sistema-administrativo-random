@@ -3,7 +3,7 @@ import { type GetServerSidePropsContext } from 'next';
 import ClientBranchesTable from '@/components/Tables/ClientBranchesTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
-import { deSlugify, formatIds, slugify } from '@/lib/utils';
+import { deSlugify, mongooseDocumentToJSON, slugify } from '@/lib/utils';
 import Business from 'backend/models/Business';
 import City from 'backend/models/City';
 import Client from 'backend/models/Client';
@@ -53,18 +53,32 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as props,
+        };
     }
     await dbConnect();
-    const client = await Client.findOne({ name: deSlugify(params.name as string) });
-    if (client == null) {
-        return { props: {} as props };
+    const client = await Client.findOne({
+        name: deSlugify(params.name as string),
+    });
+    if (client === null) {
+        return {
+            props: {} as props,
+        };
     }
     const branches = await client.getBranches();
     const cities = await City.findUndeleted();
     const provinces = await Province.findUndeleted();
     const businesses = await Business.findUndeleted();
-    const props = formatIds({ client, branches, cities, provinces, businesses });
-    return { props };
+    const props = mongooseDocumentToJSON({
+        client,
+        branches,
+        cities,
+        provinces,
+        businesses,
+    });
+    return {
+        props,
+    };
 }

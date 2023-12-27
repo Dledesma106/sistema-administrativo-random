@@ -4,7 +4,7 @@ import ClientBranchForm, {
     type IClientBranchForm,
 } from '@/components/Forms/TechAdmin/ClientBranchForm';
 import dbConnect from '@/lib/dbConnect';
-import { deSlugify, formatIds } from '@/lib/utils';
+import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
 import Business from 'backend/models/Business';
 import CityModel from 'backend/models/City';
 import Client from 'backend/models/Client';
@@ -45,14 +45,24 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as props,
+        };
     }
     await dbConnect();
-    const cities = await CityModel.findUndeleted({});
-    const client = await Client.findOne({ name: deSlugify(params.name as string) });
+    const cities = await CityModel.findUndeleted().lean().exec();
+    const client = await Client.findOne({
+        name: deSlugify(params.name as string),
+    });
     const businesses = await Business.findUndeleted({});
     // console.log(client)
 
-    return { props: formatIds({ cities, client, businesses }) };
+    return {
+        props: mongooseDocumentToJSON({
+            cities,
+            client,
+            businesses,
+        }),
+    };
 }

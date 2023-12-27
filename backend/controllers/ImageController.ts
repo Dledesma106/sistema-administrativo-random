@@ -22,7 +22,9 @@ const ImageController = {
             return false;
         }
         await TaskModel.findOneAndUpdate(
-            { _id: id },
+            {
+                _id: id,
+            },
             {
                 $push: {
                     image: image,
@@ -45,7 +47,9 @@ const ImageController = {
         }
 
         await ExpenseModel.findOneAndUpdate(
-            { _id: id },
+            {
+                _id: id,
+            },
             {
                 image: image,
             },
@@ -68,7 +72,9 @@ const ImageController = {
         });
 
         if (!image) {
-            return res.status(500).json({ error: 'Could not create Image' });
+            return res.status(500).json({
+                error: 'Could not create Image',
+            });
         }
         console.log(req.query);
         console.log(image);
@@ -78,13 +84,17 @@ const ImageController = {
             const taskId = req.query.taskId as string;
             const result = ImageController._addImageToTask(image._id, taskId);
             if (!result) {
-                return res.status(404).json({ error: 'Task not found' });
+                return res.status(404).json({
+                    error: 'Task not found',
+                });
             }
         } else if (req.query.expenseId) {
             const expenseId = req.query.expenseId as string;
             const result = ImageController._addImageToExpense(image._id, expenseId);
             if (!result) {
-                res.status(404).json({ error: 'Expense not found' });
+                res.status(404).json({
+                    error: 'Expense not found',
+                });
             }
         }
 

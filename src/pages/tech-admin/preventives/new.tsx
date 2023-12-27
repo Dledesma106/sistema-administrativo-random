@@ -2,7 +2,7 @@ import PreventiveForm, {
     type IPreventiveForm,
 } from '@/components/Forms/TechAdmin/PreventiveForm';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import Branch from 'backend/models/Branch';
 import Business from 'backend/models/Business';
 import Client from 'backend/models/Client';
@@ -45,10 +45,19 @@ export async function getServerSideProps(): Promise<{ props: props }> {
     const docBranches = await Branch.findUndeleted({});
     const docClients = await Client.findUndeleted({});
     const docBusinesses = await Business.findUndeleted({});
-    const docTechnicians = await User.findUndeleted({ roles: 'Tecnico' });
-    const branches = formatIds(docBranches);
-    const clients = formatIds(docClients);
-    const businesses = formatIds(docBusinesses);
-    const technicians = formatIds(docTechnicians);
-    return { props: { branches, clients, businesses, technicians } };
+    const docTechnicians = await User.findUndeleted({
+        roles: 'Tecnico',
+    });
+    const branches = mongooseDocumentToJSON(docBranches);
+    const clients = mongooseDocumentToJSON(docClients);
+    const businesses = mongooseDocumentToJSON(docBusinesses);
+    const technicians = mongooseDocumentToJSON(docTechnicians);
+    return {
+        props: {
+            branches,
+            clients,
+            businesses,
+            technicians,
+        },
+    };
 }

@@ -75,7 +75,10 @@ export default function ProvinceForm({
 
     function handleChange(e: ChangeEvent<HTMLInputElement>): void {
         const { value } = e.target;
-        setForm({ ...provinceForm, name: value });
+        setForm({
+            ...provinceForm,
+            name: value,
+        });
     }
 
     useEffect(() => {

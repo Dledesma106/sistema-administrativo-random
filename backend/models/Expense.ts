@@ -16,38 +16,72 @@ import { Task } from './Task';
 import { type ExpenseStatus, type ExpenseType, type PaySource } from './types';
 import { User } from './User';
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class Expense {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ ref: 'User', required: true })
+    @prop({
+        ref: 'User',
+        required: true,
+    })
     doneBy: Ref<User>;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     expenseType: ExpenseType;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     paySource: PaySource;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     status: ExpenseStatus;
 
-    @prop({ ref: 'Image', required: true })
+    @prop({
+        ref: 'Image',
+        required: true,
+    })
     image: Ref<Image>;
 
-    @prop({ type: Number, required: true })
+    @prop({
+        type: Number,
+        required: true,
+    })
     amount: number;
 
-    @prop({ ref: 'Task', required: false })
+    @prop({
+        ref: 'Task',
+        required: false,
+    })
     task?: Ref<Task>;
 
-    @prop({ ref: 'User', required: false })
+    @prop({
+        ref: 'User',
+        required: false,
+    })
     auditor?: Ref<User>;
 
-    @prop({ ref: 'Activity', required: false })
+    @prop({
+        ref: 'Activity',
+        required: false,
+    })
     activity?: Ref<Activity>;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
     static getPopulateParameters(): IPopulateParameter[] {
@@ -80,18 +114,20 @@ export class Expense {
         this: ReturnModelType<typeof Expense>,
         filter: FilterQuery<Expense> = {},
     ) {
-        return await this.find({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.find({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof Expense>,
         filter: FilterQuery<Expense> = {},
     ): Promise<Expense | null> {
-        return await this.findOne({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     async softDelete(this: DocumentType<Expense>): Promise<void> {

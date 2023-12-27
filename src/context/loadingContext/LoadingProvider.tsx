@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 
 import LoadingContext from './LoadingContext';
@@ -20,7 +18,13 @@ const LoadingProvider = ({ children }: ProviderProps): JSX.Element => {
     }
 
     return (
-        <LoadingContext.Provider value={{ isLoading, startLoading, stopLoading }}>
+        <LoadingContext.Provider
+            value={{
+                isLoading,
+                startLoading,
+                stopLoading,
+            }}
+        >
             {children}
         </LoadingContext.Provider>
     );

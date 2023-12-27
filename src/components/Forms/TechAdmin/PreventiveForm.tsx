@@ -1,19 +1,12 @@
 import { useRouter } from 'next/navigation';
 
-import { Label, Select, Textarea } from 'flowbite-react';
+import { Select, Textarea } from 'flowbite-react';
 import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { BsFillXCircleFill } from 'react-icons/bs';
 
 import { Button } from '@/components/ui/button';
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form';
+import { Form, FormLabel } from '@/components/ui/form';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
@@ -182,7 +175,10 @@ const PreventiveForm = ({
 
     const selectFrequency = (event: ChangeEvent<HTMLSelectElement>): void => {
         const { value } = event.target;
-        setForm({ ...form, frequency: parseInt(value) as types.Frequency });
+        setForm({
+            ...form,
+            frequency: parseInt(value) as types.Frequency,
+        });
     };
 
     const formValidate = (): IPreventiveFormErrors => {
@@ -238,7 +234,7 @@ const PreventiveForm = ({
         const technician = technicians.find(
             (technician) => technician.fullName === value,
         );
-        if (technician != null) {
+        if (technician !== null) {
             setForm((prev) => {
                 return {
                     ...prev,
@@ -274,7 +270,10 @@ const PreventiveForm = ({
 
     const deleteMonth = (month: types.Month): void => {
         setForm((prev) => {
-            return { ...prev, months: prev.months.filter((prev) => prev !== month) };
+            return {
+                ...prev,
+                months: prev.months.filter((prev) => prev !== month),
+            };
         });
     };
 

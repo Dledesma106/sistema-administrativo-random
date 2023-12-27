@@ -3,7 +3,7 @@ import { type NextApiResponse } from 'next';
 import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 
 import Province from '../models/Province';
 
@@ -14,37 +14,62 @@ const ProvinceController = {
         } = req;
 
         await dbConnect();
-        const provinceForm = { name };
+        const provinceForm = {
+            name,
+        };
         const newProvince = await Province.findByIdAndUpdate(_id, provinceForm, {
             new: true,
             runValidators: true,
         });
-        if (newProvince == null) {
-            return res.json({ statusCode: 500, error: 'could not update province' });
+        if (newProvince === null) {
+            return res.json({
+                statusCode: 500,
+                error: 'could not update province',
+            });
         }
-        const province = formatIds(newProvince);
-        res.json({ data: { province, message: 'updated province succesfully' } });
+        const province = mongooseDocumentToJSON(newProvince);
+        res.json({
+            data: {
+                province,
+                message: 'updated province succesfully',
+            },
+        });
     },
     postProvince: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const {
             body: { name },
         } = req;
         await dbConnect();
-        const provinceForm = { name };
-        const deletedProvince = await Province.findOne({ name });
-        if (deletedProvince != null) {
+        const provinceForm = {
+            name,
+        };
+        const deletedProvince = await Province.findOne({
+            name,
+        });
+        if (deletedProvince !== null) {
             await deletedProvince.restore();
             return res.json({
-                data: { deletedProvince, message: 'created province succesfully' },
+                data: {
+                    deletedProvince,
+                    message: 'created province succesfully',
+                },
             });
         }
         const newProvince = await Province.create(provinceForm);
         if (newProvince === undefined) {
-            return res.json({ statusCode: 500, error: 'could not create province' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not create province',
+            });
         }
 
-        const province = formatIds(newProvince);
-        res.json({ data: { province, message: 'created province succesfully' } });
+        const province = mongooseDocumentToJSON(newProvince);
+        res.json({
+            data: {
+                province,
+                message: 'created province succesfully',
+            },
+        });
     },
     deleteProvince: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const {
@@ -53,11 +78,18 @@ const ProvinceController = {
 
         await dbConnect();
         const deletedProvince = await Province.findById(_id);
-        if (deletedProvince == null) {
-            return res.json({ statusCode: 500, error: 'could not delete province' });
+        if (deletedProvince === null) {
+            return res.json({
+                statusCode: 500,
+                error: 'could not delete province',
+            });
         }
         await deletedProvince.softDelete();
-        res.json({ data: { message: 'deleted province succesfully' } });
+        res.json({
+            data: {
+                message: 'deleted province succesfully',
+            },
+        });
     },
 };
 

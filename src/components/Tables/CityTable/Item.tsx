@@ -31,7 +31,12 @@ export default function Item({ city, deleteCity }: Props): JSX.Element {
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: city._id }, apiEndpoints.techAdmin.cities);
+            await fetcher.delete(
+                {
+                    _id: city._id,
+                },
+                apiEndpoints.techAdmin.cities,
+            );
             deleteCity(city._id as string);
             triggerAlert({
                 type: 'Success',

@@ -1,9 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-types */
 // Interfaces for every model
+import { Ref } from '@typegoose/typegoose';
 import type mongoose from 'mongoose';
 
 import { type Activity } from './Activity';
 import type * as types from './types';
+
+export type Populated<T, K extends keyof T> = Omit<T, K> & {
+    [P in K]: Exclude<T[P], Ref<any>>;
+};
 
 // User fields
 export interface IUser {
@@ -17,6 +22,7 @@ export interface IUser {
     password?: string;
     publicKey: string;
 }
+
 // User methods
 export interface IUserMethods {
     comparePassword: (plaintext: string) => boolean;
@@ -26,6 +32,7 @@ export interface IUserMethods {
     getExpensesByStatus: (status: types.ExpenseStatus) => Promise<IExpense[]>;
     getActivities: () => Promise<IUserActivities>;
 }
+
 // User model, here I have to declare the static methods
 export interface UserModel extends mongoose.Model<IUser, {}, IUserMethods> {
     populateParameter: () => IPopulateParameter[];
@@ -79,6 +86,16 @@ export interface ICity {
     name: string;
     province: IProvince | string;
     deleted: boolean;
+}
+
+export interface ICityLean<TPopulatedPaths extends string = ''> {
+    _id: mongoose.Types.ObjectId | string;
+    name: string;
+    province: IProvince | string;
+    deleted: boolean;
+    populate: <T extends string>(path: T) => ICityLean<TPopulatedPaths | T>;
+    populateParameter: () => IPopulateParameter[];
+    execPopulate: () => Promise<ICity & Record<TPopulatedPaths, unknown>>;
 }
 
 export interface ICityMethods {

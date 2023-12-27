@@ -4,15 +4,16 @@ import ClientBranchForm, {
     type IClientBranchForm,
 } from '@/components/Forms/TechAdmin/ClientBranchForm';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
+import { CityWithProvince } from '@/types';
 import BranchModel, { Branch } from 'backend/models/Branch';
-import Business from 'backend/models/Business';
+import BusinessModel from 'backend/models/Business';
 import CityModel from 'backend/models/City';
-import { type IBranch, type IBusiness, type ICity } from 'backend/models/interfaces';
+import { type IBranch, type IBusiness } from 'backend/models/interfaces';
 
-interface props {
+interface Props {
     branch: IBranch;
-    cities: ICity[];
+    cities: CityWithProvince[];
     businesses: IBusiness[];
 }
 
@@ -20,7 +21,7 @@ export default function EditClientBranch({
     branch,
     cities,
     businesses,
-}: props): JSX.Element {
+}: Props): JSX.Element {
     const branchForm: IClientBranchForm = {
         _id: branch._id.toString(),
         number: branch.number,
@@ -30,38 +31,41 @@ export default function EditClientBranch({
     };
 
     return (
-        <>
-            <ClientBranchForm
-                newBranch={false}
-                branchForm={branchForm}
-                cities={cities}
-                businesses={businesses}
-            />
-        </>
+        <ClientBranchForm
+            newBranch={false}
+            branchForm={branchForm}
+            cities={cities}
+            businesses={businesses}
+        />
     );
 }
 
 export async function getServerSideProps(
-    ctx: GetServerSidePropsContext,
-): Promise<{ props: props }> {
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
+    ctx: GetServerSidePropsContext<{
+        number: string;
+    }>,
+): Promise<{ props: Props }> {
     const { params } = ctx;
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as Props,
+        };
     }
+
     await dbConnect();
-    const docCities = await CityModel.findUndeleted({});
-    const docBranch = await BranchModel.findOne({ number: params.number }).populate(
-        Branch.getPopulateParameters(),
-    );
-    const docBusinesses = await Business.findUndeleted({});
-    // console.log(docBranch)
+
+    const cities = (await CityModel.findUndeleted().lean().exec()) as CityWithProvince[];
+    const docBranch = await BranchModel.findOne({
+        number: params.number,
+    }).populate(Branch.getPopulateParameters());
+
+    const docBusinesses = await BusinessModel.findUndeleted({});
 
     return {
         props: {
-            cities: formatIds(docCities),
-            branch: formatIds(docBranch),
-            businesses: formatIds(docBusinesses),
+            cities: cities,
+            branch: mongooseDocumentToJSON(docBranch),
+            businesses: mongooseDocumentToJSON(docBusinesses),
         },
     };
 }

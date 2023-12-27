@@ -13,29 +13,55 @@ import { type IPopulateParameter } from './interfaces';
 import TaskModel, { type Task } from './Task';
 import { User } from './User';
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class Activity {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     name: string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     description: string;
 
-    @prop({ type: Date, required: true })
+    @prop({
+        type: Date,
+        required: true,
+    })
     startDate: Date;
 
-    @prop({ ref: 'User', required: true })
+    @prop({
+        ref: 'User',
+        required: true,
+    })
     openedBy: Ref<User>;
 
-    @prop({ type: mongoose.SchemaTypes.Array, ref: 'User', required: true })
+    @prop({
+        type: mongoose.SchemaTypes.Array,
+        ref: 'User',
+        required: true,
+    })
     participants: Array<Ref<User>>;
 
-    @prop({ type: Date, required: false })
+    @prop({
+        type: Date,
+        required: false,
+    })
     finishDate: Date;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
     static getPopulateParameters(): IPopulateParameter[] {
@@ -55,18 +81,20 @@ export class Activity {
         this: ReturnModelType<typeof Activity>,
         filter: FilterQuery<Activity> = {},
     ): Promise<Activity[]> {
-        return await this.find({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.find({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof Activity>,
         filter: FilterQuery<Activity> = {},
     ): Promise<Activity | null> {
-        return await this.findOne({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     async softDelete(this: DocumentType<Activity>): Promise<void> {
@@ -80,11 +108,15 @@ export class Activity {
     }
 
     async getTasks(this: Activity): Promise<Task[]> {
-        return await TaskModel.findUndeleted({ activity: this });
+        return await TaskModel.findUndeleted({
+            activity: this,
+        });
     }
 
     async getExpenses(this: Activity): Promise<Expense[]> {
-        return await ExpenseModel.findUndeleted({ activity: this });
+        return await ExpenseModel.findUndeleted({
+            activity: this,
+        });
     }
 }
 

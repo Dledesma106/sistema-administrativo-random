@@ -53,7 +53,12 @@ export default function Item({ client, deleteClient }: Props): JSX.Element {
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: client._id }, apiEndpoints.techAdmin.clients);
+            await fetcher.delete(
+                {
+                    _id: client._id,
+                },
+                apiEndpoints.techAdmin.clients,
+            );
             deleteClient(client._id as string);
             triggerAlert({
                 type: 'Success',

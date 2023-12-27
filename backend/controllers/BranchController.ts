@@ -5,7 +5,7 @@ import type mongoose from 'mongoose';
 import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import BranchModel from 'backend/models/Branch';
 import { type Business } from 'backend/models/Business';
 
@@ -30,14 +30,25 @@ const BranchController = {
                 new: true,
                 runValidators: true,
             });
-            if (newBranch == null) {
-                res.json({ statusCode: 500, error: 'could not update branch' });
+            if (newBranch === null) {
+                res.json({
+                    statusCode: 500,
+                    error: 'could not update branch',
+                });
             }
 
-            const branch = formatIds(newBranch);
-            res.json({ data: { branch, message: 'updated branch succesfully' } });
+            const branch = mongooseDocumentToJSON(newBranch);
+            res.json({
+                data: {
+                    branch,
+                    message: 'updated branch succesfully',
+                },
+            });
         } catch (error) {
-            return res.json({ statusCode: 500, error: 'could not update branch' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not update branch',
+            });
         }
     },
     postBranch: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -57,19 +68,33 @@ const BranchController = {
                 number,
                 client: client._id,
             });
-            if (deletedBranch != null) {
+            if (deletedBranch !== null) {
                 deletedBranch.city = city._id;
                 deletedBranch.businesses = businessesIds;
                 await deletedBranch.restore();
-                return res.json({ data: { message: 'created branch succesfully' } });
+                return res.json({
+                    data: {
+                        message: 'created branch succesfully',
+                    },
+                });
             }
             const newBranch = await BranchModel.create(branchForm);
             if (newBranch === undefined) {
-                return res.json({ statusCode: 500, error: 'could not create branch' });
+                return res.json({
+                    statusCode: 500,
+                    error: 'could not create branch',
+                });
             }
-            return res.json({ data: { message: 'created branch succesfully' } });
+            return res.json({
+                data: {
+                    message: 'created branch succesfully',
+                },
+            });
         } catch (error) {
-            return res.json({ statusCode: 500, error: 'could not create branch' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not create branch',
+            });
         }
     },
     deleteBranch: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -80,12 +105,19 @@ const BranchController = {
         try {
             const deletedBranch = await BranchModel.findById(_id);
 
-            if (deletedBranch == null) {
-                return res.json({ statusCode: 500, error: 'could not delete Branch' });
+            if (deletedBranch === null) {
+                return res.json({
+                    statusCode: 500,
+                    error: 'could not delete Branch',
+                });
             }
             await deletedBranch.softDelete();
             // const branch = formatIds(newBranch)
-            res.json({ data: { message: 'deleted branch succesfully' } });
+            res.json({
+                data: {
+                    message: 'deleted branch succesfully',
+                },
+            });
         } catch (error) {}
     },
     getTech: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -118,10 +150,14 @@ const BranchController = {
             .exec();
 
         if (!branches) {
-            return res.status(500).json({ message: 'could not get branches' });
+            return res.status(500).json({
+                message: 'could not get branches',
+            });
         }
 
-        return res.status(200).json({ data: branches });
+        return res.status(200).json({
+            data: branches,
+        });
     },
 };
 

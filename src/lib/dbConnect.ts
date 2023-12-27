@@ -20,7 +20,10 @@ type Cached = {
 let cached: Cached = global.mongoose;
 
 if (cached === undefined) {
-    cached = global.mongoose = { conn: null, promise: null };
+    cached = global.mongoose = {
+        conn: null,
+        promise: null,
+    };
 }
 
 async function dbConnect(): Promise<Cached['conn']> {

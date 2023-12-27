@@ -30,7 +30,12 @@ export default function Item({ branch, deleteBranch }: Props): JSX.Element {
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: branch._id }, apiEndpoints.techAdmin.branches);
+            await fetcher.delete(
+                {
+                    _id: branch._id,
+                },
+                apiEndpoints.techAdmin.branches,
+            );
             deleteBranch(branch._id as string);
             triggerAlert({
                 type: 'Success',

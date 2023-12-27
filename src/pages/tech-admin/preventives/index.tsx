@@ -1,7 +1,7 @@
 import PreventiveTable from '@/components/Tables/PreventiveTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import Business from 'backend/models/Business';
 import City from 'backend/models/City';
 import Client from 'backend/models/Client';
@@ -48,14 +48,18 @@ export async function getServerSideProps(): Promise<{
     await dbConnect();
     const preventives = await Preventive.findUndeleted({});
     if (preventives === null) {
-        return { props: {} as IPreventiveProps };
+        return {
+            props: {} as IPreventiveProps,
+        };
     }
     const cities = await City.findUndeleted({});
     const provinces = await Province.findUndeleted({});
-    const techs = await User.findUndeleted({ roles: 'Tecnico' });
+    const techs = await User.findUndeleted({
+        roles: 'Tecnico',
+    });
     const businesses = await Business.findUndeleted();
     const clients = await Client.findUndeleted();
-    const props = formatIds({
+    const props = mongooseDocumentToJSON({
         preventives,
         cities,
         provinces,
@@ -64,5 +68,7 @@ export async function getServerSideProps(): Promise<{
         clients,
     });
 
-    return { props };
+    return {
+        props,
+    };
 }

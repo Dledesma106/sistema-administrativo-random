@@ -1,5 +1,3 @@
-'use client';
-
 import { nanoid } from 'nanoid';
 import { useState } from 'react';
 
@@ -35,7 +33,12 @@ const AlertProvider = ({ children }: ProviderProps): JSX.Element => {
     }
 
     return (
-        <AlertContext.Provider value={{ triggerAlert, removeAlert }}>
+        <AlertContext.Provider
+            value={{
+                triggerAlert,
+                removeAlert,
+            }}
+        >
             {children}
             <>
                 {alerts.map((alert) => (

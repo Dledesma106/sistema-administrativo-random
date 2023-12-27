@@ -66,7 +66,9 @@ const UiFileInputButton: React.FC<IProps> = (props) => {
                 name={props.uploadFileName}
                 onChange={onChangeHandler}
                 ref={fileInputRef}
-                style={{ display: 'none' }}
+                style={{
+                    display: 'none',
+                }}
                 type="file"
             />
         </>

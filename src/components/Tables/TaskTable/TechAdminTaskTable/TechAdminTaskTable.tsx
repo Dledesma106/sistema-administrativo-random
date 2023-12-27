@@ -142,12 +142,21 @@ export default function TechAdminTaskTable({
                         status: TaskStatus,
                     ): Promise<void> => {
                         try {
-                            await fetcher.put({ ...task, status }, api.techAdmin.tasks);
+                            await fetcher.put(
+                                {
+                                    ...task,
+                                    status,
+                                },
+                                api.techAdmin.tasks,
+                            );
 
                             setTableTasks(
                                 tableTasks.map((someTask) =>
                                     someTask._id === task._id
-                                        ? { ...someTask, status }
+                                        ? {
+                                              ...someTask,
+                                              status,
+                                          }
                                         : someTask,
                                 ),
                             );

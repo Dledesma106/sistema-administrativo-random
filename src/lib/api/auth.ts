@@ -1,5 +1,5 @@
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { useMutation } from 'react-query';
 
 type UseLoginData = {
     email: string;

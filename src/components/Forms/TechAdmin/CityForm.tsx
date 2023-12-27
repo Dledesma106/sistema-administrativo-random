@@ -83,14 +83,20 @@ export default function CityForm({
     function selectProvince(e: ChangeEvent<HTMLSelectElement>): void {
         const { value } = e.target;
         const province = provinces.find((province) => province.name === value);
-        if (province != null) {
-            setForm({ ...form, province });
+        if (province !== null) {
+            setForm({
+                ...form,
+                province,
+            });
         }
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>): void {
         const { value } = e.target;
-        setForm({ ...form, name: value });
+        setForm({
+            ...form,
+            name: value,
+        });
     }
 
     async function goBack(): Promise<void> {

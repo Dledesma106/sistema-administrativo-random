@@ -3,7 +3,9 @@ export default function Footer(): JSX.Element {
         <>
             <footer
                 className="h-16 w-full justify-self-end bg-teal-400 shadow-md shadow-gray-100"
-                style={{ height: '10vh' }}
+                style={{
+                    height: '10vh',
+                }}
             ></footer>
         </>
     );

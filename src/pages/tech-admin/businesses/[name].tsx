@@ -4,7 +4,7 @@ import BusinessForm, {
     type IBusinessForm,
 } from '@/components/Forms/TechAdmin/BusinessForm';
 import dbConnect from '@/lib/dbConnect';
-import { deSlugify, formatIds } from '@/lib/utils';
+import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
 import Business from 'backend/models/Business';
 import { type IBusiness } from 'backend/models/interfaces';
 
@@ -29,15 +29,21 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as props,
+        };
     }
 
     await dbConnect();
     const docBusiness = await Business.findOneUndeleted({
         name: deSlugify(params.name as string),
     });
-    const props = { business: formatIds(docBusiness) };
+    const props = {
+        business: mongooseDocumentToJSON(docBusiness),
+    };
 
-    return { props };
+    return {
+        props,
+    };
 }

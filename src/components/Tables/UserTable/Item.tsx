@@ -42,7 +42,12 @@ export default function UserItemActions({ user, deleteUser }: Props): JSX.Elemen
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: user._id }, apiEndpoints.techAdmin.users);
+            await fetcher.delete(
+                {
+                    _id: user._id,
+                },
+                apiEndpoints.techAdmin.users,
+            );
             deleteUser(user._id as string);
             triggerAlert({
                 type: 'Success',
@@ -66,7 +71,9 @@ export default function UserItemActions({ user, deleteUser }: Props): JSX.Elemen
         try {
             startLoading();
             await fetcher.put(
-                { _id: user._id },
+                {
+                    _id: user._id,
+                },
                 (apiEndpoints.techAdmin.users as string) + 'new-password',
             );
             triggerAlert({

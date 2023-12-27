@@ -1,7 +1,7 @@
 import { type UserIdJwtPayload, verify } from 'jsonwebtoken';
 
 import dbConnect from './dbConnect';
-import { formatIds } from './utils';
+import { mongooseDocumentToJSON } from './utils';
 
 import { NextConnectApiRequest } from 'backend/controllers/interfaces';
 import UserModel from 'backend/models/User';
@@ -24,6 +24,6 @@ export async function getUserServer(req: NextConnectApiRequest) {
     if (docUser === null) {
         return undefined;
     }
-    const user = formatIds(docUser);
+    const user = mongooseDocumentToJSON(docUser);
     return user;
 }

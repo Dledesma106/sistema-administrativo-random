@@ -11,7 +11,9 @@ protectedHandler.put(BusinessController.putBusiness);
 
 protectedHandler.delete(BusinessController.deleteBusiness);
 protectedHandler.get((req, res) => {
-    res.json({ message: 'hello world' });
+    res.json({
+        message: 'hello world',
+    });
     return res.status(200);
 });
 

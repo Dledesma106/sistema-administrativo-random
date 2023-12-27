@@ -6,7 +6,9 @@ export const uploadFileRequest = async (
     formData: FormData,
 ): Promise<ApiResponse<string[]>> => {
     const config: AxiosRequestConfig = {
-        headers: { 'content-type': 'multipart/form-data' },
+        headers: {
+            'content-type': 'multipart/form-data',
+        },
         validateStatus: (_status) => true,
     };
     const response = await axios.post('/api/images', formData, config);

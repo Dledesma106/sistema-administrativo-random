@@ -47,7 +47,11 @@ const Mailer = {
             from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`, // sender address
             to: user.email, // list of receivers
             subject: 'Creacion de usuario en el Sistema de Administracion Tecnica', // Subject line
-            html: renderToString(NewUserPassword({ user })),
+            html: renderToString(
+                NewUserPassword({
+                    user,
+                }),
+            ),
         });
         return info;
     },
@@ -58,7 +62,11 @@ const Mailer = {
             subject:
                 'Creacion de nueva contraseña para tu usuario en el Sistema de Administracion Tecnica', // Subject line
             // text: "Hello world?", // plain text body
-            html: renderToString(ResetPassword({ user })),
+            html: renderToString(
+                ResetPassword({
+                    user,
+                }),
+            ),
         });
 
         return info;

@@ -9,6 +9,7 @@ import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
+import { CityWithProvince } from '@/types';
 import {
     type IProvince,
     type IBusiness,
@@ -33,7 +34,7 @@ export interface IClientBranchFormErrors {
 interface Props {
     branchForm: IClientBranchForm;
     newBranch?: boolean;
-    cities: ICity[];
+    cities: CityWithProvince[];
     businesses: IBusiness[];
 }
 
@@ -100,14 +101,20 @@ export default function ClientBranchForm({
         const { value } = e.target;
         const cityName = value.slice(0, value.indexOf(','));
         const city = cities.find((city) => city.name === cityName);
-        if (city != null) {
-            setForm({ ...form, city });
+        if (city !== null) {
+            setForm({
+                ...form,
+                city,
+            });
         }
     }
 
     function handleChange(e: ChangeEvent<HTMLInputElement>): void {
         const { value } = e.target;
-        setForm({ ...form, number: value });
+        setForm({
+            ...form,
+            number: value,
+        });
     }
 
     useEffect(() => {

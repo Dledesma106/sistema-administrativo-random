@@ -1,7 +1,7 @@
 import UserTable from '@/components/Tables/UserTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import { type IUser } from 'backend/models/interfaces';
 import User from 'backend/models/User';
 
@@ -26,5 +26,9 @@ export default function Users({ users }: props): JSX.Element {
 export async function getServerSideProps(): Promise<{ props: props }> {
     await dbConnect();
     const docUsers = await User.findUndeleted({});
-    return { props: { users: formatIds(docUsers) } };
+    return {
+        props: {
+            users: mongooseDocumentToJSON(docUsers),
+        },
+    };
 }

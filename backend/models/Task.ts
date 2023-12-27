@@ -17,53 +17,105 @@ import { type IPopulateParameter } from './interfaces';
 import { type TaskType, type TaskStatus } from './types';
 import { User } from './User';
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class Task {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ ref: 'Branch', required: true })
+    @prop({
+        ref: 'Branch',
+        required: true,
+    })
     branch: Ref<Branch>;
 
-    @prop({ ref: 'Business', required: true })
+    @prop({
+        ref: 'Business',
+        required: true,
+    })
     business: Ref<Business>;
 
-    @prop({ type: mongoose.SchemaTypes.Array, ref: 'User', required: true })
+    @prop({
+        type: mongoose.SchemaTypes.Array,
+        ref: 'User',
+        required: true,
+    })
     assigned: Array<Ref<User>>;
 
-    @prop({ type: Date, required: true })
+    @prop({
+        type: Date,
+        required: true,
+    })
     openedAt: Date;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     taskType: TaskType;
 
-    @prop({ type: String, default: 'Pendiente' })
+    @prop({
+        type: String,
+        default: 'Pendiente',
+    })
     status: TaskStatus;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     description: string;
 
-    @prop({ type: mongoose.SchemaTypes.Array, ref: 'User', required: false })
+    @prop({
+        type: mongoose.SchemaTypes.Array,
+        ref: 'User',
+        required: false,
+    })
     participants?: Array<Ref<User>>;
 
-    @prop({ ref: 'User', required: false })
+    @prop({
+        ref: 'User',
+        required: false,
+    })
     auditor?: Ref<User>;
 
-    @prop({ ref: 'Activity', required: false })
+    @prop({
+        ref: 'Activity',
+        required: false,
+    })
     activity?: Ref<Activity>;
 
-    @prop({ type: String, required: false })
+    @prop({
+        type: String,
+        required: false,
+    })
     operatorName?: string;
 
-    @prop({ type: mongoose.SchemaTypes.Array, ref: 'Image', required: false })
+    @prop({
+        type: mongoose.SchemaTypes.Array,
+        ref: 'Image',
+        required: false,
+    })
     image?: Array<Ref<Image>>;
 
-    @prop({ type: Number, required: false })
+    @prop({
+        type: Number,
+        required: false,
+    })
     workOrderNumber?: number;
 
-    @prop({ type: Date, required: false })
+    @prop({
+        type: Date,
+        required: false,
+    })
     closedAt?: Date;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
     static getPopulateParameters(): IPopulateParameter[] {
@@ -103,18 +155,20 @@ export class Task {
         this: ReturnModelType<typeof Task>,
         filter: FilterQuery<Task> = {},
     ): Promise<Task[]> {
-        return await this.find({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.find({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof Task>,
         filter: FilterQuery<Task> = {},
     ): Promise<Task | null> {
-        return await this.findOne({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     async softDelete(this: DocumentType<Task>): Promise<void> {
@@ -128,7 +182,9 @@ export class Task {
     }
 
     async getExpenses(this: Task): Promise<Expense[]> {
-        return await ExpenseModel.findUndeleted({ task: this });
+        return await ExpenseModel.findUndeleted({
+            task: this,
+        });
     }
 }
 

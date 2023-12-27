@@ -15,24 +15,52 @@ import { Client } from './Client';
 import { type IPopulateParameter } from './interfaces';
 import TaskModel, { type Task } from './Task';
 
-@modelOptions({ schemaOptions: { timestamps: true } })
-@index({ number: 1, client: 1 }, { unique: true })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
+@index(
+    {
+        number: 1,
+        client: 1,
+    },
+    {
+        unique: true,
+    },
+)
 export class Branch {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     number: string;
 
-    @prop({ ref: 'City', required: true })
+    @prop({
+        ref: 'City',
+        required: true,
+    })
     city: Ref<City>;
 
-    @prop({ ref: 'Client', required: true })
+    @prop({
+        ref: 'Client',
+        required: true,
+    })
     client: Ref<Client>;
 
-    @prop({ type: mongoose.SchemaTypes.Array, ref: 'Business', required: true })
+    @prop({
+        type: mongoose.SchemaTypes.Array,
+        ref: 'Business',
+        required: true,
+    })
     businesses: Array<Ref<Business>>;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
     static getPopulateParameters(): IPopulateParameter[] {
@@ -58,18 +86,20 @@ export class Branch {
         this: ReturnModelType<typeof Branch>,
         filter: FilterQuery<Branch> = {},
     ): Promise<Branch[]> {
-        return await this.find({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.find({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof Branch>,
         filter: FilterQuery<Branch> = {},
     ): Promise<Branch | null> {
-        return await this.findOne({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     async softDelete(this: DocumentType<Branch>): Promise<void> {
@@ -83,7 +113,9 @@ export class Branch {
     }
 
     async getTasks(this: Branch): Promise<Task[]> {
-        return await TaskModel.findUndeleted({ branch: this });
+        return await TaskModel.findUndeleted({
+            branch: this,
+        });
     }
 }
 

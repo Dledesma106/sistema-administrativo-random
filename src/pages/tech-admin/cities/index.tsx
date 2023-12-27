@@ -1,7 +1,7 @@
 import CityTable from '@/components/Tables/CityTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import City from 'backend/models/City';
 import { type ICity, type IProvince } from 'backend/models/interfaces';
 import Province from 'backend/models/Province';
@@ -29,6 +29,11 @@ export async function getServerSideProps(): Promise<{ props: props }> {
     await dbConnect();
     const cities = await City.findUndeleted();
     const provinces = await Province.findUndeleted();
-    const props = formatIds({ cities, provinces });
-    return { props };
+    const props = mongooseDocumentToJSON({
+        cities,
+        provinces,
+    });
+    return {
+        props,
+    };
 }

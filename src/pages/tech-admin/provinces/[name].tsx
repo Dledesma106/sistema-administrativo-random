@@ -4,7 +4,7 @@ import ProvinceForm, {
     type IProvinceForm,
 } from '@/components/Forms/TechAdmin/ProvinceForm';
 import dbConnect from '@/lib/dbConnect';
-import { deSlugify, formatIds } from '@/lib/utils';
+import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
 import { type IProvince } from 'backend/models/interfaces';
 import Province from 'backend/models/Province';
 
@@ -31,12 +31,18 @@ export async function getServerSideProps(
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     await dbConnect();
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as props,
+        };
     }
     const docProvince = await Province.findOne({
         name: deSlugify(params.name as string),
     });
-    const province = formatIds(docProvince);
-    return { props: { province } };
+    const province = mongooseDocumentToJSON(docProvince);
+    return {
+        props: {
+            province,
+        },
+    };
 }

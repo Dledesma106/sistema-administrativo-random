@@ -154,7 +154,7 @@ const TechAdminTaskForm = ({
         const technician = technicians.find(
             (technician) => technician.fullName === value,
         );
-        if (technician != null) {
+        if (technician !== null) {
             setForm((prev) => {
                 return {
                     ...prev,
@@ -187,7 +187,10 @@ const TechAdminTaskForm = ({
 
     const selectTaskType = (event: ChangeEvent<HTMLSelectElement>): void => {
         const { value } = event.target;
-        setForm({ ...form, taskType: value as types.TaskType });
+        setForm({
+            ...form,
+            taskType: value as types.TaskType,
+        });
     };
 
     const formValidate = (): ITaskFormErrors => {

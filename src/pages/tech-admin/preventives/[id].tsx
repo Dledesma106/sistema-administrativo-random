@@ -4,7 +4,7 @@ import PreventiveForm, {
     type IPreventiveForm,
 } from '@/components/Forms/TechAdmin/PreventiveForm';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import Branch from 'backend/models/Branch';
 import Business from 'backend/models/Business';
 import Client from 'backend/models/Client';
@@ -34,7 +34,12 @@ export default function NewTask({
     technicians,
     preventive,
 }: props): JSX.Element {
-    const preventiveFormProps = { branches, clients, businesses, technicians };
+    const preventiveFormProps = {
+        branches,
+        clients,
+        businesses,
+        technicians,
+    };
 
     const preventiveForm: IPreventiveForm = {
         _id: preventive._id as string,
@@ -65,24 +70,36 @@ export async function getServerSideProps(
 ): Promise<{ props: props }> {
     const { params } = ctx;
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as props,
+        };
     }
     await dbConnect();
     const preventive = await Preventive.findById(params.id).populate(
         Preventive.getPopulateParameters(),
     );
-    if (preventive == null) {
-        return { props: {} as props };
+    if (preventive === null) {
+        return {
+            props: {} as props,
+        };
     }
     console.log(preventive);
 
     const branches = await Branch.findUndeleted({});
     const clients = await Client.findUndeleted({});
     const businesses = await Business.findUndeleted({});
-    const technicians = await User.findUndeleted({ roles: 'Tecnico' });
+    const technicians = await User.findUndeleted({
+        roles: 'Tecnico',
+    });
 
     return {
-        props: formatIds({ branches, clients, businesses, technicians, preventive }),
+        props: mongooseDocumentToJSON({
+            branches,
+            clients,
+            businesses,
+            technicians,
+            preventive,
+        }),
     };
 }

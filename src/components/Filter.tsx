@@ -22,7 +22,7 @@ export default function Filter({
 
     function onSelectType(e: ChangeEvent<HTMLSelectElement>): void {
         selectType(e);
-        if (entityRef.current == null) {
+        if (entityRef.current === null) {
             return;
         }
         entityRef.current.selectedIndex = 0;
@@ -30,10 +30,10 @@ export default function Filter({
 
     function onClearFilter(): void {
         clearFilter();
-        if (typeRef.current == null) {
+        if (typeRef.current === null) {
             return;
         }
-        if (entityRef.current == null) {
+        if (entityRef.current === null) {
             return;
         }
         typeRef.current.selectedIndex = 0;

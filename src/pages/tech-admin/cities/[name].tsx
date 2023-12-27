@@ -2,7 +2,7 @@ import { type GetServerSidePropsContext } from 'next';
 
 import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
-import { deSlugify, formatIds } from '@/lib/utils';
+import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
 import City from 'backend/models/City';
 import { type ICity, type IProvince } from 'backend/models/interfaces';
 import Province from 'backend/models/Province';
@@ -32,15 +32,22 @@ export async function getServerSideProps(
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     await dbConnect();
-    if (params == null) {
-        return { props: {} as props };
+    if (!params) {
+        return {
+            props: {} as props,
+        };
     }
     const docCity = await City.findOneUndeleted({
         name: deSlugify(params.name as string),
     });
     const docProvinces = await Province.findUndeleted({});
-    const city = formatIds(docCity);
+    const city = mongooseDocumentToJSON(docCity);
     // console.log(docCity)
-    const provinces = formatIds(docProvinces);
-    return { props: { city, provinces } };
+    const provinces = mongooseDocumentToJSON(docProvinces);
+    return {
+        props: {
+            city,
+            provinces,
+        },
+    };
 }

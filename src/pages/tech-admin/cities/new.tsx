@@ -1,6 +1,6 @@
 import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import { type IProvince } from 'backend/models/interfaces';
 import Province from 'backend/models/Province';
 
@@ -26,6 +26,10 @@ export async function getServerSideProps(): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
     const docProvinces = await Province.findUndeleted({});
-    const provinces = formatIds(docProvinces);
-    return { props: { provinces } };
+    const provinces = mongooseDocumentToJSON(docProvinces);
+    return {
+        props: {
+            provinces,
+        },
+    };
 }

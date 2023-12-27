@@ -5,7 +5,7 @@ import { FilterQuery, Types as MongooseTypes } from 'mongoose';
 import { type NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import ExpenseModel from 'backend/models/Expense';
 import ImageModel, { Image } from 'backend/models/Image';
 import TaskModel, { Task } from 'backend/models/Task';
@@ -127,16 +127,25 @@ const TaskController = {
                 new: true,
                 runValidators: true,
             });
-            if (newTask == null) {
-                res.json({ statusCode: 500, error: 'could not update Task' });
+            if (newTask === null) {
+                res.json({
+                    statusCode: 500,
+                    error: 'could not update Task',
+                });
             }
 
             res.json({
                 statusCode: 200,
-                data: { task: formatIds(newTask), message: 'updated Task succesfully' },
+                data: {
+                    task: mongooseDocumentToJSON(newTask),
+                    message: 'updated Task succesfully',
+                },
             });
         } catch (error) {
-            return res.json({ statusCode: 500, error: 'could not update Task' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not update Task',
+            });
         }
     },
     postTask: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -176,26 +185,43 @@ const TaskController = {
         try {
             const newTask = await TaskModel.create(taskForm);
             if (newTask === undefined) {
-                return res.json({ statusCode: 500, error: 'could not create Task' });
+                return res.json({
+                    statusCode: 500,
+                    error: 'could not create Task',
+                });
             }
 
             return res.json({
                 statusCode: 200,
-                data: { task: formatIds(newTask), message: 'created Task succesfully' },
+                data: {
+                    task: mongooseDocumentToJSON(newTask),
+                    message: 'created Task succesfully',
+                },
             });
         } catch (error) {
-            return res.json({ statusCode: 500, error: 'could not create Task' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not create Task',
+            });
         }
     },
     deleteTask: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const { body } = req;
         await dbConnect();
         const deletedTask = await TaskModel.findById(body._id);
-        if (deletedTask == null) {
-            return res.json({ statusCode: 500, error: 'could not delete Task' });
+        if (deletedTask === null) {
+            return res.json({
+                statusCode: 500,
+                error: 'could not delete Task',
+            });
         }
         await deletedTask.softDelete();
-        res.json({ statusCode: 200, data: { message: 'deleted Task succesfully' } });
+        res.json({
+            statusCode: 200,
+            data: {
+                message: 'deleted Task succesfully',
+            },
+        });
     },
     getTechTasks: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();
@@ -207,7 +233,9 @@ const TaskController = {
 
         if (req.query.status) {
             if (Array.isArray(req.query.status)) {
-                filter.status = { $in: req.query.status };
+                filter.status = {
+                    $in: req.query.status,
+                };
             }
 
             if (typeof req.query.status === 'string') {
@@ -233,7 +261,10 @@ const TaskController = {
             .lean()
             .exec();
 
-        res.status(200).json({ data: tasks, message: 'ok' });
+        res.status(200).json({
+            data: tasks,
+            message: 'ok',
+        });
     },
     getTechTaskById: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();
@@ -241,10 +272,14 @@ const TaskController = {
         const task = await getTaskById(req.query.id as string, req.user._id.toString());
 
         if (!task) {
-            return res.status(404).json({ message: 'Task not found' });
+            return res.status(404).json({
+                message: 'Task not found',
+            });
         }
 
-        res.status(200).json({ data: task });
+        res.status(200).json({
+            data: task,
+        });
     },
     putTechTask: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();
@@ -259,7 +294,9 @@ const TaskController = {
         });
 
         if (!userTask) {
-            return res.status(404).json({ message: 'Task not found' });
+            return res.status(404).json({
+                message: 'Task not found',
+            });
         }
 
         if (
@@ -283,7 +320,9 @@ const TaskController = {
         if (imageIdToDelete) {
             const imageBelongsToTask = userTask.image?.includes(imageIdToDelete);
             if (!imageBelongsToTask) {
-                return res.status(404).json({ message: 'Image not found' });
+                return res.status(404).json({
+                    message: 'Image not found',
+                });
             }
 
             const image = ImageModel.findOne({
@@ -292,7 +331,9 @@ const TaskController = {
             });
 
             if (!image) {
-                return res.status(404).json({ message: 'Image not found' });
+                return res.status(404).json({
+                    message: 'Image not found',
+                });
             }
 
             await image.deleteOne();

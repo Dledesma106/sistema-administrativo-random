@@ -28,35 +28,69 @@ import { getToken } from '@/lib/jwt';
     }
     next();
 })
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class User {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     firstName: string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     lastName: string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     fullName: string;
 
-    @prop({ type: String, required: true, select: false })
+    @prop({
+        type: String,
+        required: true,
+        select: false,
+    })
     password: string;
 
-    @prop({ type: String, required: true, unique: true })
+    @prop({
+        type: String,
+        required: true,
+        unique: true,
+    })
     email: string;
 
-    @prop({ ref: 'City', required: false })
+    @prop({
+        ref: 'City',
+        required: false,
+    })
     city: Ref<City>;
 
-    @prop({ type: mongoose.SchemaTypes.Array, required: true })
+    @prop({
+        type: mongoose.SchemaTypes.Array,
+        required: true,
+    })
     roles: Role[];
 
-    @prop({ type: String, required: false, select: false })
+    @prop({
+        type: String,
+        required: false,
+        select: false,
+    })
     privateKey: string;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
     static getPopulateParameters(): IPopulateParameter[] {
@@ -74,18 +108,20 @@ export class User {
         this: ReturnModelType<typeof User>,
         filter: FilterQuery<User> = {},
     ): Promise<User[]> {
-        return await this.find({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.find({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof User>,
         filter: FilterQuery<User> = {},
     ): Promise<User | null> {
-        return await this.findOne({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     async softDelete(this: DocumentType<User>): Promise<void> {
@@ -127,15 +163,23 @@ export class User {
     }
 
     async getTasksByStatus(this: User, status: TaskStatus): Promise<Task[]> {
-        return await TaskModel.findUndeleted({ assigned: this, status });
+        return await TaskModel.findUndeleted({
+            assigned: this,
+            status,
+        });
     }
 
     async getExpenses(this: User): Promise<Expense[]> {
-        return await ExpenseModel.findUndeleted({ doneBy: this });
+        return await ExpenseModel.findUndeleted({
+            doneBy: this,
+        });
     }
 
     async getExpensesByStatus(this: User, status: ExpenseStatus): Promise<Expense[]> {
-        return await ExpenseModel.findUndeleted({ doneBy: this, status });
+        return await ExpenseModel.findUndeleted({
+            doneBy: this,
+            status,
+        });
     }
 
     async getActivities(this: User): Promise<IUserActivities> {
@@ -146,7 +190,10 @@ export class User {
         const participantActivities = activities.filter(
             (activity) => activity.participants?.includes(this._id),
         );
-        return { userActivities, participantActivities };
+        return {
+            userActivities,
+            participantActivities,
+        };
     }
 }
 

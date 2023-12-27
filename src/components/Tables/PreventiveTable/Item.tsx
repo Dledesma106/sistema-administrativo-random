@@ -36,7 +36,12 @@ export default function Item({
 
     const deleteData = async (): Promise<void> => {
         try {
-            await fetcher.delete({ _id: preventive._id }, api.techAdmin.preventives);
+            await fetcher.delete(
+                {
+                    _id: preventive._id,
+                },
+                api.techAdmin.preventives,
+            );
             deletePreventive(preventive._id as string);
             triggerAlert({
                 type: 'Success',
@@ -85,11 +90,11 @@ export default function Item({
                     : ''}
             </TableCell>
             <TableCell>
-                {preventive.months != null ? imposedMonths(preventive.months) : ''}
+                {preventive.months !== null ? imposedMonths(preventive.months) : ''}
             </TableCell>
             <TableCell>{preventive.observations}</TableCell>
             <TableCell>
-                {preventive.lastDoneAt != null
+                {preventive.lastDoneAt !== null
                     ? dmyDateString(new Date(preventive.lastDoneAt))
                     : ''}
             </TableCell>
@@ -97,7 +102,7 @@ export default function Item({
                 <Badge variant="secondary">{preventive.status}</Badge>
             </TableCell>
             <TableCell>
-                {preventive.batteryChangedAt != null
+                {preventive.batteryChangedAt !== null
                     ? dmyDateString(new Date(preventive.batteryChangedAt))
                     : ''}
             </TableCell>

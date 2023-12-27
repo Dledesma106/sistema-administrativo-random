@@ -1,11 +1,20 @@
-import LoginForm from '@/components/Forms/LoginForm';
+import { UserAuthForm } from '@/modules/Login/user-auth-form';
 
-const Login = (): JSX.Element => {
+export default function AuthenticationPage() {
     return (
-        <>
-            <LoginForm />
-        </>
-    );
-};
+        <main className="container flex min-h-screen items-center justify-center">
+            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+                <div className="flex flex-col space-y-2 text-center">
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                        Inicia sesión
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Ingresa tus datos para acceder a tu cuenta.
+                    </p>
+                </div>
 
-export default Login;
+                <UserAuthForm />
+            </div>
+        </main>
+    );
+}

@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
 
+import { useMutation } from '@tanstack/react-query';
 import RSA from 'node-rsa';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { useMutation } from 'react-query';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { TypographyH1 } from '@/components/ui/typography';
+import { TypographyH2 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
@@ -40,7 +40,9 @@ export default function EditProfileForm() {
                 body: JSON.stringify({
                     currentPassword: encryptPassword(passwordData.currentPassword),
                 }),
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
         },
         {
@@ -51,7 +53,10 @@ export default function EditProfileForm() {
                 });
             },
             onError: () => {
-                triggerAlert({ type: 'Failure', message: 'Contraseña incorrecta' });
+                triggerAlert({
+                    type: 'Failure',
+                    message: 'Contraseña incorrecta',
+                });
             },
         },
     );
@@ -63,7 +68,9 @@ export default function EditProfileForm() {
                 body: JSON.stringify({
                     newPassword: encryptPassword(passwordData.newPassword),
                 }),
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
         },
         {
@@ -94,7 +101,10 @@ export default function EditProfileForm() {
 
     const onSubmit: SubmitHandler<IEditProfileForm> = async (data) => {
         if (data.newPassword !== data.confirmNewPassword) {
-            triggerAlert({ type: 'Failure', message: 'Las contraseñas no coinciden' });
+            triggerAlert({
+                type: 'Failure',
+                message: 'Las contraseñas no coinciden',
+            });
             return;
         }
 
@@ -108,7 +118,9 @@ export default function EditProfileForm() {
 
     return (
         <Form {...formMethods}>
-            <TypographyH1>Ajustes</TypographyH1>
+            <TypographyH2 asChild className="mb-4">
+                <h1>Ajustes</h1>
+            </TypographyH2>
 
             <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField

@@ -40,7 +40,9 @@ export default function BusinessForm({
 }: Props): JSX.Element {
     const router = useRouter();
     const { stopLoading, startLoading } = useLoading();
-    const form = useForm<IBusinessForm>({ defaultValues: businessForm });
+    const form = useForm<IBusinessForm>({
+        defaultValues: businessForm,
+    });
     const { triggerAlert } = useAlert();
 
     const postData = async (form: IBusinessForm): Promise<void> => {
@@ -113,7 +115,9 @@ export default function BusinessForm({
                             );
                         }}
                         control={form.control}
-                        rules={{ required: 'Este campo es requerido' }}
+                        rules={{
+                            required: 'Este campo es requerido',
+                        }}
                     />
 
                     <div className="flex flex-row justify-between">

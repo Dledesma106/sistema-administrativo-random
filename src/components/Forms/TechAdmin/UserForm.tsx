@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useMutation } from '@tanstack/react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
 
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
@@ -23,11 +23,11 @@ import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { type IProvince, type ICity } from 'backend/models/interfaces';
+import { CityWithProvince } from '@/types';
 import { roles, type Role } from 'backend/models/types';
 
-interface Props {
-    cities: ICity[];
+export interface UserFormProps {
+    cities: CityWithProvince[];
     newUser?: boolean;
     userForm?: UserFormValues;
 }
@@ -58,7 +58,7 @@ export default function UserForm({
     userForm,
     newUser = true,
     cities,
-}: Props): JSX.Element {
+}: UserFormProps): JSX.Element {
     const router = useRouter();
     const form = useForm<UserFormValues>({
         defaultValues: userForm || {},
@@ -232,9 +232,7 @@ export default function UserForm({
                                         items={cities.map((city) => {
                                             return {
                                                 value: city._id.toString(),
-                                                label: `${city.name}, ${
-                                                    (city.province as IProvince).name
-                                                }`,
+                                                label: `${city.name}, ${city.province.name}`,
                                             };
                                         })}
                                         {...field}

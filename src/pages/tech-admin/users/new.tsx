@@ -1,19 +1,26 @@
-import UserForm from '@/components/Forms/TechAdmin/UserForm';
+import UserForm, { UserFormProps } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import CityModel from 'backend/models/City';
-import { type ICity } from 'backend/models/interfaces';
 
-interface props {
-    cities: ICity[];
+interface NewUserPageProps {
+    cities: UserFormProps['cities'];
 }
 
-export default function NewUser({ cities }: props): JSX.Element {
+export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
     return <UserForm cities={cities} />;
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
+export async function getServerSideProps(): Promise<{ props: NewUserPageProps }> {
     await dbConnect();
-    const docCities = await CityModel.findUndeleted({});
-    return { props: { cities: formatIds(docCities) } };
+
+    const populatedCities = (await CityModel.find({ deleted: false })
+        .populate('province')
+        .lean()) as UserFormProps['cities'];
+
+    return {
+        props: {
+            cities: mongooseDocumentToJSON(populatedCities),
+        },
+    };
 }

@@ -38,7 +38,10 @@ const RegisterForm = (): JSX.Element => {
         try {
             const json = await fetcher.post(form, api.authUrl);
             await fetcher.post(
-                { email: form.email, password: form.password },
+                {
+                    email: form.email,
+                    password: form.password,
+                },
                 api.authUrl,
             );
             loginUser(json.data.user);
@@ -105,7 +108,9 @@ const RegisterForm = (): JSX.Element => {
         if (isValidForm(errs)) {
             void postData(form);
         } else {
-            setErrors({ errs });
+            setErrors({
+                errs,
+            });
         }
     };
 

@@ -10,28 +10,45 @@ import { type FilterQuery } from 'mongoose';
 
 import BranchModel, { type Branch } from './Branch';
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class Client {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ type: String, required: true, unique: true })
+    @prop({
+        type: String,
+        required: true,
+        unique: true,
+    })
     name: string;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
     static async findUndeleted(
         this: ReturnModelType<typeof Client>,
         filter: FilterQuery<Client> = {},
     ): Promise<Client[]> {
-        return await this.find({ ...filter, deleted: false });
+        return await this.find({
+            ...filter,
+            deleted: false,
+        });
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof Client>,
         filter: FilterQuery<Client> = {},
     ): Promise<Client | null> {
-        return await this.findOne({ ...filter, deleted: false });
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        });
     }
 
     async softDelete(this: DocumentType<Client>): Promise<void> {
@@ -45,7 +62,9 @@ export class Client {
     }
 
     async getBranches(this: Client): Promise<Branch[]> {
-        return await BranchModel.findUndeleted({ client: this });
+        return await BranchModel.findUndeleted({
+            client: this,
+        });
     }
 }
 

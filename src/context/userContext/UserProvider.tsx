@@ -1,8 +1,5 @@
-'use client';
+import { useState, useEffect, useContext, createContext } from 'react';
 
-import { useState, useMemo, useEffect, useContext, createContext } from 'react';
-
-import useLoading from '@/hooks/useLoading';
 import { type IUser } from 'backend/models/interfaces';
 
 import { type ProviderProps } from '../interfaces';
@@ -28,18 +25,11 @@ const INITIAL_STATE = {
 
 const UserProvider = ({ children }: ProviderProps): JSX.Element => {
     const [user, setUser] = useState<IUser>(INITIAL_STATE);
-    const { startLoading, stopLoading } = useLoading();
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
     function loginUser(user: IUser): void {
-        if (user === undefined) {
-            return;
-        }
-        startLoading();
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
-        setIsLoggedIn(true);
-        stopLoading();
     }
 
     function logoutUser(): void {
@@ -56,11 +46,18 @@ const UserProvider = ({ children }: ProviderProps): JSX.Element => {
         }
     }, []);
 
-    const memoValue = useMemo(() => {
-        return { user, loginUser, logoutUser, isLoggedIn };
-    }, [user]);
-
-    return <UserContext.Provider value={memoValue}>{children}</UserContext.Provider>;
+    return (
+        <UserContext.Provider
+            value={{
+                user,
+                loginUser,
+                logoutUser,
+                isLoggedIn,
+            }}
+        >
+            {children}
+        </UserContext.Provider>
+    );
 };
 
 export const useUserContext = () => {

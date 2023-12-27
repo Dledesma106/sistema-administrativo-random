@@ -14,41 +14,68 @@ import BranchModel, { type Branch } from './Branch';
 import { type IPopulateParameter } from './interfaces';
 import { Province } from './Province';
 
-@index({ name: 1, province: 1 }, { unique: true })
-@modelOptions({ schemaOptions: { timestamps: true } })
+@index(
+    {
+        name: 1,
+        province: 1,
+    },
+    {
+        unique: true,
+    },
+)
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class City {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     name: string;
 
-    @prop({ ref: 'Province', required: true })
+    @prop({
+        ref: 'Province',
+        required: true,
+    })
     province: Ref<Province>;
 
     static getPopulateParameters(): IPopulateParameter[] {
         getModelForClass(Province);
-        return [{ path: 'province' }];
+        return [
+            {
+                path: 'province',
+            },
+        ];
     }
 
-    static async findUndeleted(
+    static findUndeleted(
         this: ReturnModelType<typeof City>,
         filter: FilterQuery<City> = {},
-    ): Promise<City[]> {
-        return await this.find({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+    ) {
+        return this.find({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof City>,
         filter: FilterQuery<City> = {},
     ): Promise<City | null> {
-        return await this.findOne({ ...filter, deleted: false }).populate(
-            this.getPopulateParameters(),
-        );
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        }).populate(this.getPopulateParameters());
     }
 
     async softDelete(this: DocumentType<City>): Promise<void> {
@@ -62,7 +89,9 @@ export class City {
     }
 
     async getBranches(this: City): Promise<Branch[]> {
-        return await BranchModel.findUndeleted({ city: this });
+        return await BranchModel.findUndeleted({
+            city: this,
+        });
     }
 }
 

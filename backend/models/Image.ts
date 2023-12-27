@@ -8,34 +8,56 @@ import {
 import type mongoose from 'mongoose';
 import { type FilterQuery } from 'mongoose';
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
 export class Image {
     _id: mongoose.Types.ObjectId | string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     name: string;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     url: string;
 
-    @prop({ type: Boolean, default: false })
+    @prop({
+        type: Boolean,
+        default: false,
+    })
     deleted: boolean;
 
-    @prop({ type: String, required: true })
+    @prop({
+        type: String,
+        required: true,
+    })
     key: string;
 
     static async findUndeleted(
         this: ReturnModelType<typeof Image>,
         filter: FilterQuery<Image> = {},
     ): Promise<Image[]> {
-        return await this.find({ ...filter, deleted: false });
+        return await this.find({
+            ...filter,
+            deleted: false,
+        });
     }
 
     static async findOneUndeleted(
         this: ReturnModelType<typeof Image>,
         filter: FilterQuery<Image> = {},
     ): Promise<Image | null> {
-        return await this.findOne({ ...filter, deleted: false });
+        return await this.findOne({
+            ...filter,
+            deleted: false,
+        });
     }
 
     async softDelete(this: DocumentType<Image>): Promise<void> {

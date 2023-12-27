@@ -73,7 +73,10 @@ export default function ClientForm({ clientForm, newClient = true }: Props): JSX
 
     function handleChange(e: ChangeEvent<HTMLInputElement>): void {
         const { value } = e.target;
-        setForm({ ...clientForm, name: value });
+        setForm({
+            ...clientForm,
+            name: value,
+        });
     }
 
     const formValidate = (): IClientFormErrors => {

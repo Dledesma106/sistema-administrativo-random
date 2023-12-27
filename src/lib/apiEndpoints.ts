@@ -1,5 +1,5 @@
 export const baseApiUrl = '/api';
-export const authUrl = `${baseApiUrl}/auth/`;
+export const authUrl = `${baseApiUrl}/auth`;
 export const logoutUrl = `${authUrl}/logout`;
 export const registerUrl = `${authUrl}/register`;
 export const loggedInUser = `${authUrl}/user`;

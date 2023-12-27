@@ -1,7 +1,7 @@
 import TechAdminTaskTable from '@/components/Tables/TaskTable/TechAdminTaskTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import Business from 'backend/models/Business';
 import City from 'backend/models/City';
 import Client from 'backend/models/Client';
@@ -46,7 +46,9 @@ export async function getServerSideProps(): Promise<{
     await dbConnect();
     const tasks = await Task.findUndeleted({});
     if (tasks === null) {
-        return { props: {} as props };
+        return {
+            props: {} as props,
+        };
     }
     // const pendingTasks = allTasks.filter((task) => task.status === 'Pendiente')
     // const sentTasks = allTasks.filter((task) => task.status === 'Finalizada')
@@ -55,7 +57,18 @@ export async function getServerSideProps(): Promise<{
     const provinces = await Province.findUndeleted();
     const clients = await Client.findUndeleted();
     const businesses = await Business.findUndeleted();
-    const techs = await User.findUndeleted({ roles: 'Tecnico' });
-    const props = formatIds({ tasks, cities, provinces, clients, businesses, techs });
-    return { props };
+    const techs = await User.findUndeleted({
+        roles: 'Tecnico',
+    });
+    const props = mongooseDocumentToJSON({
+        tasks,
+        cities,
+        provinces,
+        clients,
+        businesses,
+        techs,
+    });
+    return {
+        props,
+    };
 }

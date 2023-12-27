@@ -3,7 +3,7 @@ import { type NextApiResponse } from 'next';
 import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import BusinessModel from 'backend/models/Business';
 
 const BusinessController = {
@@ -13,17 +13,25 @@ const BusinessController = {
         } = req;
 
         await dbConnect();
-        const businessForm = { name };
+        const businessForm = {
+            name,
+        };
         const newBusiness = await BusinessModel.findByIdAndUpdate(_id, businessForm, {
             new: true,
             runValidators: true,
         });
-        if (newBusiness == null) {
-            return res.json({ statusCode: 500, error: 'could not update Business' });
+        if (newBusiness === null) {
+            return res.json({
+                statusCode: 500,
+                error: 'could not update Business',
+            });
         }
-        const business = formatIds(newBusiness);
+        const business = mongooseDocumentToJSON(newBusiness);
         res.status(200).json({
-            data: { business, message: 'updated Business succesfully' },
+            data: {
+                business,
+                message: 'updated Business succesfully',
+            },
         });
     },
     postBusiness: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -31,33 +39,55 @@ const BusinessController = {
             body: { name },
         } = req;
         await dbConnect();
-        const businessForm = { name };
-        const deletedBusiness = await BusinessModel.findOne({ name });
-        if (deletedBusiness != null) {
+        const businessForm = {
+            name,
+        };
+        const deletedBusiness = await BusinessModel.findOne({
+            name,
+        });
+        if (deletedBusiness !== null) {
             await deletedBusiness.restore();
             res.json({
-                data: { deletedBusiness, message: 'created Business succesfully' },
+                data: {
+                    deletedBusiness,
+                    message: 'created Business succesfully',
+                },
             });
         }
         const newBusiness = await BusinessModel.create(businessForm);
         if (newBusiness === undefined) {
-            return res.json({ statusCode: 500, error: 'could not create Business' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not create Business',
+            });
         }
 
-        const business = formatIds(newBusiness);
-        res.json({ data: { business, message: 'created Business succesfully' } });
+        const business = mongooseDocumentToJSON(newBusiness);
+        res.json({
+            data: {
+                business,
+                message: 'created Business succesfully',
+            },
+        });
     },
     deleteBusiness: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const { body: _id } = req;
 
         await dbConnect();
         const deletedBusiness = await BusinessModel.findById(_id);
-        if (deletedBusiness == null) {
-            return res.json({ statusCode: 500, error: 'could not delete Business' });
+        if (deletedBusiness === null) {
+            return res.json({
+                statusCode: 500,
+                error: 'could not delete Business',
+            });
         }
         // const Business = formatIds(newBusiness)
         await deletedBusiness.softDelete();
-        res.json({ data: { message: 'deleted Business succesfully' } });
+        res.json({
+            data: {
+                message: 'deleted Business succesfully',
+            },
+        });
     },
     getTech: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();
@@ -68,7 +98,9 @@ const BusinessController = {
             branch: branchId?.toString(),
         });
 
-        return res.json({ data: businesses });
+        return res.json({
+            data: businesses,
+        });
     },
 };
 

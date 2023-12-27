@@ -47,7 +47,10 @@ const LoginForm = () => {
 
     /* Makes sure pet info is filled for pet name, owner name, species, and image url */
     const formValidate = (): UserLoginForm => {
-        const err: UserLoginForm = { email: '', password: '' };
+        const err: UserLoginForm = {
+            email: '',
+            password: '',
+        };
         if (form.email === '') {
             err.email = 'email is required';
         }
@@ -64,7 +67,9 @@ const LoginForm = () => {
         if (errs.email === '' && errs.email === '') {
             void postData(form);
         } else {
-            setErrors({ errs });
+            setErrors({
+                errs,
+            });
         }
     };
 

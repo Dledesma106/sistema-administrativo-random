@@ -30,24 +30,32 @@ const accessControl = async (
             : cookies.ras_access_token;
 
     if (jwt === undefined) {
-        return res.status(401).json({ error: "You're not logged in" });
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
     }
 
     const result = getPayload(jwt);
     if (!result) {
-        return res.status(401).json({ error: "You're not logged in" });
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
     }
 
     const userId = result.payload.userId;
     if (!userId) {
-        return res.status(401).json({ error: "You're not logged in" });
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
     }
 
     const user = await UserModel.findById(userId);
     const url = req.url as string;
 
     if (!user) {
-        return res.status(401).json({ error: "You're not logged in" });
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
     }
 
     if (!isAuthorized(url, user.roles)) {

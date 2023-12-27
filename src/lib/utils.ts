@@ -15,7 +15,11 @@ import {
 } from 'backend/models/interfaces';
 import { months } from 'backend/models/types';
 
-export const formatIds = <T extends Record<string, any>>(doc: T): T => {
+export const mongooseDocumentToJSON = <
+    T extends Record<string, any> | Record<string, any>[],
+>(
+    doc: T,
+): T => {
     return JSON.parse(JSON.stringify(doc));
 };
 

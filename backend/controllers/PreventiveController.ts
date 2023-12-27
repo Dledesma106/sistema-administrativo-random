@@ -3,7 +3,7 @@ import { type NextApiResponse } from 'next';
 import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import { type User } from 'backend/models/User';
 
 import Preventive from '../models/Preventive';
@@ -46,19 +46,25 @@ const PreventiveController = {
                     runValidators: true,
                 },
             );
-            if (newPreventive == null) {
-                res.json({ statusCode: 500, error: 'could not update Preventive' });
+            if (newPreventive === null) {
+                res.json({
+                    statusCode: 500,
+                    error: 'could not update Preventive',
+                });
             }
 
             res.json({
                 statusCode: 200,
                 data: {
-                    Preventive: formatIds(newPreventive),
+                    Preventive: mongooseDocumentToJSON(newPreventive),
                     message: 'updated Preventive succesfully',
                 },
             });
         } catch (error) {
-            return res.json({ statusCode: 500, error: 'could not update Preventive' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not update Preventive',
+            });
         }
     },
     postPreventive: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -88,8 +94,11 @@ const PreventiveController = {
             observations,
         };
         try {
-            const deletedPreventive = await Preventive.findOne({ branch, business });
-            if (deletedPreventive != null) {
+            const deletedPreventive = await Preventive.findOne({
+                branch,
+                business,
+            });
+            if (deletedPreventive !== null) {
                 deletedPreventive.assigned = assignedIds;
                 deletedPreventive.status = status;
                 deletedPreventive.frequency = frequency;
@@ -101,7 +110,7 @@ const PreventiveController = {
                 return res.json({
                     statusCode: 200,
                     data: {
-                        preventive: formatIds(deletedPreventive),
+                        preventive: mongooseDocumentToJSON(deletedPreventive),
                         message: 'created Preventive succesfully',
                     },
                 });
@@ -117,25 +126,33 @@ const PreventiveController = {
             return res.json({
                 statusCode: 200,
                 data: {
-                    preventive: formatIds(newPreventive),
+                    preventive: mongooseDocumentToJSON(newPreventive),
                     message: 'created Preventive succesfully',
                 },
             });
         } catch (error) {
-            return res.json({ statusCode: 500, error: 'could not create Preventive' });
+            return res.json({
+                statusCode: 500,
+                error: 'could not create Preventive',
+            });
         }
     },
     deletePreventive: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const { body } = req;
         await dbConnect();
         const deletedPreventive = await Preventive.findById(body._id);
-        if (deletedPreventive == null) {
-            return res.json({ statusCode: 500, error: 'could not delete Preventive' });
+        if (deletedPreventive === null) {
+            return res.json({
+                statusCode: 500,
+                error: 'could not delete Preventive',
+            });
         }
         await deletedPreventive.softDelete();
         res.json({
             statusCode: 200,
-            data: { message: 'deleted Preventive succesfully' },
+            data: {
+                message: 'deleted Preventive succesfully',
+            },
         });
     },
 };

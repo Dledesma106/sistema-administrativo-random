@@ -1,12 +1,21 @@
+import axios from 'axios';
+
 const getFullUrl = (path: string) => {
     return window.location.origin + path;
 };
 
 const contentType = 'application/json';
 
+export const axiosInstance = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    headers: {
+        Accept: contentType,
+        'Content-Type': contentType,
+    },
+});
+
 const fetcher = {
     post: async function (data: any, url: string) {
-        console.log(data);
         const modUrl = getFullUrl(url);
         const res: Response = await fetch(modUrl, {
             method: 'POST',

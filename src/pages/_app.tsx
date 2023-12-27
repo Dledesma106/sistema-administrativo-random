@@ -3,7 +3,7 @@ import type { AppProps } from 'next/app';
 import { Inter as FontSans } from 'next/font/google';
 import Head from 'next/head';
 
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import Main from '@/components/Main';
 import AlertProvider from '@/context/alertContext/AlertProvider';
@@ -37,9 +37,7 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
                     <LoadingProvider>
                         <AlertProvider>
                             <UserProvider>
-                                <Main>
-                                    <Component {...pageProps} />
-                                </Main>
+                                <Component {...pageProps} />
                             </UserProvider>
                         </AlertProvider>
                     </LoadingProvider>

@@ -1,19 +1,14 @@
-import { Connection } from 'mongoose'
+import { Mongoose, Connection } from 'mongoose';
 
 declare global {
-    var mongoose: any
+    const mongoose: Mongoose;
 }
 
-declare module 'jsonwebtoken'{
-    export interface UserIdJwtPayload extends JwtPayload{
-        userId:string
-        userRoles:string[]
+declare module 'jsonwebtoken' {
+    export interface UserIdJwtPayload extends JwtPayload {
+        userId: string;
+        userRoles: string[];
     }
 }
 
-
-
-
-export const mongoose = global.mongoose || new Connection()
-
-if (process.env.NODE_ENV !== 'production') global.mongoose = mongoose
+export const mongoose = global.mongoose || new Connection();

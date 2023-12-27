@@ -4,7 +4,7 @@ import TechAdminTaskForm, {
     type ITaskForm,
 } from '@/components/Forms/TechAdmin/TechAdminTaskForm';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import Branch from 'backend/models/Branch';
 import Business from 'backend/models/Business';
 import Client from 'backend/models/Client';
@@ -67,17 +67,29 @@ export async function getServerSideProps(
     const docTask = await Task.findById(params?.id).populate(
         Task.getPopulateParameters(),
     );
-    if (docTask == null) {
-        return { props: {} as props };
+    if (docTask === null) {
+        return {
+            props: {} as props,
+        };
     }
-    const task = formatIds(docTask);
+    const task = mongooseDocumentToJSON(docTask);
     const docBranches = await Branch.findUndeleted({});
     const docClients = await Client.findUndeleted({});
     const docBusinesses = await Business.findUndeleted({});
-    const docTechnicians = await User.findUndeleted({ roles: 'Tecnico' });
-    const branches = formatIds(docBranches);
-    const clients = formatIds(docClients);
-    const businesses = formatIds(docBusinesses);
-    const technicians = formatIds(docTechnicians);
-    return { props: { task, branches, clients, businesses, technicians } };
+    const docTechnicians = await User.findUndeleted({
+        roles: 'Tecnico',
+    });
+    const branches = mongooseDocumentToJSON(docBranches);
+    const clients = mongooseDocumentToJSON(docClients);
+    const businesses = mongooseDocumentToJSON(docBusinesses);
+    const technicians = mongooseDocumentToJSON(docTechnicians);
+    return {
+        props: {
+            task,
+            branches,
+            clients,
+            businesses,
+            technicians,
+        },
+    };
 }

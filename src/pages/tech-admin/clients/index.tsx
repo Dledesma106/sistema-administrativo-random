@@ -1,7 +1,7 @@
 import ClientTable from '@/components/Tables/ClientTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
-import { formatIds } from '@/lib/utils';
+import { mongooseDocumentToJSON } from '@/lib/utils';
 import Client from 'backend/models/Client';
 import { type IClient } from 'backend/models/interfaces';
 
@@ -26,6 +26,10 @@ export async function getServerSideProps(): Promise<{ props: props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
     const docClients = await Client.findUndeleted({});
-    const clients = formatIds(docClients);
-    return { props: { clients } };
+    const clients = mongooseDocumentToJSON(docClients);
+    return {
+        props: {
+            clients,
+        },
+    };
 }

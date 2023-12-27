@@ -32,7 +32,9 @@ export default function Item({ business, deleteBusiness }: Props): JSX.Element {
     const deleteData = async (): Promise<void> => {
         try {
             await fetcher.delete(
-                { _id: business._id },
+                {
+                    _id: business._id,
+                },
                 apiEndpoints.techAdmin.businesses,
             );
             deleteBusiness(business._id as string);
