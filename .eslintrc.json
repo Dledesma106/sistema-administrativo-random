@@ -85,6 +85,7 @@
             {
                 "allowAllPropertiesOnSameLine": false
             }
-        ]
+        ],
+        "import/no-named-as-default-member": "off"
     }
 }
