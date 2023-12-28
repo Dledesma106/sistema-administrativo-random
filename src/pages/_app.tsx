@@ -5,7 +5,6 @@ import Head from 'next/head';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import Main from '@/components/Main';
 import AlertProvider from '@/context/alertContext/AlertProvider';
 import LoadingProvider from '@/context/loadingContext/LoadingProvider';
 import UserProvider from '@/context/userContext/UserProvider';

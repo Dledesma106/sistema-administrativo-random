@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-// Interfaces for every model
-import { Ref } from '@typegoose/typegoose';
 import type mongoose from 'mongoose';
 
 import { type Activity } from './Activity';
 import type * as types from './types';
 
-export type Populated<T, K extends keyof T> = Omit<T, K> & {
-    [P in K]: Exclude<T[P], Ref<any>>;
-};
+import { CityWithProvince } from '@/types';
 
 // User fields
 export interface IUser {
@@ -16,11 +12,10 @@ export interface IUser {
     email: string;
     firstName: string;
     lastName: string;
-    city?: ICity;
+    city?: CityWithProvince;
     fullName?: string;
     roles?: types.Role[];
     password?: string;
-    publicKey: string;
 }
 
 // User methods

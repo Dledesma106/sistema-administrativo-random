@@ -1,5 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import TechAdminTaskForm, {
     type ITaskForm,
 } from '@/components/Forms/TechAdmin/TechAdminTaskForm';
@@ -45,7 +46,7 @@ export default function TaskView({
     };
 
     return (
-        <>
+        <DashboardLayout>
             <TechAdminTaskForm
                 taskForm={form}
                 newTask={false}
@@ -54,7 +55,7 @@ export default function TaskView({
                 clients={clients}
                 technicians={technicians}
             />
-        </>
+        </DashboardLayout>
     );
 }
 

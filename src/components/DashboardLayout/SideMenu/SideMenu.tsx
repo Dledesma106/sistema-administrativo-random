@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
     RiDashboardFill,
     RiTaskLine,
@@ -28,7 +29,7 @@ import {
 import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
-import fetcher, { axiosInstance } from '@/lib/fetcher';
+import { axiosInstance } from '@/lib/fetcher';
 
 interface IItem {
     id: number;
@@ -109,7 +110,21 @@ const items: IItem[] = [
 export default function SideMenu(): JSX.Element {
     const { user, logoutUser } = useUserContext();
     const { startLoading, stopLoading } = useLoading();
+
     const router = useRouter();
+    const [pathname, setPathname] = useState(router.pathname);
+
+    useEffect(() => {
+        const onRouteChangeStart = (url: string) => {
+            setPathname(url);
+        };
+
+        router.events.on('routeChangeStart', onRouteChangeStart);
+
+        return () => {
+            router.events.off('routeChangeStart', onRouteChangeStart);
+        };
+    }, [startLoading, router, stopLoading]);
 
     const logoutMutation = useMutation<unknown, AxiosError>({
         mutationFn: () => {
@@ -136,6 +151,7 @@ export default function SideMenu(): JSX.Element {
         onSettled: () => {
             stopLoading();
         },
+        retry: false,
     });
 
     const logout = () => {
@@ -154,9 +170,7 @@ export default function SideMenu(): JSX.Element {
                         return (
                             <Link className="block" href={item.path} key={item.id}>
                                 <Button
-                                    variant={
-                                        router.asPath === item.path ? 'default' : 'ghost'
-                                    }
+                                    variant={pathname === item.path ? 'default' : 'ghost'}
                                     className="flex w-full items-center justify-start space-x-2"
                                 >
                                     {item.icon}
@@ -194,7 +208,7 @@ export default function SideMenu(): JSX.Element {
                         <DropdownMenuGroup>
                             <DropdownMenuItem asChild>
                                 <Link
-                                    href="edit-profile"
+                                    href="/edit-profile"
                                     className="flex w-full cursor-pointer"
                                 >
                                     <User className="mr-2 h-4 w-4" />

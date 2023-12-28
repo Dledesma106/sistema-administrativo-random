@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import ClientTable from '@/components/Tables/ClientTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -11,14 +12,14 @@ interface props {
 
 export default function Clients({ clients }: props): JSX.Element {
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title="Clientes"
                 path="/tech-admin/clients/new"
                 nameButton="Agregar cliente"
             />
             <ClientTable clients={clients} />
-        </>
+        </DashboardLayout>
     );
 }
 

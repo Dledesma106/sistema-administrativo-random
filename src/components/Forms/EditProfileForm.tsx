@@ -33,8 +33,8 @@ export default function EditProfileForm() {
     const { stopLoading, startLoading } = useLoading();
     const router = useRouter();
 
-    const checkPasswordMutation = useMutation<unknown, unknown, IEditProfileForm>(
-        (passwordData) => {
+    const checkPasswordMutation = useMutation<unknown, unknown, IEditProfileForm>({
+        mutationFn: (passwordData) => {
             return fetch(api.checkPassword, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -45,24 +45,22 @@ export default function EditProfileForm() {
                 },
             });
         },
-        {
-            onSuccess: () => {
-                triggerAlert({
-                    type: 'Success',
-                    message: 'Contraseña verificada correctamente',
-                });
-            },
-            onError: () => {
-                triggerAlert({
-                    type: 'Failure',
-                    message: 'Contraseña incorrecta',
-                });
-            },
+        onSuccess: () => {
+            triggerAlert({
+                type: 'Success',
+                message: 'Contraseña verificada correctamente',
+            });
         },
-    );
+        onError: () => {
+            triggerAlert({
+                type: 'Failure',
+                message: 'Contraseña incorrecta',
+            });
+        },
+    });
 
-    const changePasswordMutation = useMutation<unknown, unknown, IEditProfileForm>(
-        (passwordData) => {
+    const changePasswordMutation = useMutation<unknown, unknown, IEditProfileForm>({
+        mutationFn: (passwordData) => {
             return fetch(api.changePassword, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -73,25 +71,23 @@ export default function EditProfileForm() {
                 },
             });
         },
-        {
-            onSuccess: () => {
-                triggerAlert({
-                    type: 'Success',
-                    message: 'Su contraseña fue actualizada correctamente',
-                });
-                router.push('/');
-            },
-            onError: () => {
-                triggerAlert({
-                    type: 'Failure',
-                    message: 'Error al actualizar contraseña',
-                });
-            },
-            onSettled: () => {
-                stopLoading();
-            },
+        onSuccess: () => {
+            triggerAlert({
+                type: 'Success',
+                message: 'Su contraseña fue actualizada correctamente',
+            });
+            router.push('/');
         },
-    );
+        onError: () => {
+            triggerAlert({
+                type: 'Failure',
+                message: 'Error al actualizar contraseña',
+            });
+        },
+        onSettled: () => {
+            stopLoading();
+        },
+    });
 
     const encryptPassword = (password: string): string => {
         const key = new RSA();

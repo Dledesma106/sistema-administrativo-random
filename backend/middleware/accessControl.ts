@@ -2,6 +2,7 @@ import { NextApiResponse } from 'next';
 
 import { NextHandler } from 'next-connect';
 
+import dbConnect from '@/lib/dbConnect';
 import { getPayload } from '@/lib/jwt';
 import { NextConnectApiRequest } from 'backend/controllers/interfaces';
 import UserModel from 'backend/models/User';
@@ -49,6 +50,7 @@ const accessControl = async (
         });
     }
 
+    await dbConnect();
     const user = await UserModel.findById(userId);
     const url = req.url as string;
 

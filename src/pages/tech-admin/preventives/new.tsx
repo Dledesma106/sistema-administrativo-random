@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import PreventiveForm, {
     type IPreventiveForm,
 } from '@/components/Forms/TechAdmin/PreventiveForm';
@@ -33,9 +34,9 @@ export default function NewTask(props: props): JSX.Element {
     };
 
     return (
-        <>
+        <DashboardLayout>
             <PreventiveForm preventiveForm={preventiveForm} {...props} />
-        </>
+        </DashboardLayout>
     );
 }
 

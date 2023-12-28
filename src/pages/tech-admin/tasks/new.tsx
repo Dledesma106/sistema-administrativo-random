@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import TechAdminTaskForm, {
     type ITaskForm,
 } from '@/components/Forms/TechAdmin/TechAdminTaskForm';
@@ -34,9 +35,9 @@ export default function NewTask(props: props): JSX.Element {
     };
 
     return (
-        <>
+        <DashboardLayout>
             <TechAdminTaskForm newTask={true} taskForm={taskForm} {...props} />
-        </>
+        </DashboardLayout>
     );
 }
 

@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import PreventiveTable from '@/components/Tables/PreventiveTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -30,14 +31,14 @@ export default function Preventives(props: IPreventiveProps): JSX.Element {
     // const tableProps = {cities, provinces, techs, businesses, clients}
 
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title="Preventivos"
                 path="/tech-admin/preventives/new"
                 nameButton="Agregar preventivo"
             />
             <PreventiveTable {...props} />
-        </>
+        </DashboardLayout>
     );
 }
 

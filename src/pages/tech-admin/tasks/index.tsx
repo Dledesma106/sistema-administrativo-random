@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import TechAdminTaskTable from '@/components/Tables/TaskTable/TechAdminTaskTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -28,14 +29,14 @@ interface props {
 
 export default function TechAdminTasks(props: props): JSX.Element {
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title="Tareas pendientes"
                 path="/tech-admin/tasks/new"
                 nameButton="Delegar tarea"
             />
             <TechAdminTaskTable {...props} />
-        </>
+        </DashboardLayout>
     );
 }
 

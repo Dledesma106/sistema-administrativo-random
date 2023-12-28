@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import BusinessTable from '@/components/Tables/BusinessTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -11,14 +12,14 @@ interface props {
 
 export default function Businesses({ businesses }: props): JSX.Element {
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title="Empresas"
                 path="/tech-admin/businesses/new"
                 nameButton="Agregar una empresa"
             />
             <BusinessTable businesses={businesses} />
-        </>
+        </DashboardLayout>
     );
 }
 

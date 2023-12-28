@@ -1,5 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import ClientBranchForm, {
     type IClientBranchForm,
 } from '@/components/Forms/TechAdmin/ClientBranchForm';
@@ -30,13 +31,13 @@ export default function NewClientBranch({
     };
 
     return (
-        <>
+        <DashboardLayout>
             <ClientBranchForm
                 branchForm={branchForm}
                 cities={cities}
                 businesses={businesses}
             />
-        </>
+        </DashboardLayout>
     );
 }
 

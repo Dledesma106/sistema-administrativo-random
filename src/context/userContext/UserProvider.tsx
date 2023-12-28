@@ -30,6 +30,7 @@ const UserProvider = ({ children }: ProviderProps): JSX.Element => {
     function loginUser(user: IUser): void {
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
+        setIsLoggedIn(true);
     }
 
     function logoutUser(): void {

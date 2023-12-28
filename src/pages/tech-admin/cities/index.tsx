@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import CityTable from '@/components/Tables/CityTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -13,14 +14,14 @@ interface props {
 
 export default function Cities({ cities, provinces }: props): JSX.Element {
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title="Localidades"
                 path="/tech-admin/cities/new"
                 nameButton="Agregar localidad"
             />
             <CityTable cities={cities} provinces={provinces} />
-        </>
+        </DashboardLayout>
     );
 }
 

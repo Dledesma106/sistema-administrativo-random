@@ -1,5 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import PreventiveForm, {
     type IPreventiveForm,
 } from '@/components/Forms/TechAdmin/PreventiveForm';
@@ -55,13 +56,13 @@ export default function NewTask({
     };
 
     return (
-        <>
+        <DashboardLayout>
             <PreventiveForm
                 newPreventive={false}
                 preventiveForm={preventiveForm}
                 {...preventiveFormProps}
             />
-        </>
+        </DashboardLayout>
     );
 }
 

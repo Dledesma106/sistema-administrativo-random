@@ -1,5 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import UserForm, { UserFormValues } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
@@ -29,7 +30,11 @@ export default function EditUser({ cities, user }: props): JSX.Element {
         password: '',
     };
 
-    return <UserForm userForm={userForm} newUser={false} cities={cities} />;
+    return (
+        <DashboardLayout>
+            <UserForm userForm={userForm} newUser={false} cities={cities} />
+        </DashboardLayout>
+    );
 }
 
 export async function getServerSideProps(

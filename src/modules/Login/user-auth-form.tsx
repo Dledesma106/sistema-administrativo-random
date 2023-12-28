@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 
 import { useMutation } from '@tanstack/react-query';
-import * as React from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
@@ -17,10 +16,18 @@ import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { authUrl } from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
+import { IUser } from 'backend/models/interfaces';
 
 type FormValues = {
     email: string;
     password: string;
+};
+
+type LoginResponse = {
+    data: {
+        accessToken: string;
+        user: IUser;
+    };
 };
 
 export function UserAuthForm() {
@@ -29,11 +36,13 @@ export function UserAuthForm() {
     const { loginUser } = useUserContext();
 
     const loginMutation = useMutation({
-        mutationFn: (form: FormValues) => {
-            return axiosInstance.post(authUrl, form);
+        mutationFn: async (form: FormValues) => {
+            const response = await axiosInstance.post<LoginResponse>(authUrl, form);
+            return response.data;
         },
-        onSuccess: (data) => {
-            loginUser(data.data.user);
+        onSuccess: ({ data }) => {
+            loginUser(data.user);
+            localStorage.setItem('accessToken', data.accessToken);
             router.push('/');
         },
         onError: () => {

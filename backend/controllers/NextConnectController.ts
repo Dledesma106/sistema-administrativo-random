@@ -7,7 +7,7 @@ export const onError = (
     req: NextConnectApiRequest<boolean>,
     res: NextApiResponse,
 ): void => {
-    res.status(501).json({
+    res.status(500).json({
         error: `Sorry something Happened! ${error as string}`,
     });
 };

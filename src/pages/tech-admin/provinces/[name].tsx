@@ -1,5 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import ProvinceForm, {
     type IProvinceForm,
 } from '@/components/Forms/TechAdmin/ProvinceForm';
@@ -19,9 +20,9 @@ export default function ProvinceView({ province }: props): JSX.Element {
     };
 
     return (
-        <>
+        <DashboardLayout>
             <ProvinceForm newProvince={false} provinceForm={provinceForm} />
-        </>
+        </DashboardLayout>
     );
 }
 

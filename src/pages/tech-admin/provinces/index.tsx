@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import ProvinceTable from '@/components/Tables/ProvinceTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -11,14 +12,14 @@ interface props {
 
 export default function Provinces({ provinces }: props): JSX.Element {
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title="Provincias"
                 path="/tech-admin/provinces/new"
                 nameButton="Agregar provincia"
             />
             <ProvinceTable provinces={provinces} />
-        </>
+        </DashboardLayout>
     );
 }
 

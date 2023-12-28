@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import UserForm, { UserFormProps } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
@@ -8,7 +9,11 @@ interface NewUserPageProps {
 }
 
 export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
-    return <UserForm cities={cities} />;
+    return (
+        <DashboardLayout>
+            <UserForm cities={cities} />
+        </DashboardLayout>
+    );
 }
 
 export async function getServerSideProps(): Promise<{ props: NewUserPageProps }> {

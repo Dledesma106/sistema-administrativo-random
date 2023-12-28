@@ -1,5 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import ClientBranchesTable from '@/components/Tables/ClientBranchesTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
@@ -32,7 +33,7 @@ export default function ClientView({
 }: props): JSX.Element {
     const name = `Cliente: ${client.name}`;
     return (
-        <>
+        <DashboardLayout>
             <TitleButton
                 title={name}
                 path={`/tech-admin/clients/${slugify(client.name)}/branches/new`}
@@ -44,7 +45,7 @@ export default function ClientView({
                 provinces={provinces}
                 businesses={businesses}
             />
-        </>
+        </DashboardLayout>
     );
 }
 

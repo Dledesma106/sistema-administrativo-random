@@ -1,3 +1,4 @@
+import { DashboardLayout } from '@/components/DashboardLayout';
 import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
@@ -16,9 +17,9 @@ export default function NewCity({ provinces }: props): JSX.Element {
     };
 
     return (
-        <>
+        <DashboardLayout>
             <CityForm cityForm={cityForm} provinces={provinces} />
-        </>
+        </DashboardLayout>
     );
 }
 
