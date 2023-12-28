@@ -383,19 +383,10 @@ export default function TechAdminTaskTable({
                                     colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
-                                    No results.
+                                    No se encontraron resultados.
                                 </TableCell>
                             </TableRow>
                         )}
-
-                        {/* {tableTasks.map((task, index) => (
-                            <Item
-                                key={index}
-                                task={task}
-                                deleteTask={deleteTask}
-                                changeStatus={changeTaskStatus}
-                            />
-                        ))} */}
                     </TableBody>
                 </Table>
             </div>

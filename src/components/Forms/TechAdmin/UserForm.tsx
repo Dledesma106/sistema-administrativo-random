@@ -87,8 +87,14 @@ export default function UserForm({
     });
 
     const putUserMutation = useMutation({
-        mutationFn: (form: PostOrPutUserMutationVariables) =>
-            fetcher.put(form, api.techAdmin.users),
+        mutationFn: (form: PostOrPutUserMutationVariables) => {
+            const data = { ...form } as Partial<PostOrPutUserMutationVariables>;
+            if (data.password?.trim() === '') {
+                delete data.password;
+            }
+
+            return fetcher.put(form, api.techAdmin.users);
+        },
         onSuccess: (data, variables) => {
             startLoading();
             triggerAlert({
@@ -185,36 +191,35 @@ export default function UserForm({
                         )}
                     />
 
-                    {newUser && (
-                        <FormField
-                            name="password"
-                            control={form.control}
-                            rules={{
-                                required: 'Este campo es requerido',
-                                minLength: {
-                                    value: 8,
-                                    message:
-                                        'La contraseña debe tener al menos 8 caracteres',
-                                },
-                            }}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Contraseña</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="********"
-                                            type="password"
-                                            {...field}
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Al menos 8 caracteres
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    )}
+                    <FormField
+                        name="password"
+                        control={form.control}
+                        rules={{
+                            required: newUser ? 'Este campo es requerido' : false,
+                            minLength: {
+                                value: 8,
+                                message: 'La contraseña debe tener al menos 8 caracteres',
+                            },
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>
+                                    {newUser
+                                        ? 'Contraseña'
+                                        : 'Nueva contraseña (opcional)'}
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="********"
+                                        type="password"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormDescription>Al menos 8 caracteres</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
                     <FormField
                         name="city"

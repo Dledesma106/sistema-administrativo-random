@@ -105,6 +105,14 @@ const items: IItem[] = [
         toggle: false,
         role: 'Administrativo Tecnico',
     },
+    {
+        id: 10,
+        title: 'Gastos',
+        path: '/tech-admin/expenses',
+        toggle: false,
+        role: 'Administrativo Tecnico',
+        icon: <RiGroupLine />,
+    },
 ];
 
 export default function SideMenu(): JSX.Element {

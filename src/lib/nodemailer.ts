@@ -3,8 +3,7 @@ import { renderToString } from 'react-dom/server';
 
 import NewUserPassword from '@/components/Emails/NewUserPassword';
 import ResetPassword from '@/components/Emails/ResetPassword';
-import { type ICity } from 'backend/models/interfaces';
-import { type Role } from 'backend/models/types';
+import { IUser } from 'backend/models/interfaces';
 
 class TransporterProvider /* extends nodemailer.Transporter */ {
     private static instance: TransporterProvider;
@@ -17,10 +16,10 @@ class TransporterProvider /* extends nodemailer.Transporter */ {
         this.transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
-            secure: true, // true for 465, false for other ports
+            secure: true,
             auth: {
-                user: process.env.EMAIL_ACCOUNT, // generated ethereal user
-                pass: process.env.EMAIL_PASSWORD, // generated ethereal password
+                user: process.env.EMAIL_ACCOUNT,
+                pass: process.env.EMAIL_PASSWORD,
             },
         });
         TransporterProvider.instance = this;
@@ -31,22 +30,12 @@ class TransporterProvider /* extends nodemailer.Transporter */ {
     }
 }
 
-export interface NewUser {
-    firstName: string;
-    lastName: string;
-    fullName: string;
-    city?: ICity;
-    roles?: Role[];
-    email: string;
-    password: string;
-}
-
 const Mailer = {
-    sendNewUserPassword: async (user: NewUser) => {
+    sendNewUserPassword: async (user: IUser) => {
         const info = await new TransporterProvider().getInstance().sendMail({
-            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`, // sender address
-            to: user.email, // list of receivers
-            subject: 'Creacion de usuario en el Sistema de Administracion Tecnica', // Subject line
+            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
+            to: user.email,
+            subject: 'Creacion de usuario en el Sistema de Administracion Tecnica',
             html: renderToString(
                 NewUserPassword({
                     user,
@@ -55,13 +44,12 @@ const Mailer = {
         });
         return info;
     },
-    sendResetPassword: async (user: NewUser) => {
+    sendResetPassword: async (user: IUser) => {
         const info = await new TransporterProvider().getInstance().sendMail({
-            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`, // sender address
-            to: user.email, // list of receivers
+            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
+            to: user.email,
             subject:
-                'Creacion de nueva contraseña para tu usuario en el Sistema de Administracion Tecnica', // Subject line
-            // text: "Hello world?", // plain text body
+                'Creacion de nueva contraseña para tu usuario en el Sistema de Administracion Tecnica',
             html: renderToString(
                 ResetPassword({
                     user,
