@@ -1,9 +1,5 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
 import { useForm, SubmitHandler } from 'react-hook-form';
-
-import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -14,11 +10,14 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
+import Link from 'next/link';
+import { TypographyH1 } from '@/components/ui/typography';
+import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
+import { useMutation } from '@tanstack/react-query';
 
 export interface IBusinessForm {
     _id: string;
@@ -40,55 +39,39 @@ export default function BusinessForm({
 }: Props): JSX.Element {
     const router = useRouter();
     const { stopLoading, startLoading } = useLoading();
-    const form = useForm<IBusinessForm>({
-        defaultValues: businessForm,
-    });
+    const form = useForm<IBusinessForm>({ defaultValues: businessForm });
     const { triggerAlert } = useAlert();
 
-    const postData = async (form: IBusinessForm): Promise<void> => {
-        try {
-            startLoading();
-            await fetcher.post(form, api.techAdmin.businesses);
+    const mutation = useMutation({
+        mutationFn: async (form: IBusinessForm) => {
+            if (newBusiness) {
+                await fetcher.post(form, api.techAdmin.businesses);
+            } else {
+                await fetcher.put(form, api.techAdmin.businesses);
+            }
+        },
+        onSuccess: () => {
             router.push('/tech-admin/businesses');
             triggerAlert({
                 type: 'Success',
-                message: `Se creo la empresa "${form.name}" correctamente`,
+                message: `Se ${
+                    newBusiness ? 'creó' : 'actualizó'
+                } la empresa correctamente`,
             });
             stopLoading();
-        } catch (error) {
-            stopLoading();
+        },
+        onError: (error) => {
             triggerAlert({
                 type: 'Failure',
-                message: `No se pudo crear la empresa "${form.name}"`,
-            });
-        }
-    };
-
-    const putData = async (form: IBusinessForm): Promise<void> => {
-        try {
-            startLoading();
-            await fetcher.put(form, api.techAdmin.businesses);
-            router.push('/tech-admin/businesses');
-            triggerAlert({
-                type: 'Success',
-                message: `Se actualizo la empresa "${form.name}" correctamente`,
-            });
-            stopLoading();
-        } catch (error) {
-            triggerAlert({
-                type: 'Failure',
-                message: `No se pudo actualizar la empresa "${form.name}"`,
-            });
-            stopLoading();
-        }
-    };
+                message: `No se pudo ${newBusiness ? 'crear' : 'actualizar'} la empresa`,
+            }),
+                stopLoading();
+        },
+    });
 
     const onSubmit: SubmitHandler<IBusinessForm> = (data) => {
-        if (newBusiness) {
-            postData(data);
-        } else {
-            putData(data);
-        }
+        startLoading();
+        mutation.mutate(data);
     };
 
     return (
@@ -115,9 +98,7 @@ export default function BusinessForm({
                             );
                         }}
                         control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                        }}
+                        rules={{ required: 'Este campo es requerido' }}
                     />
 
                     <div className="flex flex-row justify-between">
