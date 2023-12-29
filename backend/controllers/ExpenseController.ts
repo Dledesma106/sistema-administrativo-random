@@ -60,7 +60,6 @@ const ExpenseController = {
                 data: expenseData,
             });
         } catch (err) {
-            console.error(err);
             return res.status(500).json({
                 error: (err as Error).message,
             });
@@ -137,7 +136,55 @@ const ExpenseController = {
                 data: expense,
             });
         } catch (err) {
-            console.error(err);
+            return res.status(500).json({
+                error: (err as Error).message,
+            });
+        }
+    },
+    getAll: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        await dbConnect();
+
+        try {
+            const expenses = await ExpenseModel.find({
+                deleted: false,
+            })
+                .populate('doneBy')
+                .lean();
+
+            return res.status(200).json({
+                data: expenses,
+            });
+        } catch (err) {
+            return res.status(500).json({
+                error: (err as Error).message,
+            });
+        }
+    },
+    updateStatus: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        await dbConnect();
+
+        try {
+            const { id } = req.query;
+            const { status } = req.body;
+
+            const expense = await ExpenseModel.findOne({
+                _id: new MongooseTypes.ObjectId(id as string),
+                deleted: false,
+            });
+
+            if (!expense) {
+                return res.status(404).json({
+                    error: 'Expense not found',
+                });
+            }
+
+            expense.status = status;
+            await expense.save();
+
+            return res.status(200).json({
+                data: expense,
+            });
+        } catch (err) {
             return res.status(500).json({
                 error: (err as Error).message,
             });

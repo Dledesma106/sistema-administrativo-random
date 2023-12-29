@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 
 import { useMutation } from '@tanstack/react-query';
-import RSA from 'node-rsa';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -15,10 +14,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
-import { useUserContext } from '@/context/userContext/UserProvider';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
+import { axiosInstance } from '@/lib/fetcher';
 
 interface IEditProfileForm {
     currentPassword: string;
@@ -28,21 +27,14 @@ interface IEditProfileForm {
 
 export default function EditProfileForm() {
     const formMethods = useForm<IEditProfileForm>();
-    const { user } = useUserContext();
     const { triggerAlert } = useAlert();
     const { stopLoading, startLoading } = useLoading();
     const router = useRouter();
 
     const checkPasswordMutation = useMutation<unknown, unknown, IEditProfileForm>({
         mutationFn: (passwordData) => {
-            return fetch(api.checkPassword, {
-                method: 'POST',
-                body: JSON.stringify({
-                    currentPassword: encryptPassword(passwordData.currentPassword),
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            return axiosInstance.post(api.checkPassword, {
+                currentPassword: passwordData.currentPassword,
             });
         },
         onSuccess: () => {
@@ -61,14 +53,8 @@ export default function EditProfileForm() {
 
     const changePasswordMutation = useMutation<unknown, unknown, IEditProfileForm>({
         mutationFn: (passwordData) => {
-            return fetch(api.changePassword, {
-                method: 'POST',
-                body: JSON.stringify({
-                    newPassword: encryptPassword(passwordData.newPassword),
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            return axiosInstance.post(api.changePassword, {
+                newPassword: passwordData.newPassword,
             });
         },
         onSuccess: () => {
@@ -88,12 +74,6 @@ export default function EditProfileForm() {
             stopLoading();
         },
     });
-
-    const encryptPassword = (password: string): string => {
-        const key = new RSA();
-        key.importKey(user.publicKey, 'public');
-        return key.encrypt(password, 'base64');
-    };
 
     const onSubmit: SubmitHandler<IEditProfileForm> = async (data) => {
         if (data.newPassword !== data.confirmNewPassword) {

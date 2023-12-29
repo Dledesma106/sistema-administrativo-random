@@ -9,26 +9,27 @@ export const changePassword = `${authUrl}/change-password`;
 const accAdminBase = `${baseApiUrl}/acc-admin/`;
 
 export const accAdmin = {
-    tasks: `${accAdminBase}/tasks/`,
-    expenses: `${accAdminBase}/expenses/`,
+    tasks: `${accAdminBase}/tasks`,
+    expenses: `${accAdminBase}/expenses`,
 };
 
 const auditorBase = `${baseApiUrl}/auditor/`;
 
 export const auditor = {
-    tasks: `${auditorBase}/tasks/`,
-    expenses: `${auditorBase}/expenses/`,
+    tasks: `${auditorBase}/tasks`,
+    expenses: `${auditorBase}/expenses`,
 };
 
 const techAdminBase = `${baseApiUrl}/tech-admin/`;
 
 export const techAdmin = {
-    tasks: `${techAdminBase}/tasks/`,
-    provinces: `${techAdminBase}/provinces/`,
-    cities: `${techAdminBase}/cities/`,
-    branches: `${techAdminBase}/branches/`,
-    businesses: `${techAdminBase}/businesses/`,
-    clients: `${techAdminBase}/clients/`,
-    preventives: `${techAdminBase}/preventives/`,
-    users: `${techAdminBase}/users/`,
+    tasks: `${techAdminBase}/tasks`,
+    provinces: `${techAdminBase}/provinces`,
+    cities: `${techAdminBase}/cities`,
+    branches: `${techAdminBase}/branches`,
+    businesses: `${techAdminBase}/businesses`,
+    clients: `${techAdminBase}/clients`,
+    preventives: `${techAdminBase}/preventives`,
+    users: `${techAdminBase}/users`,
+    expenses: `${techAdminBase}/expenses`,
 };
