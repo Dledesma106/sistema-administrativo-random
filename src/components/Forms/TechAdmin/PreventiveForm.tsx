@@ -18,6 +18,7 @@ import {
     type IUser,
 } from 'backend/models/interfaces';
 import * as types from 'backend/models/types';
+import { TypographyH1 } from '@/components/ui/typography';
 
 export interface IPreventiveForm {
     _id: string;
@@ -288,17 +289,16 @@ const PreventiveForm = ({
     };
 
     return (
-        <>
+        <main>
+            <TypographyH1 className="mb-8">
+                {newPreventive ? 'Agregar Empresa' : 'Editar Empresa'}
+            </TypographyH1>
             <Form {...formMethods}>
                 <form
                     id="task"
                     className="mx-auto my-4 flex w-1/2 flex-col rounded-3xl bg-gray-50 p-4"
                     onSubmit={handleSubmit}
                 >
-                    <h2 className="text-lg">
-                        {newPreventive ? 'Agregar Preventivo' : 'Editar Preventivo'}
-                    </h2>
-                    <hr className="my-2" />
                     <div id="select-client">
                         <div className="mb-2 block">
                             <FormLabel htmlFor="clients" className="text-lg" />
@@ -572,7 +572,7 @@ const PreventiveForm = ({
                     </div>
                 </form>
             </Form>
-        </>
+        </main>
     );
 };
 
