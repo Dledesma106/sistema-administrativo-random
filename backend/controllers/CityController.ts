@@ -15,15 +15,14 @@ const CityController = {
         await dbConnect();
         const cityForm = {
             name,
-            province: province._id,
+            province: province,
         };
         const newCity = await CityModel.findByIdAndUpdate(_id, cityForm, {
             new: true,
             runValidators: true,
         });
         if (newCity === null) {
-            return res.json({
-                statusCode: 500,
+            return res.status(500).json({
                 error: 'could not update city',
             });
         }
@@ -42,14 +41,14 @@ const CityController = {
         await dbConnect();
         const cityForm = {
             name,
-            province: province._id,
+            province: province,
         };
         try {
             const deletedCity = await CityModel.findOne({
                 name,
             });
             if (deletedCity !== null) {
-                deletedCity.province = province._id;
+                deletedCity.province = province;
                 await deletedCity.restore();
                 return res.json({
                     data: {
@@ -67,10 +66,7 @@ const CityController = {
                 },
             });
         } catch (error) {
-            return res.json({
-                statusCode: 500,
-                error: 'could not create city',
-            });
+            return res.status(500).json({ error: 'could not create city' });
         }
     },
     deleteCity: async (req: NextConnectApiRequest, res: NextApiResponse) => {

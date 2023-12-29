@@ -26,6 +26,7 @@ type Props = {
 const DataTableComboboxFilter = (props: Props) => {
     const { value, onChange, items, searchPlaceholder, selectPlaceholder } = props;
     const [open, setOpen] = useState(false);
+    const label = value ? items.find((item) => item.value === value)?.label : null;
 
     return (
         <div>
@@ -35,11 +36,9 @@ const DataTableComboboxFilter = (props: Props) => {
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="w-[200px] justify-between"
+                        className="min-w-[200px] justify-between"
                     >
-                        {value
-                            ? items.find((item) => item.value === value)?.label
-                            : selectPlaceholder}
+                        {label || selectPlaceholder}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
