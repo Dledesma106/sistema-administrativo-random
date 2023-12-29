@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { Label, Select, Textarea } from 'flowbite-react';
@@ -26,6 +27,10 @@ export interface ITaskForm {
     openedAt: Date;
     taskType: types.TaskType | '';
     status: types.TaskStatus | '';
+    images?: {
+        _id: string;
+        url: string;
+    }[];
 }
 
 export interface ITaskFormErrors {
@@ -77,6 +82,7 @@ const TechAdminTaskForm = ({
         description: taskForm.description,
         openedAt: taskForm.openedAt,
         status: taskForm.status,
+        images: taskForm.images,
     });
     //
 
@@ -499,6 +505,23 @@ const TechAdminTaskForm = ({
                         />
                     </div>
                 </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                    {form.images?.map((image, index) => {
+                        return (
+                            <div className="bg-gray-200" key={index}>
+                                {/* image in portrait taken from a phone  with an aspect ratio of 9:16 */}
+                                <Image
+                                    src={image.url}
+                                    alt="Task Image"
+                                    width={200}
+                                    height={400}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+
                 <div className="mt-4 flex flex-row justify-between">
                     <Button variant="secondary" onClick={handleNavigate} type="button">
                         Cancelar

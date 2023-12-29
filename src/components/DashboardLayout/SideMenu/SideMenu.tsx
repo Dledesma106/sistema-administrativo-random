@@ -30,6 +30,7 @@ import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
+import { Role } from 'backend/models/types';
 
 interface IItem {
     id: number;
@@ -37,7 +38,7 @@ interface IItem {
     path: string;
     icon: JSX.Element;
     toggle: boolean;
-    role: string;
+    role: Role | null;
 }
 
 const items: IItem[] = [
@@ -47,7 +48,7 @@ const items: IItem[] = [
         path: '/',
         icon: <RiDashboardFill />,
         toggle: false,
-        role: '',
+        role: null,
     },
     {
         id: 3,
@@ -175,6 +176,12 @@ export default function SideMenu(): JSX.Element {
 
                 <div className="space-y-2 pr-4">
                     {items.map((item: IItem) => {
+                        const role = item.role;
+
+                        if (role && !user.roles?.includes(role)) {
+                            return null;
+                        }
+
                         return (
                             <Link className="block" href={item.path} key={item.id}>
                                 <Button

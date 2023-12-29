@@ -15,20 +15,34 @@ import { TaskStatus, TaskType } from 'backend/models/types';
 import { type User } from 'backend/models/User';
 import { createImageSignedUrl } from 'backend/s3Client';
 
-const getTaskById = async (taskId: string, userId: string) => {
-    const task = await TaskModel.findOne({
+export const getTaskById = async (taskId: string, userId?: string) => {
+    const filters = {
         deleted: false,
         _id: new MongooseTypes.ObjectId(taskId),
-        assigned: userId,
-    })
+    } as FilterQuery<Task>;
+
+    if (userId) {
+        filters.assigned = userId;
+    }
+
+    const task = await TaskModel.findOne(filters)
         .populate([
             {
                 path: 'branch',
                 select: 'number',
-                populate: {
-                    path: 'client',
-                    select: 'name',
-                },
+                populate: [
+                    {
+                        path: 'client',
+                        select: 'name',
+                    },
+                    {
+                        path: 'city',
+                        populate: 'province',
+                    },
+                ],
+            },
+            {
+                path: 'assigned',
             },
             {
                 path: 'business',

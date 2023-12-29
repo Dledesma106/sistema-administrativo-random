@@ -6,6 +6,7 @@ import TechAdminTaskForm, {
 } from '@/components/Forms/TechAdmin/TechAdminTaskForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
+import { getTaskById } from 'backend/controllers/TaskController';
 import Branch from 'backend/models/Branch';
 import Business from 'backend/models/Business';
 import Client from 'backend/models/Client';
@@ -19,7 +20,7 @@ import {
 import Task from 'backend/models/Task';
 import User from 'backend/models/User';
 
-interface props {
+interface Props {
     task: ITask;
     branches: IBranch[];
     clients: IClient[];
@@ -33,7 +34,7 @@ export default function TaskView({
     clients,
     businesses,
     technicians,
-}: props): JSX.Element {
+}: Props): JSX.Element {
     const form: ITaskForm = {
         _id: task._id as string,
         branch: task.branch,
@@ -43,6 +44,7 @@ export default function TaskView({
         openedAt: task.openedAt,
         status: task.status,
         description: task.description,
+        images: task.images,
     };
 
     return (
@@ -61,18 +63,18 @@ export default function TaskView({
 
 export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
-): Promise<{ props: props }> {
+): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     await dbConnect();
-    const docTask = await Task.findById(params?.id).populate(
-        Task.getPopulateParameters(),
-    );
-    if (docTask === null) {
+
+    const docTask = await getTaskById(params?.id as string);
+    if (!docTask) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
+
     const task = mongooseDocumentToJSON(docTask);
     const docBranches = await Branch.findUndeleted({});
     const docClients = await Client.findUndeleted({});
@@ -84,6 +86,7 @@ export async function getServerSideProps(
     const clients = mongooseDocumentToJSON(docClients);
     const businesses = mongooseDocumentToJSON(docBusinesses);
     const technicians = mongooseDocumentToJSON(docTechnicians);
+    console.log('task', task);
     return {
         props: {
             task,
