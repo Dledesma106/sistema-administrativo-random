@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
 import Modal from '@/components/Modal';
-import { TableCell } from '@/components/ui/table';
 import useAlert from '@/hooks/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
@@ -65,22 +64,20 @@ export default function TechAdminTaskActions({ task, deleteTask }: Props): JSX.E
 
     return (
         <>
-            <TableCell>
-                <div className="flex items-center justify-evenly">
-                    <button
-                        className="rounded-lg p-0.5 hover:bg-gray-200"
-                        onClick={handleNavigateEdit}
-                    >
-                        <BsFillPencilFill color="gray" size="15" />
-                    </button>
-                    <button
-                        onClick={openModal}
-                        className="rounded-lg p-0.5 hover:bg-gray-200"
-                    >
-                        <BsFillTrashFill color="gray" size="15" />
-                    </button>
-                </div>
-            </TableCell>
+            <div className="flex items-center justify-evenly">
+                <button
+                    className="rounded-lg p-0.5 hover:bg-gray-200"
+                    onClick={handleNavigateEdit}
+                >
+                    <BsFillPencilFill color="gray" size="15" />
+                </button>
+                <button
+                    onClick={openModal}
+                    className="rounded-lg p-0.5 hover:bg-gray-200"
+                >
+                    <BsFillTrashFill color="gray" size="15" />
+                </button>
+            </div>
             <Modal
                 openModal={modal}
                 handleToggleModal={closeModal}

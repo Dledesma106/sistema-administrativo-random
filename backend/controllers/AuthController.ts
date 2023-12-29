@@ -1,15 +1,14 @@
 import { type NextApiResponse } from 'next';
 
 import cookie from 'cookie';
-import RSA from 'node-rsa';
 
 import { NextConnectApiRequest, type UserData } from './interfaces';
 
 import { cookieOptionsLogin, cookieOptionsLogout } from '@/lib/cookies';
 import dbConnect from '@/lib/dbConnect';
-import { getPayload, getUserToken } from '@/lib/jwt';
+import { getUserToken } from '@/lib/jwt';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import { createToken, verifyToken } from 'backend/jwt';
+import { createToken } from 'backend/jwt';
 import UserModel from 'backend/models/User';
 
 import { type IUser } from '../models/interfaces';
@@ -82,10 +81,9 @@ const AuthController = {
 
         userData.fullName = `${firstName as string} ${lastName as string}`;
         await dbConnect();
-        /* create a new model in the database */
         try {
             const user = await UserModel.create(userData);
-            const reducedUser: IUser = mongooseDocumentToJSON(user);
+            const reducedUser = mongooseDocumentToJSON(user);
             res.status(201).json({
                 data: {
                     user: reducedUser,
@@ -99,45 +97,24 @@ const AuthController = {
             });
         }
     },
-    checkPassword: async (req: NextConnectApiRequest, res: NextApiResponse) => {
-        const {
-            body: { currentPassword },
-            userId,
-        } = req;
-        const user = await UserModel.findById(userId).select('+password +privateKey');
-        if (user === null) {
-            return res.status(403).json({
-                error: 'no user found',
-                statusCode: 403,
-            });
-        }
-        const key = new RSA();
-        const privateKey = getPayload(user.privateKey).payload as string;
-        key.importKey(privateKey, 'private');
-        const decryptedPassword = key.decrypt(currentPassword, 'utf8');
-        const passwordMatch = user.comparePassword(decryptedPassword);
-        if (!passwordMatch) {
-            return res.status(403).json({
-                statusCode: 403,
-                error: 'Wrong password',
-            });
-        }
-        return res.status(200).json({
-            statusCode: 200,
-            data: {
-                message: 'Correct password',
-            },
-        });
-    },
     changePassword: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const {
             body: { currentPassword, newPassword },
             user,
         } = req;
 
-        if (!user.comparePassword(currentPassword)) {
-            return res.status(403).json({
-                message: 'Wrong password',
+        user.password = (await UserModel.findById(user._id).select('+password'))
+            ?.password as string;
+
+        try {
+            if (!user.comparePassword(currentPassword)) {
+                return res.status(403).json({
+                    message: 'Wrong password',
+                });
+            }
+        } catch (error) {
+            return res.status(500).json({
+                message: 'Server error',
             });
         }
 

@@ -43,14 +43,25 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     }
 
     if (isLoggedIn && pathname === '/login') {
-        const url = new URL('/', req.nextUrl.origin);
-        return NextResponse.redirect(url);
+        const nextQueryReceived = req.nextUrl.searchParams.get('next');
+        if (nextQueryReceived) {
+            const url = new URL(nextQueryReceived, req.nextUrl.origin);
+            return NextResponse.redirect(url);
+        } else {
+            const url = new URL('/', req.nextUrl.origin);
+            return NextResponse.redirect(url);
+        }
     }
 
     if (isLoggedIn || pathname === '/login') {
         return NextResponse.next();
     }
 
-    const url = new URL('/login', req.nextUrl.origin);
+    const nextParam = new URLSearchParams({
+        next: pathname,
+    });
+
+    const url = new URL(`/login?${nextParam}`, req.nextUrl.origin);
+
     return NextResponse.redirect(url);
 }

@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 
 import { useMutation } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
@@ -33,7 +34,23 @@ type LoginResponse = {
 export function UserAuthForm() {
     const form = useForm<FormValues>();
     const router = useRouter();
-    const { loginUser } = useUserContext();
+    const { isLoggedIn, loginUser } = useUserContext();
+    const searchParams = router.query;
+
+    useEffect(() => {
+        const next = searchParams?.next;
+        if (!isLoggedIn) {
+            return;
+        }
+
+        if (typeof next === 'undefined') {
+            router.replace('/');
+        }
+
+        if (typeof next === 'string') {
+            router.replace(next);
+        }
+    }, [searchParams, isLoggedIn, router]);
 
     const loginMutation = useMutation({
         mutationFn: async (form: FormValues) => {
@@ -43,7 +60,6 @@ export function UserAuthForm() {
         onSuccess: ({ data }) => {
             loginUser(data.user);
             localStorage.setItem('accessToken', data.accessToken);
-            router.push('/');
         },
         onError: () => {
             alert('Email o contraseña incorrectos');

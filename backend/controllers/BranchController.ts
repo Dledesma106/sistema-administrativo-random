@@ -146,8 +146,7 @@ const BranchController = {
                     select: 'name',
                 },
             ])
-            .lean()
-            .exec();
+            .lean();
 
         if (!branches) {
             return res.status(500).json({

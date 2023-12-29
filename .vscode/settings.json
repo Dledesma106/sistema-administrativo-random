@@ -1,7 +1,7 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
     "typescript.enablePromptUseWorkspaceTsdk": true,
-    "tailwindCSS.classAttributes": ["class", "classes", "className", "ngClass"],
+    // "tailwindCSS.classAttributes": ["class", "classes", "className", "ngClass"],
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },
@@ -10,5 +10,9 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
+    "tailwindCSS.experimental.classRegex": [
+        ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+        ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    ]
 }

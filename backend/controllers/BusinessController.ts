@@ -1,9 +1,12 @@
 import { type NextApiResponse } from 'next';
 
+import { Types } from 'mongoose';
+
 import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
+import BranchModel from 'backend/models/Branch';
 import BusinessModel from 'backend/models/Business';
 
 const BusinessController = {
@@ -93,11 +96,14 @@ const BusinessController = {
         await dbConnect();
 
         const { branchId } = req.query;
-        const businesses = await BusinessModel.find({
-            deleted: false,
-            branch: branchId?.toString(),
-        });
+        const branch = await BranchModel.findById(branchId).populate('businesses').lean();
+        if (!branch) {
+            return res.status(404).json({
+                error: 'could not find branch',
+            });
+        }
 
+        const businesses = branch.businesses;
         return res.json({
             data: businesses,
         });

@@ -43,7 +43,7 @@
         "clsx": "^2.0.0",
         "cmdk": "^0.2.0",
         "cookies-next": "^4.1.0",
-        "date-fns": "^3.0.0",
+        "date-fns": "^3.0.6",
         "flowbite": "^2.2.0",
         "flowbite-react": "^0.7.2",
         "formidable": "^3.5.1",

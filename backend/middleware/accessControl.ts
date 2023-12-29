@@ -23,12 +23,9 @@ const accessControl = async (
     res: NextApiResponse,
     next: NextHandler,
 ): Promise<void> => {
-    const { headers, cookies } = req;
+    const { cookies } = req;
 
-    const jwt =
-        headers.authorization !== undefined
-            ? headers.authorization
-            : cookies.ras_access_token;
+    const jwt = cookies.ras_access_token;
 
     if (jwt === undefined) {
         return res.status(401).json({
@@ -36,7 +33,15 @@ const accessControl = async (
         });
     }
 
-    const result = getPayload(jwt);
+    let result = null;
+    try {
+        result = getPayload(jwt);
+    } catch (error) {
+        return res.status(400).json({
+            error: 'JWT is not valid',
+        });
+    }
+
     if (!result) {
         return res.status(401).json({
             error: "You're not logged in",

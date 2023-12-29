@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 
 import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -15,9 +16,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/hooks/useAlert';
-import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
+
+import { ButtonWithSpinner } from '../ButtonWithSpinner';
 
 interface IEditProfileForm {
     currentPassword: string;
@@ -28,32 +30,12 @@ interface IEditProfileForm {
 export default function EditProfileForm() {
     const formMethods = useForm<IEditProfileForm>();
     const { triggerAlert } = useAlert();
-    const { stopLoading, startLoading } = useLoading();
     const router = useRouter();
 
-    const checkPasswordMutation = useMutation<unknown, unknown, IEditProfileForm>({
-        mutationFn: (passwordData) => {
-            return axiosInstance.post(api.checkPassword, {
-                currentPassword: passwordData.currentPassword,
-            });
-        },
-        onSuccess: () => {
-            triggerAlert({
-                type: 'Success',
-                message: 'Contraseña verificada correctamente',
-            });
-        },
-        onError: () => {
-            triggerAlert({
-                type: 'Failure',
-                message: 'Contraseña incorrecta',
-            });
-        },
-    });
-
-    const changePasswordMutation = useMutation<unknown, unknown, IEditProfileForm>({
+    const changePasswordMutation = useMutation<unknown, AxiosError, IEditProfileForm>({
         mutationFn: (passwordData) => {
             return axiosInstance.post(api.changePassword, {
+                currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword,
             });
         },
@@ -64,32 +46,23 @@ export default function EditProfileForm() {
             });
             router.push('/');
         },
-        onError: () => {
-            triggerAlert({
-                type: 'Failure',
-                message: 'Error al actualizar contraseña',
-            });
-        },
-        onSettled: () => {
-            stopLoading();
+        onError: (error) => {
+            if (error.response?.status === 403) {
+                formMethods.setError('currentPassword', {
+                    type: 'custom',
+                    message: 'Contraseña incorrecta',
+                });
+            } else {
+                triggerAlert({
+                    type: 'Failure',
+                    message: 'Error al actualizar contraseña',
+                });
+            }
         },
     });
 
     const onSubmit: SubmitHandler<IEditProfileForm> = async (data) => {
-        if (data.newPassword !== data.confirmNewPassword) {
-            triggerAlert({
-                type: 'Failure',
-                message: 'Las contraseñas no coinciden',
-            });
-            return;
-        }
-
-        startLoading();
-        await checkPasswordMutation.mutateAsync(data);
-
-        if (checkPasswordMutation.isSuccess) {
-            await changePasswordMutation.mutateAsync(data);
-        }
+        changePasswordMutation.mutate(data);
     };
 
     return (
@@ -102,6 +75,7 @@ export default function EditProfileForm() {
                 <FormField
                     control={formMethods.control}
                     name="currentPassword"
+                    rules={{ required: true }}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Introduzca su contraseña actual</FormLabel>
@@ -120,6 +94,7 @@ export default function EditProfileForm() {
                 <FormField
                     control={formMethods.control}
                     name="newPassword"
+                    rules={{ required: true }}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Nueva contraseña</FormLabel>
@@ -138,6 +113,12 @@ export default function EditProfileForm() {
                 <FormField
                     control={formMethods.control}
                     name="confirmNewPassword"
+                    rules={{
+                        validate: (value) =>
+                            value === formMethods.getValues('newPassword') ||
+                            'Las contraseñas no coinciden',
+                        required: true,
+                    }}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Confirmar nueva contraseña</FormLabel>
@@ -157,7 +138,12 @@ export default function EditProfileForm() {
                     <Button onClick={() => router.push('/')} variant="secondary">
                         Cancelar
                     </Button>
-                    <Button type="submit">Guardar</Button>
+                    <ButtonWithSpinner
+                        showSpinner={changePasswordMutation.isPending}
+                        type="submit"
+                    >
+                        Guardar
+                    </ButtonWithSpinner>
                 </div>
             </form>
         </Form>

@@ -3,6 +3,9 @@ import { renderToString } from 'react-dom/server';
 
 import NewUserPassword from '@/components/Emails/NewUserPassword';
 import ResetPassword from '@/components/Emails/ResetPassword';
+import TaskFinishedEmail, {
+    TaskFinishedEmailProps,
+} from '@/components/Emails/TaskFinished';
 import { IUser } from 'backend/models/interfaces';
 
 class TransporterProvider /* extends nodemailer.Transporter */ {
@@ -55,6 +58,16 @@ const Mailer = {
                     user,
                 }),
             ),
+        });
+
+        return info;
+    },
+    sendTaskFinished: async (props: TaskFinishedEmailProps) => {
+        const info = await new TransporterProvider().getInstance().sendMail({
+            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
+            to: props.auditor.email,
+            subject: 'Tarea Finalizada',
+            html: renderToString(TaskFinishedEmail(props)),
         });
 
         return info;

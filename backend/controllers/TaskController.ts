@@ -5,11 +5,13 @@ import { FilterQuery, Types as MongooseTypes } from 'mongoose';
 import { type NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
+import Mailer from '@/lib/nodemailer';
 import { mongooseDocumentToJSON } from '@/lib/utils';
 import ExpenseModel from 'backend/models/Expense';
 import ImageModel, { Image } from 'backend/models/Image';
+import { ITask, IUser } from 'backend/models/interfaces';
 import TaskModel, { Task } from 'backend/models/Task';
-import { TaskStatus } from 'backend/models/types';
+import { TaskStatus, TaskType } from 'backend/models/types';
 import { type User } from 'backend/models/User';
 import { createImageSignedUrl } from 'backend/s3Client';
 
@@ -34,6 +36,9 @@ const getTaskById = async (taskId: string, userId: string) => {
             },
             {
                 path: 'image',
+            },
+            {
+                path: 'auditor',
             },
         ])
         .lean()
@@ -287,11 +292,11 @@ const TaskController = {
         const taskId = req.query.id as string;
         const { isClosed, workOrder, imageIdToDelete } = req.body;
         const user = req.user;
-        const userTask = await TaskModel.findOne({
+        const userTask = (await TaskModel.findOne({
             _id: new MongooseTypes.ObjectId(taskId),
             assigned: user._id.toString(),
             deleted: false,
-        });
+        }).populate(['auditor', 'branch'])) as ITask;
 
         if (!userTask) {
             return res.status(404).json({
@@ -305,6 +310,14 @@ const TaskController = {
                 userTask.status === TaskStatus.Finalizada)
         ) {
             if (isClosed) {
+                if (userTask.auditor) {
+                    Mailer.sendTaskFinished({
+                        auditor: userTask.auditor,
+                        task: userTask,
+                        finishedBy: user as IUser,
+                    });
+                }
+
                 userTask.status = TaskStatus.Finalizada;
                 userTask.closedAt = new Date();
             } else {
@@ -347,10 +360,51 @@ const TaskController = {
             data: result,
         });
     },
-    postTechTask: async (req: NextConnectApiRequest) => {
+    postTechTask: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        type CreateTaskMutationVariables = {
+            branch: string;
+            business: string;
+            taskType: TaskType;
+            description: string;
+            workOrderNumber: number;
+        };
+
         const { body } = req;
         await dbConnect();
-        console.log(body);
+        const { branch, business, taskType, description, workOrderNumber } =
+            body as CreateTaskMutationVariables;
+
+        const openedAt = new Date();
+        const status = TaskStatus.Pendiente;
+        const assigned = [req.user._id.toString()];
+        const taskForm = {
+            branch,
+            business,
+            assigned,
+            taskType,
+            openedAt,
+            status,
+            description,
+            workOrderNumber,
+        };
+
+        try {
+            const newTask = await TaskModel.create(taskForm);
+            if (!newTask) {
+                return res.status(500).json({
+                    message: 'could not create Task',
+                });
+            }
+
+            return res.status(200).json({
+                data: newTask.id,
+                message: 'created Task succesfully',
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: 'could not create Task',
+            });
+        }
     },
 };
 

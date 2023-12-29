@@ -135,6 +135,10 @@ export class User {
     }
 
     comparePassword(this: User, plaintext: string): boolean {
+        if (!this.password) {
+            throw new Error('password not selected');
+        }
+
         try {
             return compareSync(plaintext, this.password);
         } catch (error) {
