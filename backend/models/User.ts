@@ -1,3 +1,4 @@
+import { Role } from '@prisma/client';
 import {
     prop,
     type Ref,
@@ -15,7 +16,7 @@ import { City } from './City';
 import ExpenseModel, { type Expense } from './Expense';
 import { type IPopulateParameter, type IUserActivities } from './interfaces';
 import TaskModel, { Task } from './Task';
-import { type ExpenseStatus, type Role, type TaskStatus } from './types';
+import { type ExpenseStatus, type TaskStatus } from './types';
 
 import { getToken } from '@/lib/jwt';
 
@@ -160,7 +161,7 @@ export class User {
         const allTasks = await TaskModel.find().populate(Task.getPopulateParameters());
 
         const tasks = allTasks.filter((task) =>
-            task.assigned.some((user) => (user as User).fullName === this.fullName),
+            task.assignedIDs.some((user) => (user as User).fullName === this.fullName),
         );
 
         return tasks;
@@ -168,7 +169,7 @@ export class User {
 
     async getTasksByStatus(this: User, status: TaskStatus): Promise<Task[]> {
         return await TaskModel.findUndeleted({
-            assigned: this,
+            assignedIDs: this,
             status,
         });
     }

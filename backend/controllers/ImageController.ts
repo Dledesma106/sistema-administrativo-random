@@ -76,9 +76,6 @@ const ImageController = {
                 error: 'Could not create Image',
             });
         }
-        console.log(req.query);
-        console.log(image);
-        console.log(imageKey);
 
         if (req.query.taskId) {
             const taskId = req.query.taskId as string;
@@ -92,13 +89,13 @@ const ImageController = {
             const expenseId = req.query.expenseId as string;
             const result = ImageController._addImageToExpense(image._id, expenseId);
             if (!result) {
-                res.status(404).json({
+                return res.status(404).json({
                     error: 'Expense not found',
                 });
             }
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             data: image._id,
         });
     },

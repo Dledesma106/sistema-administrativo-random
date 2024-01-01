@@ -4,3 +4,4 @@
 .vscode
 src/api/graphql.ts
 stripe.env.js
+src/components/ui

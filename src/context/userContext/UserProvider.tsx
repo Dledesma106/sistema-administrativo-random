@@ -41,7 +41,7 @@ const UserProvider = ({ children }: ProviderProps): JSX.Element => {
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
-        if (storedUser !== null) {
+        if (storedUser) {
             setUser(JSON.parse(storedUser));
             setIsLoggedIn(true);
         }

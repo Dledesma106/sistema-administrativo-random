@@ -47,13 +47,13 @@ export class City {
         ref: 'Province',
         required: true,
     })
-    province: Ref<Province>;
+    provinceId: Ref<Province>;
 
     static getPopulateParameters(): IPopulateParameter[] {
         getModelForClass(Province);
         return [
             {
-                path: 'province',
+                path: 'provinceId',
             },
         ];
     }

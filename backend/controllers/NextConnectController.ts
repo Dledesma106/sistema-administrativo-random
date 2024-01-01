@@ -7,7 +7,7 @@ export const onError = (
     req: NextConnectApiRequest<boolean>,
     res: NextApiResponse,
 ): void => {
-    res.status(500).json({
+    return res.status(500).json({
         error: `Sorry something Happened! ${error as string}`,
     });
 };
@@ -16,7 +16,7 @@ export const onNoMatch = (
     req: NextConnectApiRequest<boolean>,
     res: NextApiResponse,
 ): void => {
-    res.status(405).json({
+    return res.status(405).json({
         error: `Method '${req.method as string}' Not Allowed`,
     });
 };

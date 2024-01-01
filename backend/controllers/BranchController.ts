@@ -30,15 +30,15 @@ const BranchController = {
                 new: true,
                 runValidators: true,
             });
-            if (newBranch === null) {
-                res.json({
+            if (!newBranch) {
+                return res.json({
                     statusCode: 500,
                     error: 'could not update branch',
                 });
             }
 
             const branch = mongooseDocumentToJSON(newBranch);
-            res.json({
+            return res.json({
                 data: {
                     branch,
                     message: 'updated branch succesfully',
@@ -68,9 +68,9 @@ const BranchController = {
                 number,
                 client: client._id,
             });
-            if (deletedBranch !== null) {
+            if (deletedBranch) {
                 deletedBranch.city = city._id;
-                deletedBranch.businesses = businessesIds;
+                deletedBranch.businessesIDs = businessesIds;
                 await deletedBranch.restore();
                 return res.json({
                     data: {
@@ -113,7 +113,7 @@ const BranchController = {
             }
             await deletedBranch.softDelete();
             // const branch = formatIds(newBranch)
-            res.json({
+            return res.json({
                 data: {
                     message: 'deleted branch succesfully',
                 },
@@ -132,7 +132,7 @@ const BranchController = {
                     select: 'name',
                     populate: [
                         {
-                            path: 'province',
+                            path: 'provinceId',
                             select: 'name',
                         },
                     ],

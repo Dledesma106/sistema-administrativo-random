@@ -3,16 +3,16 @@ import CityTable from '@/components/Tables/CityTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import City from 'backend/models/City';
+import CityModel from 'backend/models/City';
 import { type ICity, type IProvince } from 'backend/models/interfaces';
-import Province from 'backend/models/Province';
+import ProvinceModel from 'backend/models/Province';
 
-interface props {
+interface Props {
     cities: ICity[];
     provinces: IProvince[];
 }
 
-export default function Cities({ cities, provinces }: props): JSX.Element {
+export default function Cities({ cities, provinces }: Props): JSX.Element {
     return (
         <DashboardLayout>
             <TitleButton
@@ -25,16 +25,16 @@ export default function Cities({ cities, provinces }: props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
+export async function getServerSideProps(): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const cities = await City.findUndeleted();
-    const provinces = await Province.findUndeleted();
+    const cities = await CityModel.findUndeleted();
+    const provinces = await ProvinceModel.findUndeleted();
     const props = mongooseDocumentToJSON({
         cities,
         provinces,
     });
     return {
-        props,
+        props: props as any,
     };
 }

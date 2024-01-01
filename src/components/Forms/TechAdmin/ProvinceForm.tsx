@@ -1,5 +1,10 @@
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useMutation } from '@tanstack/react-query';
+import { SubmitHandler, useForm } from 'react-hook-form';
+
+import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
@@ -8,16 +13,13 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import useAlert from '@/hooks/useAlert';
+import { Input } from '@/components/ui/input';
+import { TypographyH1 } from '@/components/ui/typography';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { useMutation } from '@tanstack/react-query';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { Input } from '@/components/ui/input';
-import { TypographyH1 } from '@/components/ui/typography';
-import Link from 'next/link';
+
 export interface IProvinceForm {
     _id: string;
     name: string;
@@ -59,7 +61,7 @@ export default function ProvinceForm({
             });
             stopLoading();
         },
-        onError: (error) => {
+        onError: () => {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo ${

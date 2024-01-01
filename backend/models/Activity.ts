@@ -72,7 +72,7 @@ export class Activity {
                 path: 'openedBy',
             },
             {
-                path: 'participants',
+                path: 'participantsIDs',
             },
         ];
     }

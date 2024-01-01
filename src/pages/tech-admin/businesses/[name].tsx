@@ -6,14 +6,14 @@ import BusinessForm, {
 } from '@/components/Forms/TechAdmin/BusinessForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
-import Business from 'backend/models/Business';
+import BusinessModel from 'backend/models/Business';
 import { type IBusiness } from 'backend/models/interfaces';
 
-interface props {
+interface Props {
     business: IBusiness;
 }
 
-export default function EditBusiness({ business }: props): JSX.Element {
+export default function EditBusiness({ business }: Props): JSX.Element {
     const businessForm: IBusinessForm = {
         _id: business._id as string,
         name: business.name,
@@ -27,24 +27,30 @@ export default function EditBusiness({ business }: props): JSX.Element {
 
 export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
-): Promise<{ props: props }> {
+): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     if (!params) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
 
     await dbConnect();
-    const docBusiness = await Business.findOneUndeleted({
+    const docBusiness = await BusinessModel.findOneUndeleted({
         name: deSlugify(params.name as string),
     });
+    if (!docBusiness) {
+        return {
+            props: {} as Props,
+        };
+    }
+
     const props = {
         business: mongooseDocumentToJSON(docBusiness),
     };
 
     return {
-        props,
+        props: props as any,
     };
 }

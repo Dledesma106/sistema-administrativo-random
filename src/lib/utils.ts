@@ -38,7 +38,7 @@ export function deSlugify(string: string): string {
 }
 
 export function toCityProvince(city: ICity): string {
-    return `${city.name}, ${(city.province as IProvince).name}`;
+    return `${city.name}, ${(city.provinceId as IProvince).name}`;
 }
 
 export function toMonth(num: number): string {
@@ -57,7 +57,7 @@ export function trimCity(city: ICity): ICity {
     return {
         _id: city._id,
         name: city.name,
-        province: (city.province as IProvince).name,
+        provinceId: (city.provinceId as IProvince).name,
         deleted: city.deleted,
     };
 }
@@ -84,7 +84,7 @@ export function trimBranch(branch: IBranch): IBranch {
         number: branch.number,
         city: trimCity(branch.city),
         client: trimClient(branch.client),
-        businesses: branch.businesses.map((business) => trimBusiness(business)),
+        businessesIDs: branch.businessesIDs.map((business) => trimBusiness(business)),
         deleted: branch.deleted,
     };
 }
@@ -99,7 +99,7 @@ export function trimTask(task: ITask): ITask {
         status: task.status,
         description: task.description,
         deleted: task.deleted,
-        assigned: task.assigned,
-        image: task.image,
-    };
+        assignedIDs: task.assignedIDs,
+        imagesIDs: task.imagesIDs,
+    } as any;
 }

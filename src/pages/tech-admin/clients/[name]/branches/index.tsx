@@ -5,9 +5,9 @@ import ClientBranchesTable from '@/components/Tables/ClientBranchesTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON, slugify } from '@/lib/utils';
-import Business from 'backend/models/Business';
-import City from 'backend/models/City';
-import Client from 'backend/models/Client';
+import BusinessModel from 'backend/models/Business';
+import CityModel from 'backend/models/City';
+import ClientModel from 'backend/models/Client';
 import {
     type IBranch,
     type IBusiness,
@@ -15,9 +15,9 @@ import {
     type IClient,
     type IProvince,
 } from 'backend/models/interfaces';
-import Province from 'backend/models/Province';
+import ProvinceModel from 'backend/models/Province';
 
-interface props {
+interface Props {
     client: IClient;
     branches: IBranch[];
     cities: ICity[];
@@ -30,7 +30,7 @@ export default function ClientView({
     cities,
     provinces,
     businesses,
-}: props): JSX.Element {
+}: Props): JSX.Element {
     const name = `Cliente: ${client.name}`;
     return (
         <DashboardLayout>
@@ -51,27 +51,27 @@ export default function ClientView({
 
 export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
-): Promise<{ props: props }> {
+): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     if (!params) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
     await dbConnect();
-    const client = await Client.findOne({
+    const client = await ClientModel.findOne({
         name: deSlugify(params.name as string),
     });
     if (client === null) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
     const branches = await client.getBranches();
-    const cities = await City.findUndeleted();
-    const provinces = await Province.findUndeleted();
-    const businesses = await Business.findUndeleted();
+    const cities = await CityModel.findUndeleted();
+    const provinces = await ProvinceModel.findUndeleted();
+    const businesses = await BusinessModel.findUndeleted();
     const props = mongooseDocumentToJSON({
         client,
         branches,
@@ -80,6 +80,6 @@ export async function getServerSideProps(
         businesses,
     });
     return {
-        props,
+        props: props as any,
     };
 }

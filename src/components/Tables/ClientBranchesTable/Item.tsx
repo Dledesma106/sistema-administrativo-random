@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
 import Modal from '@/components/Modal';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
@@ -69,12 +69,12 @@ export default function Item({ branch, deleteBranch }: Props): JSX.Element {
         <Table.Row className="border-b">
             <Table.Cell>{branch.number}</Table.Cell>
             <Table.Cell>{`${branch.city.name}, ${
-                (branch.city.province as IProvince).name
+                (branch.city.provinceId as IProvince).name
             }`}</Table.Cell>
             <Table.Cell>
-                {branch.businesses.length > 1
-                    ? branch.businesses.map((business) => `${business.name}, `)
-                    : `${branch.businesses[0].name}`}
+                {branch.businessesIDs.length > 1
+                    ? branch.businessesIDs.map((business) => `${business.name}, `)
+                    : `${branch.businessesIDs[0].name}`}
             </Table.Cell>
             <Table.Cell>
                 <div className="flex items-center justify-center gap-2">

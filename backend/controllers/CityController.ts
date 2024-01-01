@@ -27,7 +27,7 @@ const CityController = {
             });
         }
         const city = mongooseDocumentToJSON(newCity);
-        res.json({
+        return res.json({
             data: {
                 city,
                 message: 'updated city succesfully',
@@ -47,8 +47,8 @@ const CityController = {
             const deletedCity = await CityModel.findOne({
                 name,
             });
-            if (deletedCity !== null) {
-                deletedCity.province = province;
+            if (deletedCity) {
+                deletedCity.provinceId = province;
                 await deletedCity.restore();
                 return res.json({
                     data: {
@@ -84,7 +84,7 @@ const CityController = {
         }
         await deletedCity.softDelete();
 
-        res.json({
+        return res.json({
             data: {
                 message: 'deleted city succesfully',
             },

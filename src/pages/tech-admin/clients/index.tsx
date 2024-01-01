@@ -3,14 +3,14 @@ import ClientTable from '@/components/Tables/ClientTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import Client from 'backend/models/Client';
+import ClientModel from 'backend/models/Client';
 import { type IClient } from 'backend/models/interfaces';
 
-interface props {
+interface Props {
     clients: IClient[];
 }
 
-export default function Clients({ clients }: props): JSX.Element {
+export default function Clients({ clients }: Props): JSX.Element {
     return (
         <DashboardLayout>
             <TitleButton
@@ -23,10 +23,10 @@ export default function Clients({ clients }: props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
+export async function getServerSideProps(): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const docClients = await Client.findUndeleted({});
+    const docClients = await ClientModel.findUndeleted({});
     const clients = mongooseDocumentToJSON(docClients);
     return {
         props: {

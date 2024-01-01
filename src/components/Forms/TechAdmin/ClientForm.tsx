@@ -1,5 +1,10 @@
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useMutation } from '@tanstack/react-query';
+import { useForm, SubmitHandler } from 'react-hook-form';
+
+import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
@@ -8,16 +13,12 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import { useForm, SubmitHandler } from 'react-hook-form'; 
-import { Button } from '@/components/ui/button';
-import useAlert from '@/hooks/useAlert';
+import { Input } from '@/components/ui/input';
+import { TypographyH1 } from '@/components/ui/typography';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { useMutation } from '@tanstack/react-query';
-import { TypographyH1 } from '@/components/ui/typography';
-import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 
 export interface IClientForm {
     _id: string;
@@ -57,7 +58,7 @@ export default function ClientForm({ clientForm, newClient = true }: Props): JSX
             });
             stopLoading();
         },
-        onError: (error) => {
+        onError: () => {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo ${newClient ? 'crear' : 'actualizar'} el cliente`,

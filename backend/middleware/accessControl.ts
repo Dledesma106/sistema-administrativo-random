@@ -1,13 +1,12 @@
 import { NextApiResponse } from 'next';
 
+import { Role } from '@prisma/client';
 import { NextHandler } from 'next-connect';
 
 import dbConnect from '@/lib/dbConnect';
 import { getPayload } from '@/lib/jwt';
 import { NextConnectApiRequest } from 'backend/controllers/interfaces';
 import UserModel from 'backend/models/User';
-
-import { type Role } from '../models/types';
 
 // with this middleware I want to check authorization, since authentication is achieved on login
 // here I can verify the JWT and add it's payload to the request object
@@ -88,13 +87,13 @@ const isAuthorized = (pathname: string, roles: Role[]): boolean => {
     }
     switch (rolePath) {
         case 'tech-admin':
-            return roles.includes('Administrativo Tecnico');
+            return roles.includes(Role.AdministrativoTecnico);
         case 'acc-admin':
-            return roles.includes('Administrativo Contable');
+            return roles.includes(Role.AdministrativoContable);
         case 'auditor':
-            return roles.includes('Auditor');
+            return roles.includes(Role.Auditor);
         case 'tech':
-            return roles.includes('Tecnico');
+            return roles.includes(Role.Tecnico);
         default:
             return false;
     }

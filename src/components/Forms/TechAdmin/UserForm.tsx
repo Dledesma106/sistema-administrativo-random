@@ -19,8 +19,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
-import useAlert from '@/hooks/useAlert';
-import useLoading from '@/hooks/useLoading';
+import useAlert from '@/context/alertContext/useAlert';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { CityWithProvince } from '@/types';
@@ -63,20 +62,17 @@ export default function UserForm({
     const form = useForm<UserFormValues>({
         defaultValues: userForm || {},
     });
-    const { stopLoading, startLoading } = useLoading();
     const { triggerAlert } = useAlert();
 
     const postUserMutation = useMutation({
         mutationFn: (form: PostOrPutUserMutationVariables) =>
             fetcher.post(form, api.techAdmin.users),
         onSuccess: (data, variables) => {
-            startLoading();
             triggerAlert({
                 type: 'Success',
                 message: `El usuario ${variables.firstName} ${variables.lastName} fue creado correctamente`,
             });
             router.push('/tech-admin/users');
-            stopLoading();
         },
         onError: (error, variables) => {
             triggerAlert({
@@ -96,13 +92,11 @@ export default function UserForm({
             return fetcher.put(form, api.techAdmin.users);
         },
         onSuccess: (data, variables) => {
-            startLoading();
             triggerAlert({
                 type: 'Success',
                 message: `El usuario ${variables.firstName} ${variables.lastName} fue actualizado correctamente`,
             });
             router.push('/tech-admin/users');
-            stopLoading();
         },
         onError: (error, variables) => {
             triggerAlert({
@@ -237,7 +231,7 @@ export default function UserForm({
                                         items={cities.map((city) => {
                                             return {
                                                 value: city._id.toString(),
-                                                label: `${city.name}, ${city.province.name}`,
+                                                label: `${city.name}, ${city.provinceId.name}`,
                                             };
                                         })}
                                         {...field}
@@ -278,7 +272,7 @@ export default function UserForm({
 
                         <ButtonWithSpinner
                             showSpinner={
-                                postUserMutation.isLoading || putUserMutation.isLoading
+                                postUserMutation.isPending || putUserMutation.isPending
                             }
                         >
                             Guardar

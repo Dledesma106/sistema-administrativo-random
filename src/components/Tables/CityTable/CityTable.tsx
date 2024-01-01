@@ -28,7 +28,9 @@ export default function CityTable({ cities, provinces }: Props): JSX.Element {
         switch (type) {
             case 'Provincia':
                 setTableCities(
-                    cities.filter((city) => (city.province as IProvince).name === value),
+                    cities.filter(
+                        (city) => (city.provinceId as IProvince).name === value,
+                    ),
                 );
                 break;
             default:

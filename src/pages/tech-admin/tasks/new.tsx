@@ -1,65 +1,81 @@
+import { GetServerSideProps } from 'next';
+
+import { Role } from '@prisma/client';
+
 import { DashboardLayout } from '@/components/DashboardLayout';
-import TechAdminTaskForm, {
-    type ITaskForm,
-} from '@/components/Forms/TechAdmin/TechAdminTaskForm';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import Branch from 'backend/models/Branch';
-import Business from 'backend/models/Business';
-import Client from 'backend/models/Client';
-import {
-    type IBranch,
-    type IBusiness,
-    type IClient,
-    type IUser,
-} from 'backend/models/interfaces';
-import User from 'backend/models/User';
+import CreateOrUpdateTaskForm from '@/components/Forms/TechAdmin/CreateOrUpdateTaskForm';
+import { prisma } from 'lib/prisma';
 
-interface props {
-    branches: IBranch[];
-    clients: IClient[];
-    businesses: IBusiness[];
-    technicians: IUser[];
-}
+export type NewTaskPageProps = Awaited<ReturnType<typeof getNewTaskPageProps>>;
 
-export default function NewTask(props: props): JSX.Element {
-    const taskForm: ITaskForm = {
-        _id: '',
-        branch: {} as IBranch,
-        business: {} as IBusiness,
-        assigned: [] as IUser[],
-        taskType: '',
-        openedAt: {} as Date,
-        status: '',
-        description: '',
+const getNewTaskPageProps = async () => {
+    const branches = await prisma.branch.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            number: true,
+            clientId: true,
+            businesses: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+            city: {
+                select: {
+                    id: true,
+                    name: true,
+                    province: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    const clients = await prisma.client.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+    const technicians = await prisma.user.findMany({
+        where: {
+            deleted: false,
+            roles: {
+                has: Role.Tecnico,
+            },
+        },
+        select: {
+            id: true,
+            fullName: true,
+        },
+    });
+
+    return {
+        branches,
+        clients,
+        technicians,
     };
+};
 
+export default function NewTask(props: NewTaskPageProps): JSX.Element {
     return (
         <DashboardLayout>
-            <TechAdminTaskForm newTask={true} taskForm={taskForm} {...props} />
+            <CreateOrUpdateTaskForm {...props} />
         </DashboardLayout>
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    await dbConnect();
-    const docBranches = await Branch.findUndeleted({});
-    const docClients = await Client.findUndeleted({});
-    const docBusinesses = await Business.findUndeleted({});
-    const docTechnicians = await User.findUndeleted({
-        roles: 'Tecnico',
-    });
-    const branches = mongooseDocumentToJSON(docBranches);
-    const clients = mongooseDocumentToJSON(docClients);
-    const businesses = mongooseDocumentToJSON(docBusinesses);
-    const technicians = mongooseDocumentToJSON(docTechnicians);
+export const getServerSideProps: GetServerSideProps<NewTaskPageProps> = async () => {
     return {
-        props: {
-            branches,
-            clients,
-            businesses,
-            technicians,
-        },
+        props: await getNewTaskPageProps(),
     };
-}
+};

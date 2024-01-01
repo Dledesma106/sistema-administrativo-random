@@ -6,9 +6,9 @@ import PreventiveForm, {
 } from '@/components/Forms/TechAdmin/PreventiveForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import Branch from 'backend/models/Branch';
-import Business from 'backend/models/Business';
-import Client from 'backend/models/Client';
+import BranchModel from 'backend/models/Branch';
+import BusinessModel from 'backend/models/Business';
+import ClientModel from 'backend/models/Client';
 import {
     type IBranch,
     type IBusiness,
@@ -18,9 +18,9 @@ import {
 } from 'backend/models/interfaces';
 import Preventive from 'backend/models/Preventive';
 import { type Frequency, type Month } from 'backend/models/types';
-import User from 'backend/models/User';
+import UserModel from 'backend/models/User';
 
-interface props {
+interface Props {
     preventive: IPreventive;
     branches: IBranch[];
     clients: IClient[];
@@ -34,7 +34,7 @@ export default function NewTask({
     businesses,
     technicians,
     preventive,
-}: props): JSX.Element {
+}: Props): JSX.Element {
     const preventiveFormProps = {
         branches,
         clients,
@@ -46,7 +46,7 @@ export default function NewTask({
         _id: preventive._id as string,
         branch: preventive.branch,
         business: preventive.business,
-        assigned: preventive.assigned,
+        assigned: preventive.assignedIDs,
         months: preventive.months as Month[],
         frequency: preventive.frequency as Frequency,
         status: preventive.status,
@@ -68,12 +68,12 @@ export default function NewTask({
 
 export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
-): Promise<{ props: props }> {
+): Promise<{ props: Props }> {
     const { params } = ctx;
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     if (!params) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
     await dbConnect();
@@ -82,15 +82,14 @@ export async function getServerSideProps(
     );
     if (preventive === null) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
-    console.log(preventive);
 
-    const branches = await Branch.findUndeleted({});
-    const clients = await Client.findUndeleted({});
-    const businesses = await Business.findUndeleted({});
-    const technicians = await User.findUndeleted({
+    const branches = await BranchModel.findUndeleted({});
+    const clients = await ClientModel.findUndeleted({});
+    const businesses = await BusinessModel.findUndeleted({});
+    const technicians = await UserModel.findUndeleted({
         roles: 'Tecnico',
     });
 
@@ -101,6 +100,6 @@ export async function getServerSideProps(
             businesses,
             technicians,
             preventive,
-        }),
+        }) as any,
     };
 }

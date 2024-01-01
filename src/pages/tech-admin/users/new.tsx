@@ -1,8 +1,7 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
 import UserForm, { UserFormProps } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import CityModel from 'backend/models/City';
+import { prisma } from 'lib/prisma';
 
 interface NewUserPageProps {
     cities: UserFormProps['cities'];
@@ -19,13 +18,32 @@ export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
 export async function getServerSideProps(): Promise<{ props: NewUserPageProps }> {
     await dbConnect();
 
-    const populatedCities = (await CityModel.find({ deleted: false })
-        .populate('province')
-        .lean()) as UserFormProps['cities'];
+    const cities = await prisma.city.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+            province: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+        },
+    });
 
     return {
         props: {
-            cities: mongooseDocumentToJSON(populatedCities),
+            cities: cities.map((city) => ({
+                _id: city.id,
+                name: city.name,
+                provinceId: {
+                    id: city.province.id,
+                    name: city.province.name,
+                },
+            })),
         },
     };
 }

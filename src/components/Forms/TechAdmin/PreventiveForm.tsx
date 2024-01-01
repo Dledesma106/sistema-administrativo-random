@@ -7,7 +7,8 @@ import { BsFillXCircleFill } from 'react-icons/bs';
 
 import { Button } from '@/components/ui/button';
 import { Form, FormLabel } from '@/components/ui/form';
-import useAlert from '@/hooks/useAlert';
+import { TypographyH1 } from '@/components/ui/typography';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
@@ -18,7 +19,6 @@ import {
     type IUser,
 } from 'backend/models/interfaces';
 import * as types from 'backend/models/types';
-import { TypographyH1 } from '@/components/ui/typography';
 
 export interface IPreventiveForm {
     _id: string;
@@ -235,11 +235,11 @@ const PreventiveForm = ({
         const technician = technicians.find(
             (technician) => technician.fullName === value,
         );
-        if (technician !== null) {
+        if (technician) {
             setForm((prev) => {
                 return {
                     ...prev,
-                    assigned: !prev.assigned.some((x) => x._id === technician._id)
+                    assigned: !prev.assigned.some((x) => x._id === technician?._id)
                         ? [...prev.assigned, technician]
                         : prev.assigned,
                 };
@@ -377,8 +377,8 @@ const PreventiveForm = ({
                                     ? 'Seleccione una empresa...'
                                     : preventiveForm.business.name}
                             </option>
-                            {form.branch?.businesses !== undefined &&
-                                form.branch.businesses.map((business, index) => (
+                            {form.branch?.businessesIDs !== undefined &&
+                                form.branch.businessesIDs.map((business, index) => (
                                     <option key={index}>{business.name}</option>
                                 ))}
                         </Select>

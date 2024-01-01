@@ -17,17 +17,17 @@ type Cached = {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached: Cached = global.mongoose;
+let cached: Cached = (global as any).mongoose;
 
 if (cached === undefined) {
-    cached = global.mongoose = {
+    cached = (global as any).mongoose = {
         conn: null,
         promise: null,
     };
 }
 
 async function dbConnect(): Promise<Cached['conn']> {
-    if (cached.conn !== null) {
+    if (cached.conn) {
         return cached.conn;
     }
 

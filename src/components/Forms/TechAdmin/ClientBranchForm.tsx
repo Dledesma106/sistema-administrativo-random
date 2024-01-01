@@ -1,8 +1,12 @@
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Label, Select, TextInput } from 'flowbite-react';
-import { type ChangeEvent, useEffect, useState } from 'react';
-import { BsFillXCircleFill } from 'react-icons/bs';
+import { useMutation } from '@tanstack/react-query';
+import { SubmitHandler, useForm } from 'react-hook-form';
+
+import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
+import { FancyMultiSelect } from '@/components/MultiSelect';
+import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
@@ -11,31 +15,24 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import useAlert from '@/hooks/useAlert';
+import { Input } from '@/components/ui/input';
+import { TypographyH1 } from '@/components/ui/typography';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { CityWithProvince } from '@/types';
-import {
-    type IProvince,
-    type IBusiness,
-    type ICity,
-    type IClient,
-} from 'backend/models/interfaces';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { useMutation } from '@tanstack/react-query';
-import { TypographyH1 } from '@/components/ui/typography';
-import { Input } from '@/components/ui/input';
-import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
-import Link from 'next/link';
+import { type IBusiness, type IClient } from 'backend/models/interfaces';
 
 export interface IClientBranchForm {
     _id: string;
     number: string;
     client: IClient;
     city: string;
-    businesses: string[];
+    businesses: {
+        value: string;
+        label: string;
+    }[];
 }
 
 export interface IClientBranchFormErrors {
@@ -78,7 +75,7 @@ export default function ClientBranchForm({
             });
             stopLoading();
         },
-        onError: (error) => {
+        onError: () => {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo ${newBranch ? 'crear' : 'actualizar'} la ciudad`,
@@ -134,7 +131,7 @@ export default function ClientBranchForm({
                                         items={cities.map((city) => {
                                             return {
                                                 value: city._id.toString(),
-                                                label: `${city.name}, ${city.province.name}`,
+                                                label: `${city.name}, ${city.provinceId.name}`,
                                             };
                                         })}
                                         {...field}
@@ -154,10 +151,9 @@ export default function ClientBranchForm({
                             <FormItem>
                                 <FormLabel>Empresas</FormLabel>
                                 <FormControl>
-                                    <DataTableComboboxFilter
-                                        searchPlaceholder="Buscar Empresa"
-                                        selectPlaceholder="Empresas contratadas"
-                                        items={businesses.map((business) => {
+                                    <FancyMultiSelect
+                                        placeholder="Seleccione empresas"
+                                        options={businesses.map((business) => {
                                             return {
                                                 value: business._id.toString(),
                                                 label: `${business.name},`,

@@ -22,7 +22,7 @@ export const getTaskById = async (taskId: string, userId?: string) => {
     } as FilterQuery<Task>;
 
     if (userId) {
-        filters.assigned = userId;
+        filters.assignedIDs = userId;
     }
 
     const task = await TaskModel.findOne(filters)
@@ -37,19 +37,19 @@ export const getTaskById = async (taskId: string, userId?: string) => {
                     },
                     {
                         path: 'city',
-                        populate: 'province',
+                        populate: 'provinceId',
                     },
                 ],
             },
             {
-                path: 'assigned',
+                path: 'assignedIDs',
             },
             {
                 path: 'business',
                 select: 'name',
             },
             {
-                path: 'image',
+                path: 'imagesIDs',
             },
             {
                 path: 'auditor',
@@ -62,7 +62,7 @@ export const getTaskById = async (taskId: string, userId?: string) => {
         return null;
     }
 
-    let images = task.image as undefined | Pick<Image, 'url' | '_id'>[];
+    let images = task.imagesIDs as undefined | Pick<Image, 'url' | '_id'>[];
     if (!images) {
         images = [];
     } else {
@@ -84,7 +84,7 @@ export const getTaskById = async (taskId: string, userId?: string) => {
     })
         .populate([
             {
-                path: 'image',
+                path: 'imagesIDs',
                 select: 'url',
             },
             {
@@ -97,7 +97,6 @@ export const getTaskById = async (taskId: string, userId?: string) => {
 
     (task as any).images = images;
     (task as any).expenses = expenses;
-    delete task.image;
 
     return task;
 };
@@ -147,13 +146,13 @@ const TaskController = {
                 runValidators: true,
             });
             if (newTask === null) {
-                res.json({
+                return res.json({
                     statusCode: 500,
                     error: 'could not update Task',
                 });
             }
 
-            res.json({
+            return res.json({
                 statusCode: 200,
                 data: {
                     task: mongooseDocumentToJSON(newTask),
@@ -235,7 +234,7 @@ const TaskController = {
             });
         }
         await deletedTask.softDelete();
-        res.json({
+        return res.json({
             statusCode: 200,
             data: {
                 message: 'deleted Task succesfully',
@@ -247,7 +246,7 @@ const TaskController = {
 
         const filter = {
             deleted: false,
-            assigned: req.user._id.toString(),
+            assignedIDs: req.user._id.toString(),
         } as FilterQuery<Task>;
 
         if (req.query.status) {
@@ -280,7 +279,7 @@ const TaskController = {
             .lean()
             .exec();
 
-        res.status(200).json({
+        return res.status(200).json({
             data: tasks,
             message: 'ok',
         });
@@ -296,7 +295,7 @@ const TaskController = {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             data: task,
         });
     },
@@ -308,7 +307,7 @@ const TaskController = {
         const user = req.user;
         const userTask = (await TaskModel.findOne({
             _id: new MongooseTypes.ObjectId(taskId),
-            assigned: user._id.toString(),
+            assignedIDs: user._id.toString(),
             deleted: false,
         }).populate(['auditor', 'branch'])) as ITask;
 
@@ -345,7 +344,7 @@ const TaskController = {
         }
 
         if (imageIdToDelete) {
-            const imageBelongsToTask = userTask.image?.includes(imageIdToDelete);
+            const imageBelongsToTask = userTask.imagesIDs?.includes(imageIdToDelete);
             if (!imageBelongsToTask) {
                 return res.status(404).json({
                     message: 'Image not found',
@@ -370,7 +369,7 @@ const TaskController = {
 
         const result = await getTaskById(taskId, user._id.toString());
 
-        res.status(200).json({
+        return res.status(200).json({
             data: result,
         });
     },

@@ -1,33 +1,80 @@
+import { GetServerSideProps } from 'next';
+
+import { Role } from '@prisma/client';
+
 import { DashboardLayout } from '@/components/DashboardLayout';
-import TechAdminTaskTable from '@/components/Tables/TaskTable/TechAdminTaskTable';
 import TitleButton from '@/components/TitleButton';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import Business from 'backend/models/Business';
-import City from 'backend/models/City';
-import Client from 'backend/models/Client';
-import {
-    type IBusiness,
-    type ICity,
-    type IClient,
-    type IProvince,
-    type ITask,
-    type IUser,
-} from 'backend/models/interfaces';
-import Province from 'backend/models/Province';
-import Task from 'backend/models/Task';
-import User from 'backend/models/User';
+import TasksDataTable from '@/modules/TasksDataTable';
+import { prisma } from 'lib/prisma';
 
-interface props {
-    tasks: ITask[];
-    cities: ICity[];
-    provinces: IProvince[];
-    clients: IClient[];
-    businesses: IBusiness[];
-    techs: IUser[];
-}
+export type TasksPageProps = Awaited<ReturnType<typeof getProps>>;
 
-export default function TechAdminTasks(props: props): JSX.Element {
+const getProps = async () => {
+    const cities = await prisma.city.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+            province: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+        },
+    });
+    const provinces = await prisma.province.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+    const clients = await prisma.client.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+    const businesses = await prisma.business.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+    const techs = await prisma.user.findMany({
+        where: {
+            roles: {
+                has: Role.Tecnico,
+            },
+            deleted: false,
+        },
+        select: {
+            id: true,
+            fullName: true,
+        },
+    });
+
+    return {
+        cities: cities,
+        provinces: provinces,
+        clients: clients,
+        businesses: businesses,
+        techs: techs,
+    };
+};
+
+export default function TechAdminTasks(props: TasksPageProps): JSX.Element {
     return (
         <DashboardLayout>
             <TitleButton
@@ -35,41 +82,14 @@ export default function TechAdminTasks(props: props): JSX.Element {
                 path="/tech-admin/tasks/new"
                 nameButton="Delegar tarea"
             />
-            <TechAdminTaskTable {...props} />
+
+            <TasksDataTable {...props} />
         </DashboardLayout>
     );
 }
 
-export async function getServerSideProps(): Promise<{
-    props: props;
-}> {
-    // res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    await dbConnect();
-    const tasks = await Task.findUndeleted({});
-    if (tasks === null) {
-        return {
-            props: {} as props,
-        };
-    }
-    // const pendingTasks = allTasks.filter((task) => task.status === 'Pendiente')
-    // const sentTasks = allTasks.filter((task) => task.status === 'Finalizada')
-    // const tasks = pendingTasks.concat(sentTasks)
-    const cities = await City.findUndeleted();
-    const provinces = await Province.findUndeleted();
-    const clients = await Client.findUndeleted();
-    const businesses = await Business.findUndeleted();
-    const techs = await User.findUndeleted({
-        roles: 'Tecnico',
-    });
-    const props = mongooseDocumentToJSON({
-        tasks,
-        cities,
-        provinces,
-        clients,
-        businesses,
-        techs,
-    });
+export const getServerSideProps: GetServerSideProps<TasksPageProps> = async () => {
     return {
-        props,
+        props: await getProps(),
     };
-}
+};

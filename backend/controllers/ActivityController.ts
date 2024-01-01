@@ -4,14 +4,14 @@ import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import Activity from 'backend/models/Activity';
+import ActivityModel from 'backend/models/Activity';
 import UserModel from 'backend/models/User';
 
 const ActivityController = {
     getActivities: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();
-        const docActivities = Activity.find({});
-        res.json({
+        const docActivities = ActivityModel.find({});
+        return res.json({
             data: {
                 activities: mongooseDocumentToJSON(docActivities),
             },
@@ -29,7 +29,7 @@ const ActivityController = {
             });
         }
         const docActivities = docUser.getActivities();
-        res.json({
+        return res.json({
             data: {
                 activities: mongooseDocumentToJSON(docActivities),
             },

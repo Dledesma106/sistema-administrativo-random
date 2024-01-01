@@ -27,8 +27,8 @@ export default function EditClientBranch({
         _id: branch._id.toString(),
         number: branch.number,
         client: branch.client,
-        city: branch.city,
-        businesses: branch.businesses,
+        city: branch.city as any,
+        businesses: branch.businessesIDs as any,
     };
 
     return (
@@ -63,11 +63,16 @@ export async function getServerSideProps(
     }).populate(Branch.getPopulateParameters());
 
     const docBusinesses = await BusinessModel.findUndeleted({});
+    if (!docBranch) {
+        return {
+            props: {} as Props,
+        };
+    }
 
     return {
         props: {
             cities: cities,
-            branch: mongooseDocumentToJSON(docBranch),
+            branch: mongooseDocumentToJSON(docBranch) as any,
             businesses: mongooseDocumentToJSON(docBusinesses),
         },
     };

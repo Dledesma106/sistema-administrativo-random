@@ -55,7 +55,7 @@ export class Branch {
         ref: 'Business',
         required: true,
     })
-    businesses: Array<Ref<Business>>;
+    businessesIDs: Array<Ref<Business>>;
 
     @prop({
         type: Boolean,
@@ -77,7 +77,7 @@ export class Branch {
                 path: 'client',
             },
             {
-                path: 'businesses',
+                path: 'businessesIDs',
             },
         ];
     }

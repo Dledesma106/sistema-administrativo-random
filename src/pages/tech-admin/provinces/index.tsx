@@ -4,13 +4,13 @@ import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
 import { type IProvince } from 'backend/models/interfaces';
-import Province from 'backend/models/Province';
+import ProvinceModel from 'backend/models/Province';
 
-interface props {
+interface Props {
     provinces: IProvince[];
 }
 
-export default function Provinces({ provinces }: props): JSX.Element {
+export default function Provinces({ provinces }: Props): JSX.Element {
     return (
         <DashboardLayout>
             <TitleButton
@@ -23,10 +23,10 @@ export default function Provinces({ provinces }: props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
+export async function getServerSideProps(): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const docProvinces = await Province.findUndeleted({});
+    const docProvinces = await ProvinceModel.findUndeleted({});
     const provinces = mongooseDocumentToJSON(docProvinces);
     return {
         props: {

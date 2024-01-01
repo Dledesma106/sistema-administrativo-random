@@ -6,11 +6,11 @@ import { mongooseDocumentToJSON } from '@/lib/utils';
 import { type IUser } from 'backend/models/interfaces';
 import UserModel from 'backend/models/User';
 
-interface props {
+interface Props {
     users: IUser[];
 }
 
-export default function Users({ users }: props): JSX.Element {
+export default function Users({ users }: Props): JSX.Element {
     return (
         <DashboardLayout>
             <TitleButton
@@ -24,9 +24,10 @@ export default function Users({ users }: props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
+export async function getServerSideProps(): Promise<{ props: Props }> {
     await dbConnect();
-    const docUsers = await UserModel.findUndeleted({});
+
+    const docUsers = (await UserModel.findUndeleted({})) as IUser[];
     return {
         props: {
             users: mongooseDocumentToJSON(docUsers),

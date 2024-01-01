@@ -6,12 +6,12 @@ import ClientBranchForm, {
 } from '@/components/Forms/TechAdmin/ClientBranchForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
-import Business from 'backend/models/Business';
+import BusinessModel from 'backend/models/Business';
 import CityModel from 'backend/models/City';
-import Client from 'backend/models/Client';
+import ClientModel from 'backend/models/Client';
 import { type IBusiness, type ICity, type IClient } from 'backend/models/interfaces';
 
-interface props {
+interface Props {
     cities: ICity[];
     client: IClient;
     businesses: IBusiness[];
@@ -21,12 +21,12 @@ export default function NewClientBranch({
     cities,
     client,
     businesses,
-}: props): JSX.Element {
+}: Props): JSX.Element {
     const branchForm: IClientBranchForm = {
         _id: '',
         number: '',
         client,
-        city: {} as ICity,
+        city: '',
         businesses: [],
     };
 
@@ -34,7 +34,7 @@ export default function NewClientBranch({
         <DashboardLayout>
             <ClientBranchForm
                 branchForm={branchForm}
-                cities={cities}
+                cities={cities as any}
                 businesses={businesses}
             />
         </DashboardLayout>
@@ -43,20 +43,20 @@ export default function NewClientBranch({
 
 export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
-): Promise<{ props: props }> {
+): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     const { params } = ctx;
     if (!params) {
         return {
-            props: {} as props,
+            props: {} as Props,
         };
     }
     await dbConnect();
     const cities = await CityModel.findUndeleted().lean().exec();
-    const client = await Client.findOne({
+    const client = await ClientModel.findOne({
         name: deSlugify(params.name as string),
     });
-    const businesses = await Business.findUndeleted({});
+    const businesses = await BusinessModel.findUndeleted({});
     // console.log(client)
 
     return {
@@ -64,6 +64,6 @@ export async function getServerSideProps(
             cities,
             client,
             businesses,
-        }),
+        }) as any,
     };
 }

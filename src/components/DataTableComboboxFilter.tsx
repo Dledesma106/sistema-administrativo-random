@@ -46,7 +46,9 @@ const DataTableComboboxFilter = (props: Props) => {
                 <PopoverContent className="w-[200px] p-0">
                     <Command
                         filter={(value, search) => {
-                            const item = items.find((item) => item.value === value);
+                            const item = items.find(
+                                (item) => item.value.toLowerCase() === value,
+                            );
 
                             if (item === undefined) {
                                 return 0;
@@ -69,9 +71,9 @@ const DataTableComboboxFilter = (props: Props) => {
                                 <CommandItem
                                     key={item.value}
                                     value={item.value}
-                                    onSelect={(currentValue) => {
+                                    onSelect={(_lowercasedValue) => {
                                         const nextValue =
-                                            currentValue === value ? '' : currentValue;
+                                            item.value === value ? '' : item.value;
 
                                         if (onChange) {
                                             onChange(nextValue);

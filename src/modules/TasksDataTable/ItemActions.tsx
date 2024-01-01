@@ -1,29 +1,29 @@
 import { useRouter } from 'next/navigation';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
+import { TASKS_LIST_QUERY_KEY } from './queries';
+
+import { TasksQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
-import useAlert from '@/hooks/useAlert';
-import useLoading from '@/hooks/useLoading';
+import useAlert from '@/context/alertContext/useAlert';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { type ITask } from 'backend/models/interfaces';
 
 interface Props {
-    task: ITask;
-    deleteTask: (id: string) => void;
+    task: TasksQuery['tasks'][0];
 }
-export default function TechAdminTaskActions({ task, deleteTask }: Props): JSX.Element {
+
+export default function TechAdminTaskItemActions({ task }: Props): JSX.Element {
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
-    const { startLoading, stopLoading } = useLoading();
     const router = useRouter();
+    const queryClient = useQueryClient();
 
-    async function navigateEdit(): Promise<void> {
-        startLoading();
-        await router.push(`/tech-admin/tasks/${task._id as string}`);
-        stopLoading();
+    function navigateEdit() {
+        router.push(`/tech-admin/tasks/${task.id as string}`);
     }
 
     const openModal = (): void => {
@@ -37,11 +37,24 @@ export default function TechAdminTaskActions({ task, deleteTask }: Props): JSX.E
         try {
             await fetcher.delete(
                 {
-                    _id: task._id,
+                    _id: task.id,
                 },
                 api.techAdmin.tasks,
             );
-            deleteTask(task._id as string);
+
+            queryClient.setQueryData<TasksQuery>(TASKS_LIST_QUERY_KEY, (oldData) => {
+                if (!oldData) {
+                    return oldData;
+                }
+
+                const newData: TasksQuery = {
+                    ...oldData,
+                    tasks: oldData.tasks.filter((someTask) => someTask.id !== task.id),
+                };
+
+                return newData;
+            });
+
             triggerAlert({
                 type: 'Success',
                 message: `La tarea de ${task.business.name} en la sucursal ${task.branch.number} de ${task.branch.client.name} fue eliminada correctamente`,

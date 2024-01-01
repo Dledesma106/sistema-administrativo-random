@@ -5,7 +5,7 @@ import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
 import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
@@ -67,7 +67,7 @@ export default function Item({ city, deleteCity }: Props): JSX.Element {
     return (
         <TableRow className="border-b">
             <TableCell>{city.name}</TableCell>
-            <TableCell>{(city.province as IProvince).name}</TableCell>
+            <TableCell>{(city.provinceId as IProvince).name}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-center gap-2">
                     <button

@@ -6,7 +6,7 @@ import { CgPassword } from 'react-icons/cg';
 
 import Modal from '@/components/Modal';
 import { TableCell } from '@/components/ui/table';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';

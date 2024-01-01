@@ -1,7 +1,5 @@
 import { type NextApiResponse } from 'next';
 
-import { Types } from 'mongoose';
-
 import { NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
@@ -30,7 +28,7 @@ const BusinessController = {
             });
         }
         const business = mongooseDocumentToJSON(newBusiness);
-        res.status(200).json({
+        return res.status(200).json({
             data: {
                 business,
                 message: 'updated Business succesfully',
@@ -48,9 +46,9 @@ const BusinessController = {
         const deletedBusiness = await BusinessModel.findOne({
             name,
         });
-        if (deletedBusiness !== null) {
+        if (deletedBusiness) {
             await deletedBusiness.restore();
-            res.json({
+            return res.json({
                 data: {
                     deletedBusiness,
                     message: 'created Business succesfully',
@@ -66,7 +64,7 @@ const BusinessController = {
         }
 
         const business = mongooseDocumentToJSON(newBusiness);
-        res.json({
+        return res.json({
             data: {
                 business,
                 message: 'created Business succesfully',
@@ -86,7 +84,7 @@ const BusinessController = {
         }
         // const Business = formatIds(newBusiness)
         await deletedBusiness.softDelete();
-        res.json({
+        return res.json({
             data: {
                 message: 'deleted Business succesfully',
             },
@@ -103,7 +101,7 @@ const BusinessController = {
             });
         }
 
-        const businesses = branch.businesses;
+        const businesses = branch.businessesIDs;
         return res.json({
             data: businesses,
         });

@@ -40,14 +40,14 @@ export default function BranchTable({
             case 'Provincia':
                 setTableBranches(
                     branches.filter(
-                        (branch) => (branch.city.province as IProvince).name === value,
+                        (branch) => (branch.city.provinceId as IProvince).name === value,
                     ),
                 );
                 break;
             case 'Empresa':
                 setTableBranches(
                     branches.filter((branch) =>
-                        branch.businesses.some((business) => business.name === value),
+                        branch.businessesIDs.some((business) => business.name === value),
                     ),
                 );
                 break;

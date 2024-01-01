@@ -3,9 +3,9 @@ import PreventiveTable from '@/components/Tables/PreventiveTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import Business from 'backend/models/Business';
-import City from 'backend/models/City';
-import Client from 'backend/models/Client';
+import BusinessModel from 'backend/models/Business';
+import CityModel from 'backend/models/City';
+import ClientModel from 'backend/models/Client';
 import {
     type IBusiness,
     type ICity,
@@ -15,8 +15,8 @@ import {
     type IClient,
 } from 'backend/models/interfaces';
 import Preventive from 'backend/models/Preventive';
-import Province from 'backend/models/Province';
-import User from 'backend/models/User';
+import ProvinceModel from 'backend/models/Province';
+import UserModel from 'backend/models/User';
 
 interface IPreventiveProps {
     preventives: IPreventive[];
@@ -53,13 +53,13 @@ export async function getServerSideProps(): Promise<{
             props: {} as IPreventiveProps,
         };
     }
-    const cities = await City.findUndeleted({});
-    const provinces = await Province.findUndeleted({});
-    const techs = await User.findUndeleted({
+    const cities = await CityModel.findUndeleted({});
+    const provinces = await ProvinceModel.findUndeleted({});
+    const techs = await UserModel.findUndeleted({
         roles: 'Tecnico',
     });
-    const businesses = await Business.findUndeleted();
-    const clients = await Client.findUndeleted();
+    const businesses = await BusinessModel.findUndeleted();
+    const clients = await ClientModel.findUndeleted();
     const props = mongooseDocumentToJSON({
         preventives,
         cities,
@@ -70,6 +70,6 @@ export async function getServerSideProps(): Promise<{
     });
 
     return {
-        props,
+        props: props as any,
     };
 }

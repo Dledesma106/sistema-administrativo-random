@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { Role, TaskStatus, TaskType } from '@prisma/client';
 import type mongoose from 'mongoose';
+import { Document } from 'mongoose';
 
 import { type Activity } from './Activity';
 import type * as types from './types';
@@ -14,7 +16,7 @@ export interface IUser {
     lastName: string;
     city?: CityWithProvince;
     fullName?: string;
-    roles?: types.Role[];
+    roles?: Role[];
     password?: string;
 }
 
@@ -22,7 +24,7 @@ export interface IUser {
 export interface IUserMethods {
     comparePassword: (plaintext: string) => boolean;
     getTasks: () => Promise<ITask[]>;
-    getTasksByStatus: (status: types.TaskStatus) => Promise<ITask[]>;
+    getTasksByStatus: (status: TaskStatus) => Promise<ITask[]>;
     getExpenses: () => Promise<IExpense[]>;
     getExpensesByStatus: (status: types.ExpenseStatus) => Promise<IExpense[]>;
     getActivities: () => Promise<IUserActivities>;
@@ -79,7 +81,7 @@ export interface IProvinceMethods {
 export interface ICity {
     _id: mongoose.Types.ObjectId | string;
     name: string;
-    province: IProvince | string;
+    provinceId: IProvince | string;
     deleted: boolean;
 }
 
@@ -107,7 +109,7 @@ export interface IBranch {
     number: string;
     city: ICity;
     client: IClient;
-    businesses: IBusiness[];
+    businessesIDs: IBusiness[];
     deleted: boolean;
 }
 
@@ -123,7 +125,7 @@ export interface BranchModel extends mongoose.Model<IBranch, {}, IBranchMethods>
 
 export interface IPreventive {
     _id: mongoose.Types.ObjectId | string;
-    assigned: IUser[];
+    assignedIDs: IUser[];
     business: IBusiness;
     branch: IBranch;
     status: types.PreventiveStatus;
@@ -154,20 +156,20 @@ export interface PreventiveModel
     populateParameter: () => IPopulateParameter[];
 }
 
-export interface ITask {
+export interface ITask extends Document {
     _id: mongoose.Types.ObjectId | string;
     branch: IBranch;
     business: IBusiness;
-    assigned: IUser[];
+    assignedIDs: IUser[];
     openedAt: Date;
-    taskType: types.TaskType;
-    status: types.TaskStatus;
+    taskType: TaskType;
+    status: TaskStatus;
     description: string;
     participants?: IUser[];
     auditor?: IUser;
     activity?: IActivity;
     operatorName?: string;
-    image?: IImage[];
+    imagesIDs?: IImage[];
     workOrderNumber?: number;
     closedAt?: Date;
     deleted: boolean;

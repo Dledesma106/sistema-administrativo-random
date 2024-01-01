@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import * as api from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
 

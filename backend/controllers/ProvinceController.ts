@@ -5,7 +5,7 @@ import { NextConnectApiRequest } from './interfaces';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
 
-import Province from '../models/Province';
+import ProvinceModel from '../models/Province';
 
 const ProvinceController = {
     putProvince: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -17,7 +17,7 @@ const ProvinceController = {
         const provinceForm = {
             name,
         };
-        const newProvince = await Province.findByIdAndUpdate(_id, provinceForm, {
+        const newProvince = await ProvinceModel.findByIdAndUpdate(_id, provinceForm, {
             new: true,
             runValidators: true,
         });
@@ -28,7 +28,7 @@ const ProvinceController = {
             });
         }
         const province = mongooseDocumentToJSON(newProvince);
-        res.json({
+        return res.json({
             data: {
                 province,
                 message: 'updated province succesfully',
@@ -43,10 +43,10 @@ const ProvinceController = {
         const provinceForm = {
             name,
         };
-        const deletedProvince = await Province.findOne({
+        const deletedProvince = await ProvinceModel.findOne({
             name,
         });
-        if (deletedProvince !== null) {
+        if (deletedProvince) {
             await deletedProvince.restore();
             return res.json({
                 data: {
@@ -55,7 +55,7 @@ const ProvinceController = {
                 },
             });
         }
-        const newProvince = await Province.create(provinceForm);
+        const newProvince = await ProvinceModel.create(provinceForm);
         if (newProvince === undefined) {
             return res.json({
                 statusCode: 500,
@@ -64,7 +64,7 @@ const ProvinceController = {
         }
 
         const province = mongooseDocumentToJSON(newProvince);
-        res.json({
+        return res.json({
             data: {
                 province,
                 message: 'created province succesfully',
@@ -77,7 +77,7 @@ const ProvinceController = {
         } = req;
 
         await dbConnect();
-        const deletedProvince = await Province.findById(_id);
+        const deletedProvince = await ProvinceModel.findById(_id);
         if (deletedProvince === null) {
             return res.json({
                 statusCode: 500,
@@ -85,7 +85,7 @@ const ProvinceController = {
             });
         }
         await deletedProvince.softDelete();
-        res.json({
+        return res.json({
             data: {
                 message: 'deleted province succesfully',
             },

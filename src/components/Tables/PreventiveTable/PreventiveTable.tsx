@@ -56,14 +56,15 @@ export default function PreventiveTable({
                 setPreventivesTable(
                     preventives.filter(
                         (preventive) =>
-                            (preventive.branch.city.province as IProvince).name === value,
+                            (preventive.branch.city.provinceId as IProvince).name ===
+                            value,
                     ),
                 );
                 break;
             case 'Tecnico':
                 setPreventivesTable(
                     preventives.filter((preventive) =>
-                        preventive.assigned.some((tech) => tech.fullName === value),
+                        preventive.assignedIDs.some((tech) => tech.fullName === value),
                     ),
                 );
                 break;

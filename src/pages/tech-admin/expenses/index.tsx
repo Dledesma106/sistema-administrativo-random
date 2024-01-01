@@ -34,7 +34,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import { techAdmin } from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
 import { IExpense } from 'backend/models/interfaces';

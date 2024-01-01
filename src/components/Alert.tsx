@@ -2,7 +2,7 @@ import { AiOutlineWarning, AiOutlineInfoCircle } from 'react-icons/ai';
 import { BsCheckLg, BsX } from 'react-icons/bs';
 
 import { type AlertType } from '@/context/alertContext/AlertProvider';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 
 interface Props {
     message: string;

@@ -6,7 +6,7 @@ import { HiMagnifyingGlassPlus } from 'react-icons/hi2';
 
 import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';

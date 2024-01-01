@@ -1,3 +1,5 @@
+import { Role, TaskStatus, TaskType } from '@prisma/client';
+
 export type Frequency = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export type Month =
@@ -28,27 +30,6 @@ export type ExpenseType =
 
 export type PaySource = 'Reintegro' | 'Tarjeta';
 
-export enum TaskStatus {
-    SinAsignar = 'Sin asignar',
-    Pendiente = 'Pendiente',
-    Finalizada = 'Finalizada',
-    Aprobada = 'Aprobada',
-}
-
-export enum TaskType {
-    Preventivo = 'Preventivo',
-    Correctivo = 'Correctivo',
-    Instalacion = 'Instalacion',
-    Desmonte = 'Desmonte',
-    Actualizacion = 'Actualizacion',
-}
-
-export type Role =
-    | 'Tecnico'
-    | 'Administrativo Tecnico'
-    | 'Administrativo Contable'
-    | 'Auditor';
-
 export type PreventiveStatus = 'Pendiente' | 'Al dia';
 
 export const months: Month[] = [
@@ -78,26 +59,65 @@ export const expenseTypes: ExpenseType[] = [
 
 export const paySources: PaySource[] = ['Reintegro', 'Tarjeta'];
 
-export const taskStatuses: TaskStatus[] = [
-    TaskStatus.SinAsignar,
-    TaskStatus.Pendiente,
-    TaskStatus.Finalizada,
-    TaskStatus.Aprobada,
+export const taskStatusesOptions: { value: TaskStatus; label: string }[] = [
+    {
+        value: TaskStatus.SinAsignar,
+        label: 'Sin asignar',
+    },
+    {
+        value: TaskStatus.Pendiente,
+        label: 'Pendiente',
+    },
+    {
+        value: TaskStatus.Finalizada,
+        label: 'Finalizada',
+    },
+    {
+        value: TaskStatus.Aprobada,
+        label: 'Aprobada',
+    },
 ];
 
-export const taskTypes: TaskType[] = [
-    'Preventivo',
-    'Correctivo',
-    'Actualizacion',
-    'Instalacion',
-    'Desmonte',
+export const taskTypesOptions: { value: TaskType; label: string }[] = [
+    {
+        value: TaskType.Preventivo,
+        label: 'Preventivo',
+    },
+    {
+        value: TaskType.Correctivo,
+        label: 'Correctivo',
+    },
+    {
+        value: TaskType.Instalacion,
+        label: 'Instalacion',
+    },
+    {
+        value: TaskType.Desmonte,
+        label: 'Desmonte',
+    },
+    {
+        value: TaskType.Actualizacion,
+        label: 'Actualizacion',
+    },
 ];
 
-export const roles: Role[] = [
-    'Tecnico',
-    'Administrativo Tecnico',
-    'Administrativo Contable',
-    'Auditor',
+export const rolesOptions: { value: Role; label: string }[] = [
+    {
+        value: Role.AdministrativoTecnico,
+        label: 'Administrador Tecnico',
+    },
+    {
+        value: Role.AdministrativoContable,
+        label: 'Administrador Contable',
+    },
+    {
+        value: Role.Auditor,
+        label: 'Auditor',
+    },
+    {
+        value: Role.Tecnico,
+        label: 'Tecnico',
+    },
 ];
 
 export const preventiveStatuses: PreventiveStatus[] = ['Pendiente', 'Al dia'];

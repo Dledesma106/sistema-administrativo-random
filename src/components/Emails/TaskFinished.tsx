@@ -28,7 +28,7 @@ export default function TaskFinishedEmail({
                 <a
                     target="_blank"
                     rel="noreferrer noopener"
-                    href={`${process.env.NEXT_PUBLIC_URL}/tech-admin/tasks/${task._id}`}
+                    href={`${process.env.NEXT_PUBLIC_HOST}/tech-admin/tasks/${task._id}`}
                 >
                     Ver tarea
                 </a>

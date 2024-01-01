@@ -94,7 +94,7 @@ const ExpenseController = {
             const user = req.user;
             const userTask = await TaskModel.find({
                 _id: new MongooseTypes.ObjectId(taskId),
-                assigned: user._id.toString(),
+                assignedIDs: user._id.toString(),
             });
 
             if (!userTask) {

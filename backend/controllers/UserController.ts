@@ -22,7 +22,7 @@ const UserController = {
                     statusCode: 402,
                 });
             }
-            res.status(200).json({
+            return res.status(200).json({
                 data: {
                     user: mongooseDocumentToJSON(docUser),
                     message: 'User found',
@@ -44,7 +44,7 @@ const UserController = {
             });
         }
         const user = mongooseDocumentToJSON(docUser);
-        res.status(200).json({
+        return res.status(200).json({
             data: {
                 user,
                 message: 'User found',
@@ -80,7 +80,7 @@ const UserController = {
             });
         }
 
-        if (password && docUser !== null) {
+        if (password && docUser) {
             docUser.password = password;
             await docUser.save();
         }
@@ -88,7 +88,7 @@ const UserController = {
         docUser.populate('city');
         docUser.password = password;
 
-        res.status(200).json({
+        return res.status(200).json({
             data: {
                 user: mongooseDocumentToJSON(docUser),
             },
@@ -142,6 +142,7 @@ const UserController = {
             body: { _id },
         } = req;
         await dbConnect();
+
         const docUser = await UserModel.findById(_id);
         if (docUser === null) {
             return res.status(400).json({
@@ -150,7 +151,7 @@ const UserController = {
             });
         }
         await docUser.softDelete();
-        res.status(200).json({
+        return res.status(200).json({
             data: {
                 user: mongooseDocumentToJSON(docUser),
             },
@@ -181,15 +182,15 @@ const UserController = {
         };
         try {
             await user.updateOne(newUser);
-            await Mailer.sendResetPassword(newUser);
-            res.status(200).json({
+            await Mailer.sendResetPassword(newUser as any);
+            return res.status(200).json({
                 data: {
                     user: mongooseDocumentToJSON(user),
                 },
                 statusCode: 200,
             });
         } catch (error) {
-            res.json({
+            return res.json({
                 error: 'could not generate new password',
                 statusCode: 400,
             });

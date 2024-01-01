@@ -37,7 +37,7 @@ export class Preventive {
         ref: 'User',
         required: true,
     })
-    assigned: Array<Ref<User>>;
+    assignedIDs: Array<Ref<User>>;
 
     @prop({
         ref: 'Business',
@@ -99,7 +99,7 @@ export class Preventive {
         getModelForClass(Branch);
         return [
             {
-                path: 'assigned',
+                path: 'assignedIDs',
                 populate: User.getPopulateParameters(),
             },
             {

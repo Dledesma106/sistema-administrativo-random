@@ -4,9 +4,9 @@ import PreventiveForm, {
 } from '@/components/Forms/TechAdmin/PreventiveForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
-import Branch from 'backend/models/Branch';
-import Business from 'backend/models/Business';
-import Client from 'backend/models/Client';
+import BranchModel from 'backend/models/Branch';
+import BusinessModel from 'backend/models/Business';
+import ClientModel from 'backend/models/Client';
 import {
     type IBranch,
     type IBusiness,
@@ -14,16 +14,16 @@ import {
     type IUser,
 } from 'backend/models/interfaces';
 import { type Month } from 'backend/models/types';
-import User from 'backend/models/User';
+import UserModel from 'backend/models/User';
 
-interface props {
+interface Props {
     branches: IBranch[];
     clients: IClient[];
     businesses: IBusiness[];
     technicians: IUser[];
 }
 
-export default function NewTask(props: props): JSX.Element {
+export default function NewTask(props: Props): JSX.Element {
     const preventiveForm: IPreventiveForm = {
         _id: '',
         branch: {} as IBranch,
@@ -40,13 +40,13 @@ export default function NewTask(props: props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: props }> {
+export async function getServerSideProps(): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const docBranches = await Branch.findUndeleted({});
-    const docClients = await Client.findUndeleted({});
-    const docBusinesses = await Business.findUndeleted({});
-    const docTechnicians = await User.findUndeleted({
+    const docBranches = await BranchModel.findUndeleted({});
+    const docClients = await ClientModel.findUndeleted({});
+    const docBusinesses = await BusinessModel.findUndeleted({});
+    const docTechnicians = await UserModel.findUndeleted({
         roles: 'Tecnico',
     });
     const branches = mongooseDocumentToJSON(docBranches);
@@ -59,6 +59,6 @@ export async function getServerSideProps(): Promise<{ props: props }> {
             clients,
             businesses,
             technicians,
-        },
+        } as any,
     };
 }

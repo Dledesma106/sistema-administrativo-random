@@ -27,7 +27,7 @@ const ClientController = {
             });
         }
         const client = mongooseDocumentToJSON(newClient);
-        res.json({
+        return res.json({
             data: {
                 client,
                 message: 'updated Client succesfully',
@@ -45,7 +45,7 @@ const ClientController = {
         const deletedClient = await ClientModel.findOne({
             name,
         });
-        if (deletedClient !== null) {
+        if (deletedClient) {
             await deletedClient.restore();
             return res.json({
                 data: {
@@ -63,7 +63,7 @@ const ClientController = {
         }
 
         const client = mongooseDocumentToJSON(newClient);
-        res.json({
+        return res.json({
             data: {
                 client,
                 message: 'created Client succesfully',
@@ -81,7 +81,7 @@ const ClientController = {
             });
         }
         await deletedClient.softDelete();
-        res.json({
+        return res.json({
             data: {
                 message: 'deleted Client succesfully',
             },

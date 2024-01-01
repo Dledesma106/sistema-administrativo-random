@@ -1,9 +1,6 @@
-import { nanoid } from 'nanoid';
-import { useState } from 'react';
-
 import AlertContext from './AlertContext';
 
-import Alert from '@/components/Alert';
+import { useToast } from '@/components/ui/use-toast';
 
 import { type ProviderProps } from '../interfaces';
 
@@ -15,36 +12,32 @@ export interface IAlert {
     type: AlertType;
 }
 
-const INITIAL_STATE = [] as IAlert[];
-
 const AlertProvider = ({ children }: ProviderProps): JSX.Element => {
-    const [alerts, setAlerts] = useState<IAlert[]>(INITIAL_STATE);
-
-    function triggerAlert(newAlert: IAlert): void {
-        newAlert.key = nanoid();
-        setAlerts([...alerts, newAlert]);
-        setTimeout(() => {
-            removeAlert(newAlert.key as string);
-        }, 5000);
-    }
-
-    function removeAlert(key: string): void {
-        setAlerts(alerts.filter((alert) => alert.key !== key));
-    }
+    const { toast } = useToast();
 
     return (
         <AlertContext.Provider
             value={{
-                triggerAlert,
-                removeAlert,
+                triggerAlert: (alert: IAlert) => {
+                    console.log(alert);
+                    toast({
+                        variant:
+                            alert.type === 'Info'
+                                ? 'default'
+                                : alert.type === 'Success'
+                                  ? 'success'
+                                  : 'destructive',
+                        // title: 'Uh oh! Something went wrong.',
+                        description: alert.message,
+                        duration: 50000,
+                    });
+                },
+                removeAlert: () => {
+                    return null;
+                },
             }}
         >
             {children}
-            <>
-                {alerts.map((alert) => (
-                    <Alert key={alert.key} id={alert.key as string} {...alert} />
-                ))}
-            </>
         </AlertContext.Provider>
     );
 };

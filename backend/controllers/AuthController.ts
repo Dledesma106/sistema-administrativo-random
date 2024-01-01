@@ -24,7 +24,7 @@ const AuthController = {
             .populate([
                 {
                     path: 'city',
-                    populate: ['province'],
+                    populate: ['provinceId'],
                 },
             ])
             .select('+password');
@@ -43,7 +43,7 @@ const AuthController = {
         }
 
         const accessToken = createToken(user as IUser);
-        res.setHeader(
+        return res.setHeader(
             'Set-Cookie',
             cookie.serialize('ras_access_token', getUserToken(user), cookieOptionsLogin),
         );
@@ -59,11 +59,11 @@ const AuthController = {
         const { user } = req;
         await user.removePrivateKey();
 
-        res.setHeader(
+        return res.setHeader(
             'Set-Cookie',
             cookie.serialize('ras_access_token', '', cookieOptionsLogout),
         );
-        res.status(201).json({
+        return res.status(201).json({
             data: {
                 message: 'successful logout',
             },
@@ -84,14 +84,14 @@ const AuthController = {
         try {
             const user = await UserModel.create(userData);
             const reducedUser = mongooseDocumentToJSON(user);
-            res.status(201).json({
+            return res.status(201).json({
                 data: {
                     user: reducedUser,
                 },
                 statusCode: 201,
             });
         } catch (error) {
-            res.status(500).json({
+            return res.status(500).json({
                 error: 'failed to create user',
                 statusCode: 500,
             });

@@ -6,7 +6,7 @@ import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 import Modal from '@/components/Modal';
 import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
-import useAlert from '@/hooks/useAlert';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
@@ -83,18 +83,18 @@ export default function Item({
         <TableRow className="border-b">
             <TableCell>{preventive.business.name}</TableCell>
             <TableCell>{`${preventive.branch.number}, ${preventive.branch.client.name}, ${preventive.branch.city.name}`}</TableCell>
-            <TableCell>{selectedTechs(preventive.assigned)}</TableCell>
+            <TableCell>{selectedTechs(preventive.assignedIDs)}</TableCell>
             <TableCell>
                 {preventive.frequency !== undefined
                     ? `Cada ${preventive.frequency} meses`
                     : ''}
             </TableCell>
             <TableCell>
-                {preventive.months !== null ? imposedMonths(preventive.months) : ''}
+                {preventive.months ? imposedMonths(preventive.months) : ''}
             </TableCell>
             <TableCell>{preventive.observations}</TableCell>
             <TableCell>
-                {preventive.lastDoneAt !== null
+                {preventive.lastDoneAt
                     ? dmyDateString(new Date(preventive.lastDoneAt))
                     : ''}
             </TableCell>
@@ -102,7 +102,7 @@ export default function Item({
                 <Badge variant="secondary">{preventive.status}</Badge>
             </TableCell>
             <TableCell>
-                {preventive.batteryChangedAt !== null
+                {preventive.batteryChangedAt
                     ? dmyDateString(new Date(preventive.batteryChangedAt))
                     : ''}
             </TableCell>

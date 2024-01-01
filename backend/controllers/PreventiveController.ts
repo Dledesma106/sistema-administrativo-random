@@ -6,7 +6,7 @@ import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
 import { type User } from 'backend/models/User';
 
-import Preventive from '../models/Preventive';
+import PreventiveModel from '../models/Preventive';
 
 const PreventiveController = {
     putPreventive: async (req: NextConnectApiRequest, res: NextApiResponse) => {
@@ -38,7 +38,7 @@ const PreventiveController = {
             observations,
         };
         try {
-            const newPreventive = await Preventive.findByIdAndUpdate(
+            const newPreventive = await PreventiveModel.findByIdAndUpdate(
                 _id,
                 preventiveForm,
                 {
@@ -47,13 +47,13 @@ const PreventiveController = {
                 },
             );
             if (newPreventive === null) {
-                res.json({
+                return res.json({
                     statusCode: 500,
                     error: 'could not update Preventive',
                 });
             }
 
-            res.json({
+            return res.json({
                 statusCode: 200,
                 data: {
                     Preventive: mongooseDocumentToJSON(newPreventive),
@@ -94,12 +94,12 @@ const PreventiveController = {
             observations,
         };
         try {
-            const deletedPreventive = await Preventive.findOne({
+            const deletedPreventive = await PreventiveModel.findOne({
                 branch,
                 business,
             });
-            if (deletedPreventive !== null) {
-                deletedPreventive.assigned = assignedIds;
+            if (deletedPreventive) {
+                deletedPreventive.assignedIDs = assignedIds;
                 deletedPreventive.status = status;
                 deletedPreventive.frequency = frequency;
                 deletedPreventive.months = months;
@@ -115,7 +115,7 @@ const PreventiveController = {
                     },
                 });
             }
-            const newPreventive = await Preventive.create(preventiveForm);
+            const newPreventive = await PreventiveModel.create(preventiveForm);
             if (newPreventive === undefined) {
                 return res.json({
                     statusCode: 500,
@@ -140,7 +140,7 @@ const PreventiveController = {
     deletePreventive: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const { body } = req;
         await dbConnect();
-        const deletedPreventive = await Preventive.findById(body._id);
+        const deletedPreventive = await PreventiveModel.findById(body._id);
         if (deletedPreventive === null) {
             return res.json({
                 statusCode: 500,
@@ -148,7 +148,7 @@ const PreventiveController = {
             });
         }
         await deletedPreventive.softDelete();
-        res.json({
+        return res.json({
             statusCode: 200,
             data: {
                 message: 'deleted Preventive succesfully',

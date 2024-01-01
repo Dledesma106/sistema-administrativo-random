@@ -1,5 +1,10 @@
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+import { useMutation } from '@tanstack/react-query';
 import { useForm, SubmitHandler } from 'react-hook-form';
+
+import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -10,14 +15,11 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import useAlert from '@/hooks/useAlert';
+import { TypographyH1 } from '@/components/ui/typography';
+import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import Link from 'next/link';
-import { TypographyH1 } from '@/components/ui/typography';
-import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
-import { useMutation } from '@tanstack/react-query';
 
 export interface IBusinessForm {
     _id: string;
@@ -60,7 +62,7 @@ export default function BusinessForm({
             });
             stopLoading();
         },
-        onError: (error) => {
+        onError: () => {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo ${newBusiness ? 'crear' : 'actualizar'} la empresa`,

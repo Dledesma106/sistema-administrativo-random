@@ -4,7 +4,6 @@ import { PropsWithChildren, useEffect, useMemo } from 'react';
 
 import SideMenu from './SideMenu';
 
-import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +28,6 @@ function LoadingWrapper({ isLoading, children }: LoadingWrapperProps): JSX.Eleme
 }
 
 export const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
-    const { isLoggedIn } = useUserContext();
     const { isLoading, startLoading, stopLoading } = useLoading();
     const router = useRouter();
 
@@ -64,5 +62,5 @@ export const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         );
     }
 
-    return useMemo(Main, [children, isLoggedIn, isLoading]);
+    return useMemo(Main, [children, isLoading]);
 };

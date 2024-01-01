@@ -42,7 +42,7 @@ export class Task {
         ref: 'User',
         required: true,
     })
-    assigned: Array<Ref<User>>;
+    assignedIDs: Array<Ref<User>>;
 
     @prop({
         type: Date,
@@ -73,7 +73,7 @@ export class Task {
         ref: 'User',
         required: false,
     })
-    participants?: Array<Ref<User>>;
+    participantsIDs?: Array<Ref<User>>;
 
     @prop({
         ref: 'User',
@@ -98,7 +98,7 @@ export class Task {
         ref: 'Image',
         required: false,
     })
-    image?: Array<Ref<Image>>;
+    imagesIDs?: Array<Ref<Image>>;
 
     @prop({
         type: Number,
@@ -134,10 +134,10 @@ export class Task {
                 path: 'business',
             },
             {
-                path: 'assigned',
+                path: 'assignedIDs',
             },
             {
-                path: 'participants',
+                path: 'participantsIDs',
             },
             {
                 path: 'auditor',
@@ -146,7 +146,7 @@ export class Task {
                 path: 'activity',
             },
             {
-                path: 'image',
+                path: 'imagesIDs',
             },
         ];
     }
