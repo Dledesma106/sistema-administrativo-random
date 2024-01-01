@@ -19,7 +19,6 @@ const AlertProvider = ({ children }: ProviderProps): JSX.Element => {
         <AlertContext.Provider
             value={{
                 triggerAlert: (alert: IAlert) => {
-                    console.log(alert);
                     toast({
                         variant:
                             alert.type === 'Info'
@@ -29,7 +28,6 @@ const AlertProvider = ({ children }: ProviderProps): JSX.Element => {
                                   : 'destructive',
                         // title: 'Uh oh! Something went wrong.',
                         description: alert.message,
-                        duration: 50000,
                     });
                 },
                 removeAlert: () => {
