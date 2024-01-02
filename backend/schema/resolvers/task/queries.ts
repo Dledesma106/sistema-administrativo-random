@@ -1,3 +1,5 @@
+import { TaskStatus } from '@prisma/client';
+
 import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
 import { builder } from 'backend/schema/builder';
@@ -53,6 +55,9 @@ builder.queryFields((t) => ({
                 where: {
                     assignedIDs: {
                         has: user.id,
+                    },
+                    status: {
+                        not: TaskStatus.SinAsignar,
                     },
                 },
             });

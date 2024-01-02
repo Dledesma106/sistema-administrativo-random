@@ -13,12 +13,14 @@ interface Props {
 export default function Clients({ clients }: Props): JSX.Element {
     return (
         <DashboardLayout>
-            <TitleButton
-                title="Clientes"
-                path="/tech-admin/clients/new"
-                nameButton="Agregar cliente"
-            />
-            <ClientTable clients={clients} />
+            <main>
+                <TitleButton
+                    title="Clientes"
+                    path="/tech-admin/clients/new"
+                    nameButton="Agregar cliente"
+                />
+                <ClientTable clients={clients} />
+            </main>
         </DashboardLayout>
     );
 }

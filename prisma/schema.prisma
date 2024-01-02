@@ -213,7 +213,7 @@ model Task {
   imagesIDs String[] @db.ObjectId
   images    Image[]  @relation(name: "TaskImages", fields: [imagesIDs], references: [id])
 
-  expense Expense[]
+  expenses Expense[]
 
   @@map("tasks")
 }

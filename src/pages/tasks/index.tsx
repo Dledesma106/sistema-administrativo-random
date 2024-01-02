@@ -4,6 +4,7 @@ import { Role } from '@prisma/client';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
+import { routesBuilder } from '@/lib/routes';
 import TasksDataTable from '@/modules/TasksDataTable';
 import { prisma } from 'lib/prisma';
 
@@ -78,13 +79,15 @@ const getProps = async () => {
 export default function TechAdminTasks(props: TasksPageProps): JSX.Element {
     return (
         <DashboardLayout>
-            <TitleButton
-                title="Tareas pendientes"
-                path="/tech-admin/tasks/new"
-                nameButton="Delegar tarea"
-            />
+            <main>
+                <TitleButton
+                    title="Tareas pendientes"
+                    path={routesBuilder.tasks.create()}
+                    nameButton="Delegar tarea"
+                />
 
-            <TasksDataTable {...props} />
+                <TasksDataTable {...props} />
+            </main>
         </DashboardLayout>
     );
 }

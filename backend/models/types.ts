@@ -59,22 +59,30 @@ export const expenseTypes: ExpenseType[] = [
 
 export const paySources: PaySource[] = ['Reintegro', 'Tarjeta'];
 
-export const taskStatusesOptions: { value: TaskStatus; label: string }[] = [
+export const taskStatusesOptions: {
+    value: TaskStatus;
+    label: string;
+    description: string;
+}[] = [
     {
         value: TaskStatus.SinAsignar,
         label: 'Sin asignar',
+        description: 'Aún no lista para ser realizada',
     },
     {
         value: TaskStatus.Pendiente,
         label: 'Pendiente',
+        description: 'Pendiente de realización',
     },
     {
         value: TaskStatus.Finalizada,
         label: 'Finalizada',
+        description: 'Esperando aprobación de auditor',
     },
     {
         value: TaskStatus.Aprobada,
         label: 'Aprobada',
+        description: 'Aprobada por un auditor',
     },
 ];
 

@@ -13,12 +13,14 @@ interface Props {
 export default function Businesses({ businesses }: Props): JSX.Element {
     return (
         <DashboardLayout>
-            <TitleButton
-                title="Empresas"
-                path="/tech-admin/businesses/new"
-                nameButton="Agregar una empresa"
-            />
-            <BusinessTable businesses={businesses} />
+            <main>
+                <TitleButton
+                    title="Empresas"
+                    path="/tech-admin/businesses/new"
+                    nameButton="Agregar una empresa"
+                />
+                <BusinessTable businesses={businesses} />
+            </main>
         </DashboardLayout>
     );
 }

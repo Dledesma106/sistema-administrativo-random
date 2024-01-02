@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { TaskStatus, TaskType } from '@prisma/client';
@@ -22,7 +21,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
-import { NewTaskPageProps } from '@/pages/tech-admin/tasks/new';
+import { routesBuilder } from '@/lib/routes';
+import { NewTaskPageProps } from '@/pages/tasks/new';
 import { taskStatusesOptions, taskTypesOptions } from 'backend/models/types';
 
 type FormValues = {
@@ -78,7 +78,7 @@ const CreateOrUpdateTaskForm = ({
                 type: 'Success',
                 message: `La tarea fue creada correctamente`,
             });
-            router.push('/tech-admin/tasks');
+            router.push(routesBuilder.tasks.list());
         },
     });
 
@@ -107,7 +107,7 @@ const CreateOrUpdateTaskForm = ({
                 type: 'Success',
                 message: `La tarea fue actualizada correctamente`,
             });
-            router.push('/tech-admin/tasks');
+            router.push(routesBuilder.tasks.list());
         },
     });
 
@@ -243,11 +243,14 @@ const CreateOrUpdateTaskForm = ({
                         name="assignedIDs"
                         control={form.control}
                         rules={{
-                            required: 'Este campo es requerido',
                             validate: (value) => {
                                 if (value.length === 0) {
-                                    return 'Debe seleccionar al menos un tecnico';
+                                    if (form.watch('status') !== TaskStatus.SinAsignar) {
+                                        return 'Debe seleccionar al menos un tecnico';
+                                    }
                                 }
+
+                                return true;
                             },
                         }}
                         render={({ field }) => {
@@ -301,6 +304,15 @@ const CreateOrUpdateTaskForm = ({
                         control={form.control}
                         rules={{
                             required: 'Este campo es requerido',
+                            validate: (value) => {
+                                if (value !== TaskStatus.SinAsignar) {
+                                    if (form.watch('assignedIDs').length === 0) {
+                                        return 'Debe seleccionar al menos un tecnico';
+                                    }
+                                }
+
+                                return true;
+                            },
                         }}
                         render={({ field }) => {
                             return (
@@ -373,16 +385,18 @@ const CreateOrUpdateTaskForm = ({
                     />
 
                     <div className="mt-4 flex flex-row justify-between">
-                        <Button variant="secondary" asChild>
-                            <Link
-                                href={
-                                    taskIdToUpdate
-                                        ? `/tech-admin/tasks/${taskIdToUpdate}`
-                                        : '/tech-admin/tasks'
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => {
+                                if (window.history?.length) {
+                                    router.back();
+                                } else {
+                                    router.replace(routesBuilder.tasks.list());
                                 }
-                            >
-                                Cancelar
-                            </Link>
+                            }}
+                        >
+                            Cancelar
                         </Button>
                         <ButtonWithSpinner
                             type="submit"

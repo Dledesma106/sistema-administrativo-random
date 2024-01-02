@@ -7,6 +7,7 @@ import TechAdminTaskItemActions from './ItemActions';
 
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/badge';
+import { routesBuilder } from '@/lib/routes';
 import { dmyDateString } from '@/lib/utils';
 
 type Task = TasksQuery['tasks'][0];
@@ -22,7 +23,7 @@ export const useTasksTableColumns = () => [
             return (
                 <Link
                     className="space-y-2 hover:underline"
-                    href={`/tech-admin/tasks/${task.id}`}
+                    href={routesBuilder.tasks.details(task.id)}
                 >
                     <strong>{task.branch.client.name}</strong> - {task.business.name}
                     <p className="text-xs">
@@ -161,7 +162,7 @@ export const useTasksTableColumns = () => [
             if (status === TaskStatus.Pendiente) {
                 return (
                     <Badge className="inline-flex space-x-2" variant="outline">
-                        <span className="h-2 w-2 rounded-full bg-blue-400"></span>
+                        <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
                         <span>Pendiente</span>
                     </Badge>
                 );
@@ -170,7 +171,7 @@ export const useTasksTableColumns = () => [
             if (status === TaskStatus.Finalizada) {
                 return (
                     <Badge className="inline-flex space-x-2" variant="outline">
-                        <span className="h-2 w-2 rounded-full bg-black"></span>
+                        <span className="h-2 w-2 rounded-full bg-blue-400"></span>
                         <span>Finalizada</span>
                     </Badge>
                 );
@@ -209,6 +210,23 @@ export const useTasksTableColumns = () => [
             return !!closedAt ? dmyDateString(new Date(closedAt)) : closedAt;
         },
         header: 'Fecha cierre',
+    }),
+    columnHelper.accessor((row) => row.expenses, {
+        id: 'expenses',
+        header: 'Gastos',
+        cell: (info) => {
+            const expenses = info.getValue();
+
+            if (info.row.original.status === TaskStatus.SinAsignar) {
+                return <span className="text-muted-foreground">-</span>;
+            }
+
+            const amount = expenses.reduce((acc, expense) => {
+                return acc + expense.amount;
+            }, 0);
+
+            return `$${amount}`;
+        },
     }),
     columnHelper.display({
         id: 'actions',

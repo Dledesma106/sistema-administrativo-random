@@ -109,6 +109,7 @@ export type Query = {
     cities: Array<City>;
     expenses: Array<Expense>;
     images: Array<Image>;
+    myAssignedTasks: Array<Task>;
     provinces: Array<Province>;
     tasks: Array<Task>;
     users: Array<User>;
@@ -250,6 +251,7 @@ export type TasksQuery = {
             client: { __typename?: 'Client'; id: string; name: string };
         };
         assigned: Array<{ __typename?: 'User'; id: string; fullName: string }>;
+        expenses: Array<{ __typename?: 'Expense'; amount: number }>;
     }>;
 };
 
@@ -670,6 +672,19 @@ export const TasksDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
                                             },
                                         ],
                                     },

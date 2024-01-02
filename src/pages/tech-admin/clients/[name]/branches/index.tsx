@@ -34,17 +34,19 @@ export default function ClientView({
     const name = `Cliente: ${client.name}`;
     return (
         <DashboardLayout>
-            <TitleButton
-                title={name}
-                path={`/tech-admin/clients/${slugify(client.name)}/branches/new`}
-                nameButton="Agregar sucursal"
-            />
-            <ClientBranchesTable
-                branches={branches}
-                cities={cities}
-                provinces={provinces}
-                businesses={businesses}
-            />
+            <main>
+                <TitleButton
+                    title={name}
+                    path={`/tech-admin/clients/${slugify(client.name)}/branches/new`}
+                    nameButton="Agregar sucursal"
+                />
+                <ClientBranchesTable
+                    branches={branches}
+                    cities={cities}
+                    provinces={provinces}
+                    businesses={businesses}
+                />
+            </main>
         </DashboardLayout>
     );
 }

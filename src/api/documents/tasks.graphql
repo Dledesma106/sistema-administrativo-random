@@ -42,6 +42,9 @@ query tasks(
             id
             fullName
         }
+        expenses {
+            amount
+        }
         taskType
         status
     }

@@ -15,12 +15,14 @@ interface Props {
 export default function Cities({ cities, provinces }: Props): JSX.Element {
     return (
         <DashboardLayout>
-            <TitleButton
-                title="Localidades"
-                path="/tech-admin/cities/new"
-                nameButton="Agregar localidad"
-            />
-            <CityTable cities={cities} provinces={provinces} />
+            <main>
+                <TitleButton
+                    title="Localidades"
+                    path="/tech-admin/cities/new"
+                    nameButton="Agregar localidad"
+                />
+                <CityTable cities={cities} provinces={provinces} />
+            </main>
         </DashboardLayout>
     );
 }

@@ -27,7 +27,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { TasksPageProps } from '@/pages/tech-admin/tasks';
+import { TasksPageProps } from '@/pages/tasks';
 
 type TableItem = TasksQuery['tasks'][0];
 

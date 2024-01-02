@@ -13,21 +13,26 @@ type LoadingWrapperProps = PropsWithChildren<{
     isLoading: boolean;
 }>;
 
-function LoadingWrapper({ isLoading, children }: LoadingWrapperProps): JSX.Element {
-    return (
-        <div className="mx-auto h-full">
-            {isLoading ? (
-                <div className="flex h-full items-center justify-center bg-white">
-                    <LoadingSpinner />
-                </div>
-            ) : (
-                children
-            )}
-        </div>
-    );
+function LoadingWrapper({ isLoading, children }: LoadingWrapperProps) {
+    if (isLoading) {
+        return (
+            <div className="flex h-full flex-1 items-center justify-center bg-white">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
+    return children;
 }
 
-export const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
+type DashboardLayoutProps = PropsWithChildren & {
+    className?: string;
+};
+
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+    children,
+    className,
+}) => {
     const { isLoading, startLoading, stopLoading } = useLoading();
     const router = useRouter();
 
@@ -55,12 +60,14 @@ export const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
             <div className={cn('flex h-screen overflow-hidden pl-4')}>
                 <SideMenu />
 
-                <div className="flex-1 overflow-y-scroll px-4 pt-4">
-                    <LoadingWrapper isLoading={isLoading}>{children}</LoadingWrapper>
+                <div className="flex flex-1 flex-col overflow-y-scroll">
+                    <main className={cn('flex-1 px-4 py-3.5', className)}>
+                        <LoadingWrapper isLoading={isLoading}>{children}</LoadingWrapper>
+                    </main>
                 </div>
             </div>
         );
     }
 
-    return useMemo(Main, [children, isLoading]);
+    return useMemo(Main, [children, className, isLoading]);
 };

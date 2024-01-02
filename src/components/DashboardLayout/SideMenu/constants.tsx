@@ -10,6 +10,8 @@ import {
     RiCustomerService2Line,
 } from 'react-icons/ri';
 
+import { routesBuilder } from '@/lib/routes';
+
 export interface IDashboardMenuItem {
     id: number;
     title: string;
@@ -31,7 +33,7 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
     {
         id: 3,
         title: 'Tareas',
-        path: '/tech-admin/tasks',
+        path: routesBuilder.tasks.list(),
         icon: <RiTaskLine />,
         toggle: false,
         roles: [Role.AdministrativoTecnico, Role.Auditor],

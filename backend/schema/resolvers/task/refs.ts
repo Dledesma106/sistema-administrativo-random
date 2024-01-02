@@ -60,6 +60,6 @@ export const TaskPothosRef = builder.prismaObject('Task', {
             },
         }),
         images: t.relation('images'),
-        expenses: t.relation('expense'),
+        expenses: t.relation('expenses'),
     }),
 });

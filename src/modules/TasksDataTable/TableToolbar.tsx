@@ -6,7 +6,7 @@ import { DataTableFacetedFilter } from './FacetedFilter';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { TasksPageProps } from '@/pages/tech-admin/tasks';
+import { TasksPageProps } from '@/pages/tasks';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;

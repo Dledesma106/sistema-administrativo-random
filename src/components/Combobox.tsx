@@ -10,7 +10,6 @@ import {
     CommandItem,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 
 type Props = {
     value: string;
@@ -18,6 +17,7 @@ type Props = {
     items: {
         label: string;
         value: string;
+        description?: string;
     }[];
     selectPlaceholder: string;
     searchPlaceholder: string;
@@ -69,6 +69,11 @@ const Combobox = (props: Props) => {
                         <CommandGroup>
                             {items.map((item) => (
                                 <CommandItem
+                                    className={
+                                        item.description
+                                            ? 'flex flex-col items-start space-y-1 px-4 py-2'
+                                            : ''
+                                    }
                                     key={item.value}
                                     value={item.value}
                                     onSelect={(_lowercasedValue) => {
@@ -82,16 +87,26 @@ const Combobox = (props: Props) => {
                                         setOpen(false);
                                     }}
                                 >
-                                    <Check
-                                        className={cn(
-                                            'mr-2 h-4 w-4',
-                                            value === item.value
-                                                ? 'opacity-100'
-                                                : 'opacity-0',
-                                        )}
-                                    />
-
-                                    <span>{item.label}</span>
+                                    {item.description ? (
+                                        <>
+                                            <p className="flex w-full justify-between space-x-1">
+                                                <span>{item.label}</span>
+                                                {item.value === value ? (
+                                                    <Check className="h-4 w-4" />
+                                                ) : null}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {item.description}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="flex w-full justify-between space-x-1">
+                                            <span>{item.label}</span>
+                                            {item.value === value ? (
+                                                <Check className="h-4 w-4" />
+                                            ) : null}
+                                        </p>
+                                    )}
                                 </CommandItem>
                             ))}
                         </CommandGroup>
