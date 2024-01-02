@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, createContext } from 'react';
+import { useState, useEffect, useContext, createContext, useCallback } from 'react';
 
 import { LoginMutation } from '@/api/graphql';
 
@@ -25,11 +25,11 @@ const UserProvider = ({ children }: ProviderProps): JSX.Element => {
         setIsLoggedIn(true);
     }
 
-    function logoutUser(): void {
+    const logoutUser = useCallback(() => {
         setUser({} as unknown as LocalUser);
         setIsLoggedIn(false);
         localStorage.removeItem('user');
-    }
+    }, []);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');

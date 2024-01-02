@@ -156,9 +156,11 @@ model Image {
   updatedAt DateTime  @updatedAt
   deleted   Boolean   @default(false)
   deletedAt DateTime? @db.Date
-  key       String?
+  key       String
   name      String
+
   url       String    @unique(map: "url_1")
+  urlExpire DateTime?
 
   expense Expense[]
 

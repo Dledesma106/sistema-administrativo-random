@@ -1,6 +1,22 @@
+import { useRouter } from 'next/router';
+
+import { useEffect } from 'react';
+
+import { useUserContext } from '@/context/userContext/UserProvider';
 import { UserAuthForm } from '@/modules/Login/user-auth-form';
 
 export default function AuthenticationPage() {
+    const router = useRouter();
+    const query = router.query;
+    const { logoutUser } = useUserContext();
+
+    useEffect(() => {
+        const logOut = query.logout;
+        if (logOut) {
+            logoutUser();
+        }
+    }, [query, logoutUser]);
+
     return (
         <main className="container flex min-h-screen items-center justify-center">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">

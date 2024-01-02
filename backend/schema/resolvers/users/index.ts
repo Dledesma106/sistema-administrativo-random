@@ -1,6 +1,7 @@
 import { User, Role } from '@prisma/client';
 import { CookieListItem } from '@whatwg-node/cookie-store';
 import { compareSync } from 'bcryptjs';
+import dayjs from 'dayjs';
 import { YogaInitialContext } from 'graphql-yoga';
 
 import { getUserToken } from '@/lib/jwt';
@@ -36,6 +37,9 @@ export const UserPothosRef = builder.prismaObject('User', {
 builder.queryFields((t) => ({
     users: t.prismaField({
         type: ['User'],
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
         resolve: async (query, _parent, _args, _info) => {
             return prisma.user.findMany(query);
         },
@@ -101,14 +105,12 @@ builder.mutationFields((t) => ({
                 };
             }
 
-            const MAX_AGE_30_DAYS = 60 * 60 * 24 * 30;
-
             const cookieOptions: CookieListItem = {
-                name: 'ras_access_token',
+                name: USER_ACCESS_TOKEN_COOKIE_NAME,
                 value: getUserToken(user),
                 secure: process.env.NODE_ENV !== 'development',
                 sameSite: 'lax',
-                expires: new Date(Date.now() + MAX_AGE_30_DAYS),
+                expires: dayjs().add(30, 'day').toDate(),
                 domain: null,
             };
 
@@ -122,3 +124,5 @@ builder.mutationFields((t) => ({
         },
     }),
 }));
+
+export const USER_ACCESS_TOKEN_COOKIE_NAME = 'ras_access_token';

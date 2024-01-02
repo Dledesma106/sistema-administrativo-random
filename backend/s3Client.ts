@@ -1,7 +1,7 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-
-import { Image } from './models/Image';
+import { Image } from '@prisma/client';
+import dayjs from 'dayjs';
 
 const EXPIRE_1_HOUR = 60 * 60;
 
@@ -13,17 +13,20 @@ export const s3Client = new S3Client({
     },
 });
 
-export const createImageSignedUrl = async (image: Pick<Image, 'url'>) => {
-    const key = image.url.split('/').pop();
-
+export const createImageSignedUrl = async (image: Pick<Image, 'key'>) => {
     const command = new GetObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME as string,
-        Key: key,
+        Key: image.key,
     });
 
     const url = await getSignedUrl(s3Client, command, {
         expiresIn: EXPIRE_1_HOUR,
     });
 
-    return url;
+    return {
+        url,
+        expiresAt: dayjs()
+            .add(EXPIRE_1_HOUR - 120, 'second')
+            .toISOString(),
+    };
 };

@@ -2,11 +2,11 @@ import { GetServerSideProps } from 'next';
 
 import { Role } from '@prisma/client';
 
-import { NewTaskPageProps } from './new';
-
 import { DashboardLayout } from '@/components/DashboardLayout';
 import CreateOrUpdateTaskForm from '@/components/Forms/TechAdmin/CreateOrUpdateTaskForm';
 import { prisma } from 'lib/prisma';
+
+import { NewTaskPageProps } from '../new';
 
 type EmptyProps = Record<string, never>;
 type ValidProps = NewTaskPageProps & {

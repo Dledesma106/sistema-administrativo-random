@@ -61,7 +61,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
         next: pathname,
     });
 
-    const url = new URL(`/login?${nextParam}`, req.nextUrl.origin);
+    const url = new URL(`/login?logout=true&${nextParam}`, req.nextUrl.origin);
 
     return NextResponse.redirect(url);
 }

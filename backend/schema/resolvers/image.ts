@@ -8,6 +8,7 @@ builder.prismaObject('Image', {
         id: t.exposeID('id'),
         name: t.exposeString('name'),
         url: t.exposeString('url'),
+        key: t.exposeString('key'),
     }),
 });
 

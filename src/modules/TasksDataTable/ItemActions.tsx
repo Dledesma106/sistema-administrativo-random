@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
+import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
 import { TASKS_LIST_QUERY_KEY } from './queries';
 
@@ -14,6 +14,13 @@ import {
     TasksQuery,
 } from '@/api/graphql';
 import Modal from '@/components/Modal';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import useAlert from '@/context/alertContext/useAlert';
 import { getCleanErrorMessage } from '@/lib/utils';
 
@@ -82,21 +89,27 @@ export default function TechAdminTaskItemActions({ task }: Props): JSX.Element {
 
     return (
         <>
-            <div className="flex items-center justify-evenly">
-                <Link
-                    className="rounded-lg p-0.5 hover:bg-gray-200"
-                    href={`/tech-admin/tasks/${task.id}`}
-                >
-                    <BsFillPencilFill color="gray" size="15" />
-                </Link>
-
-                <button
-                    onClick={openModal}
-                    className="rounded-lg p-0.5 hover:bg-gray-200"
-                >
-                    <BsFillTrashFill color="gray" size="15" />
-                </button>
-            </div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                    >
+                        <DotsHorizontalIcon className="h-4 w-4" />
+                        <span className="sr-only">Abrir menú</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[160px]">
+                    <DropdownMenuItem asChild>
+                        <Link href={`/tech-admin/tasks/${task.id}`}>Editar</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <button className="w-full cursor-default" onClick={openModal}>
+                            Eliminar
+                        </button>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
 
             <Modal
                 openModal={modal}

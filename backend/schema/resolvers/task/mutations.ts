@@ -69,6 +69,9 @@ builder.mutationFields((t) => ({
                 required: true,
             }),
         },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
         resolve: async (root, args, _context, _info) => {
             try {
                 const { input } = args;
@@ -108,6 +111,9 @@ builder.mutationFields((t) => ({
                 required: true,
             }),
         },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
         resolve: async (root, args, _context, _info) => {
             try {
                 const { id, input } = args;
@@ -146,6 +152,9 @@ builder.mutationFields((t) => ({
             id: t.arg.string({
                 required: true,
             }),
+        },
+        authz: {
+            rules: ['IsAuthenticated'],
         },
         resolve: async (root, args, _context, _info) => {
             try {

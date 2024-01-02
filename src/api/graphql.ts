@@ -58,6 +58,7 @@ export type Expense = {
 export type Image = {
     __typename?: 'Image';
     id: Scalars['ID'];
+    key: Scalars['String'];
     name: Scalars['String'];
     url: Scalars['String'];
 };

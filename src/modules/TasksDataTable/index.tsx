@@ -12,7 +12,8 @@ import {
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
-import { useTasksTableColumns } from './constants';
+import { useTasksTableColumns } from './columns';
+import { DataTablePagination } from './Pagination';
 import { useTasksListQuery } from './queries';
 import { TasksDataTableToolbar } from './TableToolbar';
 
@@ -93,10 +94,6 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                 business: false,
                 client: false,
             },
-            pagination: {
-                pageSize: 100,
-                pageIndex: 0,
-            },
             sorting,
             columnFilters,
         },
@@ -104,10 +101,10 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
 
     if (tasks) {
         return (
-            <div>
+            <div className="space-y-4 pb-8">
                 <TasksDataTableToolbar table={table} {...props} />
 
-                <div className="relative overflow-visible">
+                <div className="rounded-md border">
                     <Table>
                         <TableHeader className="border-b bg-white">
                             {table.getHeaderGroups().map((headerGroup) => (
@@ -157,6 +154,8 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                         </TableBody>
                     </Table>
                 </div>
+
+                <DataTablePagination table={table} />
             </div>
         );
     }

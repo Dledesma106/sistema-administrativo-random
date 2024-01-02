@@ -1,8 +1,9 @@
-import { TaskType } from '@prisma/client';
+import Link from 'next/link';
+
+import { TaskStatus, TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 
 import TechAdminTaskItemActions from './ItemActions';
-import TasksDataTableStatusDropdown from './StatusDropdown';
 
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/badge';
@@ -14,35 +15,38 @@ const columnHelper = createColumnHelper<TasksQuery['tasks'][0]>();
 
 export const useTasksTableColumns = () => [
     columnHelper.accessor((row) => row, {
-        id: 'task',
+        id: 'location',
         cell: (info) => {
             const task = info.row.original;
 
-            let description = task.description;
+            return (
+                <Link
+                    className="space-y-2 hover:underline"
+                    href={`/tech-admin/tasks/${task.id}`}
+                >
+                    <strong>{task.branch.client.name}</strong> - {task.business.name}
+                    <p className="text-xs">
+                        #{task.branch.number} - {task.branch.city.name},{' '}
+                        {task.branch.city.province.name}
+                    </p>
+                </Link>
+            );
+        },
+        header: 'Locación',
+    }),
+    columnHelper.accessor((row) => row.description, {
+        id: 'description',
+        header: 'Descripción',
+        cell: (info) => {
+            let description = info.getValue();
             const maxLength = 50;
 
             if (description.length > maxLength) {
                 description = `${description.slice(0, maxLength)}...`;
             }
 
-            return (
-                <div>
-                    <p className="mb-1 text-xs">
-                        #{task.branch.number} - {task.branch.city.name},{' '}
-                        {task.branch.city.province.name}
-                    </p>
-
-                    <p>
-                        <strong>{task.branch.client.name}</strong> - {task.business.name}
-                    </p>
-
-                    <div className="text-muted-foreground">
-                        <p className="pt-2">{description}</p>
-                    </div>
-                </div>
-            );
+            return <p className="text-muted-foreground">{description}</p>;
         },
-        header: 'Tarea',
     }),
     columnHelper.accessor((row) => row.business.id, {
         id: 'business',
@@ -144,9 +148,44 @@ export const useTasksTableColumns = () => [
         header: 'Estado',
         cell: (info) => {
             const status = info.getValue();
-            const task = info.row.original;
 
-            return <TasksDataTableStatusDropdown task={task} status={status} />;
+            if (status === TaskStatus.Aprobada) {
+                return (
+                    <Badge className="inline-flex space-x-2" variant="outline">
+                        <span className="h-2 w-2 rounded-full bg-success"></span>
+                        <span>Aprobada</span>
+                    </Badge>
+                );
+            }
+
+            if (status === TaskStatus.Pendiente) {
+                return (
+                    <Badge className="inline-flex space-x-2" variant="outline">
+                        <span className="h-2 w-2 rounded-full bg-blue-400"></span>
+                        <span>Pendiente</span>
+                    </Badge>
+                );
+            }
+
+            if (status === TaskStatus.Finalizada) {
+                return (
+                    <Badge className="inline-flex space-x-2" variant="outline">
+                        <span className="h-2 w-2 rounded-full bg-black"></span>
+                        <span>Finalizada</span>
+                    </Badge>
+                );
+            }
+
+            if (status === TaskStatus.SinAsignar) {
+                return (
+                    <Badge className="inline-flex space-x-2" variant="outline">
+                        <span className="h-2 w-2 rounded-full bg-destructive"></span>
+                        <span>Sin Asignar</span>
+                    </Badge>
+                );
+            }
+
+            return <Badge variant="outline">{status}</Badge>;
         },
         filterFn: (row, id, statuses: string[]) => {
             if (!statuses) {
@@ -167,7 +206,7 @@ export const useTasksTableColumns = () => [
         id: 'closedAt',
         cell: (info) => {
             const closedAt = info.getValue();
-            return closedAt !== undefined ? dmyDateString(new Date(closedAt)) : closedAt;
+            return !!closedAt ? dmyDateString(new Date(closedAt)) : closedAt;
         },
         header: 'Fecha cierre',
     }),
@@ -178,6 +217,5 @@ export const useTasksTableColumns = () => [
 
             return <TechAdminTaskItemActions task={task} />;
         },
-        header: 'Acciones',
     }),
 ];

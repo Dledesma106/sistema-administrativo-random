@@ -65,7 +65,7 @@ module.exports = {
                     foreground: 'hsl(var(--card-foreground))',
                 },
                 success: {
-                    DEFAULT: 'hsl(143.8 61.2% 20.2%)',
+                    DEFAULT: 'hsl(143.9, 93.8%, 38.2%)',
                     foreground: 'hsl(138.5 76.5% 96.7%)',
                 },
             },

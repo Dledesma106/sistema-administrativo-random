@@ -22,7 +22,7 @@ export function TasksDataTableToolbar<TData>({
     const isFiltered = table.getState().columnFilters.length > 0;
 
     return (
-        <div className="flex items-center space-x-2 py-4">
+        <div className="flex items-center space-x-2">
             <Label className="block">Filtrar por</Label>
 
             <DataTableFacetedFilter

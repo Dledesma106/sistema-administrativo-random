@@ -1,3 +1,5 @@
+import { Role } from '@prisma/client';
+
 import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
 import { builder } from 'backend/schema/builder';
@@ -6,6 +8,9 @@ import { prisma } from 'lib/prisma';
 builder.queryFields((t) => ({
     tasks: t.prismaField({
         type: ['Task'],
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
         args: {
             city: t.arg.string({
                 required: false,
@@ -29,8 +34,25 @@ builder.queryFields((t) => ({
                 required: false,
             }),
         },
-        resolve: async (query, _parent, _args, _info) => {
-            return await prisma.task.findManyUndeleted(query);
+        resolve: async (query, _parent, _args, { user }) => {
+            if (
+                user.roles.some(
+                    (role) =>
+                        role === Role.AdministrativoContable ||
+                        role === Role.AdministrativoTecnico ||
+                        role === Role.Auditor,
+                )
+            ) {
+                return await prisma.task.findManyUndeleted(query);
+            }
+
+            return await prisma.task.findManyUndeleted({
+                where: {
+                    assignedIDs: {
+                        has: user.id,
+                    },
+                },
+            });
         },
     }),
 }));
