@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+import { Role } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
@@ -30,7 +31,6 @@ import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
-import { Role } from 'backend/models/types';
 
 interface IItem {
     id: number;
@@ -56,7 +56,7 @@ const items: IItem[] = [
         path: '/tech-admin/tasks',
         icon: <RiTaskLine />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 4,
@@ -64,7 +64,7 @@ const items: IItem[] = [
         path: '/tech-admin/preventives',
         icon: <RiFileWarningLine />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 5,
@@ -72,7 +72,7 @@ const items: IItem[] = [
         path: '/tech-admin/clients',
         icon: <RiCustomerService2Line />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 6,
@@ -80,7 +80,7 @@ const items: IItem[] = [
         path: '/tech-admin/businesses',
         icon: <RiBuilding3Line />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 7,
@@ -88,7 +88,7 @@ const items: IItem[] = [
         path: '/tech-admin/provinces',
         icon: <RiMapPinLine />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 8,
@@ -96,7 +96,7 @@ const items: IItem[] = [
         path: '/tech-admin/cities',
         icon: <RiMapPin2Fill />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 9,
@@ -104,14 +104,14 @@ const items: IItem[] = [
         path: '/tech-admin/users',
         icon: <RiGroupLine />,
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
     },
     {
         id: 10,
         title: 'Gastos',
         path: '/tech-admin/expenses',
         toggle: false,
-        role: 'Administrativo Tecnico',
+        role: Role.AdministrativoTecnico,
         icon: <RiGroupLine />,
     },
 ];
@@ -169,7 +169,7 @@ export default function SideMenu(): JSX.Element {
 
     return (
         <div className="flex h-screen w-80 flex-col border-r border-gray-200">
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-7">
                 <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
                     Random SRL
                 </h2>

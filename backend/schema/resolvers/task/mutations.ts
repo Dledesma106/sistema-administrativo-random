@@ -40,6 +40,7 @@ const TaskInputPothosRef = builder.inputType('TaskInput', {
 const TaskCrudResultPothosRef = builder
     .objectRef<{
         success: boolean;
+        message?: string;
         task?: Task;
     }>('TaskCrudResult')
     .implement({
@@ -51,6 +52,10 @@ const TaskCrudResultPothosRef = builder
                 type: TaskPothosRef,
                 nullable: true,
                 resolve: (result) => result.task,
+            }),
+            message: t.string({
+                nullable: true,
+                resolve: (result) => result.message,
             }),
         }),
     });
@@ -130,6 +135,39 @@ builder.mutationFields((t) => ({
                 };
             } catch (error) {
                 return {
+                    success: false,
+                };
+            }
+        },
+    }),
+    deleteTask: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id } = args;
+                const task = await prisma.task.softDeleteOne({
+                    id,
+                });
+
+                if (!task) {
+                    return {
+                        message: 'La tarea no existe',
+                        success: false,
+                    };
+                }
+
+                return {
+                    success: true,
+                    task,
+                };
+            } catch (error) {
+                return {
+                    message: 'Error al eliminar la tarea',
                     success: false,
                 };
             }

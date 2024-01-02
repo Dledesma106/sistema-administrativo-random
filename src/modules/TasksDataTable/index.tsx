@@ -88,6 +88,11 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
             return globalGetFacetedUniqueValues<TableItem>()(table, columnId);
         },
         state: {
+            columnVisibility: {
+                branch: false,
+                business: false,
+                client: false,
+            },
             pagination: {
                 pageSize: 100,
                 pageIndex: 0,

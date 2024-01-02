@@ -35,6 +35,9 @@ const getTask = async (id: string) => {
                     id: true,
                     fullName: true,
                 },
+                where: {
+                    deleted: false,
+                },
             },
         },
     });

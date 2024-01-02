@@ -1,42 +1,34 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 
-import { type IUser } from 'backend/models/interfaces';
+import { LoginMutation } from '@/api/graphql';
 
 import { type ProviderProps } from '../interfaces';
 
+type LocalUser = NonNullable<LoginMutation['login']['user']>;
+
 interface UserContextData {
-    user: IUser;
-    loginUser: (user: IUser) => void;
+    user: LocalUser;
+    loginUser: (user: LocalUser) => void;
     logoutUser: () => void;
     isLoggedIn: boolean;
 }
 
 const UserContext = createContext<UserContextData>({} as UserContextData);
 
-const INITIAL_STATE = {
-    email: '',
-    firstName: '',
-    lastName: '',
-    fullname: '',
-    _id: '',
-    roles: [],
-    publicKey: '',
-};
-
 const UserProvider = ({ children }: ProviderProps): JSX.Element => {
-    const [user, setUser] = useState<IUser>(INITIAL_STATE);
+    const [user, setUser] = useState<LocalUser>({} as unknown as LocalUser);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-    function loginUser(user: IUser): void {
+    function loginUser(user: LocalUser): void {
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
         setIsLoggedIn(true);
     }
 
     function logoutUser(): void {
-        setUser(INITIAL_STATE);
+        setUser({} as unknown as LocalUser);
         setIsLoggedIn(false);
-        localStorage.setItem('user', JSON.stringify(INITIAL_STATE));
+        localStorage.removeItem('user');
     }
 
     useEffect(() => {

@@ -4,6 +4,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { fetchClient } from '@/api/fetch-client';
+import { LoginDocument, LoginMutation, LoginMutationVariables } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import {
     Form,
@@ -14,27 +16,21 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import useAlert from '@/context/alertContext/useAlert';
 import { useUserContext } from '@/context/userContext/UserProvider';
-import { authUrl } from '@/lib/apiEndpoints';
-import { axiosInstance } from '@/lib/fetcher';
-import { IUser } from 'backend/models/interfaces';
+import { getCleanErrorMessage } from '@/lib/utils';
 
 type FormValues = {
     email: string;
     password: string;
 };
 
-type LoginResponse = {
-    data: {
-        accessToken: string;
-        user: IUser;
-    };
-};
-
 export function UserAuthForm() {
     const form = useForm<FormValues>();
     const router = useRouter();
     const { isLoggedIn, loginUser } = useUserContext();
+    const { triggerAlert } = useAlert();
+
     const searchParams = router.query;
 
     useEffect(() => {
@@ -52,17 +48,33 @@ export function UserAuthForm() {
         }
     }, [searchParams, isLoggedIn, router]);
 
-    const loginMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            const response = await axiosInstance.post<LoginResponse>(authUrl, form);
-            return response.data;
+    const loginMutation = useMutation<LoginMutation, Error, LoginMutationVariables>({
+        mutationFn: (form: FormValues) => {
+            return fetchClient(LoginDocument, {
+                email: form.email,
+                password: form.password,
+            });
         },
-        onSuccess: ({ data }) => {
-            loginUser(data.user);
-            localStorage.setItem('accessToken', data.accessToken);
+        onSuccess: (data) => {
+            if (!data) {
+                return;
+            }
+
+            if (data.login.message) {
+                throw new Error(data.login.message);
+            }
+
+            if (!data.login.user) {
+                throw new Error('No se pudo iniciar sesión');
+            }
+
+            loginUser(data.login.user);
         },
-        onError: () => {
-            alert('Email o contraseña incorrectos');
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: getCleanErrorMessage(error),
+            });
         },
     });
 

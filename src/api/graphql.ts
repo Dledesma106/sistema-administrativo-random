@@ -62,10 +62,18 @@ export type Image = {
     url: Scalars['String'];
 };
 
+export type LoginUserResult = {
+    __typename?: 'LoginUserResult';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    user: Maybe<User>;
+};
+
 export type Mutation = {
     __typename?: 'Mutation';
     createTask: TaskCrudResult;
-    createUser: Maybe<User>;
+    deleteTask: TaskCrudResult;
+    login: LoginUserResult;
     updateTask: TaskCrudResult;
 };
 
@@ -73,10 +81,13 @@ export type MutationCreateTaskArgs = {
     input: TaskInput;
 };
 
-export type MutationCreateUserArgs = {
-    email: InputMaybe<Scalars['String']>;
-    firstName: InputMaybe<Scalars['String']>;
-    lastName: InputMaybe<Scalars['String']>;
+export type MutationDeleteTaskArgs = {
+    id: Scalars['String'];
+};
+
+export type MutationLoginArgs = {
+    email: Scalars['String'];
+    password: Scalars['String'];
 };
 
 export type MutationUpdateTaskArgs = {
@@ -111,6 +122,14 @@ export type QueryTasksArgs = {
     taskType: InputMaybe<TaskType>;
 };
 
+export const Role = {
+    AdministrativoContable: 'AdministrativoContable',
+    AdministrativoTecnico: 'AdministrativoTecnico',
+    Auditor: 'Auditor',
+    Tecnico: 'Tecnico',
+} as const;
+
+export type Role = (typeof Role)[keyof typeof Role];
 export type Task = {
     __typename?: 'Task';
     assigned: Array<User>;
@@ -130,6 +149,7 @@ export type Task = {
 
 export type TaskCrudResult = {
     __typename?: 'TaskCrudResult';
+    message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     task: Maybe<Task>;
 };
@@ -170,6 +190,30 @@ export type User = {
     fullName: Scalars['String'];
     id: Scalars['ID'];
     lastName: Scalars['String'];
+    roles: Array<Role>;
+};
+
+export type LoginMutationVariables = Exact<{
+    email: Scalars['String'];
+    password: Scalars['String'];
+}>;
+
+export type LoginMutation = {
+    __typename?: 'Mutation';
+    login: {
+        __typename?: 'LoginUserResult';
+        success: boolean;
+        message: string | null;
+        user: {
+            __typename?: 'User';
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+            fullName: string;
+            roles: Array<Role>;
+        } | null;
+    };
 };
 
 export type TasksQueryVariables = Exact<{
@@ -235,6 +279,136 @@ export type UpdateTaskMutation = {
     };
 };
 
+export type DeleteTaskMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DeleteTaskMutation = {
+    __typename?: 'Mutation';
+    deleteTask: {
+        __typename?: 'TaskCrudResult';
+        success: boolean;
+        message: string | null;
+        task: { __typename?: 'Task'; id: string } | null;
+    };
+};
+
+export const LoginDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'login' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'email' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'password' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'login' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'email' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'email' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'password' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'password' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'firstName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'lastName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'roles' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<LoginMutation, LoginMutationVariables>;
 export const TasksDocument = {
     kind: 'Document',
     definitions: [
@@ -668,3 +842,71 @@ export const UpdateTaskDocument = {
         },
     ],
 } as unknown as DocumentNode<UpdateTaskMutation, UpdateTaskMutationVariables>;
+export const DeleteTaskDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'deleteTask' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deleteTask' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'task' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DeleteTaskMutation, DeleteTaskMutationVariables>;

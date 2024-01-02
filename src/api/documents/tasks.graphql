@@ -64,3 +64,13 @@ mutation updateTask($id: String!, $input: TaskInput!) {
         success
     }
 }
+
+mutation deleteTask($id: String!) {
+    deleteTask(id: $id) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}

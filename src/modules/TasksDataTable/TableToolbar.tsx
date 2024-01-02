@@ -26,11 +26,29 @@ export function TasksDataTableToolbar<TData>({
             <Label className="block">Filtrar por</Label>
 
             <DataTableFacetedFilter
+                column={table.getColumn('client')}
+                title="Cliente"
+                options={clients.map((client) => ({
+                    value: client.id.toString(),
+                    label: client.name,
+                }))}
+            />
+
+            <DataTableFacetedFilter
                 column={table.getColumn('branch')}
                 title="Sucursal"
                 options={cities.map((city) => ({
                     value: city.id.toString(),
                     label: city.name,
+                }))}
+            />
+
+            <DataTableFacetedFilter
+                column={table.getColumn('business')}
+                title="Empresa"
+                options={businesses.map((business) => ({
+                    value: business.id.toString(),
+                    label: business.name,
                 }))}
             />
 
@@ -45,24 +63,6 @@ export function TasksDataTableToolbar<TData>({
                         value: user.id.toString(),
                         label: user.fullName,
                     }))}
-            />
-
-            <DataTableFacetedFilter
-                column={table.getColumn('business')}
-                title="Empresa"
-                options={businesses.map((business) => ({
-                    value: business.id.toString(),
-                    label: business.name,
-                }))}
-            />
-
-            <DataTableFacetedFilter
-                column={table.getColumn('client')}
-                title="Cliente"
-                options={clients.map((client) => ({
-                    value: client.id.toString(),
-                    label: client.name,
-                }))}
             />
 
             <DataTableFacetedFilter

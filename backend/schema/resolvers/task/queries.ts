@@ -30,7 +30,7 @@ builder.queryFields((t) => ({
             }),
         },
         resolve: async (query, _parent, _args, _info) => {
-            return await prisma.task.findMany(query);
+            return await prisma.task.findManyUndeleted(query);
         },
     }),
 }));

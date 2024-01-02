@@ -52,10 +52,10 @@ export const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
 
     function Main(): JSX.Element {
         return (
-            <div className={cn('container flex h-screen')}>
+            <div className={cn('flex h-screen overflow-hidden pl-4')}>
                 <SideMenu />
 
-                <div className="flex-1 pl-4 pt-4">
+                <div className="flex-1 overflow-scroll px-4 pt-4">
                     <LoadingWrapper isLoading={isLoading}>{children}</LoadingWrapper>
                 </div>
             </div>

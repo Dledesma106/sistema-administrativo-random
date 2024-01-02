@@ -5,6 +5,7 @@ import TechAdminTaskItemActions from './ItemActions';
 import TasksDataTableStatusDropdown from './StatusDropdown';
 
 import { TasksQuery } from '@/api/graphql';
+import { Badge } from '@/components/ui/badge';
 import { dmyDateString } from '@/lib/utils';
 
 type Task = TasksQuery['tasks'][0];
@@ -12,9 +13,36 @@ type Task = TasksQuery['tasks'][0];
 const columnHelper = createColumnHelper<TasksQuery['tasks'][0]>();
 
 export const useTasksTableColumns = () => [
-    columnHelper.accessor((row) => dmyDateString(new Date(row.createdAt)), {
-        id: 'openedAt',
-        header: 'Fecha apertura',
+    columnHelper.accessor((row) => row, {
+        id: 'task',
+        cell: (info) => {
+            const task = info.row.original;
+
+            let description = task.description;
+            const maxLength = 50;
+
+            if (description.length > maxLength) {
+                description = `${description.slice(0, maxLength)}...`;
+            }
+
+            return (
+                <div>
+                    <p className="mb-1 text-xs">
+                        #{task.branch.number} - {task.branch.city.name},{' '}
+                        {task.branch.city.province.name}
+                    </p>
+
+                    <p>
+                        <strong>{task.branch.client.name}</strong> - {task.business.name}
+                    </p>
+
+                    <div className="text-muted-foreground">
+                        <p className="pt-2">{description}</p>
+                    </div>
+                </div>
+            );
+        },
+        header: 'Tarea',
     }),
     columnHelper.accessor((row) => row.business.id, {
         id: 'business',
@@ -39,10 +67,6 @@ export const useTasksTableColumns = () => [
     columnHelper.accessor((row) => row.branch.client.id, {
         id: 'client',
         header: 'Cliente',
-        cell: (info) => {
-            const client = info.row.original.branch.client;
-            return `${client.name}`;
-        },
         filterFn: (row, id, clientsIDs: string[]) => {
             if (!clientsIDs) {
                 return true;
@@ -58,10 +82,6 @@ export const useTasksTableColumns = () => [
     }),
     columnHelper.accessor((row) => row.branch.city.id, {
         id: 'branch',
-        cell: (info) => {
-            const branch = info.row.original.branch;
-            return `${branch.number}, ${branch.city.name}, ${branch.city.province.name}`;
-        },
         header: 'Sucursal',
         filterFn: (row, id, cityIDs: string[]) => {
             if (!cityIDs) {
@@ -79,12 +99,19 @@ export const useTasksTableColumns = () => [
     columnHelper.accessor((row) => row.assigned, {
         id: 'assigned',
         cell: (info) => {
-            return info
-                .getValue()
-                .map((tech) => tech.fullName)
-                .join(', ');
+            return (
+                <div className="flex space-x-2">
+                    {info.getValue().map((tech) => {
+                        return (
+                            <Badge key={tech.id} variant="secondary">
+                                {tech.fullName}
+                            </Badge>
+                        );
+                    })}
+                </div>
+            );
         },
-        header: 'Tecnico Asignado',
+        header: 'Tecnicos',
         filterFn: (row, id, userId: string[]) => {
             if (!userId) {
                 return true;
@@ -131,6 +158,10 @@ export const useTasksTableColumns = () => [
 
             return statusIsInFilteredList;
         },
+    }),
+    columnHelper.accessor((row) => dmyDateString(new Date(row.createdAt)), {
+        id: 'openedAt',
+        header: 'Fecha apertura',
     }),
     columnHelper.accessor((row) => row.closedAt, {
         id: 'closedAt',

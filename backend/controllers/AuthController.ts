@@ -59,7 +59,7 @@ const AuthController = {
         const { user } = req;
         await user.removePrivateKey();
 
-        return res.setHeader(
+        res.setHeader(
             'Set-Cookie',
             cookie.serialize('ras_access_token', '', cookieOptionsLogout),
         );

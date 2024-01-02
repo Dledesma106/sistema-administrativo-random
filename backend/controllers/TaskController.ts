@@ -1,5 +1,6 @@
 import { type NextApiResponse } from 'next';
 
+import { TaskStatus, TaskType } from '@prisma/client';
 import { FilterQuery, Types as MongooseTypes } from 'mongoose';
 
 import { type NextConnectApiRequest } from './interfaces';
@@ -11,7 +12,6 @@ import ExpenseModel from 'backend/models/Expense';
 import ImageModel, { Image } from 'backend/models/Image';
 import { ITask, IUser } from 'backend/models/interfaces';
 import TaskModel, { Task } from 'backend/models/Task';
-import { TaskStatus, TaskType } from 'backend/models/types';
 import { type User } from 'backend/models/User';
 import { createImageSignedUrl } from 'backend/s3Client';
 
@@ -222,24 +222,6 @@ const TaskController = {
                 error: 'could not create Task',
             });
         }
-    },
-    deleteTask: async (req: NextConnectApiRequest, res: NextApiResponse) => {
-        const { body } = req;
-        await dbConnect();
-        const deletedTask = await TaskModel.findById(body._id);
-        if (deletedTask === null) {
-            return res.json({
-                statusCode: 500,
-                error: 'could not delete Task',
-            });
-        }
-        await deletedTask.softDelete();
-        return res.json({
-            statusCode: 200,
-            data: {
-                message: 'deleted Task succesfully',
-            },
-        });
     },
     getTechTasks: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         await dbConnect();

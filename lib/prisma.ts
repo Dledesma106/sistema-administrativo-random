@@ -82,6 +82,32 @@ const prismaClientSingleton = () => {
                         const result = await (context as any).findFirst({ where });
                         return result !== null;
                     },
+                    async softDeleteOne<T, A>(
+                        this: T,
+                        where: Prisma.Exact<A, Prisma.Args<T, 'update'>['where']>,
+                    ): Promise<Prisma.Result<T, A, 'update'>> {
+                        const context = Prisma.getExtensionContext(this);
+                        return await (context as any).update({
+                            where,
+                            data: {
+                                deleted: true,
+                                deletedAt: new Date(),
+                            },
+                        });
+                    },
+                    async findManyUndeleted<T, A>(
+                        this: T,
+                        args: Prisma.Args<T, 'findMany'>,
+                    ): Promise<Prisma.Result<T, A, 'findMany'>> {
+                        const context = Prisma.getExtensionContext(this);
+                        return await (context as any).findMany({
+                            ...args,
+                            where: {
+                                ...args.where,
+                                deleted: false,
+                            },
+                        });
+                    },
                 },
             },
         });
