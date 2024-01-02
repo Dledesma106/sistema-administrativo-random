@@ -70,7 +70,14 @@ builder.mutationFields((t) => ({
             }),
         },
         authz: {
-            rules: ['IsAuthenticated'],
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsAdministrativoTecnico', 'IsTecnico'],
+                },
+            ],
         },
         resolve: async (root, args, _context, _info) => {
             try {
@@ -112,7 +119,12 @@ builder.mutationFields((t) => ({
             }),
         },
         authz: {
-            rules: ['IsAuthenticated'],
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                },
+            ],
         },
         resolve: async (root, args, _context, _info) => {
             try {
@@ -154,7 +166,7 @@ builder.mutationFields((t) => ({
             }),
         },
         authz: {
-            rules: ['IsAuthenticated'],
+            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
         },
         resolve: async (root, args, _context, _info) => {
             try {

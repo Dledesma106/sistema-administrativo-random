@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { fetchClient } from '@/api/fetch-client';
 import { CreateTaskDocument, UpdateTaskDocument } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
-import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
+import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
 import { Button } from '@/components/ui/button';
 import {
@@ -138,7 +138,7 @@ const CreateOrUpdateTaskForm = ({
                                 <FormItem>
                                     <FormLabel>Cliente</FormLabel>
                                     <FormControl>
-                                        <DataTableComboboxFilter
+                                        <Combobox
                                             selectPlaceholder="Seleccione un cliente"
                                             searchPlaceholder="Buscar cliente"
                                             value={field.value}
@@ -173,7 +173,7 @@ const CreateOrUpdateTaskForm = ({
                                 >
                                     <FormLabel>Sucursal</FormLabel>
                                     <FormControl>
-                                        <DataTableComboboxFilter
+                                        <Combobox
                                             selectPlaceholder="Seleccione una sucursal"
                                             searchPlaceholder="Buscar sucursal"
                                             value={field.value}
@@ -214,7 +214,7 @@ const CreateOrUpdateTaskForm = ({
                                 >
                                     <FormLabel>Empresa</FormLabel>
                                     <FormControl>
-                                        <DataTableComboboxFilter
+                                        <Combobox
                                             selectPlaceholder="Seleccione una empresa"
                                             searchPlaceholder="Buscar empresa"
                                             value={field.value}
@@ -282,7 +282,7 @@ const CreateOrUpdateTaskForm = ({
                                 <FormItem>
                                     <FormLabel>Tipo de tarea</FormLabel>
                                     <FormControl>
-                                        <DataTableComboboxFilter
+                                        <Combobox
                                             selectPlaceholder="Seleccione un tipo de tarea"
                                             searchPlaceholder="Buscar tipo de tarea"
                                             value={field.value}
@@ -307,7 +307,7 @@ const CreateOrUpdateTaskForm = ({
                                 <FormItem>
                                     <FormLabel>Estado</FormLabel>
                                     <FormControl>
-                                        <DataTableComboboxFilter
+                                        <Combobox
                                             selectPlaceholder="Seleccione un estado"
                                             searchPlaceholder="Buscar estado"
                                             value={field.value}
@@ -374,7 +374,15 @@ const CreateOrUpdateTaskForm = ({
 
                     <div className="mt-4 flex flex-row justify-between">
                         <Button variant="secondary" asChild>
-                            <Link href="/tech-admin/tasks">Cancelar</Link>
+                            <Link
+                                href={
+                                    taskIdToUpdate
+                                        ? `/tech-admin/tasks/${taskIdToUpdate}`
+                                        : '/tech-admin/tasks'
+                                }
+                            >
+                                Cancelar
+                            </Link>
                         </Button>
                         <ButtonWithSpinner
                             type="submit"

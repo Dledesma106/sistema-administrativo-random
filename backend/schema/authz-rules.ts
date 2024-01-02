@@ -1,4 +1,5 @@
 import { preExecRule } from '@graphql-authz/core';
+import { Role } from '@prisma/client';
 
 import { USER_ACCESS_TOKEN_COOKIE_NAME } from './resolvers/users';
 import { YogaContext } from './types';
@@ -42,6 +43,64 @@ const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) =
     return true;
 });
 
+const IsAdministrativoTecnico = preExecRule()(async (
+    context: YogaContext,
+    _fieldArgs,
+) => {
+    if (!context.user) {
+        return false;
+    }
+
+    if (context.user.roles.includes(Role.AdministrativoTecnico)) {
+        return true;
+    }
+
+    return false;
+});
+
+const IsAuditor = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+    if (!context.user) {
+        return false;
+    }
+
+    if (context.user.roles.includes(Role.Auditor)) {
+        return true;
+    }
+
+    return false;
+});
+
+const IsTecnico = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+    if (!context.user) {
+        return false;
+    }
+
+    if (context.user.roles.includes(Role.Tecnico)) {
+        return true;
+    }
+
+    return false;
+});
+
+const IsAdministrativoContable = preExecRule()(async (
+    context: YogaContext,
+    _fieldArgs,
+) => {
+    if (!context.user) {
+        return false;
+    }
+
+    if (context.user.roles.includes(Role.AdministrativoContable)) {
+        return true;
+    }
+
+    return false;
+});
+
 export const authzRules = {
     IsAuthenticated,
+    IsAdministrativoTecnico,
+    IsAdministrativoContable,
+    IsAuditor,
+    IsTecnico,
 } as const;

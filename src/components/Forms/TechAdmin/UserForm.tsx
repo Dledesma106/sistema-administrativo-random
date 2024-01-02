@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
-import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
+import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
 import { Button } from '@/components/ui/button';
 import {
@@ -226,7 +226,7 @@ export default function UserForm({
                             <FormItem>
                                 <FormLabel>Ciudad</FormLabel>
                                 <FormControl>
-                                    <DataTableComboboxFilter
+                                    <Combobox
                                         searchPlaceholder="Buscar ciudad"
                                         selectPlaceholder="Seleccione una ciudad"
                                         items={cities.map((city) => {

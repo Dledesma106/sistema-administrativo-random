@@ -101,7 +101,7 @@ export default function TechAdminTaskItemActions({ task }: Props): JSX.Element {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[160px]">
                     <DropdownMenuItem asChild>
-                        <Link href={`/tech-admin/tasks/${task.id}`}>Editar</Link>
+                        <Link href={`/tech-admin/tasks/${task.id}/edit`}>Editar</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <button className="w-full cursor-default" onClick={openModal}>

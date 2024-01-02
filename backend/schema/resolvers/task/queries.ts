@@ -1,5 +1,3 @@
-import { Role } from '@prisma/client';
-
 import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
 import { builder } from 'backend/schema/builder';
@@ -9,7 +7,12 @@ builder.queryFields((t) => ({
     tasks: t.prismaField({
         type: ['Task'],
         authz: {
-            rules: ['IsAuthenticated'],
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                },
+            ],
         },
         args: {
             city: t.arg.string({
@@ -34,18 +37,16 @@ builder.queryFields((t) => ({
                 required: false,
             }),
         },
+        resolve: async (query) => {
+            return await prisma.task.findManyUndeleted(query);
+        },
+    }),
+    myAssignedTasks: t.prismaField({
+        type: ['Task'],
+        authz: {
+            rules: ['IsAuthenticated', 'IsAuditor'],
+        },
         resolve: async (query, _parent, _args, { user }) => {
-            if (
-                user.roles.some(
-                    (role) =>
-                        role === Role.AdministrativoContable ||
-                        role === Role.AdministrativoTecnico ||
-                        role === Role.Auditor,
-                )
-            ) {
-                return await prisma.task.findManyUndeleted(query);
-            }
-
             return await prisma.task.findManyUndeleted({
                 where: {
                     assignedIDs: {

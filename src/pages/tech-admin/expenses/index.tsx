@@ -11,8 +11,8 @@ import lodash from 'lodash';
 import { useEffect, useState } from 'react';
 import { Control, useForm } from 'react-hook-form';
 
+import Combobox from '@/components/Combobox';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
 import TitleButton from '@/components/TitleButton';
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
@@ -242,7 +242,7 @@ const ExpensesTable = (props: ExpensesProps) => {
             <div className="flex flex-wrap items-center space-x-4 py-4">
                 <Label className="block">Filtrar por</Label>
 
-                <DataTableComboboxFilter
+                <Combobox
                     selectPlaceholder="Seleccionar técnico"
                     searchPlaceholder="Buscar técnico"
                     value={(table.getColumn('doneBy')?.getFilterValue() as string) || ''}
@@ -258,7 +258,7 @@ const ExpensesTable = (props: ExpensesProps) => {
                         )}
                 />
 
-                <DataTableComboboxFilter
+                <Combobox
                     selectPlaceholder="Seleccionar estado"
                     searchPlaceholder="Buscar estado"
                     value={(table.getColumn('status')?.getFilterValue() as string) || ''}

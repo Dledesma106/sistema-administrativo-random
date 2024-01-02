@@ -6,6 +6,7 @@ import { createYoga } from 'graphql-yoga';
 
 import { schema } from 'backend/schema';
 import { authzRules } from 'backend/schema/authz-rules';
+
 export default createYoga<{
     req: NextApiRequest;
     res: NextApiResponse;

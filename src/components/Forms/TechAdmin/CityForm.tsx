@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
-import DataTableComboboxFilter from '@/components/DataTableComboboxFilter';
+import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -115,7 +115,7 @@ export default function CityForm({
                             <FormItem>
                                 <FormLabel>Provincia:</FormLabel>
                                 <FormControl>
-                                    <DataTableComboboxFilter
+                                    <Combobox
                                         searchPlaceholder="Buscar provincia"
                                         selectPlaceholder="Seleccione una provincia"
                                         items={provinces.map((province) => {

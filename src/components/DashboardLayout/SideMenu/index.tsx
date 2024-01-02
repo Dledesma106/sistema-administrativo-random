@@ -1,21 +1,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { Role } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import {
-    RiDashboardFill,
-    RiTaskLine,
-    RiBuilding3Line,
-    RiMapPinLine,
-    RiMapPin2Fill,
-    RiGroupLine,
-    RiFileWarningLine,
-    RiCustomerService2Line,
-} from 'react-icons/ri';
+
+import { IDashboardMenuItem, dashboardMenuItems } from './constants';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,90 +22,6 @@ import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import { axiosInstance } from '@/lib/fetcher';
-
-interface IItem {
-    id: number;
-    title: string;
-    path: string;
-    icon: JSX.Element;
-    toggle: boolean;
-    role: Role | null;
-}
-
-const items: IItem[] = [
-    {
-        id: 1,
-        title: 'Dashboard',
-        path: '/',
-        icon: <RiDashboardFill />,
-        toggle: false,
-        role: null,
-    },
-    {
-        id: 3,
-        title: 'Tareas',
-        path: '/tech-admin/tasks',
-        icon: <RiTaskLine />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 4,
-        title: 'Preventivos',
-        path: '/tech-admin/preventives',
-        icon: <RiFileWarningLine />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 5,
-        title: 'Clientes',
-        path: '/tech-admin/clients',
-        icon: <RiCustomerService2Line />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 6,
-        title: 'Empresas',
-        path: '/tech-admin/businesses',
-        icon: <RiBuilding3Line />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 7,
-        title: 'Provincias',
-        path: '/tech-admin/provinces',
-        icon: <RiMapPinLine />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 8,
-        title: 'Localidades',
-        path: '/tech-admin/cities',
-        icon: <RiMapPin2Fill />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 9,
-        title: 'Usuarios',
-        path: '/tech-admin/users',
-        icon: <RiGroupLine />,
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-    },
-    {
-        id: 10,
-        title: 'Gastos',
-        path: '/tech-admin/expenses',
-        toggle: false,
-        role: Role.AdministrativoTecnico,
-        icon: <RiGroupLine />,
-    },
-];
 
 export default function SideMenu(): JSX.Element {
     const { user, logoutUser } = useUserContext();
@@ -175,26 +82,36 @@ export default function SideMenu(): JSX.Element {
                 </h2>
 
                 <div className="space-y-2 pr-4">
-                    {items.map((item: IItem) => {
-                        const role = item.role;
+                    {dashboardMenuItems
+                        .filter(({ roles }: IDashboardMenuItem) => {
+                            if (roles === null) {
+                                return true;
+                            }
 
-                        if (role && !user.roles?.includes(role)) {
-                            return null;
-                        }
+                            if (!user.roles) {
+                                return false;
+                            }
 
-                        return (
-                            <Link className="block" href={item.path} key={item.id}>
-                                <Button
-                                    variant={pathname === item.path ? 'default' : 'ghost'}
-                                    className="flex w-full items-center justify-start space-x-2"
-                                >
-                                    {item.icon}
+                            return roles.some((allowedRole) => {
+                                return user.roles.includes(allowedRole);
+                            });
+                        })
+                        .map((item: IDashboardMenuItem) => {
+                            return (
+                                <Link className="block" href={item.path} key={item.id}>
+                                    <Button
+                                        variant={
+                                            pathname === item.path ? 'default' : 'ghost'
+                                        }
+                                        className="flex w-full items-center justify-start space-x-2"
+                                    >
+                                        {item.icon}
 
-                                    <span>{item.title}</span>
-                                </Button>
-                            </Link>
-                        );
-                    })}
+                                        <span>{item.title}</span>
+                                    </Button>
+                                </Link>
+                            );
+                        })}
                 </div>
             </div>
 

@@ -1,10 +1,12 @@
 import { GetServerSideProps } from 'next';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import dayjs from 'dayjs';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { Button } from '@/components/ui/button';
 import { TypographyH1 } from '@/components/ui/typography';
 import { createImageSignedUrl } from 'backend/s3Client';
 import { prisma } from 'lib/prisma';
@@ -94,12 +96,16 @@ export default function TaskView(props: Props): JSX.Element {
     }
 
     const { task } = props;
-    console.log(task);
 
     return (
         <DashboardLayout>
             <main className="py-3.5">
-                <TypographyH1 className="mb-2">Task #{task.id}</TypographyH1>
+                <div className="flex justify-between">
+                    <TypographyH1 className="mb-2">Task #{task.id}</TypographyH1>
+                    <Button asChild>
+                        <Link href={`/tech-admin/tasks/${task.id}/edit`}>Editar</Link>
+                    </Button>
+                </div>
                 <p className="text-muted-foreground">{task.description}</p>
 
                 <div className="space-y-4 pt-4">

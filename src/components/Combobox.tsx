@@ -23,7 +23,7 @@ type Props = {
     searchPlaceholder: string;
 };
 
-const DataTableComboboxFilter = (props: Props) => {
+const Combobox = (props: Props) => {
     const { value, onChange, items, searchPlaceholder, selectPlaceholder } = props;
     const [open, setOpen] = useState(false);
     const label = value ? items.find((item) => item.value === value)?.label : null;
@@ -102,4 +102,4 @@ const DataTableComboboxFilter = (props: Props) => {
     );
 };
 
-export default DataTableComboboxFilter;
+export default Combobox;
