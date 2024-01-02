@@ -25,6 +25,7 @@ const getProps = async () => {
             },
         },
     });
+
     const provinces = await prisma.province.findMany({
         where: {
             deleted: false,

@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role, TaskStatus } from '@prisma/client';
 import {
     prop,
     type Ref,
@@ -16,7 +16,7 @@ import { City } from './City';
 import ExpenseModel, { type Expense } from './Expense';
 import { type IPopulateParameter, type IUserActivities } from './interfaces';
 import TaskModel, { Task } from './Task';
-import { type ExpenseStatus, type TaskStatus } from './types';
+import { type ExpenseStatus } from './types';
 
 import { getToken } from '@/lib/jwt';
 

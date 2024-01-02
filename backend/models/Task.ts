@@ -1,3 +1,4 @@
+import { TaskStatus, TaskType } from '@prisma/client';
 import {
     prop,
     type Ref,
@@ -14,7 +15,6 @@ import { Business } from './Business';
 import ExpenseModel, { type Expense } from './Expense';
 import { Image } from './Image';
 import { type IPopulateParameter } from './interfaces';
-import { type TaskType, type TaskStatus } from './types';
 import { User } from './User';
 
 @modelOptions({

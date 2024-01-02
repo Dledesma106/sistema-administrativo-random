@@ -1,5 +1,6 @@
 import { type NextApiResponse } from 'next';
 
+import { Role } from '@prisma/client';
 import cookie from 'cookie';
 
 import { NextConnectApiRequest, type UserData } from './interfaces';
@@ -43,9 +44,16 @@ const AuthController = {
         }
 
         const accessToken = createToken(user as IUser);
-        return res.setHeader(
+        res.setHeader(
             'Set-Cookie',
-            cookie.serialize('ras_access_token', getUserToken(user), cookieOptionsLogin),
+            cookie.serialize(
+                'ras_access_token',
+                getUserToken({
+                    id: user._id.toString(),
+                    roles: user.roles,
+                }),
+                cookieOptionsLogin,
+            ),
         );
 
         return res.status(201).json({
@@ -76,7 +84,7 @@ const AuthController = {
             firstName,
             lastName,
             email,
-            role: ['Administrativo Tecnico'],
+            role: [Role.AdministrativoTecnico],
         };
 
         userData.fullName = `${firstName as string} ${lastName as string}`;

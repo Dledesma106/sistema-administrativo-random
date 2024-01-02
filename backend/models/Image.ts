@@ -40,6 +40,11 @@ export class Image {
     })
     key: string;
 
+    @prop({
+        type: Date,
+    })
+    urlExpire: Date;
+
     static async findUndeleted(
         this: ReturnModelType<typeof Image>,
         filter: FilterQuery<Image> = {},

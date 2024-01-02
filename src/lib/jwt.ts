@@ -16,7 +16,7 @@ export const getToken = (payload: any): string => {
     );
 };
 
-export const getUserToken = (user: User): string => {
+export const getUserToken = (user: Pick<User, 'id' | 'roles'>): string => {
     return sign(
         {
             exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days

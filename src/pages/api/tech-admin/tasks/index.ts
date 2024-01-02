@@ -8,7 +8,6 @@ protectedHandler.use(accessControl);
 
 protectedHandler.post(TaskController.postTask);
 protectedHandler.put(TaskController.putTask);
-protectedHandler.delete(TaskController.deleteTask);
 
 export default protectedHandler.handler({
     onError: onError,

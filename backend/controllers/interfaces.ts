@@ -1,11 +1,10 @@
 import { type NextApiRequest } from 'next';
 
+import { Role } from '@prisma/client';
 import { BeAnObject, IObjectWithTypegooseFunction } from '@typegoose/typegoose/lib/types';
 import { Document, Types } from 'mongoose';
 
 import { User } from 'backend/models/User';
-
-import { type Role } from '../models/types';
 
 export interface MulterS3File {
     fieldname: string;

@@ -62,13 +62,20 @@ export const getTaskById = async (taskId: string, userId?: string) => {
         return null;
     }
 
-    let images = task.imagesIDs as undefined | Pick<Image, 'url' | '_id'>[];
+    let images = task.imagesIDs as undefined | Pick<Image, 'url' | '_id' | 'key'>[];
     if (!images) {
         images = [];
     } else {
         images = await Promise.all(
             images.map(async (image) => {
-                const url = await createImageSignedUrl(image);
+                const { url, expiresAt } = await createImageSignedUrl(image);
+                await ImageModel.findOneAndUpdate(
+                    { _id: image._id },
+                    {
+                        url,
+                        urlExpire: expiresAt,
+                    },
+                );
 
                 return {
                     ...image,

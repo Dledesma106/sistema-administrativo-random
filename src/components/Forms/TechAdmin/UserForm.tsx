@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { Role } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
@@ -23,7 +24,7 @@ import useAlert from '@/context/alertContext/useAlert';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { CityWithProvince } from '@/types';
-import { roles, type Role } from 'backend/models/types';
+import { rolesOptions } from 'backend/models/types';
 
 export interface UserFormProps {
     cities: CityWithProvince[];
@@ -251,12 +252,7 @@ export default function UserForm({
                                 <FormControl>
                                     <FancyMultiSelect
                                         placeholder="Añade roles"
-                                        options={roles.map((role) => {
-                                            return {
-                                                value: role,
-                                                label: role,
-                                            };
-                                        })}
+                                        options={rolesOptions}
                                         {...field}
                                     />
                                 </FormControl>
