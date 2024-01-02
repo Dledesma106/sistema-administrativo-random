@@ -15,7 +15,7 @@ export async function fetchClient<T, V>(
     } = {},
 ) {
     try {
-        const fetchConfig = {
+        const fetchConfig: RequestInit = {
             method: 'POST',
             headers: {
                 Accept: 'application/json',

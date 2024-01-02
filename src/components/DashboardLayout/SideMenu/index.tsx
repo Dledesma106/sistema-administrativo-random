@@ -88,7 +88,7 @@ export default function SideMenu(): JSX.Element {
                                 return true;
                             }
 
-                            if (!user.roles) {
+                            if (!user.roles)  {
                                 return false;
                             }
 
