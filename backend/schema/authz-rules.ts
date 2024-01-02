@@ -7,10 +7,10 @@ import { YogaContext } from './types';
 import { getPayload } from '@/lib/jwt';
 import { prisma } from 'lib/prisma';
 
-const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+const getUserFromContext = async (context: YogaContext) => {
     const cookie = await context.request.cookieStore?.get(USER_ACCESS_TOKEN_COOKIE_NAME);
     if (!cookie?.value) {
-        return false;
+        return null;
     }
 
     const jwt = cookie.value;
@@ -18,16 +18,16 @@ const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) =
     try {
         result = getPayload(jwt);
     } catch (error) {
-        return false;
+        return null;
     }
 
     if (!result) {
-        return false;
+        return null;
     }
 
     const userId = result.payload.userId;
     if (!userId) {
-        return false;
+        return null;
     }
 
     const user = await prisma.user.findUnique({
@@ -35,6 +35,15 @@ const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) =
             id: userId,
         },
     });
+    if (!user) {
+        return null;
+    }
+
+    return user;
+};
+
+const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+    const user = await getUserFromContext(context);
     if (!user) {
         return false;
     }
@@ -47,11 +56,13 @@ const IsAdministrativoTecnico = preExecRule()(async (
     context: YogaContext,
     _fieldArgs,
 ) => {
-    if (!context.user) {
+    const user = await getUserFromContext(context);
+    if (!user) {
         return false;
     }
 
-    if (context.user.roles.includes(Role.AdministrativoTecnico)) {
+    if (user.roles.includes(Role.AdministrativoTecnico)) {
+        console.log('IsAdministrativoTecnico: true');
         return true;
     }
 
@@ -59,11 +70,12 @@ const IsAdministrativoTecnico = preExecRule()(async (
 });
 
 const IsAuditor = preExecRule()(async (context: YogaContext, _fieldArgs) => {
-    if (!context.user) {
+    const user = await getUserFromContext(context);
+    if (!user) {
         return false;
     }
 
-    if (context.user.roles.includes(Role.Auditor)) {
+    if (user.roles.includes(Role.Auditor)) {
         return true;
     }
 
@@ -71,11 +83,12 @@ const IsAuditor = preExecRule()(async (context: YogaContext, _fieldArgs) => {
 });
 
 const IsTecnico = preExecRule()(async (context: YogaContext, _fieldArgs) => {
-    if (!context.user) {
+    const user = await getUserFromContext(context);
+    if (!user) {
         return false;
     }
 
-    if (context.user.roles.includes(Role.Tecnico)) {
+    if (user.roles.includes(Role.Tecnico)) {
         return true;
     }
 
@@ -86,11 +99,12 @@ const IsAdministrativoContable = preExecRule()(async (
     context: YogaContext,
     _fieldArgs,
 ) => {
-    if (!context.user) {
+    const user = await getUserFromContext(context);
+    if (!user) {
         return false;
     }
 
-    if (context.user.roles.includes(Role.AdministrativoContable)) {
+    if (user.roles.includes(Role.AdministrativoContable)) {
         return true;
     }
 

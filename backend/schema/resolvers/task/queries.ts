@@ -7,13 +7,14 @@ builder.queryFields((t) => ({
     tasks: t.prismaField({
         type: ['Task'],
         authz: {
-            rules: [],
-            // compositeRules: [
-            //     { and: ['IsAuthenticated'] },
-            //     {
-            //         or: ['IsAdministrativoTecnico', 'IsAuditor'],
-            //     },
-            // ],
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                },
+            ],
         },
         args: {
             city: t.arg.string({
@@ -45,8 +46,7 @@ builder.queryFields((t) => ({
     myAssignedTasks: t.prismaField({
         type: ['Task'],
         authz: {
-            rules: [],
-            // rules: ['IsAuthenticated', 'IsAuditor'],
+            rules: ['IsAuthenticated', 'IsAuditor'],
         },
         resolve: async (query, _parent, _args, { user }) => {
             return await prisma.task.findManyUndeleted({
