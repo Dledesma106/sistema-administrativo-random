@@ -12,7 +12,8 @@
         "format:fix": "prettier --write '{src,backend}/**/*.ts{,x}'",
         "lint-format:fix": "yarn lint:fix && yarn format:fix",
         "seed": "ts-node ./prisma/seed.ts",
-        "gen": "graphql-codegen --config codegen.ts"
+        "gen": "graphql-codegen --config codegen.ts",
+        "postinstall": "prisma generate"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.470.0",
