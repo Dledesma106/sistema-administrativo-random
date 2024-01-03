@@ -45,6 +45,54 @@ builder.queryFields((t) => ({
             return await prisma.task.findManyUndeleted(query);
         },
     }),
+    taskById: t.prismaField({
+        type: 'Task',
+        nullable: true,
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                },
+            ],
+        },
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+        },
+        resolve: async (query, parent, { id }) => {
+            return await prisma.task.findUniqueUndeleted({
+                where: {
+                    id,
+                },
+            });
+        },
+    }),
+    myAssignedTaskById: t.prismaField({
+        type: 'Task',
+        nullable: true,
+        authz: {
+            rules: ['IsAuthenticated', 'IsTecnico'],
+        },
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+        },
+        resolve: async (query, parent, { id }, { user }) => {
+            return await prisma.task.findUniqueUndeleted({
+                where: {
+                    id,
+                    assignedIDs: {
+                        has: user.id,
+                    },
+                },
+            });
+        },
+    }),
     myAssignedTasks: t.prismaField({
         type: ['Task'],
         authz: {

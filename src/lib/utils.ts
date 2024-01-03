@@ -107,6 +107,10 @@ export function trimTask(task: ITask): ITask {
 export const getCleanErrorMessage = (err: Error) => {
     let message = err.message;
 
+    if (!err.message) {
+        return 'Error desconocido';
+    }
+
     const firstErrorSplitted = err.message.split('Error: ');
     if (firstErrorSplitted.length > 1) {
         message = firstErrorSplitted.slice(1).join('');

@@ -95,6 +95,19 @@ const prismaClientSingleton = () => {
                             },
                         });
                     },
+                    async findUniqueUndeleted<T, A>(
+                        this: T,
+                        args: Prisma.Args<T, 'findUnique'>,
+                    ): Promise<Prisma.Result<T, A, 'findUnique'>> {
+                        const context = Prisma.getExtensionContext(this);
+                        return await (context as any).findUnique({
+                            ...args,
+                            where: {
+                                ...args.where,
+                                deleted: false,
+                            },
+                        });
+                    },
                     async findManyUndeleted<T, A>(
                         this: T,
                         args: Prisma.Args<T, 'findMany'>,

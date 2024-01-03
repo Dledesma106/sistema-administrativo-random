@@ -52,7 +52,12 @@ export async function fetchClient<T, V>(
             }
         }
 
-        return json.data as T;
+        const data = json.data;
+        if (!data) {
+            throw new Error('No data');
+        }
+
+        return data as T;
     } catch (error) {
         if (error instanceof Response) {
             if (error.status === 409) {

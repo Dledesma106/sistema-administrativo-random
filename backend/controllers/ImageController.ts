@@ -77,22 +77,28 @@ const ImageController = {
             });
         }
 
-        if (req.query.taskId) {
-            const taskId = req.query.taskId as string;
-            const result = ImageController._addImageToTask(image._id, taskId);
-            if (!result) {
-                return res.status(404).json({
-                    error: 'Task not found',
-                });
+        try {
+            if (req.query.taskId) {
+                const taskId = req.query.taskId as string;
+                const result = ImageController._addImageToTask(image._id, taskId);
+                if (!result) {
+                    return res.status(404).json({
+                        error: 'Task not found',
+                    });
+                }
+            } else if (req.query.expenseId) {
+                const expenseId = req.query.expenseId as string;
+                const result = ImageController._addImageToExpense(image._id, expenseId);
+                if (!result) {
+                    return res.status(404).json({
+                        error: 'Expense not found',
+                    });
+                }
             }
-        } else if (req.query.expenseId) {
-            const expenseId = req.query.expenseId as string;
-            const result = ImageController._addImageToExpense(image._id, expenseId);
-            if (!result) {
-                return res.status(404).json({
-                    error: 'Expense not found',
-                });
-            }
+        } catch (err) {
+            return res.status(500).json({
+                error: 'Could not add image',
+            });
         }
 
         return res.status(200).json({

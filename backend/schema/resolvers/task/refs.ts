@@ -1,5 +1,6 @@
 import { Task, TaskStatus, TaskType } from '@prisma/client';
 
+import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
@@ -59,7 +60,29 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                 });
             },
         }),
-        images: t.relation('images'),
+        imagesIDs: t.exposeStringList('imagesIDs'),
+        images: t.prismaField({
+            type: ['Image'],
+            resolve: async (root, parent) => {
+                const images = await prisma.image.findManyUndeleted({
+                    where: {
+                        id: {
+                            in: parent.imagesIDs,
+                        },
+                    },
+                });
+
+                await Promise.all(images.map(updateImageSignedUrlAsync));
+
+                return prisma.image.findManyUndeleted({
+                    where: {
+                        id: {
+                            in: parent.imagesIDs,
+                        },
+                    },
+                });
+            },
+        }),
         expenses: t.relation('expenses'),
     }),
 });

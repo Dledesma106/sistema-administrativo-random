@@ -12,7 +12,7 @@ import ExpenseModel from 'backend/models/Expense';
 import ImageModel, { Image } from 'backend/models/Image';
 import TaskModel from 'backend/models/Task';
 import { ExpenseStatus, ExpenseType, PaySource } from 'backend/models/types';
-import { createImageSignedUrl, s3Client } from 'backend/s3Client';
+import { createImageSignedUrlAsync, s3Client } from 'backend/s3Client';
 
 type PostTechFormData = {
     fields: {
@@ -38,7 +38,7 @@ const ExpenseController = {
             })
                 .populate({
                     path: 'image',
-                    select: 'url',
+                    select: ['url', 'key'],
                 })
                 .lean()
                 .exec();
@@ -52,7 +52,7 @@ const ExpenseController = {
             const expenseData = {
                 ...expense,
                 image: {
-                    url: await createImageSignedUrl(expense.image as Image),
+                    url: await createImageSignedUrlAsync(expense.image as Image),
                 },
             };
 

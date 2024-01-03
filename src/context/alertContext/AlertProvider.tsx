@@ -26,8 +26,8 @@ const AlertProvider = ({ children }: ProviderProps): JSX.Element => {
                                 : alert.type === 'Success'
                                   ? 'success'
                                   : 'destructive',
-                        // title: 'Uh oh! Something went wrong.',
                         description: alert.message,
+                        duration: 5000,
                     });
                 },
                 removeAlert: () => {

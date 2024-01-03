@@ -2,6 +2,7 @@ import { useRouter } from 'next/navigation';
 
 import { TaskStatus, TaskType } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { fetchClient } from '@/api/fetch-client';
@@ -22,13 +23,14 @@ import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
+import { getCleanErrorMessage } from '@/lib/utils';
 import { NewTaskPageProps } from '@/pages/tasks/new';
 import { taskStatusesOptions, taskTypesOptions } from 'backend/models/types';
 
 type FormValues = {
     client: string;
-    branch: string;
-    business: string;
+    branch: string | null;
+    business: string | null;
     assignedIDs: {
         label: string;
         value: string;
@@ -60,6 +62,14 @@ const CreateOrUpdateTaskForm = ({
 
     const postMutation = useMutation({
         mutationFn: async (form: FormValues) => {
+            if (!form.branch) {
+                throw new Error('Debe seleccionar una sucursal');
+            }
+
+            if (!form.business) {
+                throw new Error('Debe seleccionar una empresa');
+            }
+
             return fetchClient(CreateTaskDocument, {
                 input: {
                     auditor: null,
@@ -73,19 +83,41 @@ const CreateOrUpdateTaskForm = ({
                 },
             });
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+            if (data.createTask.message) {
+                triggerAlert({
+                    type: 'Failure',
+                    message: data.createTask.message,
+                });
+                return;
+            }
+
             triggerAlert({
                 type: 'Success',
                 message: `La tarea fue creada correctamente`,
             });
             router.push(routesBuilder.tasks.list());
         },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: getCleanErrorMessage(error),
+            });
+        },
     });
 
     const putMutation = useMutation({
         mutationFn: async (form: FormValues) => {
             if (!taskIdToUpdate) {
-                return;
+                throw new Error('No se pudo actualizar la tarea');
+            }
+
+            if (!form.branch) {
+                throw new Error('Debe seleccionar una sucursal');
+            }
+
+            if (!form.business) {
+                throw new Error('Debe seleccionar una empresa');
             }
 
             return fetchClient(UpdateTaskDocument, {
@@ -102,14 +134,42 @@ const CreateOrUpdateTaskForm = ({
                 },
             });
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+            if (data?.updateTask.message) {
+                triggerAlert({
+                    type: 'Failure',
+                    message: data.updateTask.message,
+                });
+                return;
+            }
+
             triggerAlert({
                 type: 'Success',
                 message: `La tarea fue actualizada correctamente`,
             });
             router.push(routesBuilder.tasks.list());
         },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: getCleanErrorMessage(error),
+            });
+        },
     });
+
+    const { watch, setValue } = form;
+    useEffect(() => {
+        const subscription = watch((value, { type, name }) => {
+            if (type === 'change' && name === 'client') {
+                setValue('branch', null);
+                setValue('business', null);
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [watch, setValue]);
 
     const onSubmit = (form: FormValues): void => {
         if (taskIdToUpdate) {
@@ -176,7 +236,7 @@ const CreateOrUpdateTaskForm = ({
                                         <Combobox
                                             selectPlaceholder="Seleccione una sucursal"
                                             searchPlaceholder="Buscar sucursal"
-                                            value={field.value}
+                                            value={field.value || ''}
                                             onChange={field.onChange}
                                             items={branches
                                                 .filter(
@@ -217,7 +277,7 @@ const CreateOrUpdateTaskForm = ({
                                         <Combobox
                                             selectPlaceholder="Seleccione una empresa"
                                             searchPlaceholder="Buscar empresa"
-                                            value={field.value}
+                                            value={field.value || ''}
                                             onChange={field.onChange}
                                             items={
                                                 branches
@@ -347,7 +407,11 @@ const CreateOrUpdateTaskForm = ({
                                             type="number"
                                             placeholder="Numero de orden de trabajo"
                                             value={field.value || ''}
-                                            onChange={field.onChange}
+                                            onChange={(e) => {
+                                                field.onChange(
+                                                    parseInt(e.target.value, 10),
+                                                );
+                                            }}
                                         />
                                     </FormControl>
                                     <FormMessage />

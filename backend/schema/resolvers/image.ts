@@ -2,12 +2,17 @@ import { prisma } from 'lib/prisma';
 
 import { builder } from '../builder';
 
-builder.prismaObject('Image', {
+export const ImagePothosRef = builder.prismaObject('Image', {
     name: 'Image',
     fields: (t) => ({
         id: t.exposeID('id'),
         name: t.exposeString('name'),
         url: t.exposeString('url'),
+        urlExpire: t.field({
+            type: 'DateTime',
+            nullable: true,
+            resolve: (root) => root.urlExpire,
+        }),
         key: t.exposeString('key'),
     }),
 });

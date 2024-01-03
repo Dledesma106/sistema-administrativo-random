@@ -40,13 +40,13 @@ export const useTasksTableColumns = () => [
         header: 'Descripción',
         cell: (info) => {
             let description = info.getValue();
-            const maxLength = 50;
+            const maxLength = 67;
 
             if (description.length > maxLength) {
                 description = `${description.slice(0, maxLength)}...`;
             }
 
-            return <p className="text-muted-foreground">{description}</p>;
+            return <p className="max-w-[250px] text-muted-foreground">{description}</p>;
         },
     }),
     columnHelper.accessor((row) => row.business.id, {
@@ -105,10 +105,14 @@ export const useTasksTableColumns = () => [
         id: 'assigned',
         cell: (info) => {
             return (
-                <div className="flex space-x-2">
+                <div className="-ml-2 -mt-2 flex max-w-[250px] flex-wrap">
                     {info.getValue().map((tech) => {
                         return (
-                            <Badge key={tech.id} variant="secondary">
+                            <Badge
+                                className="ml-2 mt-2 whitespace-nowrap"
+                                key={tech.id}
+                                variant="secondary"
+                            >
                                 {tech.fullName}
                             </Badge>
                         );
@@ -152,7 +156,10 @@ export const useTasksTableColumns = () => [
 
             if (status === TaskStatus.Aprobada) {
                 return (
-                    <Badge className="inline-flex space-x-2" variant="outline">
+                    <Badge
+                        className="inline-flex space-x-2 whitespace-nowrap"
+                        variant="outline"
+                    >
                         <span className="h-2 w-2 rounded-full bg-success"></span>
                         <span>Aprobada</span>
                     </Badge>
@@ -161,7 +168,10 @@ export const useTasksTableColumns = () => [
 
             if (status === TaskStatus.Pendiente) {
                 return (
-                    <Badge className="inline-flex space-x-2" variant="outline">
+                    <Badge
+                        className="inline-flex space-x-2 whitespace-nowrap"
+                        variant="outline"
+                    >
                         <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
                         <span>Pendiente</span>
                     </Badge>
@@ -170,7 +180,10 @@ export const useTasksTableColumns = () => [
 
             if (status === TaskStatus.Finalizada) {
                 return (
-                    <Badge className="inline-flex space-x-2" variant="outline">
+                    <Badge
+                        className="inline-flex space-x-2 whitespace-nowrap"
+                        variant="outline"
+                    >
                         <span className="h-2 w-2 rounded-full bg-blue-400"></span>
                         <span>Finalizada</span>
                     </Badge>
@@ -179,7 +192,10 @@ export const useTasksTableColumns = () => [
 
             if (status === TaskStatus.SinAsignar) {
                 return (
-                    <Badge className="inline-flex space-x-2" variant="outline">
+                    <Badge
+                        className="inline-flex space-x-2 whitespace-nowrap"
+                        variant="outline"
+                    >
                         <span className="h-2 w-2 rounded-full bg-destructive"></span>
                         <span>Sin Asignar</span>
                     </Badge>

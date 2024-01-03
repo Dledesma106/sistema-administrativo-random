@@ -42,7 +42,9 @@ const getUserFromContext = async (context: YogaContext) => {
     return user;
 };
 
-const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+const IsAuthenticated = preExecRule({
+    error: 'No estás autenticado',
+})(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
         return false;
@@ -52,24 +54,24 @@ const IsAuthenticated = preExecRule()(async (context: YogaContext, _fieldArgs) =
     return true;
 });
 
-const IsAdministrativoTecnico = preExecRule()(async (
-    context: YogaContext,
-    _fieldArgs,
-) => {
+const IsAdministrativoTecnico = preExecRule({
+    error: 'No tienes permisos para realizar esta acción',
+})(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
         return false;
     }
 
     if (user.roles.includes(Role.AdministrativoTecnico)) {
-        console.log('IsAdministrativoTecnico: true');
         return true;
     }
 
     return false;
 });
 
-const IsAuditor = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+const IsAuditor = preExecRule({
+    error: 'No tienes permisos para realizar esta acción',
+})(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
         return false;
@@ -82,7 +84,9 @@ const IsAuditor = preExecRule()(async (context: YogaContext, _fieldArgs) => {
     return false;
 });
 
-const IsTecnico = preExecRule()(async (context: YogaContext, _fieldArgs) => {
+const IsTecnico = preExecRule({
+    error: 'No tienes permisos para realizar esta acción',
+})(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
         return false;
@@ -95,10 +99,9 @@ const IsTecnico = preExecRule()(async (context: YogaContext, _fieldArgs) => {
     return false;
 });
 
-const IsAdministrativoContable = preExecRule()(async (
-    context: YogaContext,
-    _fieldArgs,
-) => {
+const IsAdministrativoContable = preExecRule({
+    error: 'No tienes permisos para realizar esta acción',
+})(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
         return false;

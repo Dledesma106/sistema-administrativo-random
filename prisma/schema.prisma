@@ -142,10 +142,13 @@ model Expense {
   task   Task   @relation(fields: [taskId], references: [id])
 
   doneById String @map("doneBy") @db.ObjectId
-  doneBy   User   @relation(fields: [doneById], references: [id])
+  doneBy   User   @relation("expensesMade", fields: [doneById], references: [id])
 
   imageId String @map("image") @db.ObjectId
   image   Image  @relation(fields: [imageId], references: [id])
+
+  auditorId String? @map("auditor") @db.ObjectId
+  auditor   User?   @relation("expensesAudited", fields: [auditorId], references: [id])
 
   @@map("expenses")
 }
@@ -268,7 +271,8 @@ model User {
   preventivesIDs String[]     @map("preventives") @db.ObjectId
   preventives    Preventive[] @relation(fields: [preventivesIDs], references: [id])
 
-  expense Expense[]
+  expensesMade    Expense[] @relation("expensesMade")
+  expensesAudited Expense[] @relation("expensesAudited")
 
   @@map("users")
 }

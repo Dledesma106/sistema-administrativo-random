@@ -13,7 +13,7 @@ import ImageModel, { Image } from 'backend/models/Image';
 import { ITask, IUser } from 'backend/models/interfaces';
 import TaskModel, { Task } from 'backend/models/Task';
 import { type User } from 'backend/models/User';
-import { createImageSignedUrl } from 'backend/s3Client';
+import { createImageSignedUrlAsync } from 'backend/s3Client';
 
 export const getTaskById = async (taskId: string, userId?: string) => {
     const filters = {
@@ -68,7 +68,7 @@ export const getTaskById = async (taskId: string, userId?: string) => {
     } else {
         images = await Promise.all(
             images.map(async (image) => {
-                const { url, expiresAt } = await createImageSignedUrl(image);
+                const { url, expiresAt } = await createImageSignedUrlAsync(image);
                 await ImageModel.findOneAndUpdate(
                     { _id: image._id },
                     {

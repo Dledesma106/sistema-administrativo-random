@@ -50,12 +50,69 @@ query tasks(
     }
 }
 
+query taskById($id: String!) {
+    taskById(id: $id) {
+        id
+        createdAt
+        closedAt
+        description
+        business {
+            id
+            name
+        }
+        images {
+            id
+            url
+        }
+        branch {
+            number
+            city {
+                name
+                province {
+                    name
+                }
+            }
+            client {
+                name
+            }
+        }
+        assigned {
+            id
+            firstName
+            lastName
+            fullName
+            email
+        }
+        expenses {
+            id
+            amount
+            paySource
+            createdAt
+            image {
+                id
+                url
+                urlExpire
+                key
+            }
+            status
+            doneBy {
+                id
+                email
+                fullName
+            }
+        }
+        taskType
+        status
+    }
+}
+
 mutation createTask($input: TaskInput!) {
     createTask(input: $input) {
         task {
             id
         }
         success
+        message
     }
 }
 
@@ -65,6 +122,7 @@ mutation updateTask($id: String!, $input: TaskInput!) {
             id
         }
         success
+        message
     }
 }
 
@@ -75,5 +133,18 @@ mutation deleteTask($id: String!) {
         }
         success
         message
+    }
+}
+
+mutation updateTaskExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
+    updateTaskExpenseStatus(expenseId: $expenseId, status: $status) {
+        task {
+            id
+            expenses {
+                id
+                status
+            }
+        }
+        success
     }
 }
