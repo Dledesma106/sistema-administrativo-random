@@ -1,47 +1,35 @@
-import { type GetServerSidePropsContext } from 'next';
+import { GetServerSideProps } from 'next';
+
+import { Role } from '@prisma/client';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import PreventiveForm, {
-    type IPreventiveForm,
-} from '@/components/Forms/TechAdmin/PreventiveForm';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import BranchModel from 'backend/models/Branch';
-import BusinessModel from 'backend/models/Business';
-import ClientModel from 'backend/models/Client';
-import {
-    type IBranch,
-    type IBusiness,
-    type IClient,
-    type IUser,
-    type IPreventive,
-} from 'backend/models/interfaces';
-import Preventive from 'backend/models/Preventive';
+import PreventiveForm from '@/components/Forms/TechAdmin/PreventiveForm';
 import { type Frequency, type Month } from 'backend/models/types';
-import UserModel from 'backend/models/User';
+import { prisma } from 'lib/prisma';
 
-interface Props {
-    preventive: IPreventive;
-    branches: IBranch[];
-    clients: IClient[];
-    businesses: IBusiness[];
-    technicians: IUser[];
-}
+export type EditPreventivePageProps = Awaited<
+    ReturnType<typeof getEditPreventivePageProps>
+>;
 
-export default function NewTask({
-    branches,
-    clients,
-    businesses,
-    technicians,
-    preventive,
-}: Props): JSX.Element {
-    const preventiveFormProps = {
-        branches,
-        clients,
-        businesses,
-        technicians,
-    };
+type ValidProps = EditPreventivePageProps & {
+    preventive: NonNullable<Awaited<ReturnType<typeof getPreventive>>>;
+};
 
+type Props = ValidProps | Record<string, never>;
+
+const propsAreValid = (props: Props): props is ValidProps => {
+    return 'preventive' in props;
+};
+
+type Params = {
+    id: string;
+};
+
+export default function EditPreventive(props: Props) {
+    if (propsAreValid(props)) {
+        return null;
+    }
+    const { preventive, ...rest } = props;
     const preventiveForm: IPreventiveForm = {
         _id: preventive._id as string,
         branch: preventive.branch,
@@ -60,46 +48,96 @@ export default function NewTask({
             <PreventiveForm
                 newPreventive={false}
                 preventiveForm={preventiveForm}
-                {...preventiveFormProps}
+                {...rest}
             />
         </DashboardLayout>
     );
 }
 
-export async function getServerSideProps(
-    ctx: GetServerSidePropsContext,
-): Promise<{ props: Props }> {
+export const getServerSideProps: GetServerSideProps<Props, Params> = async (ctx) => {
     const { params } = ctx;
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    if (!params) {
+    const id = params?.id;
+    if (!id || Array.isArray(id)) {
         return {
-            props: {} as Props,
-        };
-    }
-    await dbConnect();
-    const preventive = await Preventive.findById(params.id).populate(
-        Preventive.getPopulateParameters(),
-    );
-    if (preventive === null) {
-        return {
-            props: {} as Props,
+            props: {},
         };
     }
 
-    const branches = await BranchModel.findUndeleted({});
-    const clients = await ClientModel.findUndeleted({});
-    const businesses = await BusinessModel.findUndeleted({});
-    const technicians = await UserModel.findUndeleted({
-        roles: 'Tecnico',
+    const preventive = await getPreventive(id);
+    if (!preventive) {
+        return {
+            props: {},
+        };
+    }
+
+    const rest = await getEditPreventivePageProps();
+
+    return {
+        props: {
+            preventive: JSON.parse(JSON.stringify(preventive)),
+            ...rest,
+        },
+    };
+};
+
+const getEditPreventivePageProps = async () => {
+    const branches = await prisma.branch.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            number: true,
+            clientId: true,
+            businesses: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
+            city: {
+                select: {
+                    id: true,
+                    name: true,
+                    province: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    const clients = await prisma.client.findMany({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+    const technicians = await prisma.user.findMany({
+        where: {
+            deleted: false,
+            roles: {
+                has: Role.Tecnico,
+            },
+        },
+        select: {
+            id: true,
+            fullName: true,
+        },
     });
 
     return {
-        props: mongooseDocumentToJSON({
-            branches,
-            clients,
-            businesses,
-            technicians,
-            preventive,
-        }) as any,
+        branches,
+        clients,
+        technicians,
     };
-}
+};
+
+const getPreventive = async (id: string) => {
+    return prisma.preventive.findUniqueUndeleted({ where: { id } });
+};
