@@ -124,6 +124,7 @@ builder.mutationFields((t) => ({
                 sameSite: 'lax',
                 expires: expiresAt,
                 domain: null,
+                path: '/',
             };
 
             await (context as YogaInitialContext).request.cookieStore?.set(cookieOptions);
