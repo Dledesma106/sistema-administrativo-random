@@ -8,7 +8,7 @@ const getFullUrl = (path: string) => {
 const contentType = 'application/json';
 
 export const axiosInstance = axios.create({
-    baseURL: window.location.origin,
+    baseURL: typeof window !== 'undefined' ? window.location.origin : '',
     headers: {
         Accept: contentType,
         'Content-Type': contentType,

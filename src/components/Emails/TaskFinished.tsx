@@ -1,4 +1,3 @@
-import { routesBuilder } from '@/lib/routes';
 import { ITask, IUser } from 'backend/models/interfaces';
 
 export type TaskFinishedEmailProps = {
@@ -23,19 +22,7 @@ export default function TaskFinishedEmail({
                 ha sido marcada como &ldquo;finalizada&rdquo; por {finishedBy.fullName}.
             </p>
 
-            <p>
-                Puedes revisar el estado de la tarea en el siguiente enlace:
-                <br />
-                <a
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    href={`${window.location.origin}${routesBuilder.tasks.details(
-                        task.id as string,
-                    )}`}
-                >
-                    Ver tarea
-                </a>
-            </p>
+            <p>Puedes revisar el estado de la tarea en el sitio</p>
         </>
     );
 }

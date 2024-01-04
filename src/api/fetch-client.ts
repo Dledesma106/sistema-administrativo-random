@@ -12,7 +12,10 @@ export async function fetchClient<T, V>(
         token?: string;
     } = {},
 ) {
-    const url = `${window.location.origin}/api/graphql`;
+    const url =
+        typeof window !== 'undefined'
+            ? `${window.location.origin}/api/graphql`
+            : '/api/graphql';
 
     try {
         const fetchConfig: RequestInit = {
