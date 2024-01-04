@@ -91,51 +91,63 @@ builder.mutationFields((t) => ({
             }),
         },
         resolve: async (_parent, args, context, _info) => {
-            const { email, password } = args;
-            const user = await prisma.user.findUniqueUndeleted({
-                where: {
-                    email,
-                },
-            });
+            try {
+                const { email, password } = args;
+                const user = await prisma.user.findUniqueUndeleted({
+                    where: {
+                        email,
+                    },
+                });
 
-            if (!user) {
+                if (!user) {
+                    return {
+                        user: null,
+                        success: false,
+                        message: 'El usuario no existe',
+                    };
+                }
+
+                const passwordMatch = compareSync(password, user.password);
+                if (!passwordMatch) {
+                    return {
+                        user: null,
+                        success: false,
+                        message: 'Contraseña incorrecta',
+                    };
+                }
+
+                const { token, expiresAt } = getUserToken(user);
+
+                const cookieOptions: CookieListItem = {
+                    name: USER_ACCESS_TOKEN_COOKIE_NAME,
+                    value: token,
+                    secure: process.env.NODE_ENV !== 'development',
+                    sameSite: 'lax',
+                    expires: expiresAt,
+                    domain: null,
+                    path: '/',
+                };
+
+                await (context as YogaInitialContext).request.cookieStore?.set(
+                    cookieOptions,
+                );
+
                 return {
-                    user: null,
+                    success: true,
+                    user: user,
+                    message: null,
+                    accessToken: token,
+                    expiresAt,
+                };
+            } catch (e) {
+                return {
                     success: false,
-                    message: 'El usuario no existe',
+                    user: null,
+                    message: (e as Error).message,
+                    accessToken: undefined,
+                    expiresAt: undefined,
                 };
             }
-
-            const passwordMatch = compareSync(password, user.password);
-            if (!passwordMatch) {
-                return {
-                    user: null,
-                    success: false,
-                    message: 'Contraseña incorrecta',
-                };
-            }
-
-            const { token, expiresAt } = getUserToken(user);
-
-            const cookieOptions: CookieListItem = {
-                name: USER_ACCESS_TOKEN_COOKIE_NAME,
-                value: token,
-                secure: process.env.NODE_ENV !== 'development',
-                sameSite: 'lax',
-                expires: expiresAt,
-                domain: null,
-                path: '/',
-            };
-
-            await (context as YogaInitialContext).request.cookieStore?.set(cookieOptions);
-
-            return {
-                success: true,
-                user: user,
-                message: null,
-                accessToken: token,
-                expiresAt,
-            };
         },
     }),
 }));
