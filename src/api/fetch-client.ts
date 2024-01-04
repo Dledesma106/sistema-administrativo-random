@@ -25,6 +25,7 @@ export async function fetchClient<T, V>(
                 query: print(query),
                 variables: variables || undefined,
             }),
+            credentials: 'include',
             ...options,
         };
         const response = await fetch(url, fetchConfig);
