@@ -188,5 +188,9 @@ export class Task {
     }
 }
 
-const TaskModel = getModelForClass(Task);
+const TaskModel = getModelForClass(Task, {
+    schemaOptions: {
+        collection: 'tasks',
+    },
+});
 export default TaskModel;

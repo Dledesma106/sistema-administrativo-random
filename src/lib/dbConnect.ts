@@ -42,6 +42,7 @@ async function dbConnect(): Promise<Cached['conn']> {
         });
     }
     cached.conn = await cached.promise;
+
     return cached.conn;
 }
 

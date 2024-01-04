@@ -26,6 +26,7 @@ import { Province } from './Province';
 @modelOptions({
     schemaOptions: {
         timestamps: true,
+        collection: 'cities',
     },
 })
 export class City {
@@ -95,5 +96,9 @@ export class City {
     }
 }
 
-const CityModel = getModelForClass(City);
+const CityModel = getModelForClass(City, {
+    schemaOptions: {
+        collection: 'cities',
+    },
+});
 export default CityModel;

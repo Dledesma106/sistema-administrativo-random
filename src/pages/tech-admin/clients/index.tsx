@@ -26,13 +26,21 @@ export default function Clients({ clients }: Props): JSX.Element {
 }
 
 export async function getServerSideProps(): Promise<{ props: Props }> {
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    await dbConnect();
-    const docClients = await ClientModel.findUndeleted({});
-    const clients = mongooseDocumentToJSON(docClients);
-    return {
-        props: {
-            clients,
-        },
-    };
+    try {
+        await dbConnect();
+
+        const docClients = await ClientModel.findUndeleted({});
+        const clients = mongooseDocumentToJSON(docClients);
+        return {
+            props: {
+                clients,
+            },
+        };
+    } catch (error) {
+        return {
+            props: {
+                clients: [],
+            },
+        };
+    }
 }

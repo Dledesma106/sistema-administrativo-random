@@ -30,8 +30,17 @@ export default function Cities({ cities, provinces }: Props): JSX.Element {
 export async function getServerSideProps(): Promise<{ props: Props }> {
     // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const cities = await CityModel.findUndeleted();
-    const provinces = await ProvinceModel.findUndeleted();
+    const cities = await CityModel.find({
+        deleted: false,
+    })
+        .populate({
+            path: 'provinceId',
+        })
+        .exec();
+    const provinces = await ProvinceModel.find({
+        deleted: false,
+    });
+
     const props = mongooseDocumentToJSON({
         cities,
         provinces,

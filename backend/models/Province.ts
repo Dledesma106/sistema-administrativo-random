@@ -76,5 +76,9 @@ export class Province {
     }
 }
 
-const ProvinceModel = getModelForClass(Province);
+const ProvinceModel = getModelForClass(Province, {
+    schemaOptions: {
+        collection: 'provinces',
+    },
+});
 export default ProvinceModel;

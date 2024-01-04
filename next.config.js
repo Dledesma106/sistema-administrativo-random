@@ -4,6 +4,7 @@ const nextConfig = {
     swcMinify: true,
     experimental: {
         serverComponentsExternalPackages: ['mongoose', '@typegoose/typegoose'],
+        serverMinification: false,
     },
     images: {
         remotePatterns: [

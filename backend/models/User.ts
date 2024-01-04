@@ -99,7 +99,7 @@ export class User {
         return [
             {
                 path: 'city',
-                populate: City.getPopulateParameters(),
+                populate: [{ path: 'provinceId' }],
             },
         ];
     }
@@ -200,5 +200,9 @@ export class User {
     }
 }
 
-const UserModel = getModelForClass(User);
+const UserModel = getModelForClass(User, {
+    schemaOptions: {
+        collection: 'users',
+    },
+});
 export default UserModel;

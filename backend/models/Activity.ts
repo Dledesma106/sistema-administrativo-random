@@ -120,5 +120,9 @@ export class Activity {
     }
 }
 
-const ActivityModel = getModelForClass(Activity);
+const ActivityModel = getModelForClass(Activity, {
+    schemaOptions: {
+        collection: 'activities',
+    },
+});
 export default ActivityModel;

@@ -141,5 +141,9 @@ export class Expense {
     }
 }
 
-const ExpenseModel = getModelForClass(Expense);
+const ExpenseModel = getModelForClass(Expense, {
+    schemaOptions: {
+        collection: 'expenses',
+    },
+});
 export default ExpenseModel;

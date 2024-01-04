@@ -10,7 +10,7 @@ import {
 import mongoose, { type FilterQuery } from 'mongoose';
 
 import { Business } from './Business';
-import CityModel, { City } from './City';
+import { City } from './City';
 import { Client } from './Client';
 import { type IPopulateParameter } from './interfaces';
 import TaskModel, { type Task } from './Task';
@@ -71,7 +71,7 @@ export class Branch {
         return [
             {
                 path: 'city',
-                populate: CityModel.getPopulateParameters(),
+                populate: [{ path: 'provinceId' }],
             },
             {
                 path: 'client',
@@ -119,5 +119,9 @@ export class Branch {
     }
 }
 
-const BranchModel = getModelForClass(Branch);
+const BranchModel = getModelForClass(Branch, {
+    schemaOptions: {
+        collection: 'branches',
+    },
+});
 export default BranchModel;

@@ -76,5 +76,9 @@ export class Image {
     }
 }
 
-const ImageModel = getModelForClass(Image);
+const ImageModel = getModelForClass(Image, {
+    schemaOptions: {
+        collection: 'images',
+    },
+});
 export default ImageModel;

@@ -68,5 +68,9 @@ export class Client {
     }
 }
 
-const ClientModel = getModelForClass(Client);
+const ClientModel = getModelForClass(Client, {
+    schemaOptions: {
+        collection: 'clients',
+    },
+});
 export default ClientModel;

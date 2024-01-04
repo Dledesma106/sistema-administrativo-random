@@ -29,6 +29,18 @@ interface IPreventiveProps {
 
 export default function Preventives(props: IPreventiveProps): JSX.Element {
     // const tableProps = {cities, provinces, techs, businesses, clients}
+    if (!props.preventives) {
+        return (
+            <DashboardLayout>
+                <TitleButton
+                    title="Preventivos"
+                    path="/tech-admin/preventives/new"
+                    nameButton="Agregar preventivo"
+                />
+                <h1>No hay preventivos</h1>;
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>
@@ -47,30 +59,38 @@ export async function getServerSideProps(): Promise<{
 }> {
     // res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const preventives = await PreventiveModel.findUndeleted({});
-    if (preventives === null) {
+    try {
+        const preventives = await PreventiveModel.findUndeleted({});
+        if (preventives.length === 0) {
+            return {
+                props: {} as IPreventiveProps,
+            };
+        }
+        const cities = await CityModel.findUndeleted({});
+        const provinces = await ProvinceModel.findUndeleted({});
+        const techs = await UserModel.findUndeleted({
+            roles: 'Tecnico',
+        });
+        const businesses = await BusinessModel.findUndeleted();
+        const clients = await ClientModel.findUndeleted();
+        const props = mongooseDocumentToJSON({
+            preventives,
+            cities,
+            provinces,
+            techs,
+            businesses,
+            clients,
+        });
+
+        return {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            props: props as any,
+        };
+    } catch (error) {
+        console.error(error);
+
         return {
             props: {} as IPreventiveProps,
         };
     }
-    const cities = await CityModel.findUndeleted({});
-    const provinces = await ProvinceModel.findUndeleted({});
-    const techs = await UserModel.findUndeleted({
-        roles: 'Tecnico',
-    });
-    const businesses = await BusinessModel.findUndeleted();
-    const clients = await ClientModel.findUndeleted();
-    const props = mongooseDocumentToJSON({
-        preventives,
-        cities,
-        provinces,
-        techs,
-        businesses,
-        clients,
-    });
-
-    return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        props: props as any,
-    };
 }

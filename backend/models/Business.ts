@@ -66,5 +66,9 @@ export class Business {
     // }
 }
 
-const BusinessModel = getModelForClass(Business);
+const BusinessModel = getModelForClass(Business, {
+    schemaOptions: {
+        collection: 'businesses',
+    },
+});
 export default BusinessModel;

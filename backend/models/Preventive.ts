@@ -9,11 +9,11 @@ import {
 } from '@typegoose/typegoose';
 import mongoose, { type FilterQuery } from 'mongoose';
 
-import { Branch } from './Branch';
+import BranchModel, { Branch } from './Branch';
 import { Business } from './Business';
 import { type IPopulateParameter } from './interfaces';
 import { type PreventiveStatus, type Frequency, type Month } from './types';
-import { User } from './User';
+import UserModel, { User } from './User';
 
 @index(
     {
@@ -100,14 +100,14 @@ export class Preventive {
         return [
             {
                 path: 'assignedIDs',
-                populate: User.getPopulateParameters(),
+                populate: UserModel.getPopulateParameters(),
             },
             {
                 path: 'business',
             },
             {
                 path: 'branch',
-                populate: Branch.getPopulateParameters(),
+                populate: BranchModel.getPopulateParameters(),
             },
         ];
     }
@@ -119,7 +119,19 @@ export class Preventive {
         return await this.find({
             ...filter,
             deleted: false,
-        }).populate(this.getPopulateParameters());
+        }).populate([
+            {
+                path: 'assignedIDs',
+                populate: UserModel.getPopulateParameters(),
+            },
+            {
+                path: 'business',
+            },
+            {
+                path: 'branch',
+                populate: BranchModel.getPopulateParameters(),
+            },
+        ]);
     }
 
     static async findOneUndeleted(

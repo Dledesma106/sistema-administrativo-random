@@ -21,6 +21,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 
     if (
         someRouteMatchesStartWith(pathname, ['/_next']) ||
+        someRouteMatchesStartWith(pathname, ['/api']) ||
         routeHasFileExtension(pathname)
     ) {
         return NextResponse.next();
@@ -65,3 +66,14 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
 
     return NextResponse.redirect(url);
 }
+
+export const config = {
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api (API routes)
+         * - favicon.ico (favicon file)
+         */
+        '/((?!proxy|api|favicon.ico).*)',
+    ],
+};
