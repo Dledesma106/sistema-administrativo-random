@@ -88,7 +88,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async (ctx)
 };
 
 const getEditPreventivePageProps = async () => {
-    const branches = await prisma.branch.findMany({
+    const branches = await prisma.branch.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -116,7 +116,7 @@ const getEditPreventivePageProps = async () => {
             },
         },
     });
-    const clients = await prisma.client.findMany({
+    const clients = await prisma.client.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -125,7 +125,7 @@ const getEditPreventivePageProps = async () => {
             name: true,
         },
     });
-    const technicians = await prisma.user.findMany({
+    const technicians = await prisma.user.findManyUndeleted({
         where: {
             deleted: false,
             roles: {
@@ -146,7 +146,7 @@ const getEditPreventivePageProps = async () => {
 };
 
 const getPreventive = async (id: string) => {
-    return await prisma.preventive.findUnique({
+    return await prisma.preventive.findUniqueUndeleted({
         where: {
             id,
             deleted: false,

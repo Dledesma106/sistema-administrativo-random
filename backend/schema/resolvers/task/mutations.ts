@@ -132,7 +132,7 @@ builder.mutationFields((t) => ({
             try {
                 const { id, input } = args;
 
-                const foundTask = await prisma.task.findUnique({
+                const foundTask = await prisma.task.findUniqueUndeleted({
                     where: {
                         id,
                     },
@@ -275,7 +275,7 @@ builder.mutationFields((t) => ({
             try {
                 const { id, status, workOrderNumber, imageIdToDelete } = args;
 
-                const foundTask = await prisma.task.findUnique({
+                const foundTask = await prisma.task.findUniqueUndeleted({
                     where: {
                         id,
                         assignedIDs: {
@@ -371,7 +371,7 @@ builder.mutationFields((t) => ({
         resolve: async (root, args) => {
             try {
                 const { expenseId, status } = args;
-                const foundExpense = await prisma.expense.findUnique({
+                const foundExpense = await prisma.expense.findUniqueUndeleted({
                     where: {
                         id: expenseId,
                     },

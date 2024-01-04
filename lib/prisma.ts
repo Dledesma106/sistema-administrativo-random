@@ -79,14 +79,16 @@ const prismaClientSingleton = () => {
                         where: Prisma.Args<T, 'findFirst'>['where'],
                     ): Promise<boolean> {
                         const context = Prisma.getExtensionContext(this);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const result = await (context as any).findFirst({ where });
                         return result !== null;
                     },
-                    async softDeleteOne<T, A>(
+                    async softDeleteOne<T, A extends Prisma.Args<T, 'update'>>(
                         this: T,
-                        where: Prisma.Exact<A, Prisma.Args<T, 'update'>['where']>,
+                        where: A['where'],
                     ): Promise<Prisma.Result<T, A, 'update'>> {
                         const context = Prisma.getExtensionContext(this);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         return await (context as any).update({
                             where,
                             data: {
@@ -95,11 +97,12 @@ const prismaClientSingleton = () => {
                             },
                         });
                     },
-                    async findUniqueUndeleted<T, A>(
+                    async findUniqueUndeleted<T, A extends Prisma.Args<T, 'findUnique'>>(
                         this: T,
-                        args: Prisma.Args<T, 'findUnique'>,
+                        args: A,
                     ): Promise<Prisma.Result<T, A, 'findUnique'>> {
                         const context = Prisma.getExtensionContext(this);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         return await (context as any).findUnique({
                             ...args,
                             where: {
@@ -108,11 +111,12 @@ const prismaClientSingleton = () => {
                             },
                         });
                     },
-                    async findManyUndeleted<T, A>(
+                    async findManyUndeleted<T, A extends Prisma.Args<T, 'findMany'>>(
                         this: T,
-                        args: Prisma.Args<T, 'findMany'>,
+                        args: A,
                     ): Promise<Prisma.Result<T, A, 'findMany'>> {
                         const context = Prisma.getExtensionContext(this);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         return await (context as any).findMany({
                             ...args,
                             where: {

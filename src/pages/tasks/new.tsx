@@ -9,7 +9,7 @@ import { prisma } from 'lib/prisma';
 export type NewTaskPageProps = Awaited<ReturnType<typeof getNewTaskPageProps>>;
 
 const getNewTaskPageProps = async () => {
-    const branches = await prisma.branch.findMany({
+    const branches = await prisma.branch.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -37,7 +37,7 @@ const getNewTaskPageProps = async () => {
             },
         },
     });
-    const clients = await prisma.client.findMany({
+    const clients = await prisma.client.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -46,7 +46,7 @@ const getNewTaskPageProps = async () => {
             name: true,
         },
     });
-    const technicians = await prisma.user.findMany({
+    const technicians = await prisma.user.findManyUndeleted({
         where: {
             deleted: false,
             roles: {

@@ -34,6 +34,7 @@ export default function NewClientBranch({
         <DashboardLayout>
             <ClientBranchForm
                 branchForm={branchForm}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 cities={cities as any}
                 businesses={businesses}
             />
@@ -64,6 +65,7 @@ export async function getServerSideProps(
             cities,
             client,
             businesses,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any,
     };
 }

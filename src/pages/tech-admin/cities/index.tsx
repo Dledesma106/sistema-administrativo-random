@@ -37,6 +37,7 @@ export async function getServerSideProps(): Promise<{ props: Props }> {
         provinces,
     });
     return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         props: props as any,
     };
 }

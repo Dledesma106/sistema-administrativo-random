@@ -35,7 +35,7 @@ builder.queryFields((t) => ({
     preventives: t.prismaField({
         type: ['Preventive'],
         resolve: async (query, _parent, _args, _info) => {
-            return prisma.preventive.findMany(query);
+            return prisma.preventive.findManyUndeleted(query);
         },
     }),
 }));

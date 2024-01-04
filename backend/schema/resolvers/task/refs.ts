@@ -50,7 +50,7 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         assigned: t.field({
             type: [UserPothosRef],
             resolve: (root: Task) => {
-                return prisma.user.findMany({
+                return prisma.user.findManyUndeleted({
                     where: {
                         id: {
                             in: root.assignedIDs,

@@ -40,7 +40,7 @@ builder.queryFields((t) => ({
             rules: ['IsAuthenticated'],
         },
         resolve: async (query, _parent, _args, _info) => {
-            return prisma.user.findMany(query);
+            return prisma.user.findManyUndeleted(query);
         },
     }),
 }));
@@ -92,7 +92,7 @@ builder.mutationFields((t) => ({
         },
         resolve: async (_parent, args, context, _info) => {
             const { email, password } = args;
-            const user = await prisma.user.findUnique({
+            const user = await prisma.user.findUniqueUndeleted({
                 where: {
                     email,
                 },

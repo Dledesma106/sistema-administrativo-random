@@ -11,7 +11,7 @@ import { prisma } from 'lib/prisma';
 export type TasksPageProps = Awaited<ReturnType<typeof getProps>>;
 
 const getProps = async () => {
-    const cities = await prisma.city.findMany({
+    const cities = await prisma.city.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -27,7 +27,7 @@ const getProps = async () => {
         },
     });
 
-    const provinces = await prisma.province.findMany({
+    const provinces = await prisma.province.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -36,7 +36,7 @@ const getProps = async () => {
             name: true,
         },
     });
-    const clients = await prisma.client.findMany({
+    const clients = await prisma.client.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -45,7 +45,7 @@ const getProps = async () => {
             name: true,
         },
     });
-    const businesses = await prisma.business.findMany({
+    const businesses = await prisma.business.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -54,7 +54,7 @@ const getProps = async () => {
             name: true,
         },
     });
-    const techs = await prisma.user.findMany({
+    const techs = await prisma.user.findManyUndeleted({
         where: {
             roles: {
                 has: Role.Tecnico,

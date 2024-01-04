@@ -20,7 +20,7 @@ type Params = {
 };
 
 const getTask = async (id: string) => {
-    const task = await prisma.task.findUnique({
+    const task = await prisma.task.findUniqueUndeleted({
         where: {
             id,
         },
@@ -108,7 +108,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async (ctx)
 };
 
 const getNewTaskPageProps = async () => {
-    const branches = await prisma.branch.findMany({
+    const branches = await prisma.branch.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -136,7 +136,7 @@ const getNewTaskPageProps = async () => {
             },
         },
     });
-    const clients = await prisma.client.findMany({
+    const clients = await prisma.client.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -145,7 +145,7 @@ const getNewTaskPageProps = async () => {
             name: true,
         },
     });
-    const technicians = await prisma.user.findMany({
+    const technicians = await prisma.user.findManyUndeleted({
         where: {
             deleted: false,
             roles: {

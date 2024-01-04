@@ -16,6 +16,7 @@ import {
 import { months } from 'backend/models/types';
 
 export const mongooseDocumentToJSON = <
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     T extends Record<string, any> | Record<string, any>[],
 >(
     doc: T,
@@ -101,6 +102,7 @@ export function trimTask(task: ITask): ITask {
         deleted: task.deleted,
         assignedIDs: task.assignedIDs,
         imagesIDs: task.imagesIDs,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 }
 

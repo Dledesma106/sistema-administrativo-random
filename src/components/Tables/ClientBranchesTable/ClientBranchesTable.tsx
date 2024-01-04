@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Table } from 'flowbite-react';
 import { type ChangeEvent, useState } from 'react';
 

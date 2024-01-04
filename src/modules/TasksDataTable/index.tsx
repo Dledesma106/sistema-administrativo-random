@@ -65,6 +65,7 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         getFacetedUniqueValues: (table, columnId) => {
             if (columnId === 'assigned') {
                 return () => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const uniqueValuesMap = new Map<any, number>();
                     const rows = table.getCoreRowModel().rows;
 

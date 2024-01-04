@@ -4,18 +4,11 @@ import { type JwtPayload, sign, verify } from 'jsonwebtoken';
 const secret = process.env.SECRET ?? '';
 
 interface MyJwtPayload extends JwtPayload {
-    payload: any;
+    payload: {
+        userId: string;
+        userRoles: string[];
+    };
 }
-
-export const getToken = (payload: any): string => {
-    return sign(
-        {
-            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days
-            payload,
-        },
-        secret,
-    );
-};
 
 export const getUserToken = (
     user: Pick<User, 'id' | 'roles'>,
@@ -23,11 +16,11 @@ export const getUserToken = (
     token: string;
     expiresAt: Date;
 } => {
-    const expiresAt = dayjs().add(30, 'days').toDate();
+    const expiresAt = dayjs().add(30, 'days');
 
     const token = sign(
         {
-            exp: expiresAt,
+            exp: expiresAt.unix(),
             payload: {
                 userId: user.id.toString(),
                 userRoles: user.roles,
@@ -38,7 +31,7 @@ export const getUserToken = (
 
     return {
         token,
-        expiresAt,
+        expiresAt: expiresAt.toDate(),
     };
 };
 

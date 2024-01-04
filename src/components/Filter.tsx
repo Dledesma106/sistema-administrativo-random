@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Label, Select } from 'flowbite-react';
 import { type ChangeEvent, createRef } from 'react';
 

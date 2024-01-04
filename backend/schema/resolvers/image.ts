@@ -21,7 +21,7 @@ builder.queryFields((t) => ({
     images: t.prismaField({
         type: ['Image'],
         resolve: async (query, _parent, _args, _info) => {
-            return prisma.image.findMany(query);
+            return prisma.image.findManyUndeleted(query);
         },
     }),
 }));

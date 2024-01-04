@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type GetServerSidePropsContext } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';

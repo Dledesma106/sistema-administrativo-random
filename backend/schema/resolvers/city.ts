@@ -15,7 +15,7 @@ builder.queryFields((t) => ({
     cities: t.prismaField({
         type: ['City'],
         resolve: async (query, _parent, _args, _info) => {
-            return prisma.city.findMany(query);
+            return prisma.city.findManyUndeleted(query);
         },
     }),
 }));

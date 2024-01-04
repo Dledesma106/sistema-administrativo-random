@@ -18,7 +18,7 @@ export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
 export async function getServerSideProps(): Promise<{ props: NewUserPageProps }> {
     await dbConnect();
 
-    const cities = await prisma.city.findMany({
+    const cities = await prisma.city.findManyUndeleted({
         where: {
             deleted: false,
         },

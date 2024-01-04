@@ -18,8 +18,7 @@ import { type IPopulateParameter, type IUserActivities } from './interfaces';
 import TaskModel, { Task } from './Task';
 import { type ExpenseStatus } from './types';
 
-import { getToken } from '@/lib/jwt';
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 @pre<User>('save', function (next: any) {
     if (this.isModified('firstName') || this.isModified('lastName')) {
         this.fullName = `${this.firstName} ${this.lastName}`;
@@ -147,8 +146,7 @@ export class User {
         }
     }
 
-    async setPrivateKey(this: DocumentType<User>, privateKey: string): Promise<void> {
-        this.privateKey = getToken(privateKey);
+    async setPrivateKey(this: DocumentType<User>): Promise<void> {
         await this.save();
     }
 

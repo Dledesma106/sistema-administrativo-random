@@ -13,7 +13,7 @@ builder.queryFields((t) => ({
     provinces: t.prismaField({
         type: ['Province'],
         resolve: async (query, _parent, _args, _info) => {
-            return prisma.province.findMany(query);
+            return prisma.province.findManyUndeleted(query);
         },
     }),
 }));

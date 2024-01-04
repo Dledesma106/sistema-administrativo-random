@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ChangeEvent, useState } from 'react';
 
 import Item from './Item';

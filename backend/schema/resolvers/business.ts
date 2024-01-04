@@ -13,8 +13,27 @@ builder.prismaObject('Business', {
 builder.queryFields((t) => ({
     businesses: t.prismaField({
         type: ['Business'],
-        resolve: async (query, _parent, _args, _info) => {
-            return prisma.business.findMany(query);
+        args: {
+            branch: t.arg.string({
+                required: false,
+            }),
+        },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
+        resolve: async (query, parent, args) => {
+            if (args.branch) {
+                return prisma.business.findManyUndeleted({
+                    ...query,
+                    where: {
+                        branchesIDs: {
+                            has: args.branch,
+                        },
+                    },
+                });
+            }
+
+            return prisma.business.findManyUndeleted(query);
         },
     }),
 }));

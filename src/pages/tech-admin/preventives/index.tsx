@@ -14,7 +14,7 @@ import {
     type IUser,
     type IClient,
 } from 'backend/models/interfaces';
-import Preventive from 'backend/models/Preventive';
+import PreventiveModel from 'backend/models/Preventive';
 import ProvinceModel from 'backend/models/Province';
 import UserModel from 'backend/models/User';
 
@@ -47,7 +47,7 @@ export async function getServerSideProps(): Promise<{
 }> {
     // res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
     await dbConnect();
-    const preventives = await Preventive.findUndeleted({});
+    const preventives = await PreventiveModel.findUndeleted({});
     if (preventives === null) {
         return {
             props: {} as IPreventiveProps,
@@ -70,6 +70,7 @@ export async function getServerSideProps(): Promise<{
     });
 
     return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         props: props as any,
     };
 }

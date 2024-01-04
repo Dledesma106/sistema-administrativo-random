@@ -21,7 +21,7 @@ export async function getServerSideProps(): Promise<{ props: Props }> {
 }
 
 const getNewPreventivePageProps = async () => {
-    const branches = await prisma.branch.findMany({
+    const branches = await prisma.branch.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -49,7 +49,7 @@ const getNewPreventivePageProps = async () => {
             },
         },
     });
-    const clients = await prisma.client.findMany({
+    const clients = await prisma.client.findManyUndeleted({
         where: {
             deleted: false,
         },
@@ -58,7 +58,7 @@ const getNewPreventivePageProps = async () => {
             name: true,
         },
     });
-    const technicians = await prisma.user.findMany({
+    const technicians = await prisma.user.findManyUndeleted({
         where: {
             deleted: false,
             roles: {

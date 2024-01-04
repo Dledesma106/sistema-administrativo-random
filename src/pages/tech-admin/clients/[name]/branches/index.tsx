@@ -82,6 +82,7 @@ export async function getServerSideProps(
         businesses,
     });
     return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         props: props as any,
     };
 }
