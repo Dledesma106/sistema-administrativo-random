@@ -86,12 +86,4 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
         toggle: false,
         roles: [Role.AdministrativoTecnico],
     },
-    {
-        id: 10,
-        title: 'Gastos',
-        path: '/tech-admin/expenses',
-        toggle: false,
-        roles: [Role.AdministrativoTecnico],
-        icon: <RiGroupLine />,
-    },
 ];

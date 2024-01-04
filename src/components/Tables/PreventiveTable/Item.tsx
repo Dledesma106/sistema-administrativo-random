@@ -60,6 +60,10 @@ export default function Item({
     }
 
     function selectedTechs(techs: IUser[]): string | string[] | undefined {
+        if (techs.length === 0) {
+            return undefined;
+        }
+
         return techs.length > 1
             ? techs.map((tech) => `${tech.fullName as string}, `)
             : techs[0].fullName;
