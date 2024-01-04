@@ -29,7 +29,7 @@ export default function TaskFinishedEmail({
                 <a
                     target="_blank"
                     rel="noreferrer noopener"
-                    href={`${process.env.NEXT_PUBLIC_HOST}${routesBuilder.tasks.details(
+                    href={`${window.location.origin}${routesBuilder.tasks.details(
                         task.id as string,
                     )}`}
                 >

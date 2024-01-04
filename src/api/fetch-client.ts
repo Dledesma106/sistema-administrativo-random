@@ -3,8 +3,6 @@ import { print } from 'graphql/language/printer';
 
 export { gql } from 'graphql-request';
 
-const url = `${process.env.NEXT_PUBLIC_API_HOST}/api/graphql`;
-
 export async function fetchClient<T, V>(
     query: TypedDocumentNode<T, V>,
     variables: V,
@@ -14,6 +12,8 @@ export async function fetchClient<T, V>(
         token?: string;
     } = {},
 ) {
+    const url = `${window.location.origin}/api/graphql`;
+
     try {
         const fetchConfig: RequestInit = {
             method: 'POST',

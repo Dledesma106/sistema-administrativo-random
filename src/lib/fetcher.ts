@@ -8,7 +8,7 @@ const getFullUrl = (path: string) => {
 const contentType = 'application/json';
 
 export const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_HOST,
+    baseURL: window.location.origin,
     headers: {
         Accept: contentType,
         'Content-Type': contentType,
