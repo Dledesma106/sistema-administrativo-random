@@ -1,0 +1,19 @@
+mutation createPreventive($data: PreventiveInput!) {
+    createPreventive(data: $data) {
+        success
+        message
+        preventive {
+            id
+        }
+    }
+}
+
+mutation updatePreventive($id: String!, $data: PreventiveInput!) {
+    updatePreventive(id: $id, data: $data) {
+        success
+        message
+        preventive {
+            id
+        }
+    }
+}

@@ -1,12 +1,12 @@
 import { useRouter } from 'next/navigation';
 
-import { TaskStatus, TaskType } from '@prisma/client';
+import { PreventiveStatus } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { fetchClient } from '@/api/fetch-client';
-import { CreateTaskDocument, UpdateTaskDocument } from '@/api/graphql';
+import { CreatePreventiveDocument, UpdatePreventiveDocument } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -14,152 +14,56 @@ import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
-import { NewTaskPageProps } from '@/pages/tasks/new';
-import { taskStatusesOptions, taskTypesOptions } from 'backend/models/types';
+import { EditPreventivePageProps } from '@/pages/tech-admin/preventives/[id]';
+import * as types from 'backend/models/types';
 
 type FormValues = {
     client: string;
     branch: string | null;
     business: string | null;
-    assignedIDs: {
+    assigned: {
         label: string;
         value: string;
     }[];
-    description: string;
-    taskType: TaskType;
-    status: TaskStatus;
-    workOrderNumber: number | null;
+    frequency?: number | null;
+    observations: string | null;
+    months: {
+        label: string;
+        value: types.Month;
+    }[];
+    status: PreventiveStatus;
 };
 
 type Props = {
     defaultValues?: FormValues;
-    taskIdToUpdate?: string;
-} & NewTaskPageProps;
+    preventiveIdToUpdate?: string;
+} & EditPreventivePageProps;
 
-const CreateOrUpdateTaskForm = ({
-    defaultValues,
-    taskIdToUpdate,
+const CreateOrUpdatePreventiveForm = ({
+    preventiveIdToUpdate,
     branches,
     clients,
     technicians,
+    defaultValues,
 }: Props): JSX.Element => {
     const router = useRouter();
-    const form = useForm<FormValues>({
-        defaultValues,
-    });
-
+    const form = useForm<FormValues>({ defaultValues });
+    const { watch, setValue } = form;
     const { triggerAlert } = useAlert();
 
-    const postMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            if (!form.branch) {
-                throw new Error('Debe seleccionar una sucursal');
-            }
-
-            if (!form.business) {
-                throw new Error('Debe seleccionar una empresa');
-            }
-
-            return fetchClient(CreateTaskDocument, {
-                input: {
-                    auditor: null,
-                    branch: form.branch,
-                    business: form.business,
-                    description: form.description,
-                    status: form.status,
-                    taskType: form.taskType,
-                    workOrderNumber: form.workOrderNumber,
-                    assigned: form.assignedIDs.map((technician) => technician.value),
-                },
-            });
-        },
-        onSuccess: (data) => {
-            if (data.createTask.message) {
-                triggerAlert({
-                    type: 'Failure',
-                    message: data.createTask.message,
-                });
-                return;
-            }
-
-            triggerAlert({
-                type: 'Success',
-                message: `La tarea fue creada correctamente`,
-            });
-            router.push(routesBuilder.tasks.list());
-        },
-        onError: (error) => {
-            triggerAlert({
-                type: 'Failure',
-                message: getCleanErrorMessage(error),
-            });
-        },
-    });
-
-    const putMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            if (!taskIdToUpdate) {
-                throw new Error('No se pudo actualizar la tarea');
-            }
-
-            if (!form.branch) {
-                throw new Error('Debe seleccionar una sucursal');
-            }
-
-            if (!form.business) {
-                throw new Error('Debe seleccionar una empresa');
-            }
-
-            return fetchClient(UpdateTaskDocument, {
-                id: taskIdToUpdate,
-                input: {
-                    auditor: null,
-                    branch: form.branch,
-                    business: form.business,
-                    description: form.description,
-                    status: form.status,
-                    taskType: form.taskType,
-                    workOrderNumber: form.workOrderNumber,
-                    assigned: form.assignedIDs.map((technician) => technician.value),
-                },
-            });
-        },
-        onSuccess: (data) => {
-            if (data?.updateTask.message) {
-                triggerAlert({
-                    type: 'Failure',
-                    message: data.updateTask.message,
-                });
-                return;
-            }
-
-            triggerAlert({
-                type: 'Success',
-                message: `La tarea fue actualizada correctamente`,
-            });
-            router.push(routesBuilder.tasks.list());
-        },
-        onError: (error) => {
-            triggerAlert({
-                type: 'Failure',
-                message: getCleanErrorMessage(error),
-            });
-        },
-    });
-
-    const { watch, setValue } = form;
     useEffect(() => {
-        const subscription = watch((value, { type, name }) => {
+        const subscription = watch((value, { name, type }) => {
             if (type === 'change') {
                 if (name === 'client') {
                     setValue('branch', null);
@@ -177,8 +81,87 @@ const CreateOrUpdateTaskForm = ({
         };
     }, [watch, setValue]);
 
+    const postMutation = useMutation({
+        mutationFn: async (form: FormValues) => {
+            if (!form.branch || !form.business) {
+                throw new Error('Branch and business are required');
+            }
+
+            if (typeof form.frequency !== 'number') {
+                throw new Error('Frequency is required');
+            }
+
+            return fetchClient(CreatePreventiveDocument, {
+                data: {
+                    assignedIDs: form.assigned.map((technician) => technician.value),
+                    branchId: form.branch,
+                    businessId: form.business,
+                    frequency: form.frequency,
+                    months: form.months.map((month) => month.value),
+                    observations: form.observations,
+                    status: PreventiveStatus.Pendiente,
+                },
+            });
+        },
+        onSuccess: () => {
+            triggerAlert({
+                type: 'Success',
+                message: `El preventivo fue creado correctamente`,
+            });
+            router.push(routesBuilder.preventives.list());
+        },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: getCleanErrorMessage(error),
+            });
+        },
+    });
+
+    const putMutation = useMutation({
+        mutationFn: async (form: FormValues) => {
+            if (!preventiveIdToUpdate) {
+                return;
+            }
+
+            if (!form.branch || !form.business) {
+                throw new Error('Branch and business are required');
+            }
+
+            if (typeof form.frequency !== 'number') {
+                throw new Error('Frequency is required');
+            }
+
+            return fetchClient(UpdatePreventiveDocument, {
+                id: preventiveIdToUpdate,
+                data: {
+                    assignedIDs: form.assigned.map((technician) => technician.value),
+                    branchId: form.branch,
+                    businessId: form.business,
+                    frequency: form.frequency,
+                    months: form.months.map((month) => month.value),
+                    observations: form.observations,
+                    status: form.status,
+                },
+            });
+        },
+        onSuccess: () => {
+            triggerAlert({
+                type: 'Success',
+                message: `El preventivo fue actualizado correctamente`,
+            });
+            router.push(routesBuilder.preventives.list());
+        },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: getCleanErrorMessage(error),
+            });
+        },
+    });
+
     const onSubmit = (form: FormValues): void => {
-        if (taskIdToUpdate) {
+        if (preventiveIdToUpdate) {
             putMutation.mutateAsync(form);
         } else {
             postMutation.mutateAsync(form);
@@ -188,7 +171,7 @@ const CreateOrUpdateTaskForm = ({
     return (
         <main>
             <TypographyH2 asChild className="mb-4">
-                <h1>{taskIdToUpdate ? 'Editar Tarea' : 'Agregar Tarea'}</h1>
+                <h1>{preventiveIdToUpdate ? 'Editar Preventivo' : 'Crear Preventivo'}</h1>
             </TypographyH2>
 
             <Form {...form}>
@@ -306,14 +289,12 @@ const CreateOrUpdateTaskForm = ({
                     />
 
                     <FormField
-                        name="assignedIDs"
+                        name="assigned"
                         control={form.control}
                         rules={{
                             validate: (value) => {
-                                if (value.length === 0) {
-                                    if (form.watch('status') !== TaskStatus.SinAsignar) {
-                                        return 'Debe seleccionar al menos un tecnico';
-                                    }
+                                if (!value || value.length === 0) {
+                                    return 'Debe seleccionar al menos un tecnico';
                                 }
 
                                 return true;
@@ -341,7 +322,7 @@ const CreateOrUpdateTaskForm = ({
                     />
 
                     <FormField
-                        name="taskType"
+                        name="frequency"
                         control={form.control}
                         rules={{
                             required: 'Este campo es requerido',
@@ -349,16 +330,39 @@ const CreateOrUpdateTaskForm = ({
                         render={({ field }) => {
                             return (
                                 <FormItem>
-                                    <FormLabel>Tipo de tarea</FormLabel>
+                                    <FormLabel>Frecuencia</FormLabel>
                                     <FormControl>
                                         <Combobox
-                                            selectPlaceholder="Seleccione un tipo de tarea"
-                                            searchPlaceholder="Buscar tipo de tarea"
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            items={taskTypesOptions}
+                                            selectPlaceholder="Seleccione una frecuencia"
+                                            searchPlaceholder="Buscar frecuencia"
+                                            value={field.value?.toString() || ''}
+                                            onChange={(val) => {
+                                                if (val.length === 0) {
+                                                    field.onChange(null);
+                                                } else {
+                                                    field.onChange(parseInt(val, 10));
+                                                }
+                                            }}
+                                            items={types.frequencies.map(
+                                                (frequency, index) => {
+                                                    if (index === 0) {
+                                                        return {
+                                                            label: 'Todos los meses',
+                                                            value: index.toString(),
+                                                        };
+                                                    }
+
+                                                    return {
+                                                        label: `Cada ${frequency} meses`,
+                                                        value: index.toString(),
+                                                    };
+                                                },
+                                            )}
                                         />
                                     </FormControl>
+                                    <FormDescription>
+                                        Frecuencia en la que se realizara el preventivo
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             );
@@ -366,15 +370,12 @@ const CreateOrUpdateTaskForm = ({
                     />
 
                     <FormField
-                        name="status"
+                        name="months"
                         control={form.control}
                         rules={{
-                            required: 'Este campo es requerido',
                             validate: (value) => {
-                                if (value !== TaskStatus.SinAsignar) {
-                                    if (form.watch('assignedIDs').length === 0) {
-                                        return 'Debe seleccionar al menos un tecnico';
-                                    }
+                                if (!value || value.length === 0) {
+                                    return 'Debe seleccionar al menos un mes';
                                 }
 
                                 return true;
@@ -383,16 +384,21 @@ const CreateOrUpdateTaskForm = ({
                         render={({ field }) => {
                             return (
                                 <FormItem>
-                                    <FormLabel>Estado</FormLabel>
+                                    <FormLabel>Meses</FormLabel>
                                     <FormControl>
-                                        <Combobox
-                                            selectPlaceholder="Seleccione un estado"
-                                            searchPlaceholder="Buscar estado"
-                                            value={field.value}
+                                        <FancyMultiSelect
+                                            placeholder="Seleccione un mes"
                                             onChange={field.onChange}
-                                            items={taskStatusesOptions}
+                                            options={types.months.map((month) => ({
+                                                label: month,
+                                                value: month,
+                                            }))}
+                                            value={field.value}
                                         />
                                     </FormControl>
+                                    <FormDescription>
+                                        Meses impuestos por el cliente
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             );
@@ -400,52 +406,17 @@ const CreateOrUpdateTaskForm = ({
                     />
 
                     <FormField
-                        name="workOrderNumber"
+                        name="observations"
                         control={form.control}
                         render={({ field }) => {
                             return (
                                 <FormItem>
-                                    <FormLabel>
-                                        Numero de orden de trabajo (opcional)
-                                    </FormLabel>
+                                    <FormLabel>Observaciones (opcional)</FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="number"
-                                            placeholder="Numero de orden de trabajo"
+                                        <Textarea
+                                            placeholder="Ingrese las observaciones"
                                             value={field.value || ''}
-                                            onChange={(e) => {
-                                                field.onChange(
-                                                    parseInt(e.target.value, 10),
-                                                );
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
-                    />
-
-                    <FormField
-                        name="description"
-                        control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                            minLength: {
-                                value: 3,
-                                message:
-                                    'La descripcion debe tener al menos 3 caracteres',
-                            },
-                        }}
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Descripcion</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="text"
-                                            placeholder="Descripcion"
-                                            {...field}
+                                            onChange={field.onChange}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -462,12 +433,13 @@ const CreateOrUpdateTaskForm = ({
                                 if (window.history?.length) {
                                     router.back();
                                 } else {
-                                    router.replace(routesBuilder.tasks.list());
+                                    router.replace(routesBuilder.preventives.list());
                                 }
                             }}
                         >
                             Cancelar
                         </Button>
+
                         <ButtonWithSpinner
                             type="submit"
                             showSpinner={postMutation.isPending || putMutation.isPending}
@@ -481,4 +453,4 @@ const CreateOrUpdateTaskForm = ({
     );
 };
 
-export default CreateOrUpdateTaskForm;
+export default CreateOrUpdatePreventiveForm;

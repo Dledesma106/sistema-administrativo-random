@@ -221,17 +221,23 @@ model Task {
   @@map("tasks")
 }
 
+enum PreventiveStatus {
+  Pendiente
+  AlDia
+}
+
 model Preventive {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime @default(now()) @db.Date
   updatedAt DateTime @updatedAt
 
-  deleted      Boolean   @default(false)
-  deletedAt    DateTime? @db.Date
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
   frequency    Int
   months       String[]
   observations String?
-  status       String
+  status       PreventiveStatus
 
   businessId String   @map("business") @db.ObjectId
   business   Business @relation(fields: [businessId], references: [id])
@@ -242,7 +248,6 @@ model Preventive {
   assignedIDs String[] @db.ObjectId
   assigned    User[]   @relation(fields: [assignedIDs], references: [id])
 
-  @@unique([businessId, branchId], map: "business_1_branch_1")
   @@map("preventives")
 }
 

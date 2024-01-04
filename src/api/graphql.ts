@@ -49,6 +49,7 @@ export type Client = {
 export type Expense = {
     __typename?: 'Expense';
     amount: Scalars['Int'];
+    auditor: Maybe<User>;
     createdAt: Scalars['DateTime'];
     doneBy: User;
     expenseType: ExpenseType;
@@ -86,7 +87,7 @@ export type Image = {
     key: Scalars['String'];
     name: Scalars['String'];
     url: Scalars['String'];
-    urlExpire: Scalars['DateTime'];
+    urlExpire: Maybe<Scalars['DateTime']>;
 };
 
 export type LoginUserResult = {
@@ -98,11 +99,18 @@ export type LoginUserResult = {
 
 export type Mutation = {
     __typename?: 'Mutation';
+    createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
     deleteTask: TaskCrudResult;
     login: LoginUserResult;
+    updateMyAssignedTask: TaskCrudResult;
+    updatePreventive: PreventiveCrudResult;
     updateTask: TaskCrudResult;
     updateTaskExpenseStatus: TaskCrudResult;
+};
+
+export type MutationCreatePreventiveArgs = {
+    data: PreventiveInput;
 };
 
 export type MutationCreateTaskArgs = {
@@ -118,6 +126,18 @@ export type MutationLoginArgs = {
     password: Scalars['String'];
 };
 
+export type MutationUpdateMyAssignedTaskArgs = {
+    id: Scalars['String'];
+    imageIdToDelete: InputMaybe<Scalars['String']>;
+    status: InputMaybe<TaskStatus>;
+    workOrderNumber: InputMaybe<Scalars['Int']>;
+};
+
+export type MutationUpdatePreventiveArgs = {
+    data: PreventiveInput;
+    id: Scalars['String'];
+};
+
 export type MutationUpdateTaskArgs = {
     id: Scalars['String'];
     input: TaskInput;
@@ -128,6 +148,44 @@ export type MutationUpdateTaskExpenseStatusArgs = {
     status: ExpenseStatus;
 };
 
+export type Preventive = {
+    __typename?: 'Preventive';
+    assigned: Array<User>;
+    branch: Branch;
+    business: Business;
+    createdAt: Scalars['DateTime'];
+    deleted: Scalars['Boolean'];
+    frequency: Scalars['Int'];
+    id: Scalars['ID'];
+    months: Array<Scalars['String']>;
+    observations: Maybe<Scalars['String']>;
+    status: PreventiveStatus;
+    updatedAt: Scalars['DateTime'];
+};
+
+export type PreventiveCrudResult = {
+    __typename?: 'PreventiveCrudResult';
+    message: Maybe<Scalars['String']>;
+    preventive: Maybe<Preventive>;
+    success: Scalars['Boolean'];
+};
+
+export type PreventiveInput = {
+    assignedIDs: Array<Scalars['String']>;
+    branchId: Scalars['String'];
+    businessId: Scalars['String'];
+    frequency: Scalars['Int'];
+    months: Array<Scalars['String']>;
+    observations: InputMaybe<Scalars['String']>;
+    status: PreventiveStatus;
+};
+
+export const PreventiveStatus = {
+    AlDia: 'AlDia',
+    Pendiente: 'Pendiente',
+} as const;
+
+export type PreventiveStatus = (typeof PreventiveStatus)[keyof typeof PreventiveStatus];
 export type Province = {
     __typename?: 'Province';
     id: Scalars['ID'];
@@ -139,10 +197,11 @@ export type Query = {
     branches: Array<Branch>;
     businesses: Array<Business>;
     cities: Array<City>;
-    expenses: Array<Expense>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
+    myAssignedTaskExpenseById: Maybe<Expense>;
     myAssignedTasks: Array<Task>;
+    preventives: Array<Preventive>;
     provinces: Array<Province>;
     taskById: Maybe<Task>;
     tasks: Array<Task>;
@@ -150,6 +209,10 @@ export type Query = {
 };
 
 export type QueryMyAssignedTaskByIdArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryMyAssignedTaskExpenseByIdArgs = {
     id: Scalars['String'];
 };
 
@@ -261,6 +324,35 @@ export type LoginMutation = {
     };
 };
 
+export type CreatePreventiveMutationVariables = Exact<{
+    data: PreventiveInput;
+}>;
+
+export type CreatePreventiveMutation = {
+    __typename?: 'Mutation';
+    createPreventive: {
+        __typename?: 'PreventiveCrudResult';
+        success: boolean;
+        message: string | null;
+        preventive: { __typename?: 'Preventive'; id: string } | null;
+    };
+};
+
+export type UpdatePreventiveMutationVariables = Exact<{
+    id: Scalars['String'];
+    data: PreventiveInput;
+}>;
+
+export type UpdatePreventiveMutation = {
+    __typename?: 'Mutation';
+    updatePreventive: {
+        __typename?: 'PreventiveCrudResult';
+        success: boolean;
+        message: string | null;
+        preventive: { __typename?: 'Preventive'; id: string } | null;
+    };
+};
+
 export type TasksQueryVariables = Exact<{
     assigneed: InputMaybe<Array<Scalars['String']>>;
     business: InputMaybe<Scalars['String']>;
@@ -343,7 +435,7 @@ export type TaskByIdQuery = {
                 __typename?: 'Image';
                 id: string;
                 url: string;
-                urlExpire: any;
+                urlExpire: any | null;
                 key: string;
             };
             doneBy: { __typename?: 'User'; id: string; email: string; fullName: string };
@@ -532,6 +624,161 @@ export const LoginDocument = {
         },
     ],
 } as unknown as DocumentNode<LoginMutation, LoginMutationVariables>;
+export const CreatePreventiveDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'createPreventive' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'data' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'PreventiveInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createPreventive' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'data' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'data' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'preventive' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CreatePreventiveMutation, CreatePreventiveMutationVariables>;
+export const UpdatePreventiveDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'updatePreventive' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'data' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'PreventiveInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updatePreventive' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'data' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'data' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'preventive' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdatePreventiveMutation, UpdatePreventiveMutationVariables>;
 export const TasksDocument = {
     kind: 'Document',
     definitions: [

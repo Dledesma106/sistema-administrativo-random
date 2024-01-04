@@ -1,7 +1,6 @@
 import { User, Role } from '@prisma/client';
 import { CookieListItem } from '@whatwg-node/cookie-store';
 import { compareSync } from 'bcryptjs';
-import dayjs from 'dayjs';
 import { YogaInitialContext } from 'graphql-yoga';
 
 import { getUserToken } from '@/lib/jwt';
@@ -51,6 +50,8 @@ const LoginUserPhotosRef = builder
         success: boolean;
         message?: string | null;
         user?: User | null;
+        accessToken?: string;
+        expiresAt?: Date;
     }>('LoginUserResult')
     .implement({
         fields: (t) => ({
@@ -65,6 +66,15 @@ const LoginUserPhotosRef = builder
             message: t.string({
                 nullable: true,
                 resolve: (result) => result.message,
+            }),
+            accessToken: t.string({
+                nullable: true,
+                resolve: (result) => result.accessToken,
+            }),
+            expiresAt: t.field({
+                type: 'DateTime',
+                nullable: true,
+                resolve: (result) => result.expiresAt,
             }),
         }),
     });
@@ -105,12 +115,14 @@ builder.mutationFields((t) => ({
                 };
             }
 
+            const { token, expiresAt } = getUserToken(user);
+
             const cookieOptions: CookieListItem = {
                 name: USER_ACCESS_TOKEN_COOKIE_NAME,
-                value: getUserToken(user),
+                value: token,
                 secure: process.env.NODE_ENV !== 'development',
                 sameSite: 'lax',
-                expires: dayjs().add(30, 'day').toDate(),
+                expires: expiresAt,
                 domain: null,
             };
 
@@ -120,6 +132,8 @@ builder.mutationFields((t) => ({
                 success: true,
                 user: user,
                 message: null,
+                accessToken: token,
+                expiresAt,
             };
         },
     }),

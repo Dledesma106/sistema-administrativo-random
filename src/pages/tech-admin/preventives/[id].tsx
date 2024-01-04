@@ -1,10 +1,12 @@
 import { GetServerSideProps } from 'next';
 
+import { useRouter } from 'next/router';
+
 import { Role } from '@prisma/client';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import PreventiveForm from '@/components/Forms/TechAdmin/PreventiveForm';
-import { type Frequency, type Month } from 'backend/models/types';
+import CreateOrUpdatePreventiveForm from '@/components/Forms/TechAdmin/CreateOrUpdatePreventiveForm';
+import { Month, type Frequency } from 'backend/models/types';
 import { prisma } from 'lib/prisma';
 
 export type EditPreventivePageProps = Awaited<
@@ -26,28 +28,33 @@ type Params = {
 };
 
 export default function EditPreventive(props: Props) {
-    if (propsAreValid(props)) {
+    const router = useRouter();
+
+    if (!propsAreValid(props)) {
         return null;
     }
     const { preventive, ...rest } = props;
-    const preventiveForm: IPreventiveForm = {
-        _id: preventive._id as string,
-        branch: preventive.branch,
-        business: preventive.business,
-        assigned: preventive.assignedIDs,
-        months: preventive.months as Month[],
-        frequency: preventive.frequency as Frequency,
-        status: preventive.status,
-        lastDoneAt: preventive.lastDoneAt,
-        batteryChangedAt: preventive.batteryChangedAt,
-        observations: preventive.observations,
-    };
 
     return (
         <DashboardLayout>
-            <PreventiveForm
-                newPreventive={false}
-                preventiveForm={preventiveForm}
+            <CreateOrUpdatePreventiveForm
+                defaultValues={{
+                    client: preventive.branch.clientId,
+                    branch: preventive.branch.id,
+                    business: preventive.businessId,
+                    assigned: preventive.assigned.map((user) => ({
+                        label: user.fullName,
+                        value: user.id,
+                    })),
+                    frequency: preventive.frequency as Frequency,
+                    months: preventive.months.map((month) => ({
+                        label: month,
+                        value: month as Month,
+                    })),
+                    observations: preventive.observations,
+                    status: preventive.status,
+                }}
+                preventiveIdToUpdate={router.query.id as string}
                 {...rest}
             />
         </DashboardLayout>
@@ -139,5 +146,30 @@ const getEditPreventivePageProps = async () => {
 };
 
 const getPreventive = async (id: string) => {
-    return prisma.preventive.findUniqueUndeleted({ where: { id } });
+    return await prisma.preventive.findUnique({
+        where: {
+            id,
+            deleted: false,
+        },
+        select: {
+            id: true,
+            frequency: true,
+            status: true,
+            months: true,
+            businessId: true,
+            branch: {
+                select: {
+                    id: true,
+                    clientId: true,
+                },
+            },
+            assigned: {
+                select: {
+                    id: true,
+                    fullName: true,
+                },
+            },
+            observations: true,
+        },
+    });
 };

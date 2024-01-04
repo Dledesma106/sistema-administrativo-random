@@ -8,5 +8,6 @@ import './resolvers/client';
 import './resolvers/business';
 import './resolvers/image';
 import './resolvers/expense';
+import './resolvers/preventive';
 
 export const schema = builder.toSchema();
