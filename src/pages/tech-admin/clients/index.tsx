@@ -1,12 +1,9 @@
 import { GetServerSideProps } from 'next';
 
-import { PrismaClient } from '@prisma/client';
-
 import { DashboardLayout } from '@/components/DashboardLayout';
 import ClientTable from '@/components/Tables/ClientTable';
 import TitleButton from '@/components/TitleButton';
-
-const prisma = new PrismaClient();
+import { prisma } from 'lib/prisma';
 
 export type ClientsPageProps = Awaited<ReturnType<typeof getProps>>;
 
@@ -34,7 +31,12 @@ export const getServerSideProps: GetServerSideProps<ClientsPageProps> = async ()
 };
 
 async function getProps() {
-    const clients = await prisma.client.findMany();
+    const clients = await prisma.client.findManyUndeleted({
+        select: {
+            id: true,
+            name: true,
+        },
+    });
     return {
         clients,
     };
