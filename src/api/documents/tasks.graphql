@@ -1,0 +1,150 @@
+query tasks(
+    $assigneed: [String!]
+    $business: String
+    $city: String
+    $status: TaskStatus
+    $client: String
+    $taskType: TaskType
+) {
+    tasks(
+        assigneed: $assigneed
+        business: $business
+        city: $city
+        status: $status
+        client: $client
+        taskType: $taskType
+    ) {
+        id
+        createdAt
+        closedAt
+        description
+        business {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+            client {
+                id
+                name
+            }
+        }
+        assigned {
+            id
+            fullName
+        }
+        expenses {
+            amount
+        }
+        taskType
+        status
+    }
+}
+
+query taskById($id: String!) {
+    taskById(id: $id) {
+        id
+        createdAt
+        closedAt
+        description
+        business {
+            id
+            name
+        }
+        images {
+            id
+            url
+        }
+        branch {
+            number
+            city {
+                name
+                province {
+                    name
+                }
+            }
+            client {
+                name
+            }
+        }
+        assigned {
+            id
+            firstName
+            lastName
+            fullName
+            email
+        }
+        expenses {
+            id
+            amount
+            paySource
+            createdAt
+            image {
+                id
+                url
+                urlExpire
+                key
+            }
+            status
+            doneBy {
+                id
+                email
+                fullName
+            }
+        }
+        taskType
+        status
+    }
+}
+
+mutation createTask($input: TaskInput!) {
+    createTask(input: $input) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateTask($id: String!, $input: TaskInput!) {
+    updateTask(id: $id, input: $input) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation deleteTask($id: String!) {
+    deleteTask(id: $id) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateTaskExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
+    updateTaskExpenseStatus(expenseId: $expenseId, status: $status) {
+        task {
+            id
+            expenses {
+                id
+                status
+            }
+        }
+        success
+    }
+}

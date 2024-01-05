@@ -1,8 +1,12 @@
-import { type NextConnectApiRequest } from '../controllers/interfaces'
-import { type NextApiResponse } from 'next'
-import { type ResponseData } from '../controllers/types'
-import { getPayload } from 'lib/jwt'
-import { type Role } from '../models/types'
+import { NextApiResponse } from 'next';
+
+import { Role } from '@prisma/client';
+import { NextHandler } from 'next-connect';
+
+import dbConnect from '@/lib/dbConnect';
+import { getPayload } from '@/lib/jwt';
+import { NextConnectApiRequest } from 'backend/controllers/interfaces';
+import UserModel from 'backend/models/User';
 
 // with this middleware I want to check authorization, since authentication is achieved on login
 // here I can verify the JWT and add it's payload to the request object
@@ -14,47 +18,85 @@ import { type Role } from '../models/types'
 // e.g. only an Auditor should be able to change the status of a Task or Expense from Sent to Approved
 
 const accessControl = async (
-	req: NextConnectApiRequest,
-	res: NextApiResponse<ResponseData>,
-	next: any
+    req: NextConnectApiRequest<true>,
+    res: NextApiResponse,
+    next: NextHandler,
 ): Promise<void> => {
-	console.log(req.method, req.url, new Date())
+    const { cookies } = req;
 
-	const { headers, cookies } = req
-	// console.log(headers.authorization);
+    const jwt = cookies.ras_access_token;
 
-	const jwt = headers.authorization !== undefined ? headers.authorization : cookies.ras_access_token
+    if (jwt === undefined) {
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
+    }
 
-	if (jwt === undefined) return res.status(401).json({ error: "You're not logged in", statusCode: 403 })
-	const result = getPayload(jwt) // it's verified with the secret key
+    let result = null;
+    try {
+        result = getPayload(jwt);
+    } catch (error) {
+        return res.status(400).json({
+            error: 'JWT is not valid',
+        });
+    }
 
-	if (result === undefined) return res.status(401).json({ error: 'No user found', statusCode: 403 })
+    if (!result) {
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
+    }
 
-	if (!isAuthorized(req.url as string, result.payload.userRoles as Role[])) { return res.status(401).json({ error: "You're not authorized to access this resource", statusCode: 403 }) }
-	req.userId = result.payload.userId
+    const userId = result.payload.userId;
+    if (!userId) {
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
+    }
 
-	next()
-}
+    await dbConnect();
+    const user = await UserModel.findById(userId);
+    const url = req.url as string;
+
+    if (!user) {
+        return res.status(401).json({
+            error: "You're not logged in",
+        });
+    }
+
+    if (!isAuthorized(url, user.roles)) {
+        return res.status(403).json({
+            error: "You're not authorized to access this resource",
+            statusCode: 403,
+        });
+    }
+
+    req.userId = userId;
+    req.user = user;
+    return next();
+};
 
 // takes a pathname and the user's list of roles, it checks that the user has the role the pathname is accessing
 /*
 switch for the role part of the pathname, it checks that the role is included in the roles of the user
 */
 const isAuthorized = (pathname: string, roles: Role[]): boolean => {
-	const rolePath = pathname.slice(5, pathname.indexOf('/', 5))
-	if (rolePath === 'auth') return true
-	switch (rolePath) {
-		case 'tech-admin':
-			return roles.includes('Administrativo Tecnico')
-		case 'acc-admin':
-			return roles.includes('Administrativo Contable')
-		case 'auditor':
-			return roles.includes('Auditor')
-		case 'tech':
-			return roles.includes('Tecnico')
-		default:
-			return false
-	}
-}
+    const rolePath = pathname.slice(5, pathname.indexOf('/', 5));
+    if (rolePath === 'auth') {
+        return true;
+    }
+    switch (rolePath) {
+        case 'tech-admin':
+            return roles.includes(Role.AdministrativoTecnico);
+        case 'acc-admin':
+            return roles.includes(Role.AdministrativoContable);
+        case 'auditor':
+            return roles.includes(Role.Auditor);
+        case 'tech':
+            return roles.includes(Role.Tecnico);
+        default:
+            return false;
+    }
+};
 
-export default accessControl
+export default accessControl;

@@ -1,25 +1,41 @@
-import Activity from 'backend/models/Activity'
-import User from 'backend/models/User'
-import dbConnect from 'lib/dbConnect'
-import { formatIds } from 'lib/utils'
-import { type NextApiResponse } from 'next'
-import { type NextConnectApiRequest } from './interfaces'
-import { type ResponseData } from './types'
+import { type NextApiResponse } from 'next';
+
+import { NextConnectApiRequest } from './interfaces';
+
+import dbConnect from '@/lib/dbConnect';
+import { mongooseDocumentToJSON } from '@/lib/utils';
+import ActivityModel from 'backend/models/Activity';
+import UserModel from 'backend/models/User';
 
 const ActivityController = {
-	getActivities: async (req: NextConnectApiRequest, res: NextApiResponse<ResponseData>) => {
-		await dbConnect()
-		const docActivities = Activity.find({})
-		res.json({ data: { activities: formatIds(docActivities) }, statusCode: 200 })
-	},
-	getTechActivities: async (req: NextConnectApiRequest, res: NextApiResponse<ResponseData>) => {
-		const { userId } = req
-		await dbConnect()
-		const docUser = await User.findById(userId)
-		if (docUser == null) return res.json({ error: 'no user logged in', statusCode: 403 })
-		const docActivities = docUser.getActivities()
-		res.json({ data: { activities: formatIds(docActivities) }, statusCode: 200 })
-	}
-}
+    getActivities: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        await dbConnect();
+        const docActivities = ActivityModel.find({});
+        return res.json({
+            data: {
+                activities: mongooseDocumentToJSON(docActivities),
+            },
+            statusCode: 200,
+        });
+    },
+    getTechActivities: async (req: NextConnectApiRequest, res: NextApiResponse) => {
+        const { userId } = req;
+        await dbConnect();
+        const docUser = await UserModel.findById(userId);
+        if (docUser === null) {
+            return res.json({
+                error: 'no user logged in',
+                statusCode: 403,
+            });
+        }
+        const docActivities = docUser.getActivities();
+        return res.json({
+            data: {
+                activities: mongooseDocumentToJSON(docActivities),
+            },
+            statusCode: 200,
+        });
+    },
+};
 
-export default ActivityController
+export default ActivityController;
