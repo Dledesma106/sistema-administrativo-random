@@ -1,16 +1,16 @@
+import { GetServerSideProps } from 'next';
+
+import { PrismaClient } from '@prisma/client';
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import ClientTable from '@/components/Tables/ClientTable';
 import TitleButton from '@/components/TitleButton';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import ClientModel from 'backend/models/Client';
-import { type IClient } from 'backend/models/interfaces';
 
-interface Props {
-    clients: IClient[];
-}
+const prisma = new PrismaClient();
 
-export default function Clients({ clients }: Props): JSX.Element {
+export type ClientsPageProps = Awaited<ReturnType<typeof getProps>>;
+
+export default function Clients({ clients }: ClientsPageProps): JSX.Element {
     return (
         <DashboardLayout>
             <main>
@@ -25,22 +25,17 @@ export default function Clients({ clients }: Props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: Props }> {
-    try {
-        await dbConnect();
+export const getServerSideProps: GetServerSideProps<ClientsPageProps> = async () => {
+    const props = await getProps();
 
-        const docClients = await ClientModel.findUndeleted({});
-        const clients = mongooseDocumentToJSON(docClients);
-        return {
-            props: {
-                clients,
-            },
-        };
-    } catch (error) {
-        return {
-            props: {
-                clients: [],
-            },
-        };
-    }
+    return {
+        props,
+    };
+};
+
+async function getProps() {
+    const clients = await prisma.client.findMany();
+    return {
+        clients,
+    };
 }
