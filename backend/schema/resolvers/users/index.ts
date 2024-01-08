@@ -4,6 +4,7 @@ import { compareSync } from 'bcryptjs';
 import { YogaInitialContext } from 'graphql-yoga';
 
 import { getUserToken } from '@/lib/jwt';
+import Mailer from 'lib/nodemailer';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
@@ -79,6 +80,50 @@ const LoginUserPhotosRef = builder
         }),
     });
 
+const UserInputPhotosRef = builder.inputType('UserInput', {
+    fields: (t) => ({
+        email: t.string({
+            required: true,
+        }),
+        firstName: t.string({
+            required: true,
+        }),
+        lastName: t.string({
+            required: true,
+        }),
+        roles: t.field({
+            type: [RolePothosRef],
+            required: true,
+        }),
+        city: t.string({
+            required: true,
+        }),
+    }),
+});
+
+const UserCrudPhotosRef = builder
+    .objectRef<{
+        success: boolean;
+        message?: string | null;
+        user?: User | null;
+    }>('UserCrudPhotosRef')
+    .implement({
+        fields: (t) => ({
+            success: t.boolean({
+                resolve: (result) => result.success,
+            }),
+            user: t.field({
+                type: UserPothosRef,
+                nullable: true,
+                resolve: (result) => result.user,
+            }),
+            message: t.string({
+                nullable: true,
+                resolve: (result) => result.message,
+            }),
+        }),
+    });
+
 builder.mutationFields((t) => ({
     login: t.field({
         type: LoginUserPhotosRef,
@@ -146,6 +191,243 @@ builder.mutationFields((t) => ({
                     message: (e as Error).message,
                     accessToken: undefined,
                     expiresAt: undefined,
+                };
+            }
+        },
+    }),
+    createUser: t.field({
+        type: UserCrudPhotosRef,
+        args: {
+            input: t.arg({
+                type: UserInputPhotosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+        },
+        resolve: async (_parent, args) => {
+            try {
+                const { email, firstName, lastName, roles, city } = args.input;
+
+                const userExists = await prisma.user.findUnique({
+                    where: {
+                        email,
+                    },
+                });
+
+                let user: User | null = null;
+
+                const randomPassword = Math.random().toString(36).slice(-8);
+                if (userExists && userExists.deleted) {
+                    user = await prisma.user.update({
+                        where: {
+                            id: userExists.id,
+                        },
+                        data: {
+                            deleted: false,
+                            firstName,
+                            lastName,
+                            fullName: `${firstName} ${lastName}`,
+                            roles: {
+                                set: roles,
+                            },
+                            password: randomPassword,
+                            city: {
+                                connect: {
+                                    id: city,
+                                },
+                            },
+                        },
+                    });
+                } else if (userExists) {
+                    return {
+                        success: false,
+                        user: null,
+                        message: 'El usuario ya existe',
+                    };
+                } else {
+                    user = await prisma.user.create({
+                        data: {
+                            email,
+                            password: randomPassword,
+                            firstName,
+                            lastName,
+                            fullName: `${firstName} ${lastName}`,
+                            roles: {
+                                set: roles,
+                            },
+                            city: {
+                                connect: {
+                                    id: city,
+                                },
+                            },
+                        },
+                    });
+                }
+
+                Mailer.sendNewUserPassword({
+                    email,
+                    fullName: user.fullName,
+                    password: randomPassword,
+                });
+
+                return {
+                    success: true,
+                    user,
+                    message: null,
+                };
+            } catch (e) {
+                return {
+                    success: false,
+                    user: null,
+                    message: (e as Error).message,
+                };
+            }
+        },
+    }),
+    updateUser: t.field({
+        type: UserCrudPhotosRef,
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+            input: t.arg({
+                type: UserInputPhotosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+        },
+        resolve: async (_parent, args) => {
+            try {
+                const { id } = args;
+                const { email, firstName, lastName, roles, city } = args.input;
+
+                const userExists = await prisma.user.findUniqueUndeleted({
+                    where: {
+                        id,
+                    },
+                });
+                if (!userExists) {
+                    return {
+                        success: false,
+                        user: null,
+                        message: 'El usuario no existe',
+                    };
+                }
+
+                const user = await prisma.user.update({
+                    where: {
+                        id,
+                    },
+                    data: {
+                        email,
+                        firstName,
+                        lastName,
+                        fullName: `${firstName} ${lastName}`,
+                        roles: {
+                            set: roles,
+                        },
+                        city: {
+                            connect: {
+                                id: city,
+                            },
+                        },
+                    },
+                });
+
+                return {
+                    success: true,
+                    user,
+                    message: null,
+                };
+            } catch (e) {
+                return {
+                    success: false,
+                    user: null,
+                    message: (e as Error).message,
+                };
+            }
+        },
+    }),
+    sendNewUserRandomPassword: t.field({
+        type: UserCrudPhotosRef,
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+        },
+        authz: {
+            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+        },
+        resolve: async (_parent, args) => {
+            try {
+                const { id } = args;
+
+                const existentUser = await prisma.user.findUniqueUndeleted({
+                    where: {
+                        id,
+                    },
+                });
+                if (!existentUser) {
+                    return {
+                        success: false,
+                        user: null,
+                        message: 'El usuario no existe',
+                    };
+                }
+
+                const randomPassword = Math.random().toString(36).slice(-8);
+
+                const user = await prisma.user.update({
+                    where: {
+                        id,
+                    },
+                    data: {
+                        password: randomPassword,
+                    },
+                });
+
+                const sendResult = await Mailer.sendNewUserPassword({
+                    email: user.email,
+                    fullName: user.fullName,
+                    password: randomPassword,
+                });
+
+                if (!sendResult.accepted.length) {
+                    // Since the email was not sent, we should revert the password change
+                    // To do this we should update the user, but since the custom prisma extension
+                    // That hashes the password, when the "update" operation is called, it will hash the password again
+                    // So instead we should use the "updateMany" operation, which will not hash the password
+                    // This is a workaround, but it works
+                    await prisma.user.updateMany({
+                        where: {
+                            id,
+                        },
+                        data: {
+                            password: existentUser.password,
+                        },
+                    });
+
+                    return {
+                        success: false,
+                        user: null,
+                        message: 'No se pudo enviar el correo',
+                    };
+                }
+
+                return {
+                    success: true,
+                    user,
+                    message: null,
+                };
+            } catch (e) {
+                return {
+                    success: false,
+                    user: null,
+                    message: (e as Error).message,
                 };
             }
         },

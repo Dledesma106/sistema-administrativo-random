@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 import { CgPassword } from 'react-icons/cg';
 
+import { useSendNewUserRandomPasswordMutation } from './mutations';
+
 import Modal from '@/components/Modal';
 import { TableCell } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
@@ -23,6 +25,8 @@ export default function UserItemActions({ user, deleteUser }: Props): JSX.Elemen
     const [deleteModal, setDeleteModal] = useState<boolean>(false);
     const [newPasswordModal, setNewPasswordModal] = useState<boolean>(false);
     const { triggerAlert } = useAlert();
+
+    const sendNewRandomPassword = useSendNewUserRandomPasswordMutation();
 
     const openDeleteModal = (): void => {
         setDeleteModal(true);
@@ -70,12 +74,9 @@ export default function UserItemActions({ user, deleteUser }: Props): JSX.Elemen
     async function reGeneratePassword(): Promise<void> {
         try {
             startLoading();
-            await fetcher.put(
-                {
-                    _id: user._id,
-                },
-                (apiEndpoints.techAdmin.users as string) + 'new-password',
-            );
+            await sendNewRandomPassword.mutateAsync({
+                id: user._id as string,
+            });
             triggerAlert({
                 type: 'Success',
                 message: `Se generó una nueva contraseña para ${
