@@ -68,9 +68,7 @@ const getUserFromContext = async (context: YogaContext) => {
 
     const isMobileApp = context.request.headers.get('X-Mobile-App') === 'true';
     if (isMobileApp) {
-        console.log('isMobileApp');
         user = await getUserFromAuthorizationHeader(context);
-        console.log('user', user);
     } else {
         user = await getUserFromCookie(context);
     }

@@ -2,9 +2,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Role } from '@prisma/client';
-import { useMutation } from '@tanstack/react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
+import { useCreateUserMutation, useUpdateUserMutation } from './mutations';
+
+import { UserInput } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -12,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -21,19 +22,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
-import * as api from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
 import { CityWithProvince } from '@/types';
 import { rolesOptions } from 'backend/models/types';
 
 export interface UserFormProps {
     cities: CityWithProvince[];
-    newUser?: boolean;
-    userForm?: UserFormValues;
+    userIdToUpdate?: string;
+    defaultValues?: UserFormValues;
 }
 
 export type UserFormValues = {
-    _id: string;
     firstName: string;
     lastName: string;
     city: string;
@@ -42,87 +40,126 @@ export type UserFormValues = {
         label: Role;
     }[];
     email: string;
-    password: string;
 };
 
-type PostOrPutUserMutationVariables = {
-    firstName: string;
-    lastName: string;
-    city: string;
-    roles: Role[];
-    email: string;
-    password: string;
-};
-
-export default function UserForm({
-    userForm,
-    newUser = true,
+export default function CreateOrUpdateUserForm({
+    defaultValues,
+    userIdToUpdate,
     cities,
 }: UserFormProps): JSX.Element {
     const router = useRouter();
     const form = useForm<UserFormValues>({
-        defaultValues: userForm || {},
+        defaultValues: defaultValues,
     });
     const { triggerAlert } = useAlert();
 
-    const postUserMutation = useMutation({
-        mutationFn: (form: PostOrPutUserMutationVariables) =>
-            fetcher.post(form, api.techAdmin.users),
-        onSuccess: (data, variables) => {
-            triggerAlert({
-                type: 'Success',
-                message: `El usuario ${variables.firstName} ${variables.lastName} fue creado correctamente`,
-            });
-            router.push('/tech-admin/users');
-        },
-        onError: (error, variables) => {
-            triggerAlert({
-                type: 'Failure',
-                message: `No se pudo crear el usuario ${variables.firstName} ${variables.lastName}`,
-            });
-        },
-    });
-
-    const putUserMutation = useMutation({
-        mutationFn: (form: PostOrPutUserMutationVariables) => {
-            const data = { ...form } as Partial<PostOrPutUserMutationVariables>;
-            if (data.password?.trim() === '') {
-                delete data.password;
-            }
-
-            return fetcher.put(form, api.techAdmin.users);
-        },
-        onSuccess: (data, variables) => {
-            triggerAlert({
-                type: 'Success',
-                message: `El usuario ${variables.firstName} ${variables.lastName} fue actualizado correctamente`,
-            });
-            router.push('/tech-admin/users');
-        },
-        onError: (error, variables) => {
-            triggerAlert({
-                type: 'Failure',
-                message: `No se pudo actualizar el usuario ${variables.firstName} ${variables.lastName}`,
-            });
-        },
-    });
+    const postUserMutation = useCreateUserMutation();
+    const putUserMutation = useUpdateUserMutation();
 
     const onSubmit: SubmitHandler<UserFormValues> = (data) => {
-        const form: PostOrPutUserMutationVariables = {
+        const input: UserInput = {
             ...data,
             roles: data.roles?.map((role) => role.value) || [],
         };
-        if (newUser) {
-            postUserMutation.mutate(form);
+
+        if (!userIdToUpdate) {
+            postUserMutation.mutate(
+                { input },
+                {
+                    onSuccess: (data, { input }) => {
+                        if (!data) {
+                            triggerAlert({
+                                type: 'Failure',
+                                message: `No se pudo crear el usuario ${input.email}`,
+                            });
+                            return;
+                        }
+
+                        const { user, success, message } = data.createUser;
+                        if (!success && message) {
+                            triggerAlert({
+                                type: 'Failure',
+                                message,
+                            });
+                            return;
+                        }
+
+                        if (!user) {
+                            triggerAlert({
+                                type: 'Failure',
+                                message: `No se pudo crear el usuario ${input.email}`,
+                            });
+                            return;
+                        }
+
+                        triggerAlert({
+                            type: 'Success',
+                            message: `El usuario ${input.email} fue creado correctamente`,
+                        });
+                        router.push('/tech-admin/users');
+                    },
+                    onError: (error, { input }) => {
+                        triggerAlert({
+                            type: 'Failure',
+                            message: `No se pudo crear el usuario ${input.email}`,
+                        });
+                    },
+                },
+            );
         } else {
-            putUserMutation.mutate(form);
+            putUserMutation.mutate(
+                {
+                    id: userIdToUpdate,
+                    input,
+                },
+                {
+                    onSuccess: (data, { input }) => {
+                        if (!data) {
+                            triggerAlert({
+                                type: 'Failure',
+                                message: `No se pudo actualizar el usuario ${input.email}`,
+                            });
+                            return;
+                        }
+
+                        const { user, success, message } = data.updateUser;
+
+                        if (!success && message) {
+                            triggerAlert({
+                                type: 'Failure',
+                                message,
+                            });
+                            return;
+                        }
+
+                        if (!user) {
+                            triggerAlert({
+                                type: 'Failure',
+                                message: `No se pudo actualizar el usuario ${input.email}`,
+                            });
+                            return;
+                        }
+
+                        triggerAlert({
+                            type: 'Success',
+                            message: `El usuario ${input.email} fue actualizado correctamente`,
+                        });
+                    },
+                    onError: (error, { input }) => {
+                        triggerAlert({
+                            type: 'Failure',
+                            message: `No se pudo actualizar el usuario ${input.email}`,
+                        });
+                    },
+                },
+            );
         }
     };
 
     return (
         <main>
             <TypographyH2 className="mb-4" asChild>
-                <h1>{newUser ? 'Crear usuario' : 'Editar usuario'}</h1>
+                <h1>{!userIdToUpdate ? 'Crear usuario' : 'Editar usuario'}</h1>
             </TypographyH2>
 
             <Form {...form}>
@@ -181,36 +218,6 @@ export default function UserForm({
                                 <FormControl>
                                     <Input placeholder="ejemplo@gmail.com" {...field} />
                                 </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        name="password"
-                        control={form.control}
-                        rules={{
-                            required: newUser ? 'Este campo es requerido' : false,
-                            minLength: {
-                                value: 8,
-                                message: 'La contraseña debe tener al menos 8 caracteres',
-                            },
-                        }}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    {newUser
-                                        ? 'Contraseña'
-                                        : 'Nueva contraseña (opcional)'}
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="********"
-                                        type="password"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormDescription>Al menos 8 caracteres</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

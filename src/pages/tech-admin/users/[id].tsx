@@ -1,9 +1,9 @@
 import { type GetServerSidePropsContext } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import UserForm, { UserFormValues } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
+import CreateOrUpdateUserForm from '@/modules/CreateOrUpdateUserForm';
 import { CityWithProvince } from '@/types';
 import CityModel from 'backend/models/City';
 import { type IUser } from 'backend/models/interfaces';
@@ -15,25 +15,25 @@ interface Props {
 }
 
 export default function EditUser({ cities, user }: Props): JSX.Element {
-    const userForm: UserFormValues = {
-        _id: user._id as string,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        roles:
-            user.roles?.map((role) => {
-                return {
-                    label: role,
-                    value: role,
-                };
-            }) || [],
-        city: user.city?._id as string,
-        password: '',
-    };
-
     return (
         <DashboardLayout>
-            <UserForm userForm={userForm} newUser={false} cities={cities} />
+            <CreateOrUpdateUserForm
+                defaultValues={{
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    roles:
+                        user.roles?.map((role) => {
+                            return {
+                                label: role,
+                                value: role,
+                            };
+                        }) || [],
+                    city: user.city?._id as string,
+                }}
+                cities={cities}
+                userIdToUpdate={user._id.toString()}
+            />
         </DashboardLayout>
     );
 }

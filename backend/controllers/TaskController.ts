@@ -6,7 +6,7 @@ import { FilterQuery, Types as MongooseTypes } from 'mongoose';
 import { type NextConnectApiRequest } from './interfaces';
 
 import dbConnect from '@/lib/dbConnect';
-import Mailer from '@/lib/nodemailer';
+import Mailer from 'lib/nodemailer';
 import { mongooseDocumentToJSON } from '@/lib/utils';
 import ExpenseModel from 'backend/models/Expense';
 import ImageModel, { Image } from 'backend/models/Image';

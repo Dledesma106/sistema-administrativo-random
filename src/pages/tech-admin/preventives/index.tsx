@@ -87,8 +87,6 @@ export async function getServerSideProps(): Promise<{
             props: props as any,
         };
     } catch (error) {
-        console.error(error);
-
         return {
             props: {} as IPreventiveProps,
         };

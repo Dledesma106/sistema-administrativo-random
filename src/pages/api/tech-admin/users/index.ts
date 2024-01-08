@@ -6,8 +6,6 @@ import accessControl from 'backend/middleware/accessControl';
 const protectedHandler = createApiRouter();
 protectedHandler.use(accessControl);
 protectedHandler.get(UserController.getUser);
-protectedHandler.put(UserController.putUser);
-protectedHandler.post(UserController.postUser);
 protectedHandler.delete(UserController.deleteUser);
 
 export default protectedHandler.handler({

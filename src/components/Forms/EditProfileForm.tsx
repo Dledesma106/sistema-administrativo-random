@@ -135,7 +135,11 @@ export default function EditProfileForm() {
                 />
 
                 <div className="flex justify-between">
-                    <Button onClick={() => router.push('/')} variant="secondary">
+                    <Button
+                        type="button"
+                        onClick={() => router.push('/')}
+                        variant="secondary"
+                    >
                         Cancelar
                     </Button>
                     <ButtonWithSpinner
