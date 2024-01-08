@@ -25,8 +25,8 @@ class TransporterProvider /* extends nodemailer.Transporter */ {
                 port: 465,
                 secure: true,
                 auth: {
-                    user: 'ilene79@ethereal.email',
-                    pass: 'W2vmTReQXCzgUBwdyD',
+                    user: process.env.EMAIL_ACCOUNT,
+                    pass: process.env.EMAIL_PASSWORD,
                 },
             });
         } else {
