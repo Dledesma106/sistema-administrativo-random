@@ -1,6 +1,6 @@
-import nodemailer, { SentMessageInfo, type Transporter } from 'nodemailer';
+import nodemailer, { SentMessageInfo } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import nodemailerMock from 'nodemailer-mock';
+import { NodemailerMockTransporter } from 'nodemailer-mock';
 import { renderToString } from 'react-dom/server';
 
 import NewUserEmail, { NewUserEmailProps } from '@/components/Emails/NewUserPassword';
@@ -10,17 +10,24 @@ import TaskFinishedEmail, {
 } from '@/components/Emails/TaskFinished';
 import { IUser } from 'backend/models/interfaces';
 
-class TransporterProvider /* extends nodemailer.Transporter */ {
+class TransporterProvider {
     private static instance: TransporterProvider;
-    private readonly transporter: Transporter;
+    private transporter:
+        | NodemailerMockTransporter
+        | nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
 
-    constructor() {
-        if (TransporterProvider.instance !== undefined) {
-            return TransporterProvider.instance;
-        }
+    private constructor(
+        transporter:
+            | NodemailerMockTransporter
+            | nodemailer.Transporter<SMTPTransport.SentMessageInfo>,
+    ) {
+        this.transporter = transporter;
+    }
 
+    private static async createTransporter() {
         if (process.env.NODE_ENV === 'development') {
-            this.transporter = nodemailerMock.createTransport({
+            const nodemailerMock = await import('nodemailer-mock');
+            return nodemailerMock.createTransport({
                 host: 'smtp.gmail.com',
                 port: 465,
                 secure: true,
@@ -30,7 +37,7 @@ class TransporterProvider /* extends nodemailer.Transporter */ {
                 },
             });
         } else {
-            this.transporter = nodemailer.createTransport({
+            return nodemailer.createTransport({
                 host: 'smtp.gmail.com',
                 port: 465,
                 secure: true,
@@ -40,12 +47,15 @@ class TransporterProvider /* extends nodemailer.Transporter */ {
                 },
             });
         }
-
-        TransporterProvider.instance = this;
     }
 
-    getInstance(): Transporter<SMTPTransport.SentMessageInfo> {
-        return this.transporter;
+    public static async getInstance() {
+        if (!this.instance) {
+            const transporter = await this.createTransporter();
+            this.instance = new this(transporter);
+        }
+
+        return this.instance.transporter;
     }
 }
 
@@ -61,7 +71,7 @@ const logInfoInDev = (info: SentMessageInfo, html: string) => {
 const Mailer = {
     sendNewUserPassword: async (props: NewUserEmailProps) => {
         const html = renderToString(NewUserEmail(props));
-        const info = await new TransporterProvider().getInstance().sendMail({
+        const info = (await TransporterProvider.getInstance()).sendMail({
             from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
             to: props.email,
             subject: 'Creacion de usuario en el Sistema de Administracion Tecnica',
@@ -74,7 +84,7 @@ const Mailer = {
     },
     sendResetPassword: async (user: IUser) => {
         const html = renderToString(ResetPassword({ user }));
-        const info = await new TransporterProvider().getInstance().sendMail({
+        const info = (await TransporterProvider.getInstance()).sendMail({
             from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
             to: user.email,
             subject:
@@ -88,7 +98,7 @@ const Mailer = {
     },
     sendTaskFinished: async (props: TaskFinishedEmailProps) => {
         const html = renderToString(TaskFinishedEmail(props));
-        const info = await new TransporterProvider().getInstance().sendMail({
+        const info = (await TransporterProvider.getInstance()).sendMail({
             from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
             to: props.auditor.email,
             subject: 'Tarea Finalizada',
