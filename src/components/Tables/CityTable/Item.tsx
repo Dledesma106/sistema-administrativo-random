@@ -10,10 +10,11 @@ import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { slugify } from '@/lib/utils';
-import { type IProvince, type ICity } from 'backend/models/interfaces';
+import { CitiesProps } from '@/pages/tech-admin/cities';
+
 
 interface Props {
-    city: ICity;
+    city: CitiesProps['cities'][0];
     deleteCity: (id: string) => void;
 }
 
@@ -33,11 +34,11 @@ export default function Item({ city, deleteCity }: Props): JSX.Element {
         try {
             await fetcher.delete(
                 {
-                    _id: city._id,
+                    _id: city.id,
                 },
                 apiEndpoints.techAdmin.cities,
             );
-            deleteCity(city._id as string);
+            deleteCity(city.id);
             triggerAlert({
                 type: 'Success',
                 message: `La empresa ${city.name} fue eliminada correctamente`,
@@ -52,7 +53,7 @@ export default function Item({ city, deleteCity }: Props): JSX.Element {
 
     async function navigateEdit(): Promise<void> {
         startLoading();
-        await router.push(`/tech-admin/cities/${slugify(city.name)}`);
+        router.push(`/tech-admin/cities/${slugify(city.name)}`);
         stopLoading();
     }
 
@@ -67,7 +68,7 @@ export default function Item({ city, deleteCity }: Props): JSX.Element {
     return (
         <TableRow className="border-b">
             <TableCell>{city.name}</TableCell>
-            <TableCell>{(city.provinceId as IProvince).name}</TableCell>
+            <TableCell>{city.province.name}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-center gap-2">
                     <button

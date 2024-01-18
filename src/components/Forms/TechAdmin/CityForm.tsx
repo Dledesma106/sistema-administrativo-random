@@ -20,7 +20,8 @@ import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
 import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { type IProvince } from 'backend/models/interfaces';
+import { NewCitiesPageProps } from '@/pages/tech-admin/cities/new';
+
 
 export interface ICityForm {
     _id: string;
@@ -36,7 +37,7 @@ export interface ICityFormErrors {
 interface Props {
     cityForm: ICityForm;
     newCity?: boolean;
-    provinces: IProvince[];
+    provinces: NewCitiesPageProps["provinces"];
 }
 
 export default function CityForm({
@@ -120,7 +121,7 @@ export default function CityForm({
                                         selectPlaceholder="Seleccione una provincia"
                                         items={provinces.map((province) => {
                                             return {
-                                                value: province._id.toString(),
+                                                value: province.id,
                                                 label: `${province.name}`,
                                             };
                                         })}

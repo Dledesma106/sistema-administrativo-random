@@ -1,19 +1,20 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
 import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import { type IProvince } from 'backend/models/interfaces';
 import ProvinceModel from 'backend/models/Province';
+import { prisma } from 'lib/prisma';
+import { GetServerSideProps } from 'next';
 
-interface Props {
-    provinces: IProvince[];
-}
 
-export default function NewCity({ provinces }: Props): JSX.Element {
+export type NewCitiesPageProps = Awaited<ReturnType<typeof getProps>>;
+
+
+export default function NewCity({ provinces }: NewCitiesPageProps): JSX.Element {
     const cityForm: ICityForm = {
         _id: '',
         name: '',
-        province: '',
+        province: "",
+
     };
 
     return (
@@ -23,14 +24,20 @@ export default function NewCity({ provinces }: Props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: Props }> {
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    await dbConnect();
-    const docProvinces = await ProvinceModel.findUndeleted({});
-    const provinces = mongooseDocumentToJSON(docProvinces);
+export const getServerSideProps: GetServerSideProps<NewCitiesPageProps> = async () => {
+    const props = await getProps();
     return {
-        props: {
-            provinces,
+        props,
+    };
+}
+async function getProps() {
+    const provinces = await prisma.province.findManyUndeleted({
+        select: {
+            id: true,
+            name: true,
         },
+    });
+    return {
+        provinces,
     };
 }
