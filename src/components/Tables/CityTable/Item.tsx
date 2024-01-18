@@ -12,7 +12,6 @@ import fetcher from '@/lib/fetcher';
 import { slugify } from '@/lib/utils';
 import { CitiesProps } from '@/pages/tech-admin/cities';
 
-
 interface Props {
     city: CitiesProps['cities'][0];
     deleteCity: (id: string) => void;

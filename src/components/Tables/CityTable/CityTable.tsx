@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/table';
 import { CitiesProps } from '@/pages/tech-admin/cities';
 
-
 export default function CityTable({ cities, provinces }: CitiesProps): JSX.Element {
     const [tableCities, setTableCities] = useState(cities);
     const [type, setType] = useState<string>('');
@@ -24,11 +23,7 @@ export default function CityTable({ cities, provinces }: CitiesProps): JSX.Eleme
 
         switch (type) {
             case 'Provincia':
-                setTableCities(
-                    cities.filter(
-                        (city) => (city.province.name) === value,
-                    ),
-                );
+                setTableCities(cities.filter((city) => city.province.name === value));
                 break;
             default:
                 setTableCities(cities);
@@ -54,8 +49,10 @@ export default function CityTable({ cities, provinces }: CitiesProps): JSX.Eleme
         setEntities([]);
         setTableCities(cities);
     }
-    const deleteCity = (id: string): void => {            
-        setTableCities((prev)=>{return prev.filter((city) => city.id !== id)});
+    const deleteCity = (id: string): void => {
+        setTableCities((prev) => {
+            return prev.filter((city) => city.id !== id);
+        });
     };
 
     return (

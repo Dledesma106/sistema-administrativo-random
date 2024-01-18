@@ -1,8 +1,9 @@
+import { GetServerSideProps } from 'next';
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import CityTable from '@/components/Tables/CityTable';
 import TitleButton from '@/components/TitleButton';
 import { prisma } from 'lib/prisma';
-import { GetServerSideProps } from 'next';
 
 export type CitiesProps = Awaited<ReturnType<typeof getProps>>;
 
@@ -22,30 +23,28 @@ export default function Cities({ cities, provinces }: CitiesProps): JSX.Element 
 }
 
 export const getServerSideProps: GetServerSideProps<CitiesProps> = async () => {
-
     const props = await getProps();
 
     return {
         props,
     };
-    
-}
+};
 
 async function getProps() {
     const cities = await prisma.city.findManyUndeleted({
-        select:{
-            id:true,
+        select: {
+            id: true,
             name: true,
             province: {
                 select: {
                     name: true,
                     id: true,
-                }
+                },
             },
-        }
-    })
-        
-     const provinces = await prisma.province.findManyUndeleted({
+        },
+    });
+
+    const provinces = await prisma.province.findManyUndeleted({
         select: {
             id: true,
             name: true,
@@ -55,5 +54,5 @@ async function getProps() {
         cities,
         provinces,
     };
-    return props
+    return props;
 }

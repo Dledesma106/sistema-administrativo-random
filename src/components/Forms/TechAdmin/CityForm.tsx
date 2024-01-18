@@ -22,7 +22,6 @@ import * as api from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { NewCitiesPageProps } from '@/pages/tech-admin/cities/new';
 
-
 export interface ICityForm {
     _id: string;
     name: string;
@@ -37,7 +36,7 @@ export interface ICityFormErrors {
 interface Props {
     cityForm: ICityForm;
     newCity?: boolean;
-    provinces: NewCitiesPageProps["provinces"];
+    provinces: NewCitiesPageProps['provinces'];
 }
 
 export default function CityForm({

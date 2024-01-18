@@ -1,20 +1,16 @@
-import { DashboardLayout } from '@/components/DashboardLayout';
-import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
-import dbConnect from '@/lib/dbConnect';
-import ProvinceModel from 'backend/models/Province';
-import { prisma } from 'lib/prisma';
 import { GetServerSideProps } from 'next';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
+import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
+import { prisma } from 'lib/prisma';
 
 export type NewCitiesPageProps = Awaited<ReturnType<typeof getProps>>;
-
 
 export default function NewCity({ provinces }: NewCitiesPageProps): JSX.Element {
     const cityForm: ICityForm = {
         _id: '',
         name: '',
-        province: "",
-
+        province: '',
     };
 
     return (
@@ -29,7 +25,7 @@ export const getServerSideProps: GetServerSideProps<NewCitiesPageProps> = async 
     return {
         props,
     };
-}
+};
 async function getProps() {
     const provinces = await prisma.province.findManyUndeleted({
         select: {
