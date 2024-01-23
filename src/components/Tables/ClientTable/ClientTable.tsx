@@ -9,16 +9,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { type IClient } from 'backend/models/interfaces';
+import { ClientsPageProps } from '@/pages/tech-admin/clients';
 
-interface Props {
-    clients: IClient[];
-}
-export default function ClientTable({ clients }: Props): JSX.Element {
-    const [tableClients, setTableClients] = useState<IClient[]>(clients);
+export default function ClientTable({ clients }: ClientsPageProps): JSX.Element {
+    const [tableClients, setTableClients] = useState(clients);
 
     const deleteClient = (id: string): void => {
-        setTableClients(tableClients.filter((client) => client._id !== id));
+        setTableClients(tableClients.filter((client) => client.id !== id));
     };
 
     return (

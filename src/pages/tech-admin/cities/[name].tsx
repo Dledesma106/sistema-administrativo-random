@@ -6,11 +6,14 @@ import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
 import CityModel from 'backend/models/City';
 import { type ICity, type IProvince } from 'backend/models/interfaces';
-import ProvinceModel from 'backend/models/Province';
+import { prisma } from 'lib/prisma';
 
 interface Props {
     city: ICity;
-    provinces: IProvince[];
+    provinces: {
+        id: string;
+        name: string;
+    }[];
 }
 
 export default function CityView({ city, provinces }: Props): JSX.Element {
@@ -47,9 +50,13 @@ export async function getServerSideProps(
         };
     }
 
-    const docProvinces = await ProvinceModel.findUndeleted({});
     const city = mongooseDocumentToJSON(docCity) as ICity;
-    const provinces = mongooseDocumentToJSON(docProvinces);
+    const provinces = await prisma.province.findManyUndeleted({
+        select: {
+            id: true,
+            name: true,
+        },
+    });
 
     return {
         props: {

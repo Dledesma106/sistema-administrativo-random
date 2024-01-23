@@ -57,8 +57,8 @@ model Business {
   deletedAt DateTime? @db.Date
   name      String    @unique(map: "name_1")
 
-  preventive Preventive[]
-  task       Task[]
+  preventives Preventive[]
+  tasks       Task[]
 
   branchesIDs String[] @db.ObjectId
   branches    Branch[] @relation(fields: [branchesIDs], references: [id])

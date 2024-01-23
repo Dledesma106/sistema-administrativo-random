@@ -9,17 +9,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { type IBusiness } from 'backend/models/interfaces';
+import { BusinessesPageProps } from '@/pages/tech-admin/businesses';
 
-interface Props {
-    businesses: IBusiness[];
-}
-export default function BusinessTable({ businesses }: Props): JSX.Element {
-    const [tableBusinesses, setTableBusinesses] = useState<IBusiness[]>(businesses);
+export default function BusinessTable({ businesses }: BusinessesPageProps): JSX.Element {
+    const [tableBusinesses, setTableBusinesses] = useState(businesses);
 
     const deleteBusiness = (id: string): void => {
-        const newTable = (prev: IBusiness[]): IBusiness[] =>
-            prev.filter((business) => business._id !== id);
+        const newTable = (prev: BusinessesPageProps['businesses']) =>
+            prev.filter((business) => business.id !== id);
         setTableBusinesses(newTable(tableBusinesses));
     };
 

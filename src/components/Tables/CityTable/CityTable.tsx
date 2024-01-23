@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ChangeEvent, useState } from 'react';
 
 import Item from './Item';
@@ -11,14 +10,10 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { type ICity, type IProvince } from 'backend/models/interfaces';
+import { CitiesProps } from '@/pages/tech-admin/cities';
 
-interface Props {
-    cities: ICity[];
-    provinces: IProvince[];
-}
-export default function CityTable({ cities, provinces }: Props): JSX.Element {
-    const [tableCities, setTableCities] = useState<ICity[]>(cities);
+export default function CityTable({ cities, provinces }: CitiesProps): JSX.Element {
+    const [tableCities, setTableCities] = useState(cities);
     const [type, setType] = useState<string>('');
     const [entities, setEntities] = useState<any[]>([] as any[]);
     const filterTypes = ['Provincia'];
@@ -28,11 +23,7 @@ export default function CityTable({ cities, provinces }: Props): JSX.Element {
 
         switch (type) {
             case 'Provincia':
-                setTableCities(
-                    cities.filter(
-                        (city) => (city.provinceId as IProvince).name === value,
-                    ),
-                );
+                setTableCities(cities.filter((city) => city.province.name === value));
                 break;
             default:
                 setTableCities(cities);
@@ -55,13 +46,13 @@ export default function CityTable({ cities, provinces }: Props): JSX.Element {
 
     function clearFilter(): void {
         setType('');
-        setEntities([] as any[]);
+        setEntities([]);
         setTableCities(cities);
     }
     const deleteCity = (id: string): void => {
-        const newTable = (prev: ICity[]): ICity[] =>
-            prev.filter((city) => city._id !== id);
-        setTableCities(newTable(cities));
+        setTableCities((prev) => {
+            return prev.filter((city) => city.id !== id);
+        });
     };
 
     return (

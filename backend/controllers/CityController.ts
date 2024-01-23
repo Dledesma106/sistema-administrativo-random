@@ -41,7 +41,7 @@ const CityController = {
         await dbConnect();
         const cityForm = {
             name,
-            province: province,
+            provinceId: province,
         };
         try {
             const deletedCity = await CityModel.findOne({

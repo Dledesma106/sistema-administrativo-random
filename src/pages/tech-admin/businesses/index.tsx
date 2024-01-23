@@ -1,16 +1,13 @@
+import { GetServerSideProps } from 'next';
+
 import { DashboardLayout } from '@/components/DashboardLayout';
 import BusinessTable from '@/components/Tables/BusinessTable';
 import TitleButton from '@/components/TitleButton';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
-import BusinessModel from 'backend/models/Business';
-import { type IBusiness } from 'backend/models/interfaces';
+import { prisma } from 'lib/prisma';
 
-interface Props {
-    businesses: IBusiness[];
-}
+export type BusinessesPageProps = Awaited<ReturnType<typeof getProps>>;
 
-export default function Businesses({ businesses }: Props): JSX.Element {
+export default function Businesses({ businesses }: BusinessesPageProps): JSX.Element {
     return (
         <DashboardLayout>
             <main>
@@ -25,13 +22,21 @@ export default function Businesses({ businesses }: Props): JSX.Element {
     );
 }
 
-export async function getServerSideProps(): Promise<{ props: Props }> {
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    await dbConnect();
-    const docBusinesses = await BusinessModel.findUndeleted({});
+export const getServerSideProps: GetServerSideProps<BusinessesPageProps> = async () => {
+    const props = await getProps();
     return {
-        props: {
-            businesses: mongooseDocumentToJSON(docBusinesses),
+        props,
+    };
+};
+
+async function getProps() {
+    const businesses = await prisma.business.findManyUndeleted({
+        select: {
+            id: true,
+            name: true,
         },
+    });
+    return {
+        businesses,
     };
 }
