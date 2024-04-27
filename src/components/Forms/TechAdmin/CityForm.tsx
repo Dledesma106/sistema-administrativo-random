@@ -4,6 +4,13 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
+import { fetchClient } from '@/api/fetch-client';
+import {
+    CreateCityDocument,
+    CreateCityMutationVariables,
+    UpdateCityDocument,
+    UpdateCityMutationVariables,
+} from '@/api/graphql';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,71 +25,100 @@ import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
-import * as api from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
-import { type IProvince } from 'backend/models/interfaces';
+import { NewCitiesPageProps } from '@/pages/tech-admin/cities/new';
 
-export interface ICityForm {
-    _id: string;
+export interface CityFormValues {
     name: string;
-    province: string;
-}
-
-export interface ICityFormErrors {
-    name: string;
-    province: string;
+    provinceId: string;
 }
 
 interface Props {
-    cityForm: ICityForm;
-    newCity?: boolean;
-    provinces: IProvince[];
+    cityForm?: CityFormValues;
+    provinces: NewCitiesPageProps['provinces'];
+    idToUpdate?: string;
 }
 
 export default function CityForm({
     cityForm,
-    newCity = true,
     provinces,
+    idToUpdate,
 }: Props): JSX.Element {
     const router = useRouter();
     const { stopLoading, startLoading } = useLoading();
-    const form = useForm<ICityForm>({ defaultValues: cityForm });
+    const form = useForm<CityFormValues>({ defaultValues: cityForm });
     const { triggerAlert } = useAlert();
 
-    const mutation = useMutation({
-        mutationFn: async (form: ICityForm) => {
-            if (newCity) {
-                await fetcher.post(form, api.techAdmin.cities);
-            } else {
-                await fetcher.put(form, api.techAdmin.cities);
-            }
+    const createMutation = useMutation({
+        mutationFn: async (data: CreateCityMutationVariables) => {
+            return fetchClient(CreateCityDocument, data);
         },
         onSuccess: () => {
             router.push('/tech-admin/cities');
             triggerAlert({
                 type: 'Success',
-                message: `Se ${newCity ? 'creó' : 'actualizó'} la ciudad correctamente`,
+                message: `Se creó la ciudad correctamente`,
             });
             stopLoading();
         },
         onError: () => {
             triggerAlert({
                 type: 'Failure',
-                message: `No se pudo ${newCity ? 'crear' : 'actualizar'} la ciudad`,
+                message: `No se pudo crear la ciudad`,
+            }),
+                stopLoading();
+        },
+    });
+    const updateMutation = useMutation({
+        mutationFn: async (data: UpdateCityMutationVariables) => {
+            return fetchClient(UpdateCityDocument, data);
+        },
+        onSuccess: () => {
+            router.push('/tech-admin/cities');
+            triggerAlert({
+                type: 'Success',
+                message: `Se actualizó la ciudad correctamente`,
+            });
+            stopLoading();
+        },
+        onError: () => {
+            triggerAlert({
+                type: 'Failure',
+                message: `No se pudo actualizar la ciudad`,
             }),
                 stopLoading();
         },
     });
 
-    const onSubmit: SubmitHandler<ICityForm> = (data) => {
+    const onSubmit: SubmitHandler<CityFormValues> = (data) => {
+        if (!data.provinceId || !data.name) {
+            return;
+        }
+
         startLoading();
-        mutation.mutate(data);
+
+        if (idToUpdate) {
+            updateMutation.mutate({
+                id: idToUpdate,
+                input: {
+                    name: data.name,
+                    provinceId: data.provinceId,
+                },
+            });
+            return;
+        } else {
+            createMutation.mutate({
+                input: {
+                    name: data.name,
+                    provinceId: data.provinceId,
+                },
+            });
+        }
     };
 
     return (
         <main>
             <TypographyH1 className="mb-8">
-                {newCity ? 'Agregar Ciudad' : 'Editar Ciudad'}
+                {!idToUpdate ? 'Agregar Ciudad' : 'Editar Ciudad'}
             </TypographyH1>
             <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -106,7 +142,7 @@ export default function CityForm({
                         rules={{ required: 'Este campo es requerido' }}
                     />
                     <FormField
-                        name="province"
+                        name="provinceId"
                         control={form.control}
                         rules={{
                             required: 'Este campo es requerido',
@@ -120,8 +156,8 @@ export default function CityForm({
                                         selectPlaceholder="Seleccione una provincia"
                                         items={provinces.map((province) => {
                                             return {
-                                                value: province._id.toString(),
-                                                label: `${province.name}`,
+                                                value: province.id,
+                                                label: province.name,
                                             };
                                         })}
                                         {...field}

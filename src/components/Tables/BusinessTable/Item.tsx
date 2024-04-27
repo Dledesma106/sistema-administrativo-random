@@ -10,10 +10,10 @@ import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 import { slugify } from '@/lib/utils';
-import { type IBusiness } from 'backend/models/interfaces';
+import { BusinessesPageProps } from '@/pages/tech-admin/businesses';
 
 interface Props {
-    business: IBusiness;
+    business: BusinessesPageProps['businesses'][0];
     deleteBusiness: (id: string) => void;
 }
 
@@ -33,11 +33,11 @@ export default function Item({ business, deleteBusiness }: Props): JSX.Element {
         try {
             await fetcher.delete(
                 {
-                    _id: business._id,
+                    _id: business.id,
                 },
                 apiEndpoints.techAdmin.businesses,
             );
-            deleteBusiness(business._id as string);
+            deleteBusiness(business.id);
             triggerAlert({
                 type: 'Success',
                 message: `La empresa ${business.name} fue eliminada correctamente`,

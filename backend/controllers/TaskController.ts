@@ -369,11 +369,12 @@ const TaskController = {
             taskType: TaskType;
             description: string;
             workOrderNumber: number;
+            metadata: Record<string, any>;
         };
 
         const { body } = req;
         await dbConnect();
-        const { branch, business, taskType, description, workOrderNumber } =
+        const { branch, business, taskType, description, workOrderNumber, metadata } =
             body as CreateTaskMutationVariables;
 
         const openedAt = new Date();
@@ -388,6 +389,7 @@ const TaskController = {
             status,
             description,
             workOrderNumber,
+            metadata,
         };
 
         try {

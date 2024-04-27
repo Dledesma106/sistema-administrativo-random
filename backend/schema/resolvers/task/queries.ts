@@ -42,7 +42,12 @@ builder.queryFields((t) => ({
             }),
         },
         resolve: async (query) => {
-            return await prisma.task.findManyUndeleted(query);
+            return await prisma.task.findManyUndeleted({
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                ...query,
+            });
         },
     }),
     taskById: t.prismaField({

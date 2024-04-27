@@ -39,6 +39,7 @@ type FormValues = {
     taskType: TaskType;
     status: TaskStatus;
     workOrderNumber: number | null;
+    metadata: Record<string, any>;
 };
 
 type Props = {
@@ -57,6 +58,38 @@ const CreateOrUpdateTaskForm = ({
     const form = useForm<FormValues>({
         defaultValues,
     });
+
+    const { watch, setValue } = form;
+    useEffect(() => {
+        const subscription = watch((value, { type, name }) => {
+            if (type === 'change') {
+                if (name === 'client') {
+                    setValue('branch', null);
+                    setValue('business', null);
+                }
+
+                if (name === 'branch') {
+                    setValue('business', null);
+                }
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [watch, setValue]);
+
+    const watchedBusiness = watch('business');
+    const watchedBranch = watch('branch');
+    const selectedBranch = watchedBranch
+        ? branches.find((branch) => branch.id === watchedBranch)
+        : null;
+    const selectedBusiness =
+        watchedBusiness && selectedBranch
+            ? selectedBranch.businesses.find(
+                  (business) => business.id === watchedBusiness,
+              )
+            : null;
 
     const { triggerAlert } = useAlert();
 
@@ -80,6 +113,7 @@ const CreateOrUpdateTaskForm = ({
                     taskType: form.taskType,
                     workOrderNumber: form.workOrderNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
+                    metadata: form.metadata,
                 },
             });
         },
@@ -131,6 +165,7 @@ const CreateOrUpdateTaskForm = ({
                     taskType: form.taskType,
                     workOrderNumber: form.workOrderNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
+                    metadata: form.metadata,
                 },
             });
         },
@@ -156,26 +191,6 @@ const CreateOrUpdateTaskForm = ({
             });
         },
     });
-
-    const { watch, setValue } = form;
-    useEffect(() => {
-        const subscription = watch((value, { type, name }) => {
-            if (type === 'change') {
-                if (name === 'client') {
-                    setValue('branch', null);
-                    setValue('business', null);
-                }
-
-                if (name === 'branch') {
-                    setValue('business', null);
-                }
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [watch, setValue]);
 
     const onSubmit = (form: FormValues): void => {
         if (taskIdToUpdate) {
@@ -399,32 +414,31 @@ const CreateOrUpdateTaskForm = ({
                         }}
                     />
 
-                    <FormField
-                        name="workOrderNumber"
-                        control={form.control}
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>
-                                        Numero de orden de trabajo (opcional)
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            placeholder="Numero de orden de trabajo"
-                                            value={field.value || ''}
-                                            onChange={(e) => {
-                                                field.onChange(
-                                                    parseInt(e.target.value, 10),
-                                                );
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
-                    />
+                    {selectedBusiness?.name === 'GIASA' && (
+                        <FormField
+                            name="metadata.giasaTicketNumber"
+                            control={form.control}
+                            render={({ field }) => {
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Numero de ticket de Giasa</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Numero de ticket de Giasa"
+                                                value={field.value || ''}
+                                                onChange={(e) => {
+                                                    field.onChange(
+                                                        e.target.value.replace(/\D/g, ''),
+                                                    );
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    )}
 
                     <FormField
                         name="description"

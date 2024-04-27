@@ -1,31 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Table } from 'flowbite-react';
 import { type ChangeEvent, useState } from 'react';
 
 import Item from './Item';
 
 import Filter from '@/components/Filter';
 import {
-    type IBranch,
-    type IBusiness,
-    type ICity,
-    type IProvince,
-} from 'backend/models/interfaces';
+    Table,
+    TableBody,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import { ValidClientViewProps } from '@/pages/tech-admin/clients/[clientId]/branches';
 
-interface Props {
-    branches: IBranch[];
-    cities: ICity[];
-    provinces: IProvince[];
-    businesses: IBusiness[];
-}
+export type BranchTableProps = ValidClientViewProps;
 
 export default function BranchTable({
     branches,
     cities,
     provinces,
     businesses,
-}: Props): JSX.Element {
-    const [tableBranches, setTableBranches] = useState<IBranch[]>(branches);
+}: BranchTableProps): JSX.Element {
+    const [tableBranches, setTableBranches] = useState(branches);
+
     const [type, setType] = useState<string>('');
     const [entities, setEntities] = useState<any[]>([] as any[]);
     const filterTypes = ['Localidad', 'Provincia', 'Empresa'];
@@ -40,15 +37,13 @@ export default function BranchTable({
                 break;
             case 'Provincia':
                 setTableBranches(
-                    branches.filter(
-                        (branch) => (branch.city.provinceId as IProvince).name === value,
-                    ),
+                    branches.filter((branch) => branch.city.province.name === value),
                 );
                 break;
             case 'Empresa':
                 setTableBranches(
                     branches.filter((branch) =>
-                        branch.businessesIDs.some((business) => business.name === value),
+                        branch.businesses.some((business) => business.name === value),
                     ),
                 );
                 break;
@@ -84,9 +79,9 @@ export default function BranchTable({
     }
 
     const deleteBranch = (id: string): void => {
-        const newTable = (prev: IBranch[]): IBranch[] =>
-            prev.filter((branch) => branch._id !== id);
-        setTableBranches(newTable(branches));
+        setTableBranches((prev) => {
+            return prev.filter((branch) => branch.id !== id);
+        });
     };
 
     return (
@@ -98,18 +93,26 @@ export default function BranchTable({
                 selectEntity={selectEntity}
                 clearFilter={clearFilter}
             />
-            <Table hoverable={true} className="bg-white">
-                <Table.Head className="border-b bg-white">
-                    <Table.HeadCell>Sucursal</Table.HeadCell>
-                    <Table.HeadCell>Localidad</Table.HeadCell>
-                    <Table.HeadCell>Empresas contratadas</Table.HeadCell>
-                    <Table.HeadCell className="w-40 text-center">Acciones</Table.HeadCell>
-                </Table.Head>
-                <Table.Body>
-                    {tableBranches.map((branch, index) => (
-                        <Item key={index} branch={branch} deleteBranch={deleteBranch} />
+
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Sucursal</TableHead>
+                        <TableHead>Localidad</TableHead>
+                        <TableHead>Empresas contratadas</TableHead>
+                        <TableHead className="w-40 text-center">Acciones</TableHead>
+                    </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                    {tableBranches.map((branch) => (
+                        <Item
+                            key={branch.id}
+                            branch={branch}
+                            deleteBranch={deleteBranch}
+                        />
                     ))}
-                </Table.Body>
+                </TableBody>
             </Table>
         </div>
     );

@@ -1,0 +1,52 @@
+query branches {
+    branches {
+        id
+        number
+        client {
+            id
+            name
+        }
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+        businesses {
+            id
+            name
+        }
+    }
+}
+
+mutation createBranch($input: BranchInput!) {
+    createBranch(input: $input) {
+        branch {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateBranch($id: String!, $input: BranchInput!) {
+    updateBranch(id: $id, input: $input) {
+        branch {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation deleteBranch($id: String!) {
+    deleteBranch(id: $id) {
+        branch {
+            id
+        }
+        success
+        message
+    }
+}

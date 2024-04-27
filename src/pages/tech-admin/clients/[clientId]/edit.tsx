@@ -36,7 +36,7 @@ export async function getServerSideProps(
         };
     }
     const docClient = await ClientModel.findOne({
-        name: params.name,
+        _id: params.clientId,
     });
     if (!docClient) {
         return {

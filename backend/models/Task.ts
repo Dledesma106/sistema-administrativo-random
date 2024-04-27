@@ -118,6 +118,12 @@ export class Task {
     })
     deleted: boolean;
 
+    @prop({
+        type: Object,
+        required: false,
+    })
+    metadata: Record<string, any>;
+
     static getPopulateParameters(): IPopulateParameter[] {
         getModelForClass(Branch);
         getModelForClass(Business);
