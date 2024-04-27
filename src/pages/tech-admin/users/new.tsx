@@ -1,6 +1,6 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
-import UserForm, { UserFormProps } from '@/components/Forms/TechAdmin/UserForm';
 import dbConnect from '@/lib/dbConnect';
+import CreateOrUpdateUserForm, { UserFormProps } from '@/modules/CreateOrUpdateUserForm';
 import { prisma } from 'lib/prisma';
 
 interface NewUserPageProps {
@@ -10,7 +10,7 @@ interface NewUserPageProps {
 export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
     return (
         <DashboardLayout>
-            <UserForm cities={cities} />
+            <CreateOrUpdateUserForm cities={cities} />
         </DashboardLayout>
     );
 }

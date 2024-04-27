@@ -133,16 +133,19 @@ export type Mutation = {
     createCity: CityCrudResult;
     createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
+    createUser: UserCrudPhotosRef;
     deleteBranch: BranchCrudResult;
     deleteCity: CityCrudResult;
     deleteTask: TaskCrudResult;
     login: LoginUserResult;
+    sendNewUserRandomPassword: UserCrudPhotosRef;
     updateBranch: BranchCrudResult;
     updateCity: CityCrudResult;
     updateMyAssignedTask: TaskCrudResult;
     updatePreventive: PreventiveCrudResult;
     updateTask: TaskCrudResult;
     updateTaskExpenseStatus: TaskCrudResult;
+    updateUser: UserCrudPhotosRef;
 };
 
 export type MutationCreateBranchArgs = {
@@ -161,6 +164,10 @@ export type MutationCreateTaskArgs = {
     input: TaskInput;
 };
 
+export type MutationCreateUserArgs = {
+    input: UserInput;
+};
+
 export type MutationDeleteBranchArgs = {
     id: Scalars['String'];
 };
@@ -176,6 +183,10 @@ export type MutationDeleteTaskArgs = {
 export type MutationLoginArgs = {
     email: Scalars['String'];
     password: Scalars['String'];
+};
+
+export type MutationSendNewUserRandomPasswordArgs = {
+    id: Scalars['String'];
 };
 
 export type MutationUpdateBranchArgs = {
@@ -208,6 +219,11 @@ export type MutationUpdateTaskArgs = {
 export type MutationUpdateTaskExpenseStatusArgs = {
     expenseId: Scalars['String'];
     status: ExpenseStatus;
+};
+
+export type MutationUpdateUserArgs = {
+    id: Scalars['String'];
+    input: UserInput;
 };
 
 export type Preventive = {
@@ -365,6 +381,21 @@ export type User = {
     firstName: Scalars['String'];
     fullName: Scalars['String'];
     id: Scalars['ID'];
+    lastName: Scalars['String'];
+    roles: Array<Role>;
+};
+
+export type UserCrudPhotosRef = {
+    __typename?: 'UserCrudPhotosRef';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    user: Maybe<User>;
+};
+
+export type UserInput = {
+    city: Scalars['String'];
+    email: Scalars['String'];
+    firstName: Scalars['String'];
     lastName: Scalars['String'];
     roles: Array<Role>;
 };
@@ -691,6 +722,49 @@ export type UpdateTaskExpenseStatusMutation = {
                 status: ExpenseStatus;
             }>;
         } | null;
+    };
+};
+
+export type CreateUserMutationVariables = Exact<{
+    input: UserInput;
+}>;
+
+export type CreateUserMutation = {
+    __typename?: 'Mutation';
+    createUser: {
+        __typename?: 'UserCrudPhotosRef';
+        success: boolean;
+        message: string | null;
+        user: { __typename?: 'User'; id: string } | null;
+    };
+};
+
+export type UpdateUserMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: UserInput;
+}>;
+
+export type UpdateUserMutation = {
+    __typename?: 'Mutation';
+    updateUser: {
+        __typename?: 'UserCrudPhotosRef';
+        success: boolean;
+        message: string | null;
+        user: { __typename?: 'User'; id: string } | null;
+    };
+};
+
+export type SendNewUserRandomPasswordMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type SendNewUserRandomPasswordMutation = {
+    __typename?: 'Mutation';
+    sendNewUserRandomPassword: {
+        __typename?: 'UserCrudPhotosRef';
+        success: boolean;
+        message: string | null;
+        user: { __typename?: 'User'; id: string } | null;
     };
 };
 
@@ -2509,4 +2583,236 @@ export const UpdateTaskExpenseStatusDocument = {
 } as unknown as DocumentNode<
     UpdateTaskExpenseStatusMutation,
     UpdateTaskExpenseStatusMutationVariables
+>;
+export const CreateUserDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'createUser' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'UserInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createUser' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CreateUserMutation, CreateUserMutationVariables>;
+export const UpdateUserDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'updateUser' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'UserInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateUser' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdateUserMutation, UpdateUserMutationVariables>;
+export const SendNewUserRandomPasswordDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'sendNewUserRandomPassword' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sendNewUserRandomPassword' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    SendNewUserRandomPasswordMutation,
+    SendNewUserRandomPasswordMutationVariables
 >;
