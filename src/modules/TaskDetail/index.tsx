@@ -69,13 +69,21 @@ const Content: React.FC<Props> = ({ task }) => {
                 <div>
                     <Title>Sucursal</Title>
 
-                    <p>
-                        #{task.branch.number} - {task.branch.client.name}
+                    <p className="mb-1">
+                        #{task.branch.number} - {task.branch.client.name} -{' '}
+                        {task.business.name}
                     </p>
                 </div>
 
+                {task.business.name === 'GIASA' && (
+                    <div>
+                        <Title>Número de Ticket GIASA</Title>
+                        <p className="mb-1">{task.metadata.giasaTicketNumber}</p>
+                    </div>
+                )}
+
                 <section>
-                    <h2 className="mb-4 text-sm font-bold">Tecnicos asignados</h2>
+                    <h2 className="mb-4 text-sm font-bold">Técnicos asignados</h2>
                     <ul className="space-y-4">
                         {task.assigned.map((assigned) => (
                             <div

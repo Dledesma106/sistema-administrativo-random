@@ -50,9 +50,11 @@ async function getProps() {
             name: true,
         },
     });
+
     const props = {
         cities,
         provinces,
     };
+
     return props;
 }

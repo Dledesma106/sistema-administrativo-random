@@ -1,16 +1,16 @@
 import { GetServerSideProps } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
+import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
 import { prisma } from 'lib/prisma';
 
 export type NewCitiesPageProps = Awaited<ReturnType<typeof getProps>>;
 
 export default function NewCity({ provinces }: NewCitiesPageProps): JSX.Element {
-    const cityForm: ICityForm = {
+    const cityForm: CityFormValues = {
         _id: '',
         name: '',
-        province: '',
+        provinceId: '',
     };
 
     return (

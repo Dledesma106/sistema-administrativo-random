@@ -5,6 +5,7 @@ import AuthzPlugin from '@pothos/plugin-authz';
 import PrismaPlugin from '@pothos/plugin-prisma';
 import type PrismaTypes from '@pothos/plugin-prisma/generated';
 import { DateResolver, DateTimeResolver } from 'graphql-scalars';
+import GraphQLJSON from 'graphql-type-json';
 
 import { authzRules } from './authz-rules';
 import { YogaContext } from './types';
@@ -24,6 +25,8 @@ export const builder = new SchemaBuilder<{
             Input: Date;
             Output: Date;
         };
+
+        JSON: { Input: any; Output: any };
     };
 }>({
     plugins: [PrismaPlugin, AuthzPlugin],
@@ -36,3 +39,4 @@ builder.queryType({});
 builder.mutationType({});
 builder.addScalarType('Date', DateResolver, {});
 builder.addScalarType('DateTime', DateTimeResolver, {});
+builder.addScalarType('JSON', GraphQLJSON, {});

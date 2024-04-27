@@ -200,6 +200,7 @@ model Task {
   status          TaskStatus
   taskType        TaskType
   workOrderNumber Int?
+  metadata        Json?
 
   branchId String @map("branch") @db.ObjectId
   branch   Branch @relation(fields: [branchId], references: [id])

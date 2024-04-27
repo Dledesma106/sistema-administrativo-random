@@ -103,6 +103,7 @@ query taskById($id: String!) {
         }
         taskType
         status
+        metadata
     }
 }
 

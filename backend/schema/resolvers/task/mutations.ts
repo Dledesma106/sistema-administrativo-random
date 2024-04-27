@@ -36,6 +36,11 @@ const TaskInputPothosRef = builder.inputType('TaskInput', {
         assigned: t.stringList({
             required: true,
         }),
+
+        metadata: t.field({
+            type: 'JSON',
+            required: true,
+        }),
     }),
 });
 
@@ -96,6 +101,7 @@ builder.mutationFields((t) => ({
                         assignedIDs: {
                             set: input.assigned,
                         },
+                        metadata: input.metadata,
                     },
                 });
                 return {
@@ -164,6 +170,7 @@ builder.mutationFields((t) => ({
                     assignedIDs: {
                         set: input.assigned,
                     },
+                    metadata: input.metadata,
                 };
 
                 if (foundTask.status === data.status) {

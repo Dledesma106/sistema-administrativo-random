@@ -1,7 +1,7 @@
 import { type GetServerSidePropsContext } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import CityForm, { type ICityForm } from '@/components/Forms/TechAdmin/CityForm';
+import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
 import CityModel from 'backend/models/City';
@@ -17,10 +17,10 @@ interface Props {
 }
 
 export default function CityView({ city, provinces }: Props): JSX.Element {
-    const cityForm: ICityForm = {
+    const cityForm: CityFormValues = {
         _id: city._id as string,
         name: city.name,
-        province: (city.provinceId as IProvince)._id as string,
+        provinceId: (city.provinceId as IProvince)._id as string,
     };
 
     return (

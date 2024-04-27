@@ -17,13 +17,29 @@ export type Scalars = {
     Float: number;
     Date: any;
     DateTime: any;
+    JSON: any;
 };
 
 export type Branch = {
     __typename?: 'Branch';
+    businesses: Array<Business>;
     city: City;
     client: Client;
     id: Scalars['ID'];
+    number: Scalars['Int'];
+};
+
+export type BranchCrudResult = {
+    __typename?: 'BranchCrudResult';
+    branch: Maybe<Branch>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type BranchInput = {
+    businessesIds: Array<Scalars['String']>;
+    cityId: Scalars['String'];
+    clientId: Scalars['String'];
     number: Scalars['Int'];
 };
 
@@ -38,6 +54,18 @@ export type City = {
     id: Scalars['ID'];
     name: Scalars['String'];
     province: Province;
+};
+
+export type CityCrudResult = {
+    __typename?: 'CityCrudResult';
+    city: Maybe<City>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type CityInput = {
+    name: Scalars['String'];
+    provinceId: Scalars['String'];
 };
 
 export type Client = {
@@ -92,6 +120,8 @@ export type Image = {
 
 export type LoginUserResult = {
     __typename?: 'LoginUserResult';
+    accessToken: Maybe<Scalars['String']>;
+    expiresAt: Maybe<Scalars['DateTime']>;
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     user: Maybe<User>;
@@ -99,14 +129,28 @@ export type LoginUserResult = {
 
 export type Mutation = {
     __typename?: 'Mutation';
+    createBranch: BranchCrudResult;
+    createCity: CityCrudResult;
     createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
+    deleteBranch: BranchCrudResult;
+    deleteCity: CityCrudResult;
     deleteTask: TaskCrudResult;
     login: LoginUserResult;
+    updateBranch: BranchCrudResult;
+    updateCity: CityCrudResult;
     updateMyAssignedTask: TaskCrudResult;
     updatePreventive: PreventiveCrudResult;
     updateTask: TaskCrudResult;
     updateTaskExpenseStatus: TaskCrudResult;
+};
+
+export type MutationCreateBranchArgs = {
+    input: BranchInput;
+};
+
+export type MutationCreateCityArgs = {
+    input: CityInput;
 };
 
 export type MutationCreatePreventiveArgs = {
@@ -117,6 +161,14 @@ export type MutationCreateTaskArgs = {
     input: TaskInput;
 };
 
+export type MutationDeleteBranchArgs = {
+    id: Scalars['String'];
+};
+
+export type MutationDeleteCityArgs = {
+    id: Scalars['String'];
+};
+
 export type MutationDeleteTaskArgs = {
     id: Scalars['String'];
 };
@@ -124,6 +176,16 @@ export type MutationDeleteTaskArgs = {
 export type MutationLoginArgs = {
     email: Scalars['String'];
     password: Scalars['String'];
+};
+
+export type MutationUpdateBranchArgs = {
+    id: Scalars['String'];
+    input: BranchInput;
+};
+
+export type MutationUpdateCityArgs = {
+    id: Scalars['String'];
+    input: CityInput;
 };
 
 export type MutationUpdateMyAssignedTaskArgs = {
@@ -208,6 +270,10 @@ export type Query = {
     users: Array<User>;
 };
 
+export type QueryBusinessesArgs = {
+    branch: InputMaybe<Scalars['String']>;
+};
+
 export type QueryMyAssignedTaskByIdArgs = {
     id: Scalars['String'];
 };
@@ -250,6 +316,7 @@ export type Task = {
     id: Scalars['ID'];
     images: Array<Image>;
     imagesIDs: Array<Scalars['String']>;
+    metadata: Scalars['JSON'];
     status: TaskStatus;
     taskType: TaskType;
     workOrderNumber: Maybe<Scalars['Int']>;
@@ -268,6 +335,7 @@ export type TaskInput = {
     branch: Scalars['String'];
     business: Scalars['String'];
     description: Scalars['String'];
+    metadata: Scalars['JSON'];
     status: TaskStatus;
     taskType: TaskType;
     workOrderNumber: InputMaybe<Scalars['Int']>;
@@ -321,6 +389,123 @@ export type LoginMutation = {
             fullName: string;
             roles: Array<Role>;
         } | null;
+    };
+};
+
+export type BranchesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type BranchesQuery = {
+    __typename?: 'Query';
+    branches: Array<{
+        __typename?: 'Branch';
+        id: string;
+        number: number;
+        client: { __typename?: 'Client'; id: string; name: string };
+        city: {
+            __typename?: 'City';
+            id: string;
+            name: string;
+            province: { __typename?: 'Province'; id: string; name: string };
+        };
+        businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
+    }>;
+};
+
+export type CreateBranchMutationVariables = Exact<{
+    input: BranchInput;
+}>;
+
+export type CreateBranchMutation = {
+    __typename?: 'Mutation';
+    createBranch: {
+        __typename?: 'BranchCrudResult';
+        success: boolean;
+        message: string | null;
+        branch: { __typename?: 'Branch'; id: string } | null;
+    };
+};
+
+export type UpdateBranchMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: BranchInput;
+}>;
+
+export type UpdateBranchMutation = {
+    __typename?: 'Mutation';
+    updateBranch: {
+        __typename?: 'BranchCrudResult';
+        success: boolean;
+        message: string | null;
+        branch: { __typename?: 'Branch'; id: string } | null;
+    };
+};
+
+export type DeleteBranchMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DeleteBranchMutation = {
+    __typename?: 'Mutation';
+    deleteBranch: {
+        __typename?: 'BranchCrudResult';
+        success: boolean;
+        message: string | null;
+        branch: { __typename?: 'Branch'; id: string } | null;
+    };
+};
+
+export type CitiesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type CitiesQuery = {
+    __typename?: 'Query';
+    cities: Array<{
+        __typename?: 'City';
+        id: string;
+        name: string;
+        province: { __typename?: 'Province'; id: string; name: string };
+    }>;
+};
+
+export type CreateCityMutationVariables = Exact<{
+    input: CityInput;
+}>;
+
+export type CreateCityMutation = {
+    __typename?: 'Mutation';
+    createCity: {
+        __typename?: 'CityCrudResult';
+        success: boolean;
+        message: string | null;
+        city: { __typename?: 'City'; id: string } | null;
+    };
+};
+
+export type UpdateCityMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: CityInput;
+}>;
+
+export type UpdateCityMutation = {
+    __typename?: 'Mutation';
+    updateCity: {
+        __typename?: 'CityCrudResult';
+        success: boolean;
+        message: string | null;
+        city: { __typename?: 'City'; id: string } | null;
+    };
+};
+
+export type DeleteCityMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DeleteCityMutation = {
+    __typename?: 'Mutation';
+    deleteCity: {
+        __typename?: 'CityCrudResult';
+        success: boolean;
+        message: string | null;
+        city: { __typename?: 'City'; id: string } | null;
     };
 };
 
@@ -404,6 +589,7 @@ export type TaskByIdQuery = {
         description: string;
         taskType: TaskType;
         status: TaskStatus;
+        metadata: any;
         business: { __typename?: 'Business'; id: string; name: string };
         images: Array<{ __typename?: 'Image'; id: string; url: string }>;
         branch: {
@@ -624,6 +810,610 @@ export const LoginDocument = {
         },
     ],
 } as unknown as DocumentNode<LoginMutation, LoginMutationVariables>;
+export const BranchesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'branches' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'branches' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'number' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'client' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'city' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'province' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'businesses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<BranchesQuery, BranchesQueryVariables>;
+export const CreateBranchDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'createBranch' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'BranchInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createBranch' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'branch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CreateBranchMutation, CreateBranchMutationVariables>;
+export const UpdateBranchDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'updateBranch' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'BranchInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateBranch' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'branch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdateBranchMutation, UpdateBranchMutationVariables>;
+export const DeleteBranchDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'deleteBranch' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deleteBranch' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'branch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DeleteBranchMutation, DeleteBranchMutationVariables>;
+export const CitiesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'cities' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cities' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'province' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CitiesQuery, CitiesQueryVariables>;
+export const CreateCityDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'createCity' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'CityInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createCity' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'city' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CreateCityMutation, CreateCityMutationVariables>;
+export const UpdateCityDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'updateCity' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'CityInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateCity' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'city' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdateCityMutation, UpdateCityMutationVariables>;
+export const DeleteCityDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'deleteCity' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deleteCity' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'city' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DeleteCityMutation, DeleteCityMutationVariables>;
 export const CreatePreventiveDocument = {
     kind: 'Document',
     definitions: [
@@ -1363,6 +2153,10 @@ export const TaskByIdDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'metadata' },
                                 },
                             ],
                         },

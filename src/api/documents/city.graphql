@@ -1,0 +1,40 @@
+query cities {
+    cities {
+        id
+        name
+        province {
+            id
+            name
+        }
+    }
+}
+
+mutation createCity($input: CityInput!) {
+    createCity(input: $input) {
+        city {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateCity($id: String!, $input: CityInput!) {
+    updateCity(id: $id, input: $input) {
+        city {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation deleteCity($id: String!) {
+    deleteCity(id: $id) {
+        city {
+            id
+        }
+        success
+        message
+    }
+}

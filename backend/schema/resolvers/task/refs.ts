@@ -84,5 +84,9 @@ export const TaskPothosRef = builder.prismaObject('Task', {
             },
         }),
         expenses: t.relation('expenses'),
+        metadata: t.field({
+            type: 'JSON',
+            resolve: (root) => (root.metadata || {}) as Record<string, any> as any,
+        }),
     }),
 });
