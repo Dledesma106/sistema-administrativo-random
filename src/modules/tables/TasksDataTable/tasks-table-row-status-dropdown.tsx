@@ -1,6 +1,8 @@
 import { TaskStatus } from '@prisma/client';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { TASKS_LIST_QUERY_KEY } from './queries';
+
 import { TasksQuery } from '@/api/graphql';
 import {
     Select,
@@ -13,7 +15,6 @@ import {
 import useAlert from '@/context/alertContext/useAlert';
 import { techAdmin } from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { TASKS_LIST_QUERY_KEY } from '@/modules/TasksDataTable/queries';
 
 interface Props {
     task: TasksQuery['tasks'][0];
@@ -39,7 +40,7 @@ const options = [
     },
 ];
 
-const TasksDataTableStatusDropdown = ({ task, status }: Props): JSX.Element => {
+export const TasksTableRowStatusDropdown = ({ task, status }: Props): JSX.Element => {
     const queryClient = useQueryClient();
 
     const { triggerAlert } = useAlert();
@@ -108,5 +109,3 @@ const TasksDataTableStatusDropdown = ({ task, status }: Props): JSX.Element => {
         </Select>
     );
 };
-
-export default TasksDataTableStatusDropdown;

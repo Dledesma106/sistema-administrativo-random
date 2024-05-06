@@ -1,0 +1,11 @@
+query branches {
+    branches {
+        id
+        name
+        description
+        client {
+            id
+            name
+        }
+    }
+}

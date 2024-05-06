@@ -8,7 +8,6 @@ export type NewCitiesPageProps = Awaited<ReturnType<typeof getProps>>;
 
 export default function NewCity({ provinces }: NewCitiesPageProps): JSX.Element {
     const cityForm: CityFormValues = {
-        _id: '',
         name: '',
         provinceId: '',
     };

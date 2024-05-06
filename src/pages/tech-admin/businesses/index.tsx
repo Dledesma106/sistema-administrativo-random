@@ -1,8 +1,8 @@
 import { GetServerSideProps } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import BusinessTable from '@/components/Tables/BusinessTable';
 import TitleButton from '@/components/TitleButton';
+import BusinessTable from '@/modules/tables/BusinessTable';
 import { prisma } from 'lib/prisma';
 
 export type BusinessesPageProps = Awaited<ReturnType<typeof getProps>>;

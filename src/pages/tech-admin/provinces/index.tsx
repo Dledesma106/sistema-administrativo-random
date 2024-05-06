@@ -1,8 +1,8 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
-import ProvinceTable from '@/components/Tables/ProvinceTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
+import ProvinceTable from '@/modules/tables/ProvinceTable';
 import { type IProvince } from 'backend/models/interfaces';
 import ProvinceModel from 'backend/models/Province';
 

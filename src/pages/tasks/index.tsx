@@ -5,7 +5,7 @@ import { Role } from '@prisma/client';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
 import { routesBuilder } from '@/lib/routes';
-import TasksDataTable from '@/modules/TasksDataTable';
+import TasksDataTable from '@/modules/tables/TasksDataTable';
 import { prisma } from 'lib/prisma';
 
 export type TasksPageProps = Awaited<ReturnType<typeof getProps>>;

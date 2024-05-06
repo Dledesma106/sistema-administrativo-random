@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { TaskStatus, TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 
-import TechAdminTaskItemActions from './ItemActions';
+import { TasksTableRowActions } from './tasks-table-row-actions';
 
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/badge';
@@ -249,7 +249,7 @@ export const useTasksTableColumns = () => [
         cell: (props) => {
             const task = props.row.original;
 
-            return <TechAdminTaskItemActions task={task} />;
+            return <TasksTableRowActions task={task} />;
         },
     }),
 ];

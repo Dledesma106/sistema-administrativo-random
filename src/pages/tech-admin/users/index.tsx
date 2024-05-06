@@ -1,8 +1,8 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
-import UserTable from '@/components/Tables/UserTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
+import UserTable from '@/modules/tables/UserTable';
 import { type IUser } from 'backend/models/interfaces';
 import UserModel from 'backend/models/User';
 

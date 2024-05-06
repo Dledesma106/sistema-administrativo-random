@@ -1,8 +1,8 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
-import PreventiveTable from '@/components/Tables/PreventiveTable';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
+import PreventiveTable from '@/modules/tables/PreventiveTable';
 import BusinessModel from 'backend/models/Business';
 import CityModel from 'backend/models/City';
 import ClientModel from 'backend/models/Client';
