@@ -29,7 +29,7 @@ interface Props {
     task: TasksQuery['tasks'][0];
 }
 
-export default function TechAdminTaskItemActions({ task }: Props): JSX.Element {
+export function TasksTableRowActions({ task }: Props): JSX.Element {
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
     const queryClient = useQueryClient();

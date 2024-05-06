@@ -55,6 +55,7 @@ export default function Filter({
                         </option>
                     ))}
                 </Select>
+
                 <Label value="Valor: " />
                 <Select defaultValue="default" onChange={selectEntity} ref={entityRef}>
                     <option value="default" hidden disabled>

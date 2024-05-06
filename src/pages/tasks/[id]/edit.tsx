@@ -73,6 +73,8 @@ export default function TaskView(props: Props): JSX.Element {
                     status: task.status,
                     taskType: task.taskType,
                     workOrderNumber: task.workOrderNumber,
+                    metadata:
+                        typeof task.metadata === 'object' ? task.metadata || {} : {},
                 }}
                 taskIdToUpdate={task.id}
                 {...rest}

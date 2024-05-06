@@ -18,14 +18,17 @@ interface Props {
 
 export default function CityView({ city, provinces }: Props): JSX.Element {
     const cityForm: CityFormValues = {
-        _id: city._id as string,
         name: city.name,
         provinceId: (city.provinceId as IProvince)._id as string,
     };
 
     return (
         <DashboardLayout>
-            <CityForm newCity={false} cityForm={cityForm} provinces={provinces} />
+            <CityForm
+                idToUpdate={city._id.toString()}
+                cityForm={cityForm}
+                provinces={provinces}
+            />
         </DashboardLayout>
     );
 }

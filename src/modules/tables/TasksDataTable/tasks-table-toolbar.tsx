@@ -2,8 +2,7 @@ import { TaskStatus, TaskType } from '@prisma/client';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
-import { DataTableFacetedFilter } from './FacetedFilter';
-
+import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { TasksPageProps } from '@/pages/tasks';

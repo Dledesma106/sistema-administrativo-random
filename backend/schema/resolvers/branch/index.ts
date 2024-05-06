@@ -27,15 +27,6 @@ export const BranchPothosRef = builder.prismaObject('Branch', {
     }),
 });
 
-builder.queryFields((t) => ({
-    branches: t.prismaField({
-        type: ['Branch'],
-        resolve: async (query, _parent, _args, _info) => {
-            return prisma.branch.findManyUndeleted(query);
-        },
-    }),
-}));
-
 const BranchInputPothosRef = builder.inputType('BranchInput', {
     fields: (t) => ({
         number: t.int({
@@ -193,6 +184,15 @@ builder.mutationFields((t) => ({
                     success: false,
                 };
             }
+        },
+    }),
+}));
+
+builder.queryFields((t) => ({
+    branches: t.prismaField({
+        type: [BranchPothosRef],
+        resolve: async (query, _parent, _args, _info) => {
+            return prisma.branch.findManyUndeleted(query);
         },
     }),
 }));

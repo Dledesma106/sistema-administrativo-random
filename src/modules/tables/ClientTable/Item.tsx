@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
@@ -8,10 +7,8 @@ import { HiMagnifyingGlassPlus } from 'react-icons/hi2';
 import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
-import useLoading from '@/hooks/useLoading';
 import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
-import { slugify } from '@/lib/utils';
 import { ClientsPageProps } from '@/pages/tech-admin/clients';
 
 interface Props {
@@ -20,7 +17,6 @@ interface Props {
 }
 
 export default function Item({ client, deleteClient }: Props): JSX.Element {
-    const { startLoading, stopLoading } = useLoading();
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
     const openModal = (): void => {
@@ -28,18 +24,6 @@ export default function Item({ client, deleteClient }: Props): JSX.Element {
     };
     const closeModal = (): void => {
         setModal(false);
-    };
-
-    const router = useRouter();
-
-    async function navigateEdit(): Promise<void> {
-        startLoading();
-        router.push(`/tech-admin/clients/${slugify(client.name)}/edit`);
-        stopLoading();
-    }
-
-    const handleNavigateEdit = (): void => {
-        void navigateEdit();
     };
 
     const deleteData = async (): Promise<void> => {
@@ -78,12 +62,12 @@ export default function Item({ client, deleteClient }: Props): JSX.Element {
                     >
                         <HiMagnifyingGlassPlus color="gray" size="15" />
                     </Link>
-                    <button
+                    <Link
                         className="rounded-lg p-0.5 hover:bg-gray-200"
-                        onClick={handleNavigateEdit}
+                        href={`/tech-admin/clients/${client.id}/edit`}
                     >
                         <BsFillPencilFill color="gray" size="15" />
-                    </button>
+                    </Link>
                     <button
                         className="rounded-lg p-0.5 hover:bg-gray-200"
                         onClick={openModal}

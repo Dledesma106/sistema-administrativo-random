@@ -1,8 +1,8 @@
 import { type GetServerSidePropsContext } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import ClientBranchesTable from '@/components/Tables/ClientBranchesTable';
 import TitleButton from '@/components/TitleButton';
+import ClientBranchesTable from '@/modules/tables/ClientBranchesTable';
 import { prisma } from 'lib/prisma';
 
 type ClientViewProps = Awaited<ReturnType<typeof getProps>>;

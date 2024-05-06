@@ -1,8 +1,8 @@
 import { GetServerSideProps } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
-import CityTable from '@/components/Tables/CityTable';
 import TitleButton from '@/components/TitleButton';
+import CityTable from '@/modules/tables/CityTable';
 import { prisma } from 'lib/prisma';
 
 export type CitiesProps = Awaited<ReturnType<typeof getProps>>;

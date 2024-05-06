@@ -250,7 +250,7 @@ export default function ClientBranchForm({
 
                     <div className="flex flex-row justify-between">
                         <Button variant="secondary" type="button">
-                            <Link href={'/tech-admin/clients/Patagonia/branches'}>
+                            <Link href={`/tech-admin/clients/${client.id}/branches`}>
                                 Cancelar
                             </Link>
                         </Button>

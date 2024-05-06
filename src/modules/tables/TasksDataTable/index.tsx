@@ -13,11 +13,11 @@ import {
 import { useEffect, useState } from 'react';
 
 import { useTasksTableColumns } from './columns';
-import { DataTablePagination } from './Pagination';
 import { useTasksListQuery } from './queries';
-import { TasksDataTableToolbar } from './TableToolbar';
+import { TasksDataTableToolbar } from './tasks-table-toolbar';
 
 import { TasksQuery } from '@/api/graphql';
+import { DataTablePagination } from '@/components/data-table-pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
