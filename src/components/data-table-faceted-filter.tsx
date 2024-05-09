@@ -25,12 +25,14 @@ interface DataTableFacetedFilterProps<TData, TValue> {
         value: string;
         icon?: React.ComponentType<{ className?: string }>;
     }[];
+    onSelect?: (value: string[] | undefined) => void;
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
     column,
     title,
     options,
+    onSelect,
 }: DataTableFacetedFilterProps<TData, TValue>) {
     const facets = column?.getFacetedUniqueValues();
     const selectedValues = new Set(column?.getFilterValue() as string[]);
@@ -95,13 +97,19 @@ export function DataTableFacetedFilter<TData, TValue>({
                                             } else {
                                                 selectedValues.add(option.value);
                                             }
+
                                             const filterValues =
                                                 Array.from(selectedValues);
-                                            column?.setFilterValue(
-                                                filterValues.length
+                                            const nextValue =
+                                                filterValues.length > 0
                                                     ? filterValues
-                                                    : undefined,
-                                            );
+                                                    : undefined;
+
+                                            column?.setFilterValue(nextValue);
+
+                                            if (onSelect) {
+                                                onSelect(nextValue);
+                                            }
                                         }}
                                     >
                                         <div
@@ -132,7 +140,12 @@ export function DataTableFacetedFilter<TData, TValue>({
                                 <CommandSeparator />
                                 <CommandGroup>
                                     <CommandItem
-                                        onSelect={() => column?.setFilterValue(undefined)}
+                                        onSelect={() => {
+                                            column?.setFilterValue(undefined);
+                                            if (onSelect) {
+                                                onSelect(undefined);
+                                            }
+                                        }}
                                         className="justify-center text-center"
                                     >
                                         Clear filters

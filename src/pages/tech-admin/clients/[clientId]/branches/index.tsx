@@ -2,36 +2,16 @@ import { type GetServerSidePropsContext } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
-import ClientBranchesTable from '@/modules/tables/ClientBranchesTable';
+import { ClientBranchesTable } from '@/modules/tables/ClientBranchesTable';
 import { prisma } from 'lib/prisma';
 
-type ClientViewProps = Awaited<ReturnType<typeof getProps>>;
+type ClientBranchesViewProps = Awaited<ReturnType<typeof getProps>>;
 
-export type ValidClientViewProps = {
+export type ValidClientBranchesViewProps = {
     client: {
         id: string;
         name: string;
     };
-    branches: {
-        id: string;
-        number: number;
-        city: {
-            id: string;
-            name: string;
-            province: {
-                id: string;
-                name: string;
-            };
-        };
-        businesses: {
-            id: string;
-            name: string;
-        }[];
-        client: {
-            id: string;
-            name: string;
-        };
-    }[];
     cities: {
         id: string;
         name: string;
@@ -52,11 +32,10 @@ export type ValidClientViewProps = {
 
 export default function ClientView({
     client,
-    branches,
     cities,
     provinces,
     businesses,
-}: ClientViewProps): JSX.Element {
+}: ClientBranchesViewProps): JSX.Element {
     if (!client) {
         return (
             <DashboardLayout>
@@ -79,7 +58,6 @@ export default function ClientView({
 
                 <ClientBranchesTable
                     client={client}
-                    branches={branches}
                     cities={cities}
                     provinces={provinces}
                     businesses={businesses}
@@ -91,11 +69,11 @@ export default function ClientView({
 
 export async function getServerSideProps(
     ctx: GetServerSidePropsContext,
-): Promise<{ props: ClientViewProps }> {
+): Promise<{ props: ClientBranchesViewProps }> {
     const { params } = ctx;
     if (!params) {
         return {
-            props: {} as ClientViewProps,
+            props: {} as ClientBranchesViewProps,
         };
     }
 
@@ -128,39 +106,6 @@ const getProps = async (clientId: string) => {
         };
     }
 
-    const branches = await prisma.branch.findMany({
-        where: {
-            clientId: client.id,
-            deleted: false,
-        },
-        include: {
-            city: {
-                select: {
-                    id: true,
-                    name: true,
-                    province: {
-                        select: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                },
-            },
-            businesses: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-            client: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-        },
-    });
-
     const cities = await prisma.city.findManyUndeleted({
         select: {
             id: true,
@@ -190,7 +135,6 @@ const getProps = async (clientId: string) => {
 
     return {
         client,
-        branches,
         cities,
         provinces,
         businesses,
