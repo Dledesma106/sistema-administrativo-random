@@ -4,7 +4,7 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { TASKS_LIST_QUERY_KEY } from './queries';
+import { CLIENT_BRANCHES_LIST_QUERY_KEY_DOMAIN } from './query';
 
 import { fetchClient } from '@/api/fetch-client';
 import {
@@ -62,17 +62,11 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
                 throw new Error('Hubo un error al eliminar la tarea');
             }
 
-            queryClient.setQueryData<TasksQuery>(TASKS_LIST_QUERY_KEY, (oldData) => {
-                if (!oldData) {
-                    return oldData;
-                }
-
-                const newData: TasksQuery = {
-                    ...oldData,
-                    tasks: oldData.tasks.filter((someTask) => someTask.id !== task.id),
-                };
-
-                return newData;
+            queryClient.invalidateQueries({
+                queryKey: [CLIENT_BRANCHES_LIST_QUERY_KEY_DOMAIN],
+            });
+            queryClient.refetchQueries({
+                queryKey: [CLIENT_BRANCHES_LIST_QUERY_KEY_DOMAIN],
             });
 
             triggerAlert({

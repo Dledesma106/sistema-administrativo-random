@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
+import { BranchesOfClientQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
@@ -10,7 +11,7 @@ import * as apiEndpoints from '@/lib/apiEndpoints';
 import fetcher from '@/lib/fetcher';
 
 interface Props {
-    branch: BranchTableProps['branches'][0];
+    branch: BranchesOfClientQuery['branchesOfClient'][0];
     deleteBranch: (id: string) => void;
 }
 
