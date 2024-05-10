@@ -2,12 +2,12 @@ import { GetServerSideProps } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
-import CityTable from '@/modules/tables/CityTable';
+import { CityTable } from '@/modules/tables/city-table';
 import { prisma } from 'lib/prisma';
 
-export type CitiesProps = Awaited<ReturnType<typeof getProps>>;
+export type CitiesPageProps = Awaited<ReturnType<typeof getProps>>;
 
-export default function Cities({ cities, provinces }: CitiesProps): JSX.Element {
+export default function Cities({ provinces }: CitiesPageProps): JSX.Element {
     return (
         <DashboardLayout>
             <main>
@@ -16,13 +16,14 @@ export default function Cities({ cities, provinces }: CitiesProps): JSX.Element 
                     path="/tech-admin/cities/new"
                     nameButton="Agregar localidad"
                 />
-                <CityTable cities={cities} provinces={provinces} />
+
+                <CityTable provinces={provinces} />
             </main>
         </DashboardLayout>
     );
 }
 
-export const getServerSideProps: GetServerSideProps<CitiesProps> = async () => {
+export const getServerSideProps: GetServerSideProps<CitiesPageProps> = async () => {
     const props = await getProps();
 
     return {
@@ -30,20 +31,7 @@ export const getServerSideProps: GetServerSideProps<CitiesProps> = async () => {
     };
 };
 
-async function getProps() {
-    const cities = await prisma.city.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-            province: {
-                select: {
-                    name: true,
-                    id: true,
-                },
-            },
-        },
-    });
-
+const getProps = async () => {
     const provinces = await prisma.province.findManyUndeleted({
         select: {
             id: true,
@@ -51,10 +39,7 @@ async function getProps() {
         },
     });
 
-    const props = {
-        cities,
+    return {
         provinces,
     };
-
-    return props;
-}
+};

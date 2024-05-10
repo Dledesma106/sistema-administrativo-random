@@ -8,11 +8,11 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-import { getClientBranchesTableColumns } from './client-branches-columns';
-import { ClientBranchesTableToolbar } from './client-branches-table-toolbar';
-import { useClientBranchesListQuery } from './query';
+import { CITIES_TABLE_COLUMNS } from './cities-table-columns';
+import { CitiesTableToolbar } from './cities-table-toolbar';
+import { useCitiesListQuery } from './query';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -23,32 +23,23 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ValidClientBranchesViewProps } from '@/pages/tech-admin/clients/[clientId]/branches';
+import { CitiesPageProps } from '@/pages/tech-admin/cities';
 
-type Props = ValidClientBranchesViewProps;
-
-export const ClientBranchesTable = ({ client, cities, provinces, businesses }: Props) => {
+export const CityTable = ({ provinces }: CitiesPageProps) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-    const branchesQuery = useClientBranchesListQuery({
-        clientId: client.id,
-        cityId: '',
-        businessId: '',
-        provinceId: '',
-    });
+    const citiesQuery = useCitiesListQuery({});
 
-    const [branches, setBranches] = useState(branchesQuery.data?.branchesOfClient);
-
-    const columns = getClientBranchesTableColumns();
+    const [cities, setCities] = useState(citiesQuery.data?.cities);
 
     useEffect(() => {
-        setBranches(branchesQuery.data?.branchesOfClient);
-    }, [branchesQuery.data?.branchesOfClient]);
+        setCities(citiesQuery.data?.cities);
+    }, [citiesQuery.data?.cities]);
 
     const table = useReactTable({
-        data: branches || [],
-        columns: columns,
+        data: cities || [],
+        columns: CITIES_TABLE_COLUMNS,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -66,15 +57,10 @@ export const ClientBranchesTable = ({ client, cities, provinces, businesses }: P
         },
     });
 
-    if (branches) {
+    if (cities) {
         return (
             <div className="space-y-4 pb-8">
-                <ClientBranchesTableToolbar
-                    table={table}
-                    cities={cities}
-                    businesses={businesses}
-                    provinces={provinces}
-                />
+                <CitiesTableToolbar table={table} provinces={provinces} />
 
                 <div className="rounded-md border">
                     <Table>
@@ -117,7 +103,7 @@ export const ClientBranchesTable = ({ client, cities, provinces, businesses }: P
                             ) : (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={columns.length}
+                                        colSpan={CITIES_TABLE_COLUMNS.length}
                                         className="h-24 text-center"
                                     >
                                         No se encontraron resultados.
@@ -131,18 +117,13 @@ export const ClientBranchesTable = ({ client, cities, provinces, businesses }: P
         );
     }
 
-    if (branchesQuery.error) {
-        return <div>Hubo un error al cargar las sucursales</div>;
+    if (citiesQuery.error) {
+        return <div>Hubo un error al cargar las localidades</div>;
     }
 
     return (
         <div className="space-y-4 pb-8">
-            <ClientBranchesTableToolbar
-                table={table}
-                cities={cities}
-                businesses={businesses}
-                provinces={provinces}
-            />
+            <CitiesTableToolbar table={table} provinces={provinces} />
 
             <Skeleton className="h-96 w-full" />
         </div>
