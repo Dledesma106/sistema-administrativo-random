@@ -62,17 +62,8 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
                 throw new Error('Hubo un error al eliminar la tarea');
             }
 
-            queryClient.setQueryData<TasksQuery>(TASKS_LIST_QUERY_KEY, (oldData) => {
-                if (!oldData) {
-                    return oldData;
-                }
-
-                const newData: TasksQuery = {
-                    ...oldData,
-                    tasks: oldData.tasks.filter((someTask) => someTask.id !== task.id),
-                };
-
-                return newData;
+            queryClient.invalidateQueries({
+                queryKey: TASKS_LIST_QUERY_KEY,
             });
 
             triggerAlert({
