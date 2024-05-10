@@ -2,7 +2,7 @@ import { GetServerSideProps } from 'next';
 
 import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
-import { PreventivesTable } from '@/modules/tables/PreventiveTable';
+import { PreventivesTable } from '@/modules/tables/preventives-table';
 import { prisma } from 'lib/prisma';
 
 export type PreventivesPageProps = Awaited<ReturnType<typeof getProps>>;
