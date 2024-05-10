@@ -136,7 +136,7 @@ export const ClientBranchesTable = ({ client, cities, provinces, businesses }: P
     }
 
     return (
-        <div>
+        <div className="space-y-4 pb-8">
             <ClientBranchesTableToolbar
                 table={table}
                 cities={cities}

@@ -136,6 +136,7 @@ export type Mutation = {
     createUser: UserCrudPhotosRef;
     deleteBranch: BranchCrudResult;
     deleteCity: CityCrudResult;
+    deletePreventive: PreventiveCrudResult;
     deleteTask: TaskCrudResult;
     login: LoginUserResult;
     sendNewUserRandomPassword: UserCrudPhotosRef;
@@ -173,6 +174,10 @@ export type MutationDeleteBranchArgs = {
 };
 
 export type MutationDeleteCityArgs = {
+    id: Scalars['String'];
+};
+
+export type MutationDeletePreventiveArgs = {
     id: Scalars['String'];
 };
 
@@ -229,12 +234,15 @@ export type MutationUpdateUserArgs = {
 export type Preventive = {
     __typename?: 'Preventive';
     assigned: Array<User>;
+    assignedIDs: Array<Scalars['String']>;
+    batteryChangedAt: Maybe<Scalars['DateTime']>;
     branch: Branch;
     business: Business;
     createdAt: Scalars['DateTime'];
     deleted: Scalars['Boolean'];
     frequency: Scalars['Int'];
     id: Scalars['ID'];
+    lastDoneAt: Maybe<Scalars['DateTime']>;
     months: Array<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
     status: PreventiveStatus;
@@ -779,6 +787,49 @@ export type BranchesOfClientQuery = {
         };
         businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
     }>;
+};
+
+export type PreventivesTableQueryVariables = Exact<{ [key: string]: never }>;
+
+export type PreventivesTableQuery = {
+    __typename?: 'Query';
+    preventives: Array<{
+        __typename?: 'Preventive';
+        id: string;
+        frequency: number;
+        months: Array<string>;
+        observations: string | null;
+        lastDoneAt: any | null;
+        status: PreventiveStatus;
+        batteryChangedAt: any | null;
+        business: { __typename?: 'Business'; id: string; name: string };
+        assigned: Array<{ __typename?: 'User'; id: string; fullName: string }>;
+        branch: {
+            __typename?: 'Branch';
+            id: string;
+            number: number;
+            client: { __typename?: 'Client'; id: string; name: string };
+            city: {
+                __typename?: 'City';
+                name: string;
+                province: { __typename?: 'Province'; id: string };
+            };
+        };
+    }>;
+};
+
+export type DeletePreventiveMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DeletePreventiveMutation = {
+    __typename?: 'Mutation';
+    deletePreventive: {
+        __typename?: 'PreventiveCrudResult';
+        success: boolean;
+        message: string | null;
+        preventive: { __typename?: 'Preventive'; id: string } | null;
+    };
 };
 
 export const LoginDocument = {
@@ -2903,3 +2954,229 @@ export const BranchesOfClientDocument = {
         },
     ],
 } as unknown as DocumentNode<BranchesOfClientQuery, BranchesOfClientQueryVariables>;
+export const PreventivesTableDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'preventivesTable' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'preventives' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'frequency' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'months' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'lastDoneAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'batteryChangedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'assigned' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'branch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'number' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'client' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'city' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'province',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'id',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<PreventivesTableQuery, PreventivesTableQueryVariables>;
+export const DeletePreventiveDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'deletePreventive' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deletePreventive' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'preventive' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DeletePreventiveMutation, DeletePreventiveMutationVariables>;
