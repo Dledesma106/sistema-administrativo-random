@@ -1,26 +1,3 @@
-query branches {
-    branches {
-        id
-        number
-        client {
-            id
-            name
-        }
-        city {
-            id
-            name
-            province {
-                id
-                name
-            }
-        }
-        businesses {
-            id
-            name
-        }
-    }
-}
-
 mutation createBranch($input: BranchInput!) {
     createBranch(input: $input) {
         branch {

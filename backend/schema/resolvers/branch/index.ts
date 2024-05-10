@@ -195,4 +195,34 @@ builder.queryFields((t) => ({
             return prisma.branch.findManyUndeleted(query);
         },
     }),
+    branchesOfClient: t.prismaField({
+        type: [BranchPothosRef],
+        args: {
+            clientId: t.arg.string({
+                required: true,
+            }),
+            cityId: t.arg.string({
+                required: false,
+            }),
+            businessId: t.arg.string({
+                required: false,
+            }),
+            provinceId: t.arg.string({
+                required: false,
+            }),
+        },
+        resolve: async (query, _parent, args, _info) => {
+            return prisma.branch.findManyUndeleted({
+                ...query,
+                where: {
+                    clientId: args.clientId,
+                    cityId: args.cityId ? args.cityId : undefined,
+                    businessesIDs: args.businessId ? { has: args.businessId } : undefined,
+                    city: {
+                        provinceId: args.provinceId ? args.provinceId : undefined,
+                    },
+                },
+            });
+        },
+    }),
 }));
