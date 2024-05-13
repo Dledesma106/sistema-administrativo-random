@@ -423,7 +423,12 @@ export type LoginMutation = {
     };
 };
 
-export type BranchesQueryVariables = Exact<{ [key: string]: never }>;
+export type BranchesQueryVariables = Exact<{
+    business: InputMaybe<Scalars['String']>;
+    city: InputMaybe<Scalars['String']>;
+    client: InputMaybe<Scalars['String']>;
+    location: InputMaybe<Scalars['String']>;
+}>;
 
 export type BranchesQuery = {
     __typename?: 'Query';
