@@ -4,14 +4,14 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { TASKS_LIST_QUERY_KEY } from './queries';
+import { PREVENTIVES_LIST_QUERY_KEY_DOMAIN } from './query';
 
 import { fetchClient } from '@/api/fetch-client';
 import {
-    DeleteTaskDocument,
-    DeleteTaskMutation,
-    DeleteTaskMutationVariables,
-    TasksQuery,
+    DeletePreventiveDocument,
+    DeletePreventiveMutation,
+    DeletePreventiveMutationVariables,
+    PreventivesTableQuery,
 } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import { Button } from '@/components/ui/button';
@@ -26,10 +26,10 @@ import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
 
 interface Props {
-    task: TasksQuery['tasks'][0];
+    preventive: PreventivesTableQuery['preventives'][0];
 }
 
-export function TasksTableRowActions({ task }: Props): JSX.Element {
+export function PreventivesTableRowActions({ preventive }: Props): JSX.Element {
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
     const queryClient = useQueryClient();
@@ -43,27 +43,30 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
     };
 
     const deleteMutation = useMutation<
-        DeleteTaskMutation,
+        DeletePreventiveMutation,
         Error,
-        DeleteTaskMutationVariables
+        DeletePreventiveMutationVariables
     >({
         mutationFn: (data) => {
-            return fetchClient(DeleteTaskDocument, {
+            return fetchClient(DeletePreventiveDocument, {
                 id: data.id,
             });
         },
         onSuccess: (data) => {
-            if (!data.deleteTask) {
+            if (!data.deletePreventive) {
                 return;
             }
 
-            const { task } = data.deleteTask;
-            if (!task) {
+            const { preventive } = data.deletePreventive;
+            if (!preventive) {
                 throw new Error('Hubo un error al eliminar la tarea');
             }
 
             queryClient.invalidateQueries({
-                queryKey: TASKS_LIST_QUERY_KEY,
+                queryKey: [PREVENTIVES_LIST_QUERY_KEY_DOMAIN],
+            });
+            queryClient.refetchQueries({
+                queryKey: [PREVENTIVES_LIST_QUERY_KEY_DOMAIN],
             });
 
             triggerAlert({
@@ -93,7 +96,7 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[160px]">
                     <DropdownMenuItem asChild>
-                        <Link href={routesBuilder.tasks.edit(task.id)}>Editar</Link>
+                        <Link href={routesBuilder.tasks.edit(preventive.id)}>Editar</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <button className="w-full cursor-default" onClick={openModal}>
@@ -106,7 +109,7 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
             <Modal
                 openModal={modal}
                 handleToggleModal={closeModal}
-                action={() => deleteMutation.mutate({ id: task.id })}
+                action={() => deleteMutation.mutate({ id: preventive.id })}
                 msg="¿Seguro que quiere eliminar esta tarea?"
             />
         </>

@@ -1,23 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     ColumnFiltersState,
     SortingState,
     flexRender,
     getCoreRowModel,
     getFacetedRowModel,
-    getFacetedUniqueValues as globalGetFacetedUniqueValues,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-import { useTasksTableColumns } from './columns';
-import { useTasksListQuery } from './queries';
-import { TasksDataTableToolbar } from './tasks-table-toolbar';
+import { PREVENTIVES_TABLE_COLUMNS } from './columns';
+import { PreventivesTableToolbar } from './preventives-table-toolbar';
+import { usePreventivesListQuery } from './query';
 
-import { TasksQuery } from '@/api/graphql';
-import { DataTablePagination } from '@/components/data-table-pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
@@ -27,34 +25,28 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { TasksPageProps } from '@/pages/tasks';
+import { PreventivesPageProps } from '@/pages/tech-admin/preventives';
 
-type TableItem = TasksQuery['tasks'][0];
-
-export default function TasksDataTable(props: TasksPageProps): JSX.Element {
+export const PreventivesTable = ({
+    clients,
+    provinces,
+    businesses,
+    technicians,
+}: PreventivesPageProps) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-    const tasksQuery = useTasksListQuery({
-        assigneed: null,
-        business: null,
-        city: null,
-        client: null,
-        status: null,
-        taskType: null,
-    });
+    const preventivesQuery = usePreventivesListQuery({});
 
-    const [tasks, setTasks] = useState(tasksQuery.data?.tasks);
-
-    const columns = useTasksTableColumns();
+    const [preventives, setPreventives] = useState(preventivesQuery.data?.preventives);
 
     useEffect(() => {
-        setTasks(tasksQuery.data?.tasks);
-    }, [tasksQuery.data?.tasks]);
+        setPreventives(preventivesQuery.data?.preventives);
+    }, [preventivesQuery.data?.preventives]);
 
-    const table = useReactTable<TableItem>({
-        data: tasks || [],
-        columns: columns,
+    const table = useReactTable({
+        data: preventives || [],
+        columns: PREVENTIVES_TABLE_COLUMNS,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -62,48 +54,26 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
-        getFacetedUniqueValues: (table, columnId) => {
-            if (columnId === 'assigned') {
-                return () => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const uniqueValuesMap = new Map<any, number>();
-                    const rows = table.getCoreRowModel().rows;
-
-                    rows.forEach((row) => {
-                        const assigned: TableItem['assigned'] = row.getValue(columnId);
-
-                        for (const user of assigned) {
-                            const valueInMap = uniqueValuesMap.get(user.id);
-
-                            if (typeof valueInMap !== 'undefined') {
-                                uniqueValuesMap.set(user.id, valueInMap + 1);
-                            } else {
-                                uniqueValuesMap.set(user.id, 1);
-                            }
-                        }
-                    });
-
-                    return uniqueValuesMap;
-                };
-            }
-
-            return globalGetFacetedUniqueValues<TableItem>()(table, columnId);
-        },
         state: {
-            columnVisibility: {
-                branch: false,
-                business: false,
-                client: false,
-            },
             sorting,
             columnFilters,
+            columnVisibility: {
+                provinceId: false,
+                'branch.client.id': false,
+            },
         },
     });
 
-    if (tasks) {
+    if (preventives) {
         return (
             <div className="space-y-4 pb-8">
-                <TasksDataTableToolbar table={table} {...props} />
+                <PreventivesTableToolbar
+                    table={table}
+                    provinces={provinces}
+                    businesses={businesses}
+                    clients={clients}
+                    technicians={technicians}
+                />
 
                 <div className="rounded-md border">
                     <Table>
@@ -125,6 +95,7 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                                 </TableRow>
                             ))}
                         </TableHeader>
+
                         <TableBody>
                             {table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
@@ -145,7 +116,7 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                             ) : (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={columns.length}
+                                        colSpan={PREVENTIVES_TABLE_COLUMNS.length}
                                         className="h-24 text-center"
                                     >
                                         No se encontraron resultados.
@@ -155,21 +126,25 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                         </TableBody>
                     </Table>
                 </div>
-
-                <DataTablePagination table={table} />
             </div>
         );
     }
 
-    if (tasksQuery.error) {
-        return <div>Hubo un error al cargar las tareas</div>;
+    if (preventivesQuery.error) {
+        return <div>Hubo un error al cargar las preventivas</div>;
     }
 
     return (
         <div className="space-y-4 pb-8">
-            <TasksDataTableToolbar table={table} {...props} />
+            <PreventivesTableToolbar
+                table={table}
+                provinces={provinces}
+                businesses={businesses}
+                clients={clients}
+                technicians={technicians}
+            />
 
             <Skeleton className="h-96 w-full" />
         </div>
     );
-}
+};
