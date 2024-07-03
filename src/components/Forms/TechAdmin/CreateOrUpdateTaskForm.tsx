@@ -113,7 +113,7 @@ const CreateOrUpdateTaskForm = ({
                     taskType: form.taskType,
                     workOrderNumber: form.workOrderNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
-                    metadata: form.metadata,
+                    metadata: form.metadata ?? '',
                 },
             });
         },
@@ -425,12 +425,8 @@ const CreateOrUpdateTaskForm = ({
                                         <FormControl>
                                             <Input
                                                 placeholder="Numero de ticket de Giasa"
-                                                value={field.value || ''}
-                                                onChange={(e) => {
-                                                    field.onChange(
-                                                        e.target.value.replace(/\D/g, ''),
-                                                    );
-                                                }}
+                                                type='text'
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
