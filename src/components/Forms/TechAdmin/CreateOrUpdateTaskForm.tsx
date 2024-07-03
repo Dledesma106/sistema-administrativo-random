@@ -425,7 +425,7 @@ const CreateOrUpdateTaskForm = ({
                                         <FormControl>
                                             <Input
                                                 placeholder="Numero de ticket de Giasa"
-                                                type='text'
+                                                type="text"
                                                 {...field}
                                             />
                                         </FormControl>
