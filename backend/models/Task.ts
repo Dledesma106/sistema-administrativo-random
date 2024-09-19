@@ -95,10 +95,9 @@ export class Task {
 
     @prop({
         type: mongoose.SchemaTypes.Array,
-        ref: 'Image',
         required: false,
     })
-    imagesIDs?: Array<Ref<Image>>;
+    imagesKeys?: Array<string>;
 
     @prop({
         type: Number,
