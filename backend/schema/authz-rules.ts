@@ -9,6 +9,7 @@ import { prisma } from 'lib/prisma';
 
 const getUserFromJWT = async (jwt: string) => {
     let result = null;
+    console.log('graphql middleware');
     try {
         result = getPayload(jwt);
         console.error('result', result);

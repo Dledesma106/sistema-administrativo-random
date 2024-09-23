@@ -20,12 +20,6 @@ export class Image {
         type: String,
         required: true,
     })
-    name: string;
-
-    @prop({
-        type: String,
-        required: true,
-    })
     url: string;
 
     @prop({
