@@ -319,7 +319,7 @@ const Content: React.FC<Props> = ({ task }) => {
 
 export const TaskDetail = ({ id }: { id: string }) => {
     const result = useTaskByIdQuery(id);
-
+    console.log(result.data)
     if (result.isPending) {
         return <p>Loading...</p>;
     }

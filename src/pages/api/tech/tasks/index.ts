@@ -3,10 +3,12 @@ import { onError, onNoMatch } from 'backend/controllers/NextConnectController';
 import TaskController from 'backend/controllers/TaskController';
 import accessControl from 'backend/middleware/accessControl';
 
+const { getTechTasks, postTechTask } = TaskController
+
 const protectedHandler = createApiRouter();
 protectedHandler.use(accessControl);
-protectedHandler.get(TaskController.getTechTasks);
-protectedHandler.post(TaskController.postTechTask);
+protectedHandler.get(getTechTasks);
+protectedHandler.post(postTechTask);
 
 export default protectedHandler.handler({
     onError: onError,

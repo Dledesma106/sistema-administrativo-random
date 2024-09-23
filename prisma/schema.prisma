@@ -160,7 +160,6 @@ model Image {
   deleted   Boolean   @default(false)
   deletedAt DateTime? @db.Date
   key       String
-  name      String
 
   url       String    @unique(map: "url_1")
   urlExpire DateTime?

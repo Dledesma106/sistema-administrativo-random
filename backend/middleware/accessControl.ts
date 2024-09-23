@@ -22,6 +22,7 @@ const accessControl = async (
     res: NextApiResponse,
     next: NextHandler,
 ): Promise<void> => {
+    console.log('custom access control middleware');
     const { cookies } = req;
 
     const jwt = cookies.ras_access_token;

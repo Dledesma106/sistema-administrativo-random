@@ -9,86 +9,79 @@ import dbConnect from '@/lib/dbConnect';
 import ExpenseModel, { Expense } from 'backend/models/Expense';
 import ImageModel from 'backend/models/Image';
 import TaskModel, { type Task } from 'backend/models/Task';
+import { prisma } from 'lib/prisma';
+import { createImageSignedUrlAsync } from 'backend/s3Client';
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME ?? '';
 
 const ImageController = {
-    _addImageToTask: async (image: string | Types.ObjectId, id: string) => {
-        const task = (await TaskModel.findOneUndeleted({
-            _id: id,
-        })) as DocumentType<Task>;
+    _addImageToTask: async (image: string, id: string) => {
+        const task = await prisma.task.findUniqueUndeleted({
+            where: {
+                id,
+            },
+        });
 
         if (!task) {
             return false;
         }
-        await TaskModel.findOneAndUpdate(
-            {
-                _id: id,
+        await prisma.task.update({
+            where: {
+                id,
             },
-            {
-                $push: {
-                    image: image,
-                },
-            },
-            {
-                runValidators: true,
-            },
-        );
+            data: { imagesIDs: [...task.imagesIDs, image] },
+        });
         return true;
     },
 
-    _addImageToExpense: async (image: string | Types.ObjectId, id: string) => {
-        const expense = (await ExpenseModel.findOneUndeleted({
-            _id: id,
-        })) as DocumentType<Expense>;
+    _addImageToExpense: async (image: string, id: string) => {
+        const expense = await prisma.expense.findUniqueUndeleted({
+            where: {
+                id,
+            },
+        });
 
         if (!expense) {
             return false;
         }
-
-        await ExpenseModel.findOneAndUpdate(
-            {
-                _id: id,
+        await prisma.expense.update({
+            where: {
+                id,
             },
-            {
-                image: image,
-            },
-            {
-                runValidators: true,
-            },
-        );
+            data: { imageId: image },
+        });
         return true;
     },
     postImage: async (req: NextConnectApiRequest, res: NextApiResponse) => {
-        await dbConnect();
+        const { key, taskId, expenseId } = req.body;
+        console.log('imagekey: ', key);
+        const { url, expiresAt } = await createImageSignedUrlAsync({ key });
+        console.log('url: ', url);
+        let image;
+        try {
+            image = await prisma.image.create({
+                data: { key: String(key), url, urlExpire: expiresAt },
+            });
+        } catch (error) {
+            console.log(error);
+        }
 
-        const file = req.file;
-        const imageKey = file.key;
-        const imageUrl = `https://${BUCKET_NAME}.s3.amazonaws.com/${imageKey}`;
-        const image = await ImageModel.create({
-            name: file.originalname,
-            url: imageUrl,
-            key: imageKey,
-        });
-
+        console.log('image: ', image);
         if (!image) {
             return res.status(500).json({
                 error: 'Could not create Image',
             });
         }
-
         try {
-            if (req.query.taskId) {
-                const taskId = req.query.taskId as string;
-                const result = ImageController._addImageToTask(image._id, taskId);
+            if (taskId) {
+                const result = ImageController._addImageToTask(image.id, taskId);
                 if (!result) {
                     return res.status(404).json({
                         error: 'Task not found',
                     });
                 }
-            } else if (req.query.expenseId) {
-                const expenseId = req.query.expenseId as string;
-                const result = ImageController._addImageToExpense(image._id, expenseId);
+            } else if (expenseId) {
+                const result = ImageController._addImageToExpense(image.id, expenseId);
                 if (!result) {
                     return res.status(404).json({
                         error: 'Expense not found',
@@ -96,13 +89,14 @@ const ImageController = {
                 }
             }
         } catch (err) {
+            console.log(err);
             return res.status(500).json({
                 error: 'Could not add image',
             });
         }
-
+        console.log(image.id);
         return res.status(200).json({
-            data: image._id,
+            data: image.id,
         });
     },
 };
