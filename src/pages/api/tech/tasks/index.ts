@@ -3,7 +3,7 @@ import { onError, onNoMatch } from 'backend/controllers/NextConnectController';
 import TaskController from 'backend/controllers/TaskController';
 import accessControl from 'backend/middleware/accessControl';
 
-const { getTechTasks, postTechTask } = TaskController
+const { getTechTasks, postTechTask } = TaskController;
 
 const protectedHandler = createApiRouter();
 protectedHandler.use(accessControl);
