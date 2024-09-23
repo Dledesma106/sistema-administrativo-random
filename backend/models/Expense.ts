@@ -49,10 +49,10 @@ export class Expense {
     status: ExpenseStatus;
 
     @prop({
-        type: String,
+        ref: 'Image',
         required: true,
     })
-    imageKey: string;
+    image: Ref<Image>;
 
     @prop({
         type: Number,

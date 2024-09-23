@@ -6,7 +6,6 @@ export const ImagePothosRef = builder.prismaObject('Image', {
     name: 'Image',
     fields: (t) => ({
         id: t.exposeID('id'),
-        name: t.exposeString('name'),
         url: t.exposeString('url'),
         urlExpire: t.field({
             type: 'DateTime',
