@@ -64,6 +64,7 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         images: t.prismaField({
             type: ['Image'],
             resolve: async (root, parent) => {
+                console.log('getting task images');
                 const images = await prisma.image.findManyUndeleted({
                     where: {
                         id: {
@@ -72,7 +73,9 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                     },
                 });
 
-                await Promise.all(images.map(updateImageSignedUrlAsync));
+                await Promise.all(
+                    images.map((image) => updateImageSignedUrlAsync(image)),
+                );
 
                 return prisma.image.findManyUndeleted({
                     where: {
