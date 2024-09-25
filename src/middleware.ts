@@ -15,7 +15,6 @@ const routeHasFileExtension = (pathname: string) => {
 };
 
 export async function middleware(req: NextRequest): Promise<NextResponse> {
-    console.log('Next JS middleware');
     const secret = process.env.SECRET;
     const { pathname } = req.nextUrl;
     const jwt = req.cookies.get('ras_access_token')?.value;
