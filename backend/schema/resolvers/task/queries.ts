@@ -101,7 +101,7 @@ builder.queryFields((t) => ({
     myAssignedTasks: t.prismaField({
         type: ['Task'],
         authz: {
-            rules: ['IsAuthenticated', 'IsAuditor'],
+            rules: ['IsAuthenticated', 'IsTecnico'],
         },
         resolve: async (query, _parent, _args, { user }) => {
             return await prisma.task.findManyUndeleted({

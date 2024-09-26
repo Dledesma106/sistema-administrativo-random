@@ -90,7 +90,7 @@ const IsAuthenticated = preExecRule({
 });
 
 const IsAdministrativoTecnico = preExecRule({
-    error: 'No tienes permisos para realizar esta acción',
+    error: 'No tienes permisos para realizar esta acción, necesitas el rol de Administrativo Tecnico',
 })(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
@@ -105,7 +105,7 @@ const IsAdministrativoTecnico = preExecRule({
 });
 
 const IsAuditor = preExecRule({
-    error: 'No tienes permisos para realizar esta acción',
+    error: 'No tienes permisos para realizar esta acción, necesitas el rol de Auditor',
 })(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
@@ -120,7 +120,7 @@ const IsAuditor = preExecRule({
 });
 
 const IsTecnico = preExecRule({
-    error: 'No tienes permisos para realizar esta acción',
+    error: 'No tienes permisos para realizar esta acción, necesitas el rol de Tecnico',
 })(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
@@ -135,7 +135,7 @@ const IsTecnico = preExecRule({
 });
 
 const IsAdministrativoContable = preExecRule({
-    error: 'No tienes permisos para realizar esta acción',
+    error: 'No tienes permisos para realizar esta acción, necesitas el rol de Administrativo Contable',
 })(async (context: YogaContext, _fieldArgs) => {
     const user = await getUserFromContext(context);
     if (!user) {
