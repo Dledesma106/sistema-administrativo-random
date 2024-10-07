@@ -55,12 +55,12 @@ const ImageController = {
     postImage: async (req: NextConnectApiRequest, res: NextApiResponse) => {
         const { key, taskId, expenseId } = req.body;
         console.log('imagekey: ', key);
-        const { url, expiresAt } = await createImageSignedUrlAsync({ key });
+        const { url, urlExpire } = await createImageSignedUrlAsync(key);
         console.log('url: ', url);
         let image;
         try {
             image = await prisma.image.create({
-                data: { key: String(key), url, urlExpire: expiresAt },
+                data: { key: String(key), url, urlExpire },
             });
         } catch (error) {
             console.log(error);

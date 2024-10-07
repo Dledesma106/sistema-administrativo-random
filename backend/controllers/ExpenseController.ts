@@ -52,7 +52,7 @@ const ExpenseController = {
             const expenseData = {
                 ...expense,
                 image: {
-                    url: await createImageSignedUrlAsync(expense.image as Image),
+                    url: await createImageSignedUrlAsync((expense.image as Image).key),
                 },
             };
 
