@@ -13,10 +13,10 @@ export const s3Client = new S3Client({
     },
 });
 
-export const createImageSignedUrlAsync = async (image: Pick<Image, 'key'>) => {
+export const createImageSignedUrlAsync = async (key: string) => {
     const command = new GetObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME as string,
-        Key: image.key,
+        Key: key,
     });
 
     const url = await getSignedUrl(s3Client, command, {
@@ -25,7 +25,7 @@ export const createImageSignedUrlAsync = async (image: Pick<Image, 'key'>) => {
 
     return {
         url,
-        expiresAt: dayjs()
+        urlExpire: dayjs()
             .add(EXPIRE_1_HOUR - 120, 'second')
             .toISOString(),
     };

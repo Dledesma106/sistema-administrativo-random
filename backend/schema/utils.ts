@@ -14,7 +14,7 @@ export const updateImageSignedUrlAsync = async (
         };
     }
 
-    const { url, expiresAt } = await createImageSignedUrlAsync(image);
+    const { url, urlExpire } = await createImageSignedUrlAsync(image.key);
 
     return prisma.image.update({
         where: {
@@ -22,7 +22,7 @@ export const updateImageSignedUrlAsync = async (
         },
         data: {
             url,
-            urlExpire: expiresAt,
+            urlExpire,
         },
     });
 };

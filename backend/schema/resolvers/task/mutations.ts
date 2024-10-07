@@ -6,13 +6,13 @@ import { builder } from 'backend/schema/builder';
 import { prisma } from 'lib/prisma';
 
 import { ExpenseStatusPothosRef } from '../expense';
+import { createImageSignedUrlAsync } from 'backend/s3Client';
 
 const TaskInputPothosRef = builder.inputType('TaskInput', {
     fields: (t) => ({
         description: t.string({
             required: true,
         }),
-
         status: t.field({
             type: TaskStatusPothosRef,
             required: true,
@@ -36,11 +36,19 @@ const TaskInputPothosRef = builder.inputType('TaskInput', {
         assigned: t.stringList({
             required: true,
         }),
-
         metadata: t.field({
             type: 'JSON',
             required: true,
         }),
+    }),
+});
+
+const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
+    fields: (t) => ({
+        id: t.string({ required: true }),
+        workOrderNumber: t.string({ required: true }),
+        imageIdToDelete: t.string(),
+        imageKeys: t.stringList({ required: true }),
     }),
 });
 
@@ -254,18 +262,9 @@ builder.mutationFields((t) => ({
     updateMyAssignedTask: t.field({
         type: TaskCrudResultPothosRef,
         args: {
-            id: t.arg.string({
+            input: t.arg({
+                type: UpdateMyTaskInput,
                 required: true,
-            }),
-            status: t.arg({
-                type: TaskStatusPothosRef,
-                required: false,
-            }),
-            workOrderNumber: t.arg.int({
-                required: false,
-            }),
-            imageIdToDelete: t.arg.string({
-                required: false,
             }),
         },
         authz: {
@@ -280,7 +279,9 @@ builder.mutationFields((t) => ({
         },
         resolve: async (root, args, { user }) => {
             try {
-                const { id, status, workOrderNumber, imageIdToDelete } = args;
+                const {
+                    input: { id, workOrderNumber, imageIdToDelete, imageKeys },
+                } = args;
 
                 const foundTask = await prisma.task.findUniqueUndeleted({
                     where: {
@@ -317,16 +318,6 @@ builder.mutationFields((t) => ({
                     };
                 }
 
-                const data = {
-                    workOrderNumber: workOrderNumber ?? foundTask.workOrderNumber,
-                    status: status ?? foundTask.status,
-                    imagesIDs: {
-                        set: imageIdToDelete
-                            ? foundTask.imagesIDs.filter((id) => id !== imageIdToDelete)
-                            : foundTask.imagesIDs,
-                    },
-                };
-
                 // TODO: Delete image from storage S3
                 if (imageIdToDelete && foundTask.imagesIDs.includes(imageIdToDelete)) {
                     await prisma.image.delete({
@@ -340,7 +331,22 @@ builder.mutationFields((t) => ({
                     where: {
                         id,
                     },
-                    data,
+                    data: {
+                        workOrderNumber:
+                            parseInt(workOrderNumber, 10) ?? foundTask.workOrderNumber,
+                        status: TaskStatus.Finalizada,
+                        images: {
+                            ...(imageIdToDelete && {
+                                delete: { id: imageIdToDelete },
+                            }),
+                            create: await Promise.all(
+                                imageKeys.map(async (key) => ({
+                                    ...(await createImageSignedUrlAsync(key)),
+                                    key,
+                                })),
+                            ),
+                        },
+                    },
                 });
 
                 return {
@@ -348,6 +354,7 @@ builder.mutationFields((t) => ({
                     task,
                 };
             } catch (error) {
+                console.error(error);
                 return {
                     success: false,
                 };

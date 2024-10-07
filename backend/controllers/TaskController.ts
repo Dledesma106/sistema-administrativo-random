@@ -68,12 +68,12 @@ export const getTaskById = async (taskId: string, userId?: string) => {
     } else {
         images = await Promise.all(
             images.map(async (image) => {
-                const { url, expiresAt } = await createImageSignedUrlAsync(image);
+                const { url, urlExpire } = await createImageSignedUrlAsync(image.key);
                 await ImageModel.findOneAndUpdate(
                     { _id: image._id },
                     {
                         url,
-                        urlExpire: expiresAt,
+                        urlExpire,
                     },
                 );
 
