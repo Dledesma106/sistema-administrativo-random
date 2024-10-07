@@ -14,7 +14,11 @@ builder.queryFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                    or: [
+                        'IsAdministrativoTecnico',
+                        'IsAuditor',
+                        'IsAdministrativoContable',
+                    ],
                 },
             ],
         },
@@ -59,7 +63,11 @@ builder.queryFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                    or: [
+                        'IsAdministrativoTecnico',
+                        'IsAuditor',
+                        'IsAdministrativoContable',
+                    ],
                 },
             ],
         },

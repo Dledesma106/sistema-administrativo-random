@@ -46,7 +46,7 @@ builder.queryFields((t) => ({
     }),
 }));
 
-const LoginUserPhotosRef = builder
+const LoginUserPothosRef = builder
     .objectRef<{
         success: boolean;
         message?: string | null;
@@ -80,7 +80,7 @@ const LoginUserPhotosRef = builder
         }),
     });
 
-const UserInputPhotosRef = builder.inputType('UserInput', {
+const UserInputPothosRef = builder.inputType('UserInput', {
     fields: (t) => ({
         email: t.string({
             required: true,
@@ -101,12 +101,12 @@ const UserInputPhotosRef = builder.inputType('UserInput', {
     }),
 });
 
-const UserCrudPhotosRef = builder
+const UserCrudPothosRef = builder
     .objectRef<{
         success: boolean;
         message?: string | null;
         user?: User | null;
-    }>('UserCrudPhotosRef')
+    }>('UserCrudPothosRef')
     .implement({
         fields: (t) => ({
             success: t.boolean({
@@ -126,7 +126,7 @@ const UserCrudPhotosRef = builder
 
 builder.mutationFields((t) => ({
     login: t.field({
-        type: LoginUserPhotosRef,
+        type: LoginUserPothosRef,
         args: {
             email: t.arg.string({
                 required: true,
@@ -196,10 +196,10 @@ builder.mutationFields((t) => ({
         },
     }),
     createUser: t.field({
-        type: UserCrudPhotosRef,
+        type: UserCrudPothosRef,
         args: {
             input: t.arg({
-                type: UserInputPhotosRef,
+                type: UserInputPothosRef,
                 required: true,
             }),
         },
@@ -287,13 +287,13 @@ builder.mutationFields((t) => ({
         },
     }),
     updateUser: t.field({
-        type: UserCrudPhotosRef,
+        type: UserCrudPothosRef,
         args: {
             id: t.arg.string({
                 required: true,
             }),
             input: t.arg({
-                type: UserInputPhotosRef,
+                type: UserInputPothosRef,
                 required: true,
             }),
         },
@@ -353,7 +353,7 @@ builder.mutationFields((t) => ({
         },
     }),
     sendNewUserRandomPassword: t.field({
-        type: UserCrudPhotosRef,
+        type: UserCrudPothosRef,
         args: {
             id: t.arg.string({
                 required: true,
