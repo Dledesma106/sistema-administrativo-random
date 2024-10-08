@@ -279,6 +279,9 @@ builder.mutationFields((t) => ({
             taskId: t.arg.string({ required: true }),
             expenseData: t.arg({ type: ExpenseInputType, required: true }),
         },
+        authz: {
+            rules: ['IsAuthenticated', 'IsTecnico'],
+        },
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
                 const newExpense = await prisma.expense.create({
