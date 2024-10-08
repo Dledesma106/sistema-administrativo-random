@@ -90,7 +90,12 @@ builder.queryFields((t) => ({
             }),
         },
         authz: {
-            rules: ['IsAuthenticated', 'IsTecnico'],
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsTecnico'],
+                },
+            ],
         },
         resolve: async (query, parent, args, { user }) => {
             const expense = await prisma.expense.findUniqueUndeleted({
@@ -129,7 +134,12 @@ builder.mutationFields((t) => ({
             }),
         },
         authz: {
-            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsTecnico', 'IsAdministrativoTecnico', 'IsAuditor'],
+                },
+            ],
         },
         resolve: async (root, args, _context, _info) => {
             try {
