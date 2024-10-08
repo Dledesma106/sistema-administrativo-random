@@ -10,6 +10,7 @@ import { prisma } from 'lib/prisma';
 
 import { builder } from '../builder';
 import { updateImageSignedUrlAsync } from '../utils';
+import { deletePhoto } from 'backend/s3Client';
 
 export const ExpenseTypePothosRef = builder.enumType('ExpenseType', {
     values: Object.fromEntries(
@@ -133,16 +134,29 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { id } = args;
+
                 const expense = await prisma.expense.softDeleteOne({
                     id,
                 });
 
                 if (!expense) {
                     return {
-                        message: 'La tarea no existe',
+                        message: 'El gasto no existe',
                         success: false,
                     };
                 }
+                const image = await prisma.image.softDeleteOne({
+                    id: expense.imageId,
+                });
+
+                if (!image) {
+                    return {
+                        message: 'El gasto no poseia una foto',
+                        success: false,
+                    };
+                }
+
+                await deletePhoto(image.key);
 
                 return {
                     success: true,
@@ -150,7 +164,7 @@ builder.mutationFields((t) => ({
                 };
             } catch (error) {
                 return {
-                    message: 'Error al eliminar la tarea',
+                    message: 'Error al eliminar el gasto',
                     success: false,
                 };
             }

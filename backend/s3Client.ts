@@ -1,6 +1,5 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Image } from '@prisma/client';
 import dayjs from 'dayjs';
 
 const EXPIRE_1_HOUR = 60 * 60;
@@ -29,4 +28,16 @@ export const createImageSignedUrlAsync = async (key: string) => {
             .add(EXPIRE_1_HOUR - 120, 'second')
             .toISOString(),
     };
+};
+
+export const deletePhoto = async (key: string) => {
+    try {
+        const command = new DeleteObjectCommand({
+            Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+            Key: key,
+        });
+        await s3Client.send(command);
+    } catch (error) {
+        console.error('Error deleting file:', error);
+    }
 };
