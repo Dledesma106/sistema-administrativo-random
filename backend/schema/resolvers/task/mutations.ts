@@ -245,7 +245,12 @@ builder.mutationFields((t) => ({
             }),
         },
         authz: {
-            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
+                },
+            ],
         },
         resolve: async (root, args, _context, _info) => {
             try {
@@ -280,7 +285,12 @@ builder.mutationFields((t) => ({
             expenseData: t.arg({ type: ExpenseInputType, required: true }),
         },
         authz: {
-            rules: ['IsAuthenticated', 'IsTecnico'],
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsTecnico'],
+                },
+            ],
         },
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
