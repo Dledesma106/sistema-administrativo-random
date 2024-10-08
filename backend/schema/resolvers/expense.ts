@@ -29,7 +29,7 @@ export const ExpensePaySourcePothosRef = builder.enumType('ExpensePaySource', {
     ),
 });
 
-builder.prismaObject('Expense', {
+export const ExpensePothosRef = builder.prismaObject('Expense', {
     name: 'Expense',
     fields: (t) => ({
         id: t.exposeID('id'),
@@ -118,63 +118,6 @@ builder.queryFields((t) => ({
         },
     }),
 }));
-
-export const ExpensePothosRef = builder.prismaObject('Expense', {
-    fields: (t) => ({
-        id: t.exposeID('id'),
-        amount: t.exposeInt('amount'),
-        createdAt: t.field({
-            type: 'DateTime',
-            resolve: (root) => root.createdAt,
-        }),
-        updatedAt: t.field({
-            type: 'DateTime',
-            resolve: (root) => root.updatedAt,
-        }),
-        deleted: t.exposeBoolean('deleted'),
-        deletedAt: t.field({
-            type: 'DateTime',
-            nullable: true,
-            resolve: (root) => root.deletedAt,
-        }),
-        expenseType: t.field({
-            type: ExpenseTypePothosRef,
-            resolve: (root) => root.expenseType as ExpenseType,
-        }),
-        paySource: t.field({
-            type: ExpensePaySourcePothosRef,
-            resolve: (root) => root.paySource as ExpensePaySource,
-        }),
-        status: t.field({
-            type: ExpenseStatusPothosRef,
-            resolve: (root) => root.status as ExpenseStatus,
-        }),
-        task: t.relation('task'),
-        doneBy: t.relation('doneBy'),
-        image: t.prismaField({
-            type: 'Image',
-            resolve: async (root, parent) => {
-                const image = await prisma.image.findUniqueUndeleted({
-                    where: {
-                        id: parent.imageId,
-                    },
-                });
-
-                await updateImageSignedUrlAsync(image as Image);
-
-                const newImage = await prisma.image.findUniqueUndeleted({
-                    where: {
-                        id: parent.imageId,
-                    },
-                });
-                return newImage as Image;
-            },
-        }),
-        auditor: t.relation('auditor', {
-            nullable: true,
-        }),
-    }),
-});
 
 export const ExpenseCrudResultPothosRef = builder
     .objectRef<{
