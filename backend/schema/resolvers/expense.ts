@@ -1,4 +1,10 @@
-import { ExpenseStatus, ExpenseType, ExpensePaySource, Image } from '@prisma/client';
+import {
+    ExpenseStatus,
+    ExpenseType,
+    ExpensePaySource,
+    Image,
+    Expense,
+} from '@prisma/client';
 
 import { prisma } from 'lib/prisma';
 
@@ -23,7 +29,7 @@ export const ExpensePaySourcePothosRef = builder.enumType('ExpensePaySource', {
     ),
 });
 
-builder.prismaObject('Expense', {
+export const ExpensePothosRef = builder.prismaObject('Expense', {
     name: 'Expense',
     fields: (t) => ({
         id: t.exposeID('id'),
@@ -112,3 +118,26 @@ builder.queryFields((t) => ({
         },
     }),
 }));
+
+export const ExpenseCrudResultPothosRef = builder
+    .objectRef<{
+        success: boolean;
+        message?: string;
+        expense?: Expense;
+    }>('ExpenseCrudResult')
+    .implement({
+        fields: (t) => ({
+            success: t.boolean({
+                resolve: (result) => result.success,
+            }),
+            expense: t.field({
+                type: ExpensePothosRef,
+                nullable: true,
+                resolve: (result) => result.expense,
+            }),
+            message: t.string({
+                nullable: true,
+                resolve: (result) => result.message,
+            }),
+        }),
+    });

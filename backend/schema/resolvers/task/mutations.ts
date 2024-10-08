@@ -1,6 +1,11 @@
 import { ExpenseStatus, Task, TaskStatus } from '@prisma/client';
 
 import { TaskPothosRef, TaskStatusPothosRef, TaskTypePothosRef } from './refs';
+import {
+    ExpenseTypePothosRef,
+    ExpensePaySourcePothosRef,
+    ExpenseCrudResultPothosRef,
+} from '../expense';
 
 import { builder } from 'backend/schema/builder';
 import { prisma } from 'lib/prisma';
@@ -49,6 +54,15 @@ const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
         workOrderNumber: t.string({ required: true }),
         imageIdToDelete: t.string(),
         imageKeys: t.stringList({ required: true }),
+    }),
+});
+
+const ExpenseInputType = builder.inputType('ExpenseInput', {
+    fields: (t) => ({
+        amount: t.int({ required: true }),
+        expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
+        paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
+        imageKey: t.string({ required: true }),
     }),
 });
 
@@ -254,6 +268,46 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 return {
                     message: 'Error al eliminar la tarea',
+                    success: false,
+                };
+            }
+        },
+    }),
+    createExpenseOnTask: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            taskId: t.arg.string({ required: true }),
+            expenseData: t.arg({ type: ExpenseInputType, required: true }),
+        },
+        authz: {
+            rules: ['IsAuthenticated', 'IsTecnico'],
+        },
+        resolve: async (_parent, { taskId, expenseData }, _context) => {
+            try {
+                const newExpense = await prisma.expense.create({
+                    data: {
+                        amount: expenseData.amount,
+                        expenseType: expenseData.expenseType,
+                        paySource: expenseData.paySource,
+                        status: ExpenseStatus.Enviado,
+                        doneBy: { connect: { id: _context.user.id } },
+                        task: { connect: { id: taskId } },
+                        image: {
+                            create: {
+                                ...(await createImageSignedUrlAsync(
+                                    expenseData.imageKey,
+                                )),
+                                key: expenseData.imageKey,
+                            },
+                        },
+                    },
+                });
+                return {
+                    success: true,
+                    expense: newExpense,
+                };
+            } catch (error) {
+                return {
                     success: false,
                 };
             }
