@@ -119,6 +119,45 @@ builder.queryFields((t) => ({
     }),
 }));
 
+builder.mutationFields((t) => ({
+    deleteExpense: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+        },
+        authz: {
+            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id } = args;
+                const expense = await prisma.expense.softDeleteOne({
+                    id,
+                });
+
+                if (!expense) {
+                    return {
+                        message: 'La tarea no existe',
+                        success: false,
+                    };
+                }
+
+                return {
+                    success: true,
+                    expense,
+                };
+            } catch (error) {
+                return {
+                    message: 'Error al eliminar la tarea',
+                    success: false,
+                };
+            }
+        },
+    }),
+}));
+
 export const ExpenseCrudResultPothosRef = builder
     .objectRef<{
         success: boolean;
