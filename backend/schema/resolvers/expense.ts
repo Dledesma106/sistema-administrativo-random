@@ -156,8 +156,6 @@ builder.mutationFields((t) => ({
                     };
                 }
 
-                await deletePhoto(image.key);
-
                 return {
                     success: true,
                     expense,
