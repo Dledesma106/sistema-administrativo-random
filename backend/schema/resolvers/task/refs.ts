@@ -5,6 +5,7 @@ import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
 import { UserPothosRef } from '../users';
+import { ExpensePothosRef } from '../expense';
 
 export const TaskTypePothosRef = builder.enumType('TaskType', {
     values: Object.fromEntries(
@@ -85,7 +86,16 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                 });
             },
         }),
-        expenses: t.relation('expenses'),
+        expenses: t.relation('expenses', {
+            type: ExpensePothosRef,
+            resolve: async (root, parent, args, context) => {
+                return prisma.expense.findManyUndeleted({
+                    where: {
+                        taskId: parent.id,
+                    },
+                });
+            },
+        }),
         metadata: t.field({
             type: 'JSON',
             resolve: (root) => (root.metadata || {}) as Record<string, any> as any,

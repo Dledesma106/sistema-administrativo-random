@@ -231,7 +231,7 @@ model Preventive {
   createdAt DateTime @default(now()) @db.Date
   updatedAt DateTime @updatedAt
 
-  lastDoneAt DateTime? @db.Date
+  lastDoneAt       DateTime? @db.Date
   batteryChangedAt DateTime? @db.Date
 
   deleted   Boolean   @default(false)
