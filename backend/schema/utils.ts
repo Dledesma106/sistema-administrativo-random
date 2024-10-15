@@ -25,15 +25,16 @@ export const updateImageSignedUrlAsync = async (image: Image) => {
     });
 };
 
-export function removeDeleted<T extends { deleted: boolean }>(arr: T[]): T[] {
+type WithDeleted = { deleted: boolean };
+
+export function removeDeleted<T extends WithDeleted>(arr: T[]): T[] {
     return arr
         .filter((item) => !item.deleted)
         .map((item) => {
-            // Iterar sobre las propiedades del objeto
             for (const key in item) {
                 if (Array.isArray(item[key])) {
-                    // Si la propiedad es un arreglo, aplicar la función recursivamente
-                    (item[key] as any) = removeDeleted(item[key]);
+                    // Si la propiedad es un arreglo, asumir que los elementos también tienen la propiedad deleted
+                    item[key] = removeDeleted(item[key] as WithDeleted[]) as any;
                 }
             }
             return item;
