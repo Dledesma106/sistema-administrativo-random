@@ -64,6 +64,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
                 });
 
                 if (!image) {
+                    await prisma.expense.softDeleteOne({ id: parent.id });
                     throw new Error('Un gasto debe tener una imagen asociada');
                 }
 
@@ -130,6 +131,9 @@ builder.mutationFields((t) => ({
         type: ExpenseCrudResultPothosRef,
         args: {
             id: t.arg.string({
+                required: true,
+            }),
+            taskId: t.arg.string({
                 required: true,
             }),
         },

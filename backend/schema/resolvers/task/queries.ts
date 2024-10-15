@@ -4,6 +4,7 @@ import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
 import { builder } from 'backend/schema/builder';
 import { prisma } from 'lib/prisma';
+import { removeDeleted } from 'backend/schema/utils';
 
 builder.queryFields((t) => ({
     tasks: t.prismaField({
@@ -46,12 +47,14 @@ builder.queryFields((t) => ({
             }),
         },
         resolve: async (query) => {
-            return await prisma.task.findManyUndeleted({
+            const tasks = await prisma.task.findManyUndeleted({
                 orderBy: {
                     createdAt: 'desc',
                 },
                 ...query,
             });
+            const filteredTasks = removeDeleted(tasks);
+            return filteredTasks;
         },
     }),
     taskById: t.prismaField({

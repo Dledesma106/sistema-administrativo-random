@@ -120,3 +120,17 @@ export const getCleanErrorMessage = (err: Error) => {
 
     return message;
 };
+
+export function stringifyObject(obj: Record<string, any>): string {
+    let resultado = '';
+    for (const propiedad in obj) {
+        if (obj.hasOwnProperty(propiedad)) {
+            resultado += `${propiedad}: ${
+                typeof obj[propiedad] === 'object'
+                    ? stringifyObject(obj[propiedad])
+                    : obj[propiedad]
+            }\n`;
+        }
+    }
+    return resultado;
+}
