@@ -112,18 +112,12 @@ const Content: React.FC<Props> = ({ task }) => {
 
                 <div>
                     <Title>Numero de OT</Title>
-
-                    <p className="mb-1">
-                        {task.workOrderNumber}
-                    </p>
+                    <p className="mb-1">{task.workOrderNumber}</p>
                 </div>
 
                 <div>
                     <Title>Observaciones</Title>
-
-                    <p className="mb-1">
-                        {task.observations}
-                    </p>
+                    <p className="mb-1">{task.observations}</p>
                 </div>
 
                 <section>
