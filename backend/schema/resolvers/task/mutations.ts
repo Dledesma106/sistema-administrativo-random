@@ -12,6 +12,7 @@ import { prisma } from 'lib/prisma';
 
 import { ExpenseStatusPothosRef } from '../expense';
 import { createImageSignedUrlAsync } from 'backend/s3Client';
+import { removeDeleted } from 'backend/schema/utils';
 
 const TaskInputPothosRef = builder.inputType('TaskInput', {
     fields: (t) => ({
@@ -52,7 +53,6 @@ const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
     fields: (t) => ({
         id: t.string({ required: true }),
         workOrderNumber: t.string({ required: true }),
-        imageIdToDelete: t.string(),
         imageKeys: t.stringList({ required: true }),
     }),
 });
@@ -344,7 +344,7 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, { user }) => {
             try {
                 const {
-                    input: { id, workOrderNumber, imageIdToDelete, imageKeys },
+                    input: { id, workOrderNumber, imageKeys },
                 } = args;
 
                 const foundTask = await prisma.task.findUniqueUndeleted({
@@ -367,28 +367,11 @@ builder.mutationFields((t) => ({
                     };
                 }
 
-                if (foundTask.status === TaskStatus.Finalizada) {
-                    return {
-                        message:
-                            'No se puede actualizar la tarea porque ya fue finalizada',
-                        success: false,
-                    };
-                }
-
                 if (foundTask.status === TaskStatus.Aprobada) {
                     return {
                         message: 'No se puede actualizar la tarea porque ya fue aprobada',
                         success: false,
                     };
-                }
-
-                // TODO: Delete image from storage S3
-                if (imageIdToDelete && foundTask.imagesIDs.includes(imageIdToDelete)) {
-                    await prisma.image.delete({
-                        where: {
-                            id: imageIdToDelete,
-                        },
-                    });
                 }
 
                 const task = await prisma.task.update({
@@ -400,9 +383,6 @@ builder.mutationFields((t) => ({
                             parseInt(workOrderNumber, 10) ?? foundTask.workOrderNumber,
                         status: TaskStatus.Finalizada,
                         images: {
-                            ...(imageIdToDelete && {
-                                delete: { id: imageIdToDelete },
-                            }),
                             create: await Promise.all(
                                 imageKeys.map(async (key) => ({
                                     ...(await createImageSignedUrlAsync(key)),
@@ -422,6 +402,39 @@ builder.mutationFields((t) => ({
                 return {
                     success: false,
                 };
+            }
+        },
+    }),
+    deleteImage: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            taskId: t.arg.string({ required: true }),
+            imageId: t.arg.string({ required: true }),
+        },
+        resolve: async (root, { taskId, imageId }, { user }) => {
+            try {
+                // Verificar que la imagen pertenece a la tarea
+                const task = await prisma.task.findUniqueUndeleted({
+                    where: { id: taskId },
+                    include: { images: true },
+                });
+
+                if (!task) {
+                    throw new Error('Task not found');
+                }
+                const filteredImages = removeDeleted(task.images);
+                const image = filteredImages.find((img) => img.id === imageId);
+                if (!image) {
+                    throw new Error('Image not found in the specified task');
+                }
+
+                // Eliminar la imagen
+                await prisma.image.softDeleteOne({ id: imageId });
+
+                return { success: true, task };
+            } catch (error) {
+                console.error(error);
+                return { success: false };
             }
         },
     }),
