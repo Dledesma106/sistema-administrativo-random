@@ -87,6 +87,20 @@ export type Expense = {
     status: ExpenseStatus;
 };
 
+export type ExpenseCrudResult = {
+    __typename?: 'ExpenseCrudResult';
+    expense: Maybe<Expense>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type ExpenseInput = {
+    amount: Scalars['Int'];
+    expenseType: ExpenseType;
+    imageKey: Scalars['String'];
+    paySource: ExpensePaySource;
+};
+
 export const ExpensePaySource = {
     Reintegro: 'Reintegro',
     Tarjeta: 'Tarjeta',
@@ -113,7 +127,6 @@ export type Image = {
     __typename?: 'Image';
     id: Scalars['ID'];
     key: Scalars['String'];
-    name: Scalars['String'];
     url: Scalars['String'];
     urlExpire: Maybe<Scalars['DateTime']>;
 };
@@ -131,22 +144,25 @@ export type Mutation = {
     __typename?: 'Mutation';
     createBranch: BranchCrudResult;
     createCity: CityCrudResult;
+    createExpenseOnTask: ExpenseCrudResult;
     createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
-    createUser: UserCrudPhotosRef;
+    createUser: UserCrudPothosRef;
     deleteBranch: BranchCrudResult;
     deleteCity: CityCrudResult;
+    deleteExpense: ExpenseCrudResult;
+    deleteImage: TaskCrudResult;
     deletePreventive: PreventiveCrudResult;
     deleteTask: TaskCrudResult;
     login: LoginUserResult;
-    sendNewUserRandomPassword: UserCrudPhotosRef;
+    sendNewUserRandomPassword: UserCrudPothosRef;
     updateBranch: BranchCrudResult;
     updateCity: CityCrudResult;
     updateMyAssignedTask: TaskCrudResult;
     updatePreventive: PreventiveCrudResult;
     updateTask: TaskCrudResult;
     updateTaskExpenseStatus: TaskCrudResult;
-    updateUser: UserCrudPhotosRef;
+    updateUser: UserCrudPothosRef;
 };
 
 export type MutationCreateBranchArgs = {
@@ -155,6 +171,11 @@ export type MutationCreateBranchArgs = {
 
 export type MutationCreateCityArgs = {
     input: CityInput;
+};
+
+export type MutationCreateExpenseOnTaskArgs = {
+    expenseData: ExpenseInput;
+    taskId: Scalars['String'];
 };
 
 export type MutationCreatePreventiveArgs = {
@@ -175,6 +196,16 @@ export type MutationDeleteBranchArgs = {
 
 export type MutationDeleteCityArgs = {
     id: Scalars['String'];
+};
+
+export type MutationDeleteExpenseArgs = {
+    id: Scalars['String'];
+    taskId: Scalars['String'];
+};
+
+export type MutationDeleteImageArgs = {
+    imageId: Scalars['String'];
+    taskId: Scalars['String'];
 };
 
 export type MutationDeletePreventiveArgs = {
@@ -205,10 +236,7 @@ export type MutationUpdateCityArgs = {
 };
 
 export type MutationUpdateMyAssignedTaskArgs = {
-    id: Scalars['String'];
-    imageIdToDelete: InputMaybe<Scalars['String']>;
-    status: InputMaybe<TaskStatus>;
-    workOrderNumber: InputMaybe<Scalars['Int']>;
+    input: UpdateMyTaskInput;
 };
 
 export type MutationUpdatePreventiveArgs = {
@@ -349,6 +377,7 @@ export type Task = {
     images: Array<Image>;
     imagesIDs: Array<Scalars['String']>;
     metadata: Scalars['JSON'];
+    observations: Maybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
     workOrderNumber: Maybe<Scalars['Int']>;
@@ -390,6 +419,13 @@ export const TaskType = {
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
+export type UpdateMyTaskInput = {
+    id: Scalars['String'];
+    imageKeys: Array<Scalars['String']>;
+    observations: InputMaybe<Scalars['String']>;
+    workOrderNumber: Scalars['String'];
+};
+
 export type User = {
     __typename?: 'User';
     city: Maybe<City>;
@@ -401,8 +437,8 @@ export type User = {
     roles: Array<Role>;
 };
 
-export type UserCrudPhotosRef = {
-    __typename?: 'UserCrudPhotosRef';
+export type UserCrudPothosRef = {
+    __typename?: 'UserCrudPothosRef';
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     user: Maybe<User>;
@@ -615,6 +651,8 @@ export type TaskByIdQuery = {
         createdAt: any;
         closedAt: any | null;
         description: string;
+        workOrderNumber: number | null;
+        observations: string | null;
         taskType: TaskType;
         status: TaskStatus;
         metadata: any;
@@ -729,7 +767,7 @@ export type CreateUserMutationVariables = Exact<{
 export type CreateUserMutation = {
     __typename?: 'Mutation';
     createUser: {
-        __typename?: 'UserCrudPhotosRef';
+        __typename?: 'UserCrudPothosRef';
         success: boolean;
         message: string | null;
         user: { __typename?: 'User'; id: string } | null;
@@ -744,7 +782,7 @@ export type UpdateUserMutationVariables = Exact<{
 export type UpdateUserMutation = {
     __typename?: 'Mutation';
     updateUser: {
-        __typename?: 'UserCrudPhotosRef';
+        __typename?: 'UserCrudPothosRef';
         success: boolean;
         message: string | null;
         user: { __typename?: 'User'; id: string } | null;
@@ -758,7 +796,7 @@ export type SendNewUserRandomPasswordMutationVariables = Exact<{
 export type SendNewUserRandomPasswordMutation = {
     __typename?: 'Mutation';
     sendNewUserRandomPassword: {
-        __typename?: 'UserCrudPhotosRef';
+        __typename?: 'UserCrudPothosRef';
         success: boolean;
         message: string | null;
         user: { __typename?: 'User'; id: string } | null;
@@ -1948,6 +1986,14 @@ export const TaskByIdDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'workOrderNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'observations' },
                                 },
                                 {
                                     kind: 'Field',
