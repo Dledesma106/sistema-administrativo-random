@@ -100,5 +100,8 @@ export const TaskPothosRef = builder.prismaObject('Task', {
             type: 'JSON',
             resolve: (root) => (root.metadata || {}) as Record<string, any> as any,
         }),
+        observations: t.exposeString('observations', {
+            nullable: true,
+        }),
     }),
 });

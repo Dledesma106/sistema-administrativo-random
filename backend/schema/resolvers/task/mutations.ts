@@ -54,6 +54,7 @@ const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
         id: t.string({ required: true }),
         workOrderNumber: t.string({ required: true }),
         imageKeys: t.stringList({ required: true }),
+        observations: t.string({ required: false }),
     }),
 });
 
@@ -344,7 +345,7 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, { user }) => {
             try {
                 const {
-                    input: { id, workOrderNumber, imageKeys },
+                    input: { id, workOrderNumber, imageKeys, observations },
                 } = args;
 
                 const foundTask = await prisma.task.findUniqueUndeleted({
@@ -382,6 +383,7 @@ builder.mutationFields((t) => ({
                         workOrderNumber:
                             parseInt(workOrderNumber, 10) ?? foundTask.workOrderNumber,
                         status: TaskStatus.Finalizada,
+                        observations,
                         images: {
                             create: await Promise.all(
                                 imageKeys.map(async (key) => ({
@@ -410,6 +412,16 @@ builder.mutationFields((t) => ({
         args: {
             taskId: t.arg.string({ required: true }),
             imageId: t.arg.string({ required: true }),
+        },
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsTecnico'],
+                },
+            ],
         },
         resolve: async (root, { taskId, imageId }, { user }) => {
             try {
