@@ -56,6 +56,8 @@ query taskById($id: String!) {
         createdAt
         closedAt
         description
+        workOrderNumber
+        observations
         business {
             id
             name
