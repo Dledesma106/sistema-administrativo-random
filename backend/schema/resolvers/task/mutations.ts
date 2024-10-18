@@ -49,22 +49,25 @@ const TaskInputPothosRef = builder.inputType('TaskInput', {
     }),
 });
 
-const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
-    fields: (t) => ({
-        id: t.string({ required: true }),
-        workOrderNumber: t.string({ required: false }),
-        imageKeys: t.stringList({ required: false }),
-        observations: t.string({ required: false }),
-        closedAt: t.field({ type: 'DateTime', required: false }),
-    }),
-});
-
 const ExpenseInputType = builder.inputType('ExpenseInput', {
     fields: (t) => ({
         amount: t.int({ required: true }),
         expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
         paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
         imageKey: t.string({ required: true }),
+    }),
+});
+
+const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
+    fields: (t) => ({
+        id: t.string({ required: true }),
+        workOrderNumber: t.string({ required: false }),
+        imageKeys: t.stringList({ required: false }),
+        expenseIdsToDelete: t.stringList({ required: false }),
+        imageIdsToDelete: t.stringList({ required: false }),
+        observations: t.string({ required: false }),
+        closedAt: t.field({ type: 'DateTime', required: false }),
+        expenses: t.field({ type: [ExpenseInputType], required: false }),
     }),
 });
 
@@ -346,7 +349,16 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, { user }) => {
             try {
                 const {
-                    input: { id, workOrderNumber, imageKeys, observations, closedAt },
+                    input: {
+                        id,
+                        workOrderNumber,
+                        imageKeys,
+                        observations,
+                        closedAt,
+                        expenses,
+                        expenseIdsToDelete,
+                        imageIdsToDelete,
+                    },
                 } = args;
 
                 const foundTask = await prisma.task.findUniqueUndeleted({
@@ -361,6 +373,7 @@ builder.mutationFields((t) => ({
                         workOrderNumber: true,
                         imagesIDs: true,
                         observations: true,
+                        images: true,
                     },
                 });
                 if (!foundTask) {
@@ -376,7 +389,32 @@ builder.mutationFields((t) => ({
                         success: false,
                     };
                 }
-
+                if (expenseIdsToDelete) {
+                    for (const id of expenseIdsToDelete) {
+                        const expense = await prisma.expense.softDeleteOne({
+                            id,
+                        });
+                        if (!expense) {
+                            return {
+                                message: 'El gasto no existe',
+                                success: false,
+                            };
+                        }
+                        await prisma.image.softDeleteOne({
+                            id: expense.imageId,
+                        });
+                    }
+                }
+                const filteredImages = removeDeleted(foundTask.images);
+                if (imageIdsToDelete) {
+                    for (const id of imageIdsToDelete) {
+                        const image = filteredImages.find((img) => img.id === id);
+                        if (!image) {
+                            throw new Error('Image not found in the specified task');
+                        }
+                        await prisma.image.softDeleteOne({ id });
+                    }
+                }
                 const task = await prisma.task.update({
                     where: {
                         id,
@@ -391,10 +429,35 @@ builder.mutationFields((t) => ({
                         images: {
                             create: imageKeys
                                 ? await Promise.all(
-                                      imageKeys.map(async (key) => ({
-                                          ...(await createImageSignedUrlAsync(key)),
-                                          key,
-                                      })),
+                                      imageKeys.map(async (key) => {
+                                          return {
+                                              ...(await createImageSignedUrlAsync(key)),
+                                              key,
+                                          };
+                                      }),
+                                  )
+                                : [],
+                        },
+                        expenses: {
+                            create: expenses
+                                ? await Promise.all(
+                                      expenses.map(async (expenseData) => {
+                                          return {
+                                              amount: expenseData.amount,
+                                              expenseType: expenseData.expenseType,
+                                              paySource: expenseData.paySource,
+                                              status: ExpenseStatus.Enviado,
+                                              doneBy: { connect: { id: user.id } },
+                                              image: {
+                                                  create: {
+                                                      ...(await createImageSignedUrlAsync(
+                                                          expenseData.imageKey,
+                                                      )),
+                                                      key: expenseData.imageKey,
+                                                  },
+                                              },
+                                          };
+                                      }),
                                   )
                                 : [],
                         },
