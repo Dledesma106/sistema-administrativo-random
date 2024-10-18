@@ -52,7 +52,7 @@ const TaskInputPothosRef = builder.inputType('TaskInput', {
 const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
     fields: (t) => ({
         id: t.string({ required: true }),
-        workOrderNumber: t.string({ required: true }),
+        workOrderNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),
         observations: t.string({ required: false }),
         closedAt: t.field({ type: 'DateTime', required: false }),
@@ -360,6 +360,7 @@ builder.mutationFields((t) => ({
                         status: true,
                         workOrderNumber: true,
                         imagesIDs: true,
+                        observations: true,
                     },
                 });
                 if (!foundTask) {
@@ -381,11 +382,12 @@ builder.mutationFields((t) => ({
                         id,
                     },
                     data: {
-                        workOrderNumber:
-                            parseInt(workOrderNumber, 10) ?? foundTask.workOrderNumber,
+                        workOrderNumber: workOrderNumber
+                            ? parseInt(workOrderNumber, 10)
+                            : foundTask.workOrderNumber,
                         status: TaskStatus.Finalizada,
+                        observations: observations ?? foundTask.observations,
                         closedAt: closedAt,
-                        observations,
                         images: {
                             create: imageKeys
                                 ? await Promise.all(
