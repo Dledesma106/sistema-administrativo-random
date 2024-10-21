@@ -15,7 +15,7 @@ import {
     DeleteBranchMutationVariables,
 } from '@/api/graphql';
 import Modal from '@/components/Modal';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badges/badge';
 import useAlert from '@/context/alertContext/useAlert';
 import { getCleanErrorMessage } from '@/lib/utils';
 

@@ -6,7 +6,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { TasksTableRowActions } from './tasks-table-row-actions';
 
 import { TasksQuery } from '@/api/graphql';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badges/badge';
 import { routesBuilder } from '@/lib/routes';
 import { dmyDateString } from '@/lib/utils';
 

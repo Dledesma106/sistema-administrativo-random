@@ -6,11 +6,11 @@ import {
     Expense,
 } from '@prisma/client';
 
+import { deletePhoto } from 'backend/s3Client';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../builder';
 import { updateImageSignedUrlAsync } from '../utils';
-import { deletePhoto } from 'backend/s3Client';
 
 export const ExpenseTypePothosRef = builder.enumType('ExpenseType', {
     values: Object.fromEntries(

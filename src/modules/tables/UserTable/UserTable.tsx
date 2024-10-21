@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import UserItemActions from './Item';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badges/badge';
 import {
     Table,
     TableBody,

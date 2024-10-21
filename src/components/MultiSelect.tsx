@@ -2,7 +2,7 @@ import { Command as CommandPrimitive } from 'cmdk';
 import { X } from 'lucide-react';
 import * as React from 'react';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badges/badge';
 import { Command, CommandGroup, CommandItem } from '@/components/ui/command';
 
 type Option = Record<'value' | 'label', string>;
