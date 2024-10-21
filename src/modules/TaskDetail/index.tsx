@@ -11,7 +11,8 @@ import { useTaskByIdQuery } from './query';
 import { TaskByIdQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/Badges/badge';
+import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
+import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -23,8 +24,6 @@ import {
 } from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
 import { routesBuilder } from '@/lib/routes';
-import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
-import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 
 const Title = ({ children }: { children: React.ReactNode }) => (
     <h2 className="mb-2 text-sm font-bold">{children}</h2>
@@ -191,10 +190,14 @@ const Content: React.FC<Props> = ({ task }) => {
                                             </TableCell>
                                             <TableCell>${expense.amount}</TableCell>
                                             <TableCell>
-                                                <ExpenseTypeBadge type={expense.expenseType} />
+                                                <ExpenseTypeBadge
+                                                    type={expense.expenseType}
+                                                />
                                             </TableCell>
                                             <TableCell>
-                                                <ExpensePaySourceBadge paySource={expense.paySource} />
+                                                <ExpensePaySourceBadge
+                                                    paySource={expense.paySource}
+                                                />
                                             </TableCell>
                                             <TableCell>
                                                 {expense.doneBy?.fullName || '-'}

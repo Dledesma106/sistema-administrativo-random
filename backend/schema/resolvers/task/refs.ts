@@ -4,8 +4,8 @@ import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
-import { UserPothosRef } from '../users';
 import { ExpensePothosRef } from '../expense';
+import { UserPothosRef } from '../users';
 
 export const TaskTypePothosRef = builder.enumType('TaskType', {
     values: Object.fromEntries(

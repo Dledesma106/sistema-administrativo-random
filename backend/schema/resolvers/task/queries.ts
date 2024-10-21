@@ -3,8 +3,8 @@ import { TaskStatus } from '@prisma/client';
 import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
 import { builder } from 'backend/schema/builder';
-import { prisma } from 'lib/prisma';
 import { removeDeleted } from 'backend/schema/utils';
+import { prisma } from 'lib/prisma';
 
 builder.queryFields((t) => ({
     tasks: t.prismaField({
