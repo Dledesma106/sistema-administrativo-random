@@ -11,7 +11,7 @@ import { useTaskByIdQuery } from './query';
 import { TaskByIdQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badges/badge';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
 import { routesBuilder } from '@/lib/routes';
+import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
+import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 
 const Title = ({ children }: { children: React.ReactNode }) => (
     <h2 className="mb-2 text-sm font-bold">{children}</h2>
@@ -172,7 +174,8 @@ const Content: React.FC<Props> = ({ task }) => {
                                     <TableRow>
                                         <TableHead>Fecha</TableHead>
                                         <TableHead>Monto</TableHead>
-                                        <TableHead>Estado</TableHead>
+                                        <TableHead>Razón</TableHead>
+                                        <TableHead>Fuente de pago</TableHead>
                                         <TableHead>Realizado por</TableHead>
                                         <TableHead>Comprobante</TableHead>
                                         <TableHead></TableHead>
@@ -188,34 +191,10 @@ const Content: React.FC<Props> = ({ task }) => {
                                             </TableCell>
                                             <TableCell>${expense.amount}</TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="space-x-2"
-                                                >
-                                                    {expense.status ===
-                                                        ExpenseStatus.Rechazado && (
-                                                        <>
-                                                            <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                                                            <span>{expense.status}</span>
-                                                        </>
-                                                    )}
-
-                                                    {expense.status ===
-                                                        ExpenseStatus.Aprobado && (
-                                                        <>
-                                                            <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                                                            <span>{expense.status}</span>
-                                                        </>
-                                                    )}
-
-                                                    {expense.status ===
-                                                        ExpenseStatus.Enviado && (
-                                                        <>
-                                                            <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
-                                                            <span>{expense.status}</span>
-                                                        </>
-                                                    )}
-                                                </Badge>
+                                                <ExpenseTypeBadge type={expense.expenseType} />
+                                            </TableCell>
+                                            <TableCell>
+                                                <ExpensePaySourceBadge paySource={expense.paySource} />
                                             </TableCell>
                                             <TableCell>
                                                 {expense.doneBy?.fullName || '-'}

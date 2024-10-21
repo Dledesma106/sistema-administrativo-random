@@ -420,10 +420,14 @@ export const TaskType = {
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
 export type UpdateMyTaskInput = {
+    closedAt: InputMaybe<Scalars['DateTime']>;
+    expenseIdsToDelete: InputMaybe<Array<Scalars['String']>>;
+    expenses: InputMaybe<Array<ExpenseInput>>;
     id: Scalars['String'];
-    imageKeys: Array<Scalars['String']>;
+    imageIdsToDelete: InputMaybe<Array<Scalars['String']>>;
+    imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
-    workOrderNumber: Scalars['String'];
+    workOrderNumber: InputMaybe<Scalars['String']>;
 };
 
 export type User = {
@@ -681,6 +685,7 @@ export type TaskByIdQuery = {
             id: string;
             amount: number;
             paySource: ExpensePaySource;
+            expenseType: ExpenseType;
             createdAt: any;
             status: ExpenseStatus;
             image: {
@@ -2144,6 +2149,13 @@ export const TaskByIdDocument = {
                                                 name: {
                                                     kind: 'Name',
                                                     value: 'paySource',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseType',
                                                 },
                                             },
                                             {

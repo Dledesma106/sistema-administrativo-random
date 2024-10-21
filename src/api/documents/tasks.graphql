@@ -89,6 +89,7 @@ query taskById($id: String!) {
             id
             amount
             paySource
+            expenseType
             createdAt
             image {
                 id
