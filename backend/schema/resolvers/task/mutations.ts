@@ -12,6 +12,7 @@ import {
     ExpensePaySourcePothosRef,
     ExpenseCrudResultPothosRef,
     ExpenseStatusPothosRef,
+    ExpenseInputType,
 } from '../expense';
 
 const TaskInputPothosRef = builder.inputType('TaskInput', {
@@ -46,15 +47,6 @@ const TaskInputPothosRef = builder.inputType('TaskInput', {
             type: 'JSON',
             required: true,
         }),
-    }),
-});
-
-const ExpenseInputType = builder.inputType('ExpenseInput', {
-    fields: (t) => ({
-        amount: t.int({ required: true }),
-        expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
-        paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
-        imageKey: t.string({ required: true }),
     }),
 });
 
@@ -548,17 +540,20 @@ builder.mutationFields((t) => ({
                         id: expenseId,
                     },
                     select: {
-                        task: {
-                            select: {
-                                status: true,
-                            },
-                        },
+                        task: true,
                     },
                 });
 
                 if (!foundExpense) {
                     return {
                         message: 'El gasto no existe',
+                        success: false,
+                    };
+                }
+
+                if (!foundExpense.task) {
+                    return {
+                        message: 'El gasto no pertenece a ninguna tarea',
                         success: false,
                     };
                 }
@@ -585,7 +580,7 @@ builder.mutationFields((t) => ({
 
                 return {
                     success: true,
-                    task: expense.task,
+                    task: foundExpense.task,
                 };
             } catch (error) {
                 return {

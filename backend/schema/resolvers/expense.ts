@@ -6,7 +6,7 @@ import {
     Expense,
 } from '@prisma/client';
 
-import { deletePhoto } from 'backend/s3Client';
+import { createImageSignedUrlAsync, deletePhoto } from 'backend/s3Client';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../builder';
@@ -28,6 +28,15 @@ export const ExpensePaySourcePothosRef = builder.enumType('ExpensePaySource', {
     values: Object.fromEntries(
         Object.entries(ExpensePaySource).map(([name, value]) => [name, { value }]),
     ),
+});
+
+export const ExpenseInputType = builder.inputType('ExpenseInput', {
+    fields: (t) => ({
+        amount: t.int({ required: true }),
+        expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
+        paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
+        imageKey: t.string({ required: true }),
+    }),
 });
 
 export const ExpensePothosRef = builder.prismaObject('Expense', {
@@ -110,6 +119,10 @@ builder.queryFields((t) => ({
                 return null;
             }
 
+            if (!expense.taskId) {
+                return null;
+            }
+
             const taskExists = await prisma.task.exists({
                 id: expense.taskId,
                 deleted: false,
@@ -177,6 +190,49 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 return {
                     message: 'Error al eliminar el gasto',
+                    success: false,
+                };
+            }
+        },
+    }),
+    createExpense: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            expenseData: t.arg({ type: ExpenseInputType, required: true }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsTecnico'],
+                },
+            ],
+        },
+        resolve: async (_parent, { expenseData }, _context) => {
+            try {
+                const newExpense = await prisma.expense.create({
+                    data: {
+                        amount: expenseData.amount,
+                        expenseType: expenseData.expenseType,
+                        paySource: expenseData.paySource,
+                        status: ExpenseStatus.Enviado,
+                        doneBy: { connect: { id: _context.user.id } },
+                        image: {
+                            create: {
+                                ...(await createImageSignedUrlAsync(
+                                    expenseData.imageKey,
+                                )),
+                                key: expenseData.imageKey,
+                            },
+                        },
+                    },
+                });
+                return {
+                    success: true,
+                    expense: newExpense,
+                };
+            } catch (error) {
+                return {
                     success: false,
                 };
             }
