@@ -1,98 +1,13 @@
 import { ExpenseStatus, Task, TaskStatus } from '@prisma/client';
 
-import { TaskPothosRef, TaskStatusPothosRef, TaskTypePothosRef } from './refs';
+import { TaskCrudResultPothosRef, TaskInputPothosRef, UpdateMyTaskInput } from './refs';
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
-import {
-    ExpenseTypePothosRef,
-    ExpensePaySourcePothosRef,
-    ExpenseCrudResultPothosRef,
-    ExpenseStatusPothosRef,
-} from '../expense';
-
-const TaskInputPothosRef = builder.inputType('TaskInput', {
-    fields: (t) => ({
-        description: t.string({
-            required: true,
-        }),
-        status: t.field({
-            type: TaskStatusPothosRef,
-            required: true,
-        }),
-        taskType: t.field({
-            type: TaskTypePothosRef,
-            required: true,
-        }),
-        workOrderNumber: t.int({
-            required: false,
-        }),
-        branch: t.string({
-            required: true,
-        }),
-        business: t.string({
-            required: true,
-        }),
-        auditor: t.string({
-            required: false,
-        }),
-        assigned: t.stringList({
-            required: true,
-        }),
-        metadata: t.field({
-            type: 'JSON',
-            required: true,
-        }),
-    }),
-});
-
-const ExpenseInputType = builder.inputType('ExpenseInput', {
-    fields: (t) => ({
-        amount: t.int({ required: true }),
-        expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
-        paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
-        imageKey: t.string({ required: true }),
-    }),
-});
-
-const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
-    fields: (t) => ({
-        id: t.string({ required: true }),
-        workOrderNumber: t.string({ required: false }),
-        imageKeys: t.stringList({ required: false }),
-        expenseIdsToDelete: t.stringList({ required: false }),
-        imageIdsToDelete: t.stringList({ required: false }),
-        observations: t.string({ required: false }),
-        closedAt: t.field({ type: 'DateTime', required: false }),
-        expenses: t.field({ type: [ExpenseInputType], required: false }),
-    }),
-});
-
-const TaskCrudResultPothosRef = builder
-    .objectRef<{
-        success: boolean;
-        message?: string;
-        task?: Task;
-    }>('TaskCrudResult')
-    .implement({
-        fields: (t) => ({
-            success: t.boolean({
-                resolve: (result) => result.success,
-            }),
-            task: t.field({
-                type: TaskPothosRef,
-                nullable: true,
-                resolve: (result) => result.task,
-            }),
-            message: t.string({
-                nullable: true,
-                resolve: (result) => result.message,
-            }),
-        }),
-    });
+import { ExpenseStatusPothosRef } from '../expense/refs';
 
 builder.mutationFields((t) => ({
     createTask: t.field({
@@ -271,6 +186,25 @@ builder.mutationFields((t) => ({
                     };
                 }
 
+                const expensesToDelete = await prisma.expense.findManyUndeleted({
+                    where: {
+                        taskId: id,
+                    },
+                });
+
+                for (const expense of expensesToDelete) {
+                    const expenseToDelete = await prisma.expense.softDeleteOne({
+                        id: expense.id,
+                    });
+                    await prisma.image.softDeleteOne({ id: expenseToDelete.imageId });
+                }
+
+                const imagesToDelete = task.imagesIDs;
+
+                for (const imageId of imagesToDelete) {
+                    await prisma.image.softDeleteOne({ id: imageId });
+                }
+
                 return {
                     success: true,
                     task,
@@ -278,51 +212,6 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 return {
                     message: 'Error al eliminar la tarea',
-                    success: false,
-                };
-            }
-        },
-    }),
-    createExpenseOnTask: t.field({
-        type: ExpenseCrudResultPothosRef,
-        args: {
-            taskId: t.arg.string({ required: true }),
-            expenseData: t.arg({ type: ExpenseInputType, required: true }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                {
-                    or: ['IsTecnico'],
-                },
-            ],
-        },
-        resolve: async (_parent, { taskId, expenseData }, _context) => {
-            try {
-                const newExpense = await prisma.expense.create({
-                    data: {
-                        amount: expenseData.amount,
-                        expenseType: expenseData.expenseType,
-                        paySource: expenseData.paySource,
-                        status: ExpenseStatus.Enviado,
-                        doneBy: { connect: { id: _context.user.id } },
-                        task: { connect: { id: taskId } },
-                        image: {
-                            create: {
-                                ...(await createImageSignedUrlAsync(
-                                    expenseData.imageKey,
-                                )),
-                                key: expenseData.imageKey,
-                            },
-                        },
-                    },
-                });
-                return {
-                    success: true,
-                    expense: newExpense,
-                };
-            } catch (error) {
-                return {
                     success: false,
                 };
             }
@@ -548,17 +437,20 @@ builder.mutationFields((t) => ({
                         id: expenseId,
                     },
                     select: {
-                        task: {
-                            select: {
-                                status: true,
-                            },
-                        },
+                        task: true,
                     },
                 });
 
                 if (!foundExpense) {
                     return {
                         message: 'El gasto no existe',
+                        success: false,
+                    };
+                }
+
+                if (!foundExpense.task) {
+                    return {
+                        message: 'El gasto no pertenece a ninguna tarea',
                         success: false,
                     };
                 }
@@ -585,7 +477,7 @@ builder.mutationFields((t) => ({
 
                 return {
                     success: true,
-                    task: expense.task,
+                    task: foundExpense.task,
                 };
             } catch (error) {
                 return {

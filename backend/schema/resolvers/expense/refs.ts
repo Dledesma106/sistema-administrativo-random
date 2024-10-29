@@ -6,11 +6,10 @@ import {
     Expense,
 } from '@prisma/client';
 
-import { deletePhoto } from 'backend/s3Client';
 import { prisma } from 'lib/prisma';
 
-import { builder } from '../builder';
-import { updateImageSignedUrlAsync } from '../utils';
+import { builder } from '../../builder';
+import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 
 export const ExpenseTypePothosRef = builder.enumType('ExpenseType', {
     values: Object.fromEntries(
@@ -28,6 +27,15 @@ export const ExpensePaySourcePothosRef = builder.enumType('ExpensePaySource', {
     values: Object.fromEntries(
         Object.entries(ExpensePaySource).map(([name, value]) => [name, { value }]),
     ),
+});
+
+export const ExpenseInputType = builder.inputType('ExpenseInput', {
+    fields: (t) => ({
+        amount: t.int({ required: true }),
+        expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
+        paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
+        imageKey: t.string({ required: true }),
+    }),
 });
 
 export const ExpensePothosRef = builder.prismaObject('Expense', {
@@ -78,111 +86,9 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             },
         }),
         doneBy: t.relation('doneBy'),
+        task: t.relation('task'),
     }),
 });
-
-builder.queryFields((t) => ({
-    myAssignedTaskExpenseById: t.prismaField({
-        type: 'Expense',
-        nullable: true,
-        args: {
-            id: t.arg.string({
-                required: true,
-            }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                {
-                    or: ['IsTecnico'],
-                },
-            ],
-        },
-        resolve: async (query, parent, args, { user }) => {
-            const expense = await prisma.expense.findUniqueUndeleted({
-                ...query,
-                where: {
-                    id: args.id,
-                },
-            });
-
-            if (!expense) {
-                return null;
-            }
-
-            const taskExists = await prisma.task.exists({
-                id: expense.taskId,
-                deleted: false,
-                assignedIDs: {
-                    has: user.id,
-                },
-            });
-            if (!taskExists) {
-                return null;
-            }
-
-            return expense;
-        },
-    }),
-}));
-
-builder.mutationFields((t) => ({
-    deleteExpense: t.field({
-        type: ExpenseCrudResultPothosRef,
-        args: {
-            id: t.arg.string({
-                required: true,
-            }),
-            taskId: t.arg.string({
-                required: true,
-            }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                {
-                    or: ['IsTecnico', 'IsAdministrativoTecnico', 'IsAuditor'],
-                },
-            ],
-        },
-        resolve: async (root, args, _context, _info) => {
-            try {
-                const { id } = args;
-
-                const expense = await prisma.expense.softDeleteOne({
-                    id,
-                });
-
-                if (!expense) {
-                    return {
-                        message: 'El gasto no existe',
-                        success: false,
-                    };
-                }
-                const image = await prisma.image.softDeleteOne({
-                    id: expense.imageId,
-                });
-
-                if (!image) {
-                    return {
-                        message: 'El gasto no poseia una foto',
-                        success: false,
-                    };
-                }
-
-                return {
-                    success: true,
-                    expense,
-                };
-            } catch (error) {
-                return {
-                    message: 'Error al eliminar el gasto',
-                    success: false,
-                };
-            }
-        },
-    }),
-}));
 
 export const ExpenseCrudResultPothosRef = builder
     .objectRef<{

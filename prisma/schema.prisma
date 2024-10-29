@@ -138,8 +138,8 @@ model Expense {
   paySource   ExpensePaySource
   status      ExpenseStatus
 
-  taskId String @map("task") @db.ObjectId
-  task   Task   @relation(fields: [taskId], references: [id])
+  taskId String? @map("task") @db.ObjectId
+  task   Task?   @relation(fields: [taskId], references: [id])
 
   doneById String @map("doneBy") @db.ObjectId
   doneBy   User   @relation("expensesMade", fields: [doneById], references: [id])
