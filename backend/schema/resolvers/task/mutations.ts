@@ -1,6 +1,11 @@
 import { ExpenseStatus, Task, TaskStatus } from '@prisma/client';
 
-import { TaskCrudResultPothosRef, TaskInputPothosRef, UpdateMyTaskInput } from './refs';
+import {
+    TaskCrudResultPothosRef,
+    TaskInputPothosRef,
+    UpdateMyTaskInput,
+    MyTaskInputPothosRef,
+} from './refs';
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
@@ -24,7 +29,7 @@ builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoTecnico', 'IsTecnico'],
+                    or: ['IsAdministrativoTecnico'],
                 },
             ],
         },
@@ -44,6 +49,65 @@ builder.mutationFields((t) => ({
                             set: input.assigned,
                         },
                         metadata: input.metadata,
+                    },
+                });
+                return {
+                    success: true,
+                    task,
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                };
+            }
+        },
+    }),
+    createMyTask: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            input: t.arg({
+                type: MyTaskInputPothosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsTecnico'],
+                },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const {
+                    input: {
+                        workOrderNumber,
+                        auditor,
+                        branch,
+                        business,
+                        description,
+                        status,
+                        taskType,
+                        assigned,
+                    },
+                } = args;
+                const task = await prisma.task.create({
+                    data: {
+                        workOrderNumber: Number(workOrderNumber),
+                        auditorId: auditor,
+                        branchId: branch,
+                        businessId: business,
+                        description: description,
+                        status: status,
+                        taskType: taskType,
+                        ...(assigned && {
+                            assignedIDs: {
+                                set: assigned,
+                            },
+                        }),
                     },
                 });
                 return {
