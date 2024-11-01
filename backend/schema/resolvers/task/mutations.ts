@@ -89,7 +89,10 @@ builder.mutationFields((t) => ({
                         branch,
                         business,
                         description,
-                        status,
+                        observations,
+                        closedAt,
+                        imageKeys,
+                        expenses,
                         taskType,
                         assigned,
                     },
@@ -100,14 +103,53 @@ builder.mutationFields((t) => ({
                         auditorId: auditor,
                         branchId: branch,
                         businessId: business,
-                        description: description,
-                        status: status,
+                        description,
+                        observations,
+                        status: TaskStatus.Finalizada,
                         taskType: taskType,
                         ...(assigned && {
                             assignedIDs: {
                                 set: assigned,
                             },
                         }),
+                        closedAt: closedAt,
+                        images: {
+                            create: imageKeys
+                                ? await Promise.all(
+                                      imageKeys.map(async (key) => {
+                                          return {
+                                              ...(await createImageSignedUrlAsync(key)),
+                                              key,
+                                          };
+                                      }),
+                                  )
+                                : [],
+                        },
+                        expenses: {
+                            create: expenses
+                                ? await Promise.all(
+                                      expenses.map(async (expenseData) => {
+                                          return {
+                                              amount: expenseData.amount,
+                                              expenseType: expenseData.expenseType,
+                                              paySource: expenseData.paySource,
+                                              status: ExpenseStatus.Enviado,
+                                              doneBy: {
+                                                  connect: { id: _context.user.id },
+                                              },
+                                              image: {
+                                                  create: {
+                                                      ...(await createImageSignedUrlAsync(
+                                                          expenseData.imageKey,
+                                                      )),
+                                                      key: expenseData.imageKey,
+                                                  },
+                                              },
+                                          };
+                                      }),
+                                  )
+                                : [],
+                        },
                     },
                 });
                 return {
