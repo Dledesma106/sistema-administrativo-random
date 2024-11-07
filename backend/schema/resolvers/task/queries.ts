@@ -1,4 +1,4 @@
-import { TaskStatus } from '@prisma/client';
+import { TaskStatus, TaskType } from '@prisma/client';
 
 import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
@@ -135,6 +135,12 @@ builder.queryFields((t) => ({
                     },
                 },
             });
+        },
+    }),
+    taskTypes: t.field({
+        type: [TaskTypePothosRef],
+        resolve: () => {
+            return Object.values(TaskType);
         },
     }),
 }));
