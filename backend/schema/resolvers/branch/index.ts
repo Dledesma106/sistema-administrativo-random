@@ -13,14 +13,10 @@ export const BranchPothosRef = builder.prismaObject('Branch', {
         city: t.relation('city'),
         businesses: t.prismaField({
             type: ['Business'],
-            resolve: async (query, root) => {
+            resolve: async (query, parent, args) => {
                 return prisma.business.findManyUndeleted({
+                    where: { id: { in: parent.businessesIDs}},
                     ...query,
-                    where: {
-                        id: {
-                            in: root.businessesIDs,
-                        },
-                    },
                 });
             },
         }),
@@ -195,7 +191,7 @@ builder.queryFields((t) => ({
             return prisma.branch.findManyUndeleted(query);
         },
     }),
-    branchesOfClient: t.prismaField({
+    clientBranches: t.prismaField({
         type: [BranchPothosRef],
         args: {
             clientId: t.arg.string({

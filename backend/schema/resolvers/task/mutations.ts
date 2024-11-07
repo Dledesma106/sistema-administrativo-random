@@ -1,6 +1,11 @@
 import { ExpenseStatus, TaskStatus } from '@prisma/client';
 
-import { TaskCrudResultPothosRef, TaskInputPothosRef, UpdateMyTaskInput } from './refs';
+import {
+    TaskCrudResultPothosRef,
+    TaskInputPothosRef,
+    UpdateMyTaskInput,
+    MyTaskInputPothosRef,
+} from './refs';
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
@@ -24,7 +29,7 @@ builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoTecnico', 'IsTecnico'],
+                    or: ['IsAdministrativoTecnico'],
                 },
             ],
         },
@@ -44,6 +49,106 @@ builder.mutationFields((t) => ({
                             set: input.assigned,
                         },
                         movitecTicket: input.movitecTicket,
+                    },
+                });
+                return {
+                    success: true,
+                    task,
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                };
+            }
+        },
+    }),
+    createMyTask: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            input: t.arg({
+                type: MyTaskInputPothosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsTecnico'],
+                },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const {
+                    input: {
+                        workOrderNumber,
+
+                        branch,
+                        business,
+
+                        observations,
+                        closedAt,
+                        imageKeys,
+                        expenses,
+                        taskType,
+                        assigned,
+                    },
+                } = args;
+                const task = await prisma.task.create({
+                    data: {
+                        workOrderNumber: Number(workOrderNumber),
+                        branchId: branch,
+                        businessId: business,
+                        description: 'Tarea de emergencia',
+                        observations,
+                        status: TaskStatus.Finalizada,
+                        taskType: taskType,
+                        ...(assigned && {
+                            assignedIDs: {
+                                set: assigned,
+                            },
+                        }),
+                        closedAt: closedAt,
+                        images: {
+                            create: imageKeys
+                                ? await Promise.all(
+                                      imageKeys.map(async (key) => {
+                                          return {
+                                              ...(await createImageSignedUrlAsync(key)),
+                                              key,
+                                          };
+                                      }),
+                                  )
+                                : [],
+                        },
+                        expenses: {
+                            create: expenses
+                                ? await Promise.all(
+                                      expenses.map(async (expenseData) => {
+                                          return {
+                                              amount: expenseData.amount,
+                                              expenseType: expenseData.expenseType,
+                                              paySource: expenseData.paySource,
+                                              status: ExpenseStatus.Enviado,
+                                              doneBy: {
+                                                  connect: { id: _context.user.id },
+                                              },
+                                              image: {
+                                                  create: {
+                                                      ...(await createImageSignedUrlAsync(
+                                                          expenseData.imageKey,
+                                                      )),
+                                                      key: expenseData.imageKey,
+                                                  },
+                                              },
+                                          };
+                                      }),
+                                  )
+                                : [],
+                        },
                     },
                 });
                 return {
