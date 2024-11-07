@@ -3,7 +3,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { PreventivesTableRowActions } from './preventives-table-row-actions';
 
 import { PreventivesTableQuery } from '@/api/graphql';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badges/badge';
 import { dmyDateString } from '@/lib/utils';
 
 type Preventive = PreventivesTableQuery['preventives'][0];

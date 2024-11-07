@@ -4,8 +4,8 @@ import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
+import { ExpenseInputType, ExpensePothosRef } from '../expense/refs';
 import { UserPothosRef } from '../users';
-import { ExpensePothosRef } from '../expense';
 
 export const TaskTypePothosRef = builder.enumType('TaskType', {
     values: Object.fromEntries(
@@ -105,3 +105,74 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         }),
     }),
 });
+
+export const TaskInputPothosRef = builder.inputType('TaskInput', {
+    fields: (t) => ({
+        description: t.string({
+            required: true,
+        }),
+        status: t.field({
+            type: TaskStatusPothosRef,
+            required: true,
+        }),
+        taskType: t.field({
+            type: TaskTypePothosRef,
+            required: true,
+        }),
+        workOrderNumber: t.int({
+            required: false,
+        }),
+        branch: t.string({
+            required: true,
+        }),
+        business: t.string({
+            required: true,
+        }),
+        auditor: t.string({
+            required: false,
+        }),
+        assigned: t.stringList({
+            required: true,
+        }),
+        metadata: t.field({
+            type: 'JSON',
+            required: true,
+        }),
+    }),
+});
+
+export const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
+    fields: (t) => ({
+        id: t.string({ required: true }),
+        workOrderNumber: t.string({ required: false }),
+        imageKeys: t.stringList({ required: false }),
+        expenseIdsToDelete: t.stringList({ required: false }),
+        imageIdsToDelete: t.stringList({ required: false }),
+        observations: t.string({ required: false }),
+        closedAt: t.field({ type: 'DateTime', required: false }),
+        expenses: t.field({ type: [ExpenseInputType], required: false }),
+    }),
+});
+
+export const TaskCrudResultPothosRef = builder
+    .objectRef<{
+        success: boolean;
+        message?: string;
+        task?: Task;
+    }>('TaskCrudResult')
+    .implement({
+        fields: (t) => ({
+            success: t.boolean({
+                resolve: (result) => result.success,
+            }),
+            task: t.field({
+                type: TaskPothosRef,
+                nullable: true,
+                resolve: (result) => result.task,
+            }),
+            message: t.string({
+                nullable: true,
+                resolve: (result) => result.message,
+            }),
+        }),
+    });

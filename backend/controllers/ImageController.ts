@@ -9,8 +9,8 @@ import dbConnect from '@/lib/dbConnect';
 import ExpenseModel, { Expense } from 'backend/models/Expense';
 import ImageModel from 'backend/models/Image';
 import TaskModel, { type Task } from 'backend/models/Task';
-import { prisma } from 'lib/prisma';
 import { createImageSignedUrlAsync } from 'backend/s3Client';
+import { prisma } from 'lib/prisma';
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME ?? '';
 
