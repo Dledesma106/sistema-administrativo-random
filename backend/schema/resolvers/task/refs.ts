@@ -143,11 +143,9 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
 
 export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
     fields: (t) => ({
-        description: t.string({ required: true }),
         taskType: t.field({ type: TaskTypePothosRef, required: true }),
         branch: t.string({ required: true }),
         business: t.string({ required: true }),
-        auditor: t.string({ required: false }),
         assigned: t.stringList({ required: false }),
         workOrderNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),

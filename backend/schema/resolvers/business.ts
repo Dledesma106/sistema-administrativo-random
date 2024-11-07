@@ -11,7 +11,7 @@ builder.prismaObject('Business', {
 });
 
 builder.queryFields((t) => ({
-    businesses: t.prismaField({
+    branchBusinesses: t.prismaField({
         type: ['Business'],
         args: {
             branch: t.arg.string({

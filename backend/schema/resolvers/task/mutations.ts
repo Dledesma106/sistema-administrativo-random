@@ -85,10 +85,10 @@ builder.mutationFields((t) => ({
                 const {
                     input: {
                         workOrderNumber,
-                        auditor,
+
                         branch,
                         business,
-                        description,
+
                         observations,
                         closedAt,
                         imageKeys,
@@ -100,10 +100,9 @@ builder.mutationFields((t) => ({
                 const task = await prisma.task.create({
                     data: {
                         workOrderNumber: Number(workOrderNumber),
-                        auditorId: auditor,
                         branchId: branch,
                         businessId: business,
-                        description,
+                        description: 'Tarea de emergencia',
                         observations,
                         status: TaskStatus.Finalizada,
                         taskType: taskType,
