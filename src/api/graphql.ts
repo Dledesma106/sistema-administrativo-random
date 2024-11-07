@@ -79,12 +79,16 @@ export type Expense = {
     amount: Scalars['Int'];
     auditor: Maybe<User>;
     createdAt: Scalars['DateTime'];
-    doneBy: User;
+    doneBy: Scalars['String'];
     expenseType: ExpenseType;
     id: Scalars['ID'];
     image: Image;
+    observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
+    paySourceBank: ExpensePaySourceBank;
+    registeredBy: User;
     status: ExpenseStatus;
+    task: Task;
 };
 
 export type ExpenseCrudResult = {
@@ -96,17 +100,33 @@ export type ExpenseCrudResult = {
 
 export type ExpenseInput = {
     amount: Scalars['Int'];
+    doneBy: Scalars['String'];
     expenseType: ExpenseType;
     imageKey: Scalars['String'];
+    observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
+    paySourceBank: InputMaybe<ExpensePaySourceBank>;
 };
 
 export const ExpensePaySource = {
+    Credito: 'Credito',
+    Debito: 'Debito',
+    Otro: 'Otro',
     Reintegro: 'Reintegro',
-    Tarjeta: 'Tarjeta',
+    Transferencia: 'Transferencia',
 } as const;
 
 export type ExpensePaySource = (typeof ExpensePaySource)[keyof typeof ExpensePaySource];
+export const ExpensePaySourceBank = {
+    Bbva: 'BBVA',
+    Chubut: 'Chubut',
+    Nacion: 'Nacion',
+    Otro: 'Otro',
+    Santander: 'Santander',
+} as const;
+
+export type ExpensePaySourceBank =
+    (typeof ExpensePaySourceBank)[keyof typeof ExpensePaySourceBank];
 export const ExpenseStatus = {
     Aprobado: 'Aprobado',
     Enviado: 'Enviado',
@@ -120,6 +140,7 @@ export const ExpenseType = {
     Herramienta: 'Herramienta',
     Hospedaje: 'Hospedaje',
     Insumos: 'Insumos',
+    Otro: 'Otro',
 } as const;
 
 export type ExpenseType = (typeof ExpenseType)[keyof typeof ExpenseType];
@@ -144,7 +165,7 @@ export type Mutation = {
     __typename?: 'Mutation';
     createBranch: BranchCrudResult;
     createCity: CityCrudResult;
-    createExpenseOnTask: ExpenseCrudResult;
+    createExpense: ExpenseCrudResult;
     createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
     createUser: UserCrudPothosRef;
@@ -173,9 +194,9 @@ export type MutationCreateCityArgs = {
     input: CityInput;
 };
 
-export type MutationCreateExpenseOnTaskArgs = {
+export type MutationCreateExpenseArgs = {
     expenseData: ExpenseInput;
-    taskId: Scalars['String'];
+    taskId: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreatePreventiveArgs = {
@@ -314,8 +335,9 @@ export type Query = {
     cities: Array<City>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
-    myAssignedTaskExpenseById: Maybe<Expense>;
     myAssignedTasks: Array<Task>;
+    myExpenseById: Maybe<Expense>;
+    myExpenses: Maybe<Array<Expense>>;
     preventives: Array<Preventive>;
     provinces: Array<Province>;
     taskById: Maybe<Task>;
@@ -338,7 +360,7 @@ export type QueryMyAssignedTaskByIdArgs = {
     id: Scalars['String'];
 };
 
-export type QueryMyAssignedTaskExpenseByIdArgs = {
+export type QueryMyExpenseByIdArgs = {
     id: Scalars['String'];
 };
 
@@ -376,7 +398,7 @@ export type Task = {
     id: Scalars['ID'];
     images: Array<Image>;
     imagesIDs: Array<Scalars['String']>;
-    metadata: Scalars['JSON'];
+    movitecTicket: Maybe<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
@@ -396,7 +418,7 @@ export type TaskInput = {
     branch: Scalars['String'];
     business: Scalars['String'];
     description: Scalars['String'];
-    metadata: Scalars['JSON'];
+    movitecTicket: InputMaybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
     workOrderNumber: InputMaybe<Scalars['Int']>;
@@ -659,7 +681,7 @@ export type TaskByIdQuery = {
         observations: string | null;
         taskType: TaskType;
         status: TaskStatus;
-        metadata: any;
+        movitecTicket: string | null;
         business: { __typename?: 'Business'; id: string; name: string };
         images: Array<{ __typename?: 'Image'; id: string; url: string }>;
         branch: {
@@ -685,9 +707,11 @@ export type TaskByIdQuery = {
             id: string;
             amount: number;
             paySource: ExpensePaySource;
+            paySourceBank: ExpensePaySourceBank;
             expenseType: ExpenseType;
             createdAt: any;
             status: ExpenseStatus;
+            doneBy: string;
             image: {
                 __typename?: 'Image';
                 id: string;
@@ -695,7 +719,12 @@ export type TaskByIdQuery = {
                 urlExpire: any | null;
                 key: string;
             };
-            doneBy: { __typename?: 'User'; id: string; email: string; fullName: string };
+            registeredBy: {
+                __typename?: 'User';
+                id: string;
+                email: string;
+                fullName: string;
+            };
         }>;
     } | null;
 };
@@ -2155,6 +2184,13 @@ export const TaskByIdDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
+                                                    value: 'paySourceBank',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
                                                     value: 'expenseType',
                                                 },
                                             },
@@ -2208,7 +2244,10 @@ export const TaskByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'doneBy' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'registeredBy',
+                                                },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
@@ -2236,6 +2275,10 @@ export const TaskByIdDocument = {
                                                     ],
                                                 },
                                             },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'doneBy' },
+                                            },
                                         ],
                                     },
                                 },
@@ -2249,7 +2292,7 @@ export const TaskByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'metadata' },
+                                    name: { kind: 'Name', value: 'movitecTicket' },
                                 },
                             ],
                         },

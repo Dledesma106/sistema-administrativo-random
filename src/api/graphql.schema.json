@@ -567,8 +567,8 @@
                             "kind": "NON_NULL",
                             "name": null,
                             "ofType": {
-                                "kind": "OBJECT",
-                                "name": "User",
+                                "kind": "SCALAR",
+                                "name": "String",
                                 "ofType": null
                             }
                         },
@@ -624,6 +624,18 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "observations",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "paySource",
                         "description": null,
                         "args": [],
@@ -640,6 +652,38 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "paySourceBank",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "ENUM",
+                                "name": "ExpensePaySourceBank",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "registeredBy",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "OBJECT",
+                                "name": "User",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "status",
                         "description": null,
                         "args": [],
@@ -649,6 +693,22 @@
                             "ofType": {
                                 "kind": "ENUM",
                                 "name": "ExpenseStatus",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "task",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "OBJECT",
+                                "name": "Task",
                                 "ofType": null
                             }
                         },
@@ -735,6 +795,22 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "doneBy",
+                        "description": null,
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "String",
+                                "ofType": null
+                            }
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "expenseType",
                         "description": null,
                         "type": {
@@ -767,6 +843,18 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "observations",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "paySource",
                         "description": null,
                         "type": {
@@ -777,6 +865,18 @@
                                 "name": "ExpensePaySource",
                                 "ofType": null
                             }
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "paySourceBank",
+                        "description": null,
+                        "type": {
+                            "kind": "ENUM",
+                            "name": "ExpensePaySourceBank",
+                            "ofType": null
                         },
                         "defaultValue": null,
                         "isDeprecated": false,
@@ -796,13 +896,72 @@
                 "interfaces": null,
                 "enumValues": [
                     {
+                        "name": "Credito",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Debito",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Otro",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "Reintegro",
                         "description": null,
                         "isDeprecated": false,
                         "deprecationReason": null
                     },
                     {
-                        "name": "Tarjeta",
+                        "name": "Transferencia",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ],
+                "possibleTypes": null
+            },
+            {
+                "kind": "ENUM",
+                "name": "ExpensePaySourceBank",
+                "description": null,
+                "fields": null,
+                "inputFields": null,
+                "interfaces": null,
+                "enumValues": [
+                    {
+                        "name": "BBVA",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Chubut",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Nacion",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Otro",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Santander",
                         "description": null,
                         "isDeprecated": false,
                         "deprecationReason": null
@@ -873,6 +1032,12 @@
                     },
                     {
                         "name": "Insumos",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Otro",
                         "description": null,
                         "isDeprecated": false,
                         "deprecationReason": null
@@ -1138,7 +1303,7 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "createExpenseOnTask",
+                        "name": "createExpense",
                         "description": null,
                         "args": [
                             {
@@ -1161,13 +1326,9 @@
                                 "name": "taskId",
                                 "description": null,
                                 "type": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "SCALAR",
-                                        "name": "String",
-                                        "ofType": null
-                                    }
+                                    "kind": "SCALAR",
+                                    "name": "String",
+                                    "ofType": null
                                 },
                                 "defaultValue": null,
                                 "isDeprecated": false,
@@ -2650,7 +2811,31 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "myAssignedTaskExpenseById",
+                        "name": "myAssignedTasks",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "LIST",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "OBJECT",
+                                        "name": "Task",
+                                        "ofType": null
+                                    }
+                                }
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "myExpenseById",
                         "description": null,
                         "args": [
                             {
@@ -2679,23 +2864,19 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "myAssignedTasks",
+                        "name": "myExpenses",
                         "description": null,
                         "args": [],
                         "type": {
-                            "kind": "NON_NULL",
+                            "kind": "LIST",
                             "name": null,
                             "ofType": {
-                                "kind": "LIST",
+                                "kind": "NON_NULL",
                                 "name": null,
                                 "ofType": {
-                                    "kind": "NON_NULL",
-                                    "name": null,
-                                    "ofType": {
-                                        "kind": "OBJECT",
-                                        "name": "Task",
-                                        "ofType": null
-                                    }
+                                    "kind": "OBJECT",
+                                    "name": "Expense",
+                                    "ofType": null
                                 }
                             }
                         },
@@ -3165,17 +3346,13 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "metadata",
+                        "name": "movitecTicket",
                         "description": null,
                         "args": [],
                         "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "JSON",
-                                "ofType": null
-                            }
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
                         },
                         "isDeprecated": false,
                         "deprecationReason": null
@@ -3384,16 +3561,12 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "metadata",
+                        "name": "movitecTicket",
                         "description": null,
                         "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "JSON",
-                                "ofType": null
-                            }
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
                         },
                         "defaultValue": null,
                         "isDeprecated": false,

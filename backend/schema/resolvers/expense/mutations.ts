@@ -1,10 +1,10 @@
 import { ExpenseStatus } from '@prisma/client';
 
-import { prisma } from 'lib/prisma';
-
-import { builder } from 'backend/schema/builder';
 import { ExpenseCrudResultPothosRef, ExpenseInputType } from './refs';
+
 import { createImageSignedUrlAsync } from 'backend/s3Client';
+import { builder } from 'backend/schema/builder';
+import { prisma } from 'lib/prisma';
 
 export const ExpenseMutations = builder.mutationFields((t) => ({
     deleteExpense: t.field({
@@ -66,7 +66,10 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         type: ExpenseCrudResultPothosRef,
         args: {
             taskId: t.arg.string({ required: false }),
-            expenseData: t.arg({ type: ExpenseInputType, required: true }),
+            expenseData: t.arg({
+                type: ExpenseInputType,
+                required: true,
+            }),
         },
         authz: {
             compositeRules: [
@@ -83,8 +86,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         amount: expenseData.amount,
                         expenseType: expenseData.expenseType,
                         paySource: expenseData.paySource,
+                        doneBy: expenseData.doneBy,
+                        paySourceBank: expenseData.paySourceBank,
+                        observations: expenseData.observations,
                         status: ExpenseStatus.Enviado,
-                        doneBy: { connect: { id: _context.user.id } },
+                        registeredBy: { connect: { id: _context.user.id } },
                         ...(taskId && { task: { connect: { id: taskId } } }),
                         image: {
                             create: {

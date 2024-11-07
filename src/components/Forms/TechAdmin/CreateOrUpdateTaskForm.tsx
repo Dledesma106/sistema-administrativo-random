@@ -39,7 +39,7 @@ type FormValues = {
     taskType: TaskType;
     status: TaskStatus;
     workOrderNumber: number | null;
-    metadata: Record<string, any>;
+    movitecTicket: string;
 };
 
 type Props = {
@@ -113,7 +113,7 @@ const CreateOrUpdateTaskForm = ({
                     taskType: form.taskType,
                     workOrderNumber: form.workOrderNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
-                    metadata: form.metadata ?? '',
+                    movitecTicket: form.movitecTicket,
                 },
             });
         },
@@ -165,7 +165,7 @@ const CreateOrUpdateTaskForm = ({
                     taskType: form.taskType,
                     workOrderNumber: form.workOrderNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
-                    metadata: form.metadata,
+                    movitecTicket: form.movitecTicket,
                 },
             });
         },
@@ -416,7 +416,7 @@ const CreateOrUpdateTaskForm = ({
 
                     {selectedBusiness?.name === 'GIASA' && (
                         <FormField
-                            name="metadata.giasaTicketNumber"
+                            name="movitecTicket"
                             control={form.control}
                             render={({ field }) => {
                                 return (

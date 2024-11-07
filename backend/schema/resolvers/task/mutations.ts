@@ -1,4 +1,4 @@
-import { ExpenseStatus, Task, TaskStatus } from '@prisma/client';
+import { ExpenseStatus, TaskStatus } from '@prisma/client';
 
 import { TaskCrudResultPothosRef, TaskInputPothosRef, UpdateMyTaskInput } from './refs';
 
@@ -43,7 +43,7 @@ builder.mutationFields((t) => ({
                         assignedIDs: {
                             set: input.assigned,
                         },
-                        metadata: input.metadata,
+                        movitecTicket: input.movitecTicket,
                     },
                 });
                 return {
@@ -112,7 +112,7 @@ builder.mutationFields((t) => ({
                     assignedIDs: {
                         set: input.assigned,
                     },
-                    metadata: input.metadata,
+                    movitecTicket: input.movitecTicket,
                 };
 
                 if (foundTask.status === data.status) {
@@ -336,7 +336,10 @@ builder.mutationFields((t) => ({
                                               expenseType: expenseData.expenseType,
                                               paySource: expenseData.paySource,
                                               status: ExpenseStatus.Enviado,
-                                              doneBy: { connect: { id: user.id } },
+                                              doneBy: expenseData.doneBy,
+                                              paySourceBank: expenseData.paySourceBank,
+                                              observations: expenseData.observations,
+                                              registeredBy: { connect: { id: user.id } },
                                               image: {
                                                   create: {
                                                       ...(await createImageSignedUrlAsync(
@@ -381,7 +384,7 @@ builder.mutationFields((t) => ({
                 },
             ],
         },
-        resolve: async (root, { taskId, imageId }, { user }) => {
+        resolve: async (root, { taskId, imageId }) => {
             try {
                 // Verificar que la imagen pertenece a la tarea
                 const task = await prisma.task.findUniqueUndeleted({
@@ -401,7 +404,10 @@ builder.mutationFields((t) => ({
                 // Eliminar la imagen
                 await prisma.image.softDeleteOne({ id: imageId });
 
-                return { success: true, task };
+                return {
+                    success: true,
+                    task,
+                };
             } catch (error) {
                 console.error(error);
                 return { success: false };
@@ -463,7 +469,7 @@ builder.mutationFields((t) => ({
                     };
                 }
 
-                const expense = await prisma.expense.update({
+                await prisma.expense.update({
                     where: {
                         id: expenseId,
                     },

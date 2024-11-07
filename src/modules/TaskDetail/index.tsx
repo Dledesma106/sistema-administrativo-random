@@ -12,6 +12,7 @@ import { TaskByIdQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
+import ExpensePaySourceBankBadge from '@/components/ui/Badges/ExpensePaySourceBankBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
 import {
@@ -78,8 +79,8 @@ const Content: React.FC<Props> = ({ task }) => {
 
                 {task.business.name === 'GIASA' && (
                     <div>
-                        <Title>Número de Ticket GIASA</Title>
-                        <p className="mb-1">{task.metadata.giasaTicketNumber}</p>
+                        <Title>Número de Ticket Movitec</Title>
+                        <p className="mb-1">{task.movitecTicket}</p>
                     </div>
                 )}
 
@@ -175,6 +176,7 @@ const Content: React.FC<Props> = ({ task }) => {
                                         <TableHead>Monto</TableHead>
                                         <TableHead>Razón</TableHead>
                                         <TableHead>Fuente de pago</TableHead>
+                                        <TableHead>Banco Emisor Tarjeta</TableHead>
                                         <TableHead>Realizado por</TableHead>
                                         <TableHead>Comprobante</TableHead>
                                         <TableHead></TableHead>
@@ -200,8 +202,17 @@ const Content: React.FC<Props> = ({ task }) => {
                                                 />
                                             </TableCell>
                                             <TableCell>
-                                                {expense.doneBy?.fullName || '-'}
+                                                {expense.paySourceBank ? (
+                                                    <ExpensePaySourceBankBadge
+                                                        paySourceBank={
+                                                            expense.paySourceBank
+                                                        }
+                                                    />
+                                                ) : (
+                                                    '-'
+                                                )}
                                             </TableCell>
+                                            <TableCell>{expense.doneBy || '-'}</TableCell>
                                             <TableCell className="w-32">
                                                 <a
                                                     className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
