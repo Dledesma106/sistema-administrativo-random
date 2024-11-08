@@ -91,6 +91,7 @@ query taskById($id: String!) {
             paySource
             paySourceBank
             expenseType
+            observations
             createdAt
             image {
                 id
@@ -100,8 +101,6 @@ query taskById($id: String!) {
             }
             status
             registeredBy {
-                id
-                email
                 fullName
             }
             doneBy
