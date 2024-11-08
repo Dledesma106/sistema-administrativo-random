@@ -44,6 +44,18 @@ builder.queryFields((t) => ({
             return prisma.user.findManyUndeleted(query);
         },
     }),
+    technicians: t.prismaField({
+        type: ['User'],
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
+        resolve: async (query, _parent, _args, _info) => {
+            return prisma.user.findManyUndeleted({
+                where: { roles: { has: 'Tecnico' } },
+                ...query,
+            });
+        },
+    }),
 }));
 
 const LoginUserPothosRef = builder

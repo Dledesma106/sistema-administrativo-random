@@ -132,8 +132,10 @@ builder.mutationFields((t) => ({
                                               amount: expenseData.amount,
                                               expenseType: expenseData.expenseType,
                                               paySource: expenseData.paySource,
+                                              paySourceBank: expenseData.paySourceBank,
+                                              doneBy: expenseData.doneBy,
                                               status: ExpenseStatus.Enviado,
-                                              doneBy: {
+                                              registeredBy: {
                                                   connect: { id: _context.user.id },
                                               },
                                               image: {
