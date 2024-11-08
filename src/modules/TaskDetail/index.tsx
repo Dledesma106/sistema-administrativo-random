@@ -177,7 +177,9 @@ const Content: React.FC<Props> = ({ task }) => {
                                         <TableHead>Razón</TableHead>
                                         <TableHead>Fuente de pago</TableHead>
                                         <TableHead>Banco Emisor Tarjeta</TableHead>
-                                        <TableHead>Realizado por</TableHead>
+                                        <TableHead>Registrado por</TableHead>
+                                        <TableHead>Pagado por</TableHead>
+                                        <TableHead>Observaciones</TableHead>
                                         <TableHead>Comprobante</TableHead>
                                         <TableHead></TableHead>
                                     </TableRow>
@@ -212,7 +214,13 @@ const Content: React.FC<Props> = ({ task }) => {
                                                     '-'
                                                 )}
                                             </TableCell>
+                                            <TableCell>
+                                                {expense.registeredBy.fullName || '-'}
+                                            </TableCell>
                                             <TableCell>{expense.doneBy || '-'}</TableCell>
+                                            <TableCell>
+                                                {expense.observations || '-'}
+                                            </TableCell>
                                             <TableCell className="w-32">
                                                 <a
                                                     className="group relative inline-block overflow-hidden rounded-md border border-gray-200"

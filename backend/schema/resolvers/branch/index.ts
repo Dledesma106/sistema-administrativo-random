@@ -13,9 +13,9 @@ export const BranchPothosRef = builder.prismaObject('Branch', {
         city: t.relation('city'),
         businesses: t.prismaField({
             type: ['Business'],
-            resolve: async (query, parent, args) => {
+            resolve: async (query, parent) => {
                 return prisma.business.findManyUndeleted({
-                    where: { id: { in: parent.businessesIDs}},
+                    where: { id: { in: parent.businessesIDs } },
                     ...query,
                 });
             },

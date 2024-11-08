@@ -70,6 +70,7 @@ export type CityInput = {
 
 export type Client = {
     __typename?: 'Client';
+    branches: Array<Branch>;
     id: Scalars['ID'];
     name: Scalars['String'];
 };
@@ -166,6 +167,7 @@ export type Mutation = {
     createBranch: BranchCrudResult;
     createCity: CityCrudResult;
     createExpense: ExpenseCrudResult;
+    createMyTask: TaskCrudResult;
     createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
     createUser: UserCrudPothosRef;
@@ -197,6 +199,10 @@ export type MutationCreateCityArgs = {
 export type MutationCreateExpenseArgs = {
     expenseData: ExpenseInput;
     taskId: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCreateMyTaskArgs = {
+    input: MyTaskInput;
 };
 
 export type MutationCreatePreventiveArgs = {
@@ -280,6 +286,18 @@ export type MutationUpdateUserArgs = {
     input: UserInput;
 };
 
+export type MyTaskInput = {
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    branch: Scalars['String'];
+    business: Scalars['String'];
+    closedAt: InputMaybe<Scalars['DateTime']>;
+    expenses: InputMaybe<Array<ExpenseInput>>;
+    imageKeys: InputMaybe<Array<Scalars['String']>>;
+    observations: InputMaybe<Scalars['String']>;
+    taskType: TaskType;
+    workOrderNumber: InputMaybe<Scalars['String']>;
+};
+
 export type Preventive = {
     __typename?: 'Preventive';
     assigned: Array<User>;
@@ -329,10 +347,11 @@ export type Province = {
 
 export type Query = {
     __typename?: 'Query';
+    branchBusinesses: Array<Business>;
     branches: Array<Branch>;
-    branchesOfClient: Array<Branch>;
-    businesses: Array<Business>;
     cities: Array<City>;
+    clientBranches: Array<Branch>;
+    clients: Array<Client>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
     myAssignedTasks: Array<Task>;
@@ -341,19 +360,21 @@ export type Query = {
     preventives: Array<Preventive>;
     provinces: Array<Province>;
     taskById: Maybe<Task>;
+    taskTypes: Array<TaskType>;
     tasks: Array<Task>;
+    technicians: Array<User>;
     users: Array<User>;
 };
 
-export type QueryBranchesOfClientArgs = {
+export type QueryBranchBusinessesArgs = {
+    branch: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClientBranchesArgs = {
     businessId: InputMaybe<Scalars['String']>;
     cityId: InputMaybe<Scalars['String']>;
     clientId: Scalars['String'];
     provinceId: InputMaybe<Scalars['String']>;
-};
-
-export type QueryBusinessesArgs = {
-    branch: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMyAssignedTaskByIdArgs = {
@@ -709,6 +730,7 @@ export type TaskByIdQuery = {
             paySource: ExpensePaySource;
             paySourceBank: ExpensePaySourceBank;
             expenseType: ExpenseType;
+            observations: string | null;
             createdAt: any;
             status: ExpenseStatus;
             doneBy: string;
@@ -719,12 +741,7 @@ export type TaskByIdQuery = {
                 urlExpire: any | null;
                 key: string;
             };
-            registeredBy: {
-                __typename?: 'User';
-                id: string;
-                email: string;
-                fullName: string;
-            };
+            registeredBy: { __typename?: 'User'; fullName: string };
         }>;
     } | null;
 };
@@ -837,16 +854,16 @@ export type SendNewUserRandomPasswordMutation = {
     };
 };
 
-export type BranchesOfClientQueryVariables = Exact<{
+export type ClientBranchesQueryVariables = Exact<{
     clientId: Scalars['String'];
     cityId: InputMaybe<Scalars['String']>;
     businessId: InputMaybe<Scalars['String']>;
     provinceId: InputMaybe<Scalars['String']>;
 }>;
 
-export type BranchesOfClientQuery = {
+export type ClientBranchesQuery = {
     __typename?: 'Query';
-    branchesOfClient: Array<{
+    clientBranches: Array<{
         __typename?: 'Branch';
         id: string;
         number: number;
@@ -2198,6 +2215,13 @@ export const TaskByIdDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
+                                                    value: 'observations',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
                                                     value: 'createdAt',
                                                 },
                                             },
@@ -2251,20 +2275,6 @@ export const TaskByIdDocument = {
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'id',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'email',
-                                                            },
-                                                        },
                                                         {
                                                             kind: 'Field',
                                                             name: {
@@ -2878,13 +2888,13 @@ export const SendNewUserRandomPasswordDocument = {
     SendNewUserRandomPasswordMutation,
     SendNewUserRandomPasswordMutationVariables
 >;
-export const BranchesOfClientDocument = {
+export const ClientBranchesDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'query',
-            name: { kind: 'Name', value: 'branchesOfClient' },
+            name: { kind: 'Name', value: 'clientBranches' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -2930,7 +2940,7 @@ export const BranchesOfClientDocument = {
                 selections: [
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'branchesOfClient' },
+                        name: { kind: 'Name', value: 'clientBranches' },
                         arguments: [
                             {
                                 kind: 'Argument',
@@ -3054,7 +3064,7 @@ export const BranchesOfClientDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<BranchesOfClientQuery, BranchesOfClientQueryVariables>;
+} as unknown as DocumentNode<ClientBranchesQuery, ClientBranchesQueryVariables>;
 export const PreventivesTableDocument = {
     kind: 'Document',
     definitions: [

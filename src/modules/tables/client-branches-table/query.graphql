@@ -1,10 +1,10 @@
-query branchesOfClient(
+query clientBranches(
     $clientId: String!
     $cityId: String
     $businessId: String
     $provinceId: String
 ) {
-    branchesOfClient(
+    clientBranches(
         clientId: $clientId
         cityId: $cityId
         businessId: $businessId
