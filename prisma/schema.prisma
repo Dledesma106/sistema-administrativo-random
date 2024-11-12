@@ -114,11 +114,23 @@ enum ExpenseType {
   Herramienta
   Hospedaje
   Insumos
+  Otro
 }
 
 enum ExpensePaySource {
   Reintegro
-  Tarjeta
+  Credito
+  Debito
+  Transferencia
+  Otro
+}
+
+enum ExpensePaySourceBank {
+  Santander
+  Nacion
+  Chubut
+  BBVA
+  Otro
 }
 
 enum ExpenseStatus {
@@ -128,21 +140,25 @@ enum ExpenseStatus {
 }
 
 model Expense {
-  id          String           @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt   DateTime         @default(now()) @db.Date
-  updatedAt   DateTime         @updatedAt
-  amount      Int
-  deleted     Boolean          @default(false)
-  deletedAt   DateTime?        @db.Date
-  expenseType ExpenseType
-  paySource   ExpensePaySource
-  status      ExpenseStatus
+  id            String                @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt     DateTime              @default(now()) @db.Date
+  updatedAt     DateTime              @updatedAt
+  amount        Float
+  observations  String?
+  deleted       Boolean               @default(false)
+  deletedAt     DateTime?             @db.Date
+  expenseType   ExpenseType
+  paySource     ExpensePaySource
+  paySourceBank ExpensePaySourceBank?
+  status        ExpenseStatus
 
   taskId String? @map("task") @db.ObjectId
   task   Task?   @relation(fields: [taskId], references: [id])
 
-  doneById String @map("doneBy") @db.ObjectId
-  doneBy   User   @relation("expensesMade", fields: [doneById], references: [id])
+  doneBy String
+
+  registeredById String @map("registeredBy") @db.ObjectId
+  registeredBy   User   @relation("expensesMade", fields: [registeredById], references: [id])
 
   imageId String @map("image") @db.ObjectId
   image   Image  @relation(fields: [imageId], references: [id])
@@ -199,7 +215,7 @@ model Task {
   status          TaskStatus
   taskType        TaskType
   workOrderNumber Int?
-  metadata        Json?
+  movitecTicket   String?
 
   branchId String @map("branch") @db.ObjectId
   branch   Branch @relation(fields: [branchId], references: [id])

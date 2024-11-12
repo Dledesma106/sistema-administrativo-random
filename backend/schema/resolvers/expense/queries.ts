@@ -24,14 +24,13 @@ builder.queryFields((t) => ({
                 ...query,
                 where: {
                     id: args.id,
-                    doneById: user.id,
+                    registeredById: user.id,
                 },
             });
 
             if (!expense) {
                 return null;
             }
-
             return expense;
         },
     }),
@@ -50,11 +49,10 @@ builder.queryFields((t) => ({
             const expenses = await prisma.expense.findManyUndeleted({
                 ...query,
                 where: {
-                    doneById: user.id,
+                    registeredById: user.id,
                     task: null,
                 },
             });
-            console.log(expenses);
             // const filteredExpenses = expenses.filter(
             //     (expense) => expense.taskId === null,
             // );

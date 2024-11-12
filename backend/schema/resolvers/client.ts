@@ -1,6 +1,6 @@
 import { prisma } from 'lib/prisma';
+
 import { builder } from '../builder';
-import { removeDeleted } from '../utils';
 
 export const ClientPothosRef = builder.prismaObject('Client', {
     name: 'Client',
@@ -41,7 +41,6 @@ builder.queryFields((t) => ({
             ],
         },
         resolve: async (query) => {
-            console.log(query);
             const clients = await prisma.client.findManyUndeleted({
                 ...query,
             });

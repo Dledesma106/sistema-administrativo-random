@@ -4,12 +4,13 @@ import {
     ExpensePaySource,
     Image,
     Expense,
+    ExpensePaySourceBank,
 } from '@prisma/client';
 
+import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
-import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 
 export const ExpenseTypePothosRef = builder.enumType('ExpenseType', {
     values: Object.fromEntries(
@@ -29,11 +30,29 @@ export const ExpensePaySourcePothosRef = builder.enumType('ExpensePaySource', {
     ),
 });
 
+export const ExpensePaySourceBankPothosRef = builder.enumType('ExpensePaySourceBank', {
+    values: Object.fromEntries(
+        Object.entries(ExpensePaySourceBank).map(([name, value]) => [name, { value }]),
+    ),
+});
+
 export const ExpenseInputType = builder.inputType('ExpenseInput', {
     fields: (t) => ({
-        amount: t.int({ required: true }),
-        expenseType: t.field({ type: ExpenseTypePothosRef, required: true }),
-        paySource: t.field({ type: ExpensePaySourcePothosRef, required: true }),
+        amount: t.float({ required: true }),
+        expenseType: t.field({
+            type: ExpenseTypePothosRef,
+            required: true,
+        }),
+        paySource: t.field({
+            type: ExpensePaySourcePothosRef,
+            required: true,
+        }),
+        paySourceBank: t.field({
+            type: ExpensePaySourceBankPothosRef,
+            required: false,
+        }),
+        observations: t.string(),
+        doneBy: t.string({ required: true }),
         imageKey: t.string({ required: true }),
     }),
 });
@@ -46,7 +65,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             type: 'DateTime',
             resolve: (root) => root.createdAt,
         }),
-        amount: t.exposeInt('amount'),
+        amount: t.exposeFloat('amount'),
         expenseType: t.field({
             type: ExpenseTypePothosRef,
             resolve: (root) => root.expenseType as ExpenseType,
@@ -54,6 +73,11 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
         paySource: t.field({
             type: ExpensePaySourcePothosRef,
             resolve: (root) => root.paySource as ExpensePaySource,
+        }),
+        paySourceBank: t.field({
+            nullable: true,
+            type: ExpensePaySourceBankPothosRef,
+            resolve: (root) => root.paySourceBank as ExpensePaySourceBank,
         }),
         status: t.field({
             type: ExpenseStatusPothosRef,
@@ -85,7 +109,11 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
                 }) as Promise<Image>;
             },
         }),
-        doneBy: t.relation('doneBy'),
+        registeredBy: t.relation('registeredBy'),
+        doneBy: t.exposeString('doneBy'),
+        observations: t.exposeString('observations', {
+            nullable: true,
+        }),
         task: t.relation('task'),
     }),
 });

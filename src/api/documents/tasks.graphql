@@ -89,7 +89,9 @@ query taskById($id: String!) {
             id
             amount
             paySource
+            paySourceBank
             expenseType
+            observations
             createdAt
             image {
                 id
@@ -98,15 +100,14 @@ query taskById($id: String!) {
                 key
             }
             status
-            doneBy {
-                id
-                email
+            registeredBy {
                 fullName
             }
+            doneBy
         }
         taskType
         status
-        metadata
+        movitecTicket
     }
 }
 

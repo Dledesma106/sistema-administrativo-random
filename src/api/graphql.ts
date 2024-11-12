@@ -70,6 +70,7 @@ export type CityInput = {
 
 export type Client = {
     __typename?: 'Client';
+    branches: Array<Branch>;
     id: Scalars['ID'];
     name: Scalars['String'];
 };
@@ -79,12 +80,16 @@ export type Expense = {
     amount: Scalars['Int'];
     auditor: Maybe<User>;
     createdAt: Scalars['DateTime'];
-    doneBy: User;
+    doneBy: Scalars['String'];
     expenseType: ExpenseType;
     id: Scalars['ID'];
     image: Image;
+    observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
+    paySourceBank: ExpensePaySourceBank;
+    registeredBy: User;
     status: ExpenseStatus;
+    task: Task;
 };
 
 export type ExpenseCrudResult = {
@@ -96,17 +101,33 @@ export type ExpenseCrudResult = {
 
 export type ExpenseInput = {
     amount: Scalars['Int'];
+    doneBy: Scalars['String'];
     expenseType: ExpenseType;
     imageKey: Scalars['String'];
+    observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
+    paySourceBank: InputMaybe<ExpensePaySourceBank>;
 };
 
 export const ExpensePaySource = {
+    Credito: 'Credito',
+    Debito: 'Debito',
+    Otro: 'Otro',
     Reintegro: 'Reintegro',
-    Tarjeta: 'Tarjeta',
+    Transferencia: 'Transferencia',
 } as const;
 
 export type ExpensePaySource = (typeof ExpensePaySource)[keyof typeof ExpensePaySource];
+export const ExpensePaySourceBank = {
+    Bbva: 'BBVA',
+    Chubut: 'Chubut',
+    Nacion: 'Nacion',
+    Otro: 'Otro',
+    Santander: 'Santander',
+} as const;
+
+export type ExpensePaySourceBank =
+    (typeof ExpensePaySourceBank)[keyof typeof ExpensePaySourceBank];
 export const ExpenseStatus = {
     Aprobado: 'Aprobado',
     Enviado: 'Enviado',
@@ -120,6 +141,7 @@ export const ExpenseType = {
     Herramienta: 'Herramienta',
     Hospedaje: 'Hospedaje',
     Insumos: 'Insumos',
+    Otro: 'Otro',
 } as const;
 
 export type ExpenseType = (typeof ExpenseType)[keyof typeof ExpenseType];
@@ -144,7 +166,8 @@ export type Mutation = {
     __typename?: 'Mutation';
     createBranch: BranchCrudResult;
     createCity: CityCrudResult;
-    createExpenseOnTask: ExpenseCrudResult;
+    createExpense: ExpenseCrudResult;
+    createMyTask: TaskCrudResult;
     createPreventive: PreventiveCrudResult;
     createTask: TaskCrudResult;
     createUser: UserCrudPothosRef;
@@ -173,9 +196,13 @@ export type MutationCreateCityArgs = {
     input: CityInput;
 };
 
-export type MutationCreateExpenseOnTaskArgs = {
+export type MutationCreateExpenseArgs = {
     expenseData: ExpenseInput;
-    taskId: Scalars['String'];
+    taskId: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCreateMyTaskArgs = {
+    input: MyTaskInput;
 };
 
 export type MutationCreatePreventiveArgs = {
@@ -259,6 +286,18 @@ export type MutationUpdateUserArgs = {
     input: UserInput;
 };
 
+export type MyTaskInput = {
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    branch: Scalars['String'];
+    business: Scalars['String'];
+    closedAt: InputMaybe<Scalars['DateTime']>;
+    expenses: InputMaybe<Array<ExpenseInput>>;
+    imageKeys: InputMaybe<Array<Scalars['String']>>;
+    observations: InputMaybe<Scalars['String']>;
+    taskType: TaskType;
+    workOrderNumber: InputMaybe<Scalars['String']>;
+};
+
 export type Preventive = {
     __typename?: 'Preventive';
     assigned: Array<User>;
@@ -308,37 +347,41 @@ export type Province = {
 
 export type Query = {
     __typename?: 'Query';
+    branchBusinesses: Array<Business>;
     branches: Array<Branch>;
-    branchesOfClient: Array<Branch>;
-    businesses: Array<Business>;
     cities: Array<City>;
+    clientBranches: Array<Branch>;
+    clients: Array<Client>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
-    myAssignedTaskExpenseById: Maybe<Expense>;
     myAssignedTasks: Array<Task>;
+    myExpenseById: Maybe<Expense>;
+    myExpenses: Maybe<Array<Expense>>;
     preventives: Array<Preventive>;
     provinces: Array<Province>;
     taskById: Maybe<Task>;
+    taskTypes: Array<TaskType>;
     tasks: Array<Task>;
+    technicians: Array<User>;
     users: Array<User>;
 };
 
-export type QueryBranchesOfClientArgs = {
+export type QueryBranchBusinessesArgs = {
+    branch: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClientBranchesArgs = {
     businessId: InputMaybe<Scalars['String']>;
     cityId: InputMaybe<Scalars['String']>;
     clientId: Scalars['String'];
     provinceId: InputMaybe<Scalars['String']>;
 };
 
-export type QueryBusinessesArgs = {
-    branch: InputMaybe<Scalars['String']>;
-};
-
 export type QueryMyAssignedTaskByIdArgs = {
     id: Scalars['String'];
 };
 
-export type QueryMyAssignedTaskExpenseByIdArgs = {
+export type QueryMyExpenseByIdArgs = {
     id: Scalars['String'];
 };
 
@@ -376,7 +419,7 @@ export type Task = {
     id: Scalars['ID'];
     images: Array<Image>;
     imagesIDs: Array<Scalars['String']>;
-    metadata: Scalars['JSON'];
+    movitecTicket: Maybe<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
@@ -396,7 +439,7 @@ export type TaskInput = {
     branch: Scalars['String'];
     business: Scalars['String'];
     description: Scalars['String'];
-    metadata: Scalars['JSON'];
+    movitecTicket: InputMaybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
     workOrderNumber: InputMaybe<Scalars['Int']>;
@@ -659,7 +702,7 @@ export type TaskByIdQuery = {
         observations: string | null;
         taskType: TaskType;
         status: TaskStatus;
-        metadata: any;
+        movitecTicket: string | null;
         business: { __typename?: 'Business'; id: string; name: string };
         images: Array<{ __typename?: 'Image'; id: string; url: string }>;
         branch: {
@@ -685,9 +728,12 @@ export type TaskByIdQuery = {
             id: string;
             amount: number;
             paySource: ExpensePaySource;
+            paySourceBank: ExpensePaySourceBank;
             expenseType: ExpenseType;
+            observations: string | null;
             createdAt: any;
             status: ExpenseStatus;
+            doneBy: string;
             image: {
                 __typename?: 'Image';
                 id: string;
@@ -695,7 +741,7 @@ export type TaskByIdQuery = {
                 urlExpire: any | null;
                 key: string;
             };
-            doneBy: { __typename?: 'User'; id: string; email: string; fullName: string };
+            registeredBy: { __typename?: 'User'; fullName: string };
         }>;
     } | null;
 };
@@ -808,16 +854,16 @@ export type SendNewUserRandomPasswordMutation = {
     };
 };
 
-export type BranchesOfClientQueryVariables = Exact<{
+export type ClientBranchesQueryVariables = Exact<{
     clientId: Scalars['String'];
     cityId: InputMaybe<Scalars['String']>;
     businessId: InputMaybe<Scalars['String']>;
     provinceId: InputMaybe<Scalars['String']>;
 }>;
 
-export type BranchesOfClientQuery = {
+export type ClientBranchesQuery = {
     __typename?: 'Query';
-    branchesOfClient: Array<{
+    clientBranches: Array<{
         __typename?: 'Branch';
         id: string;
         number: number;
@@ -2155,7 +2201,21 @@ export const TaskByIdDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
+                                                    value: 'paySourceBank',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
                                                     value: 'expenseType',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'observations',
                                                 },
                                             },
                                             {
@@ -2208,24 +2268,13 @@ export const TaskByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'doneBy' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'registeredBy',
+                                                },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'id',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'email',
-                                                            },
-                                                        },
                                                         {
                                                             kind: 'Field',
                                                             name: {
@@ -2235,6 +2284,10 @@ export const TaskByIdDocument = {
                                                         },
                                                     ],
                                                 },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'doneBy' },
                                             },
                                         ],
                                     },
@@ -2249,7 +2302,7 @@ export const TaskByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'metadata' },
+                                    name: { kind: 'Name', value: 'movitecTicket' },
                                 },
                             ],
                         },
@@ -2835,13 +2888,13 @@ export const SendNewUserRandomPasswordDocument = {
     SendNewUserRandomPasswordMutation,
     SendNewUserRandomPasswordMutationVariables
 >;
-export const BranchesOfClientDocument = {
+export const ClientBranchesDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'query',
-            name: { kind: 'Name', value: 'branchesOfClient' },
+            name: { kind: 'Name', value: 'clientBranches' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -2887,7 +2940,7 @@ export const BranchesOfClientDocument = {
                 selections: [
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'branchesOfClient' },
+                        name: { kind: 'Name', value: 'clientBranches' },
                         arguments: [
                             {
                                 kind: 'Argument',
@@ -3011,7 +3064,7 @@ export const BranchesOfClientDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<BranchesOfClientQuery, BranchesOfClientQueryVariables>;
+} as unknown as DocumentNode<ClientBranchesQuery, ClientBranchesQueryVariables>;
 export const PreventivesTableDocument = {
     kind: 'Document',
     definitions: [

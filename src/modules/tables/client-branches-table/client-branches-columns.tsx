@@ -9,7 +9,7 @@ import { CLIENT_BRANCHES_LIST_QUERY_KEY_DOMAIN } from './query';
 
 import { fetchClient } from '@/api/fetch-client';
 import {
-    BranchesOfClientQuery,
+    ClientBranchesQuery,
     DeleteBranchDocument,
     DeleteBranchMutation,
     DeleteBranchMutationVariables,
@@ -19,13 +19,9 @@ import { Badge } from '@/components/ui/Badges/badge';
 import useAlert from '@/context/alertContext/useAlert';
 import { getCleanErrorMessage } from '@/lib/utils';
 
-const columnHelper = createColumnHelper<BranchesOfClientQuery['branchesOfClient'][0]>();
+const columnHelper = createColumnHelper<ClientBranchesQuery['clientBranches'][0]>();
 
-const RowActions = ({
-    branch,
-}: {
-    branch: BranchesOfClientQuery['branchesOfClient'][0];
-}) => {
+const RowActions = ({ branch }: { branch: ClientBranchesQuery['clientBranches'][0] }) => {
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
     const queryClient = useQueryClient();
@@ -58,16 +54,16 @@ const RowActions = ({
                 throw new Error('Hubo un error al eliminar la sucursal');
             }
 
-            queryClient.setQueryData<BranchesOfClientQuery>(
+            queryClient.setQueryData<ClientBranchesQuery>(
                 [CLIENT_BRANCHES_LIST_QUERY_KEY_DOMAIN],
                 (oldData) => {
                     if (!oldData) {
                         return oldData;
                     }
 
-                    const newData: BranchesOfClientQuery = {
+                    const newData: ClientBranchesQuery = {
                         ...oldData,
-                        branchesOfClient: oldData.branchesOfClient.filter(
+                        clientBranches: oldData.clientBranches.filter(
                             (b) => b.id !== branch.id,
                         ),
                     };
@@ -131,8 +127,7 @@ export const getClientBranchesTableColumns = () => [
             }
 
             return ids.includes(
-                row.getValue<BranchesOfClientQuery['branchesOfClient'][0]['city']>('city')
-                    .id,
+                row.getValue<ClientBranchesQuery['clientBranches'][0]['city']>('city').id,
             );
         },
     }),
@@ -151,7 +146,7 @@ export const getClientBranchesTableColumns = () => [
 
             return ids.includes(
                 row.getValue<
-                    BranchesOfClientQuery['branchesOfClient'][0]['city']['province']
+                    ClientBranchesQuery['clientBranches'][0]['city']['province']
                 >('province').id,
             );
         },
@@ -187,7 +182,7 @@ export const getClientBranchesTableColumns = () => [
                 return true;
             }
 
-            const assigned = row.getValue<BranchesOfClientQuery['branchesOfClient']>(id);
+            const assigned = row.getValue<ClientBranchesQuery['clientBranches']>(id);
             const assignedIsInFilteredList = assigned.some((user) => {
                 return ids.includes(user.id);
             });

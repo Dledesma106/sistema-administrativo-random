@@ -88,7 +88,7 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         }),
         expenses: t.relation('expenses', {
             type: ExpensePothosRef,
-            resolve: async (root, parent, args, context) => {
+            resolve: async (root, parent) => {
                 return prisma.expense.findManyUndeleted({
                     where: {
                         taskId: parent.id,
@@ -96,9 +96,8 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                 });
             },
         }),
-        metadata: t.field({
-            type: 'JSON',
-            resolve: (root) => (root.metadata || {}) as Record<string, any> as any,
+        movitecTicket: t.exposeString('movitecTicket', {
+            nullable: true,
         }),
         observations: t.exposeString('observations', {
             nullable: true,
@@ -134,24 +133,32 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
         assigned: t.stringList({
             required: true,
         }),
-        metadata: t.field({
-            type: 'JSON',
-            required: true,
+        movitecTicket: t.string({
+            required: false,
         }),
     }),
 });
 
 export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
     fields: (t) => ({
-        taskType: t.field({ type: TaskTypePothosRef, required: true }),
+        taskType: t.field({
+            type: TaskTypePothosRef,
+            required: true,
+        }),
         branch: t.string({ required: true }),
         business: t.string({ required: true }),
         assigned: t.stringList({ required: false }),
         workOrderNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),
         observations: t.string({ required: false }),
-        closedAt: t.field({ type: 'DateTime', required: false }),
-        expenses: t.field({ type: [ExpenseInputType], required: false }),
+        closedAt: t.field({
+            type: 'DateTime',
+            required: false,
+        }),
+        expenses: t.field({
+            type: [ExpenseInputType],
+            required: false,
+        }),
     }),
 });
 
@@ -163,8 +170,14 @@ export const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
         expenseIdsToDelete: t.stringList({ required: false }),
         imageIdsToDelete: t.stringList({ required: false }),
         observations: t.string({ required: false }),
-        closedAt: t.field({ type: 'DateTime', required: false }),
-        expenses: t.field({ type: [ExpenseInputType], required: false }),
+        closedAt: t.field({
+            type: 'DateTime',
+            required: false,
+        }),
+        expenses: t.field({
+            type: [ExpenseInputType],
+            required: false,
+        }),
     }),
 });
 
