@@ -38,13 +38,13 @@ export const ClientBranchesTable = ({ client, cities, provinces, businesses }: P
         provinceId: '',
     });
 
-    const [branches, setBranches] = useState(branchesQuery.data?.branchesOfClient);
+    const [branches, setBranches] = useState(branchesQuery.data?.clientBranches);
 
     const columns = getClientBranchesTableColumns();
 
     useEffect(() => {
-        setBranches(branchesQuery.data?.branchesOfClient);
-    }, [branchesQuery.data?.branchesOfClient]);
+        setBranches(branchesQuery.data?.clientBranches);
+    }, [branchesQuery.data?.clientBranches]);
 
     const table = useReactTable({
         data: branches || [],
