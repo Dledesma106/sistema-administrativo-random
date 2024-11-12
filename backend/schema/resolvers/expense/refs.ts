@@ -38,7 +38,7 @@ export const ExpensePaySourceBankPothosRef = builder.enumType('ExpensePaySourceB
 
 export const ExpenseInputType = builder.inputType('ExpenseInput', {
     fields: (t) => ({
-        amount: t.int({ required: true }),
+        amount: t.float({ required: true }),
         expenseType: t.field({
             type: ExpenseTypePothosRef,
             required: true,
@@ -65,7 +65,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             type: 'DateTime',
             resolve: (root) => root.createdAt,
         }),
-        amount: t.exposeInt('amount'),
+        amount: t.exposeFloat('amount'),
         expenseType: t.field({
             type: ExpenseTypePothosRef,
             resolve: (root) => root.expenseType as ExpenseType,
@@ -75,6 +75,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             resolve: (root) => root.paySource as ExpensePaySource,
         }),
         paySourceBank: t.field({
+            nullable: true,
             type: ExpensePaySourceBankPothosRef,
             resolve: (root) => root.paySourceBank as ExpensePaySourceBank,
         }),

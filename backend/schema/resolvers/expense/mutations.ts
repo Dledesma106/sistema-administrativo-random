@@ -83,7 +83,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             try {
                 const newExpense = await prisma.expense.create({
                     data: {
-                        amount: expenseData.amount,
+                        amount: parseFloat(String(expenseData.amount)),
                         expenseType: expenseData.expenseType,
                         paySource: expenseData.paySource,
                         doneBy: expenseData.doneBy,
@@ -107,6 +107,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     expense: newExpense,
                 };
             } catch (error) {
+                console.error(error);
                 return {
                     success: false,
                 };
