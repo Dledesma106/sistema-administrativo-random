@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
 import { routesBuilder } from '@/lib/routes';
+import { pascalCaseToSpaces } from '@/lib/utils';
 
 const Title = ({ children }: { children: React.ReactNode }) => (
     <h2 className="mb-2 text-sm font-bold">{children}</h2>
@@ -65,7 +66,7 @@ const Content: React.FC<Props> = ({ task }) => {
 
                 <div>
                     <Title>Tipo de tarea</Title>
-                    {task.taskType}
+                    {pascalCaseToSpaces(task.taskType)}
                 </div>
 
                 <div>
@@ -114,7 +115,7 @@ const Content: React.FC<Props> = ({ task }) => {
 
                 <div>
                     <Title>Numero de OT</Title>
-                    <p className="mb-1">{task.workOrderNumber}</p>
+                    <p className="mb-1">{task.actNumber}</p>
                 </div>
 
                 <div>
@@ -172,7 +173,8 @@ const Content: React.FC<Props> = ({ task }) => {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Fecha</TableHead>
+                                        <TableHead>Fecha de Registro</TableHead>
+                                        <TableHead>Fecha de Pago</TableHead>
                                         <TableHead>Monto</TableHead>
                                         <TableHead>Razón</TableHead>
                                         <TableHead>Fuente de pago</TableHead>
@@ -192,6 +194,11 @@ const Content: React.FC<Props> = ({ task }) => {
                                                     'DD/MM/YYYY',
                                                 )}
                                             </TableCell>
+                                            <TableCell>
+                                                {dayjs(expense.expenseDate).format(
+                                                    'DD/MM/YYYY',
+                                                )}
+                                            </TableCell>
                                             <TableCell>${expense.amount}</TableCell>
                                             <TableCell>
                                                 <ExpenseTypeBadge
@@ -202,6 +209,9 @@ const Content: React.FC<Props> = ({ task }) => {
                                                 <ExpensePaySourceBadge
                                                     paySource={expense.paySource}
                                                 />
+                                                {expense.paySource === 'Credito' &&
+                                                    expense.installments &&
+                                                    `${expense.installments} Cuotas`}
                                             </TableCell>
                                             <TableCell>
                                                 {expense.paySourceBank ? (

@@ -104,7 +104,7 @@ export class Task {
         type: Number,
         required: false,
     })
-    workOrderNumber?: number;
+    actNumber?: number;
 
     @prop({
         type: Date,

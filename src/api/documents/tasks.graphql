@@ -56,7 +56,7 @@ query taskById($id: String!) {
         createdAt
         closedAt
         description
-        workOrderNumber
+        actNumber
         observations
         business {
             id
@@ -99,6 +99,8 @@ query taskById($id: String!) {
                 urlExpire
                 key
             }
+            installments
+            expenseDate
             status
             registeredBy {
                 fullName

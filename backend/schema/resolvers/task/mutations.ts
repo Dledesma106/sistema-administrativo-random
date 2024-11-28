@@ -36,9 +36,10 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { input } = args;
+                console.log('tasktype: ', input.taskType);
                 const task = await prisma.task.create({
                     data: {
-                        workOrderNumber: input.workOrderNumber,
+                        actNumber: input.actNumber,
                         auditorId: input.auditor,
                         branchId: input.branch,
                         businessId: input.business,
@@ -84,11 +85,9 @@ builder.mutationFields((t) => ({
             try {
                 const {
                     input: {
-                        workOrderNumber,
-
+                        actNumber,
                         branch,
                         business,
-
                         observations,
                         closedAt,
                         imageKeys,
@@ -99,7 +98,7 @@ builder.mutationFields((t) => ({
                 } = args;
                 const task = await prisma.task.create({
                     data: {
-                        workOrderNumber: Number(workOrderNumber),
+                        actNumber: Number(actNumber),
                         branchId: branch,
                         businessId: business,
                         description: 'Tarea de emergencia',
@@ -133,6 +132,8 @@ builder.mutationFields((t) => ({
                                               expenseType: expenseData.expenseType,
                                               paySource: expenseData.paySource,
                                               paySourceBank: expenseData.paySourceBank,
+                                              installments: expenseData.installments,
+                                              expenseDate: expenseData.expenseDate,
                                               doneBy: expenseData.doneBy,
                                               status: ExpenseStatus.Enviado,
                                               registeredBy: {
@@ -158,6 +159,7 @@ builder.mutationFields((t) => ({
                     task,
                 };
             } catch (error) {
+                console.log(error);
                 return {
                     success: false,
                 };
@@ -207,9 +209,8 @@ builder.mutationFields((t) => ({
                         success: false,
                     };
                 }
-
                 const data = {
-                    workOrderNumber: input.workOrderNumber,
+                    actNumber: input.actNumber,
                     auditorId: input.auditor,
                     branchId: input.branch,
                     businessId: input.business,
@@ -347,7 +348,7 @@ builder.mutationFields((t) => ({
                 const {
                     input: {
                         id,
-                        workOrderNumber,
+                        actNumber,
                         imageKeys,
                         observations,
                         closedAt,
@@ -366,7 +367,7 @@ builder.mutationFields((t) => ({
                     },
                     select: {
                         status: true,
-                        workOrderNumber: true,
+                        actNumber: true,
                         imagesIDs: true,
                         observations: true,
                         images: true,
@@ -416,9 +417,9 @@ builder.mutationFields((t) => ({
                         id,
                     },
                     data: {
-                        workOrderNumber: workOrderNumber
-                            ? parseInt(workOrderNumber, 10)
-                            : foundTask.workOrderNumber,
+                        actNumber: actNumber
+                            ? parseInt(actNumber, 10)
+                            : foundTask.actNumber,
                         status: TaskStatus.Finalizada,
                         observations: observations ?? foundTask.observations,
                         closedAt: closedAt,
@@ -444,6 +445,8 @@ builder.mutationFields((t) => ({
                                               paySource: expenseData.paySource,
                                               status: ExpenseStatus.Enviado,
                                               doneBy: expenseData.doneBy,
+                                              installments: expenseData.installments,
+                                              expenseDate: expenseData.expenseDate,
                                               paySourceBank: expenseData.paySourceBank,
                                               observations: expenseData.observations,
                                               registeredBy: { connect: { id: user.id } },

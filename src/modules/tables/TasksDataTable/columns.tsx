@@ -8,7 +8,7 @@ import { TasksTableRowActions } from './tasks-table-row-actions';
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
 import { routesBuilder } from '@/lib/routes';
-import { dmyDateString } from '@/lib/utils';
+import { dmyDateString, pascalCaseToSpaces } from '@/lib/utils';
 
 type Task = TasksQuery['tasks'][0];
 
@@ -146,6 +146,10 @@ export const useTasksTableColumns = () => [
             const taskIsInFilteredList = types.some((type) => type === thisType);
 
             return taskIsInFilteredList;
+        },
+        cell: (info) => {
+            const type = info.getValue();
+            return pascalCaseToSpaces(type);
         },
     }),
     columnHelper.accessor((row) => row.status, {

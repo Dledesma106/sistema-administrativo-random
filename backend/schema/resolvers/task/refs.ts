@@ -38,9 +38,9 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         }),
         taskType: t.field({
             type: TaskTypePothosRef,
-            resolve: (root) => root.taskType as TaskType,
+            resolve: (root) => root.taskType.replace('_', ' ') as TaskType,
         }),
-        workOrderNumber: t.exposeInt('workOrderNumber', {
+        actNumber: t.exposeInt('actNumber', {
             nullable: true,
         }),
         branch: t.relation('branch'),
@@ -50,8 +50,8 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         }),
         assigned: t.field({
             type: [UserPothosRef],
-            resolve: (root: Task) => {
-                return prisma.user.findManyUndeleted({
+            resolve: async (root: Task) => {
+                const assigned = await prisma.user.findManyUndeleted({
                     where: {
                         id: {
                             in: root.assignedIDs,
@@ -59,6 +59,7 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                         deleted: false,
                     },
                 });
+                return assigned;
             },
         }),
         imagesIDs: t.exposeStringList('imagesIDs'),
@@ -72,7 +73,6 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                         },
                     },
                 });
-
                 await Promise.all(
                     images.map((image) => updateImageSignedUrlAsync(image)),
                 );
@@ -118,7 +118,7 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
             type: TaskTypePothosRef,
             required: true,
         }),
-        workOrderNumber: t.int({
+        actNumber: t.int({
             required: false,
         }),
         branch: t.string({
@@ -148,7 +148,7 @@ export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
         branch: t.string({ required: true }),
         business: t.string({ required: true }),
         assigned: t.stringList({ required: false }),
-        workOrderNumber: t.string({ required: false }),
+        actNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),
         observations: t.string({ required: false }),
         closedAt: t.field({
@@ -165,7 +165,7 @@ export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
 export const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
     fields: (t) => ({
         id: t.string({ required: true }),
-        workOrderNumber: t.string({ required: false }),
+        actNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),
         expenseIdsToDelete: t.stringList({ required: false }),
         imageIdsToDelete: t.stringList({ required: false }),

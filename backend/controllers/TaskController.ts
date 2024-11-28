@@ -126,7 +126,7 @@ const TaskController = {
             activity,
             operatorName,
             image,
-            workOrderNumber,
+            actNumber,
             closedAt,
         } = body;
         const assignedIds = assigned.map((user: User) => user._id);
@@ -143,7 +143,7 @@ const TaskController = {
             activity,
             operatorName,
             image,
-            workOrderNumber,
+            actNumber,
             closedAt,
         };
 
@@ -186,7 +186,7 @@ const TaskController = {
             activity,
             operatorName,
             image,
-            workOrderNumber,
+            actNumber,
             closedAt,
         } = body;
         const openedAt = new Date();
@@ -204,7 +204,7 @@ const TaskController = {
             activity,
             operatorName,
             image,
-            workOrderNumber,
+            actNumber,
             closedAt,
         };
         try {
@@ -329,7 +329,7 @@ const TaskController = {
         }
 
         if (workOrder) {
-            userTask.workOrderNumber = parseInt(workOrder, 10);
+            userTask.actNumber = parseInt(workOrder, 10);
         }
 
         if (imageIdToDelete) {
@@ -368,13 +368,13 @@ const TaskController = {
             business: string;
             taskType: TaskType;
             description: string;
-            workOrderNumber: number;
+            actNumber: number;
             metadata: Record<string, any>;
         };
 
         const { body } = req;
         await dbConnect();
-        const { branch, business, taskType, description, workOrderNumber, metadata } =
+        const { branch, business, taskType, description, actNumber, metadata } =
             body as CreateTaskMutationVariables;
 
         const openedAt = new Date();
@@ -388,7 +388,7 @@ const TaskController = {
             openedAt,
             status,
             description,
-            workOrderNumber,
+            actNumber,
             metadata,
         };
 

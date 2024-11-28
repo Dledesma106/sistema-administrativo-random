@@ -72,7 +72,7 @@ export default function TaskView(props: Props): JSX.Element {
                     description: task.description,
                     status: task.status,
                     taskType: task.taskType,
-                    workOrderNumber: task.workOrderNumber,
+                    actNumber: task.actNumber,
                     movitecTicket: task.movitecTicket ?? '',
                 }}
                 taskIdToUpdate={task.id}
