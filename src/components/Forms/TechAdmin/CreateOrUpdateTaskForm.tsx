@@ -38,7 +38,7 @@ type FormValues = {
     description: string;
     taskType: TaskType;
     status: TaskStatus;
-    workOrderNumber: number | null;
+    actNumber: number | null;
     movitecTicket: string;
 };
 
@@ -111,7 +111,7 @@ const CreateOrUpdateTaskForm = ({
                     description: form.description,
                     status: form.status,
                     taskType: form.taskType,
-                    workOrderNumber: form.workOrderNumber,
+                    actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
                     movitecTicket: form.movitecTicket,
                 },
@@ -163,7 +163,7 @@ const CreateOrUpdateTaskForm = ({
                     description: form.description,
                     status: form.status,
                     taskType: form.taskType,
-                    workOrderNumber: form.workOrderNumber,
+                    actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
                     movitecTicket: form.movitecTicket,
                 },

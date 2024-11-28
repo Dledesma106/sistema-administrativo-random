@@ -50,7 +50,7 @@ export default function EditClientBranch({
     );
 }
 
-const getProps = async (number: number) => {
+const getProps = async (number: number, clientId: string) => {
     const cities = await prisma.city.findManyUndeleted({
         select: {
             id: true,
@@ -67,6 +67,7 @@ const getProps = async (number: number) => {
     const branch = await prisma.branch.findFirst({
         where: {
             deleted: false,
+            clientId,
             number: number,
         },
         include: {
@@ -94,14 +95,14 @@ export const getServerSideProps: GetServerSideProps<
     EditClientBranchProps,
     {
         number: string;
+        clientId: string;
     }
-> = async ({ params }) => {
-    const number = params?.number;
+> = async (context) => {
+    const { clientId, number } = context.params as { clientId: string; number: string };
     if (!number) {
         throw new Error('Number is required');
     }
-
-    const props = await getProps(parseInt(number, 10));
+    const props = await getProps(parseInt(number, 10), clientId ?? '');
 
     return {
         props: JSON.parse(JSON.stringify(props)),

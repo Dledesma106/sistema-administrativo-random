@@ -1,5 +1,7 @@
 import { Role, TaskStatus, TaskType } from '@prisma/client';
 
+import { pascalCaseToSpaces } from '@/lib/utils';
+
 export type Frequency = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export type Month =
@@ -86,28 +88,34 @@ export const taskStatusesOptions: {
     },
 ];
 
-export const taskTypesOptions: { value: TaskType; label: string }[] = [
-    {
-        value: TaskType.Preventivo,
-        label: 'Preventivo',
-    },
-    {
-        value: TaskType.Correctivo,
-        label: 'Correctivo',
-    },
-    {
-        value: TaskType.Instalacion,
-        label: 'Instalacion',
-    },
-    {
-        value: TaskType.Desmonte,
-        label: 'Desmonte',
-    },
-    {
-        value: TaskType.Actualizacion,
-        label: 'Actualizacion',
-    },
-];
+export const taskTypesOptions: { value: TaskType; label: string }[] = Object.values(
+    TaskType,
+).map((type) => ({
+    value: type,
+    label: pascalCaseToSpaces(type) /* .replace('_', ' '), */,
+}));
+// [
+//     {
+//         value: TaskType.Preventivo,
+//         label: 'Preventivo',
+//     },
+//     {
+//         value: TaskType.Correctivo,
+//         label: 'Correctivo',
+//     },
+//     {
+//         value: TaskType.Instalacion,
+//         label: 'Instalacion',
+//     },
+//     {
+//         value: TaskType.Desmonte,
+//         label: 'Desmonte',
+//     },
+//     {
+//         value: TaskType.Actualizacion,
+//         label: 'Actualizacion',
+//     },
+// ];
 
 export const rolesOptions: { value: Role; label: string }[] = [
     {

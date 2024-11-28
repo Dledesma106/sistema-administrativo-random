@@ -134,3 +134,9 @@ export function stringifyObject(obj: Record<string, any>): string {
     }
     return resultado;
 }
+
+export function pascalCaseToSpaces(input: string): string {
+    return input
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2');
+}

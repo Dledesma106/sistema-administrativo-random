@@ -51,6 +51,11 @@ export const ExpenseInputType = builder.inputType('ExpenseInput', {
             type: ExpensePaySourceBankPothosRef,
             required: false,
         }),
+        installments: t.int({ required: true }),
+        expenseDate: t.field({
+            type: 'DateTime',
+            required: false,
+        }),
         observations: t.string(),
         doneBy: t.string({ required: true }),
         imageKey: t.string({ required: true }),
@@ -65,6 +70,11 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             type: 'DateTime',
             resolve: (root) => root.createdAt,
         }),
+        expenseDate: t.field({
+            type: 'DateTime',
+            nullable: true,
+            resolve: (root) => root.expenseDate,
+        }),
         amount: t.exposeFloat('amount'),
         expenseType: t.field({
             type: ExpenseTypePothosRef,
@@ -78,6 +88,9 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             nullable: true,
             type: ExpensePaySourceBankPothosRef,
             resolve: (root) => root.paySourceBank as ExpensePaySourceBank,
+        }),
+        installments: t.exposeInt('installments', {
+            nullable: true,
         }),
         status: t.field({
             type: ExpenseStatusPothosRef,

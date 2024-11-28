@@ -77,16 +77,18 @@ export type Client = {
 
 export type Expense = {
     __typename?: 'Expense';
-    amount: Scalars['Int'];
+    amount: Scalars['Float'];
     auditor: Maybe<User>;
     createdAt: Scalars['DateTime'];
     doneBy: Scalars['String'];
+    expenseDate: Maybe<Scalars['DateTime']>;
     expenseType: ExpenseType;
     id: Scalars['ID'];
     image: Image;
+    installments: Maybe<Scalars['Int']>;
     observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
-    paySourceBank: ExpensePaySourceBank;
+    paySourceBank: Maybe<ExpensePaySourceBank>;
     registeredBy: User;
     status: ExpenseStatus;
     task: Task;
@@ -100,10 +102,12 @@ export type ExpenseCrudResult = {
 };
 
 export type ExpenseInput = {
-    amount: Scalars['Int'];
+    amount: Scalars['Float'];
     doneBy: Scalars['String'];
+    expenseDate: InputMaybe<Scalars['DateTime']>;
     expenseType: ExpenseType;
     imageKey: Scalars['String'];
+    installments: Scalars['Int'];
     observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
     paySourceBank: InputMaybe<ExpensePaySourceBank>;
@@ -287,6 +291,7 @@ export type MutationUpdateUserArgs = {
 };
 
 export type MyTaskInput = {
+    actNumber: InputMaybe<Scalars['String']>;
     assigned: InputMaybe<Array<Scalars['String']>>;
     branch: Scalars['String'];
     business: Scalars['String'];
@@ -295,7 +300,6 @@ export type MyTaskInput = {
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
     taskType: TaskType;
-    workOrderNumber: InputMaybe<Scalars['String']>;
 };
 
 export type Preventive = {
@@ -408,6 +412,7 @@ export const Role = {
 export type Role = (typeof Role)[keyof typeof Role];
 export type Task = {
     __typename?: 'Task';
+    actNumber: Maybe<Scalars['Int']>;
     assigned: Array<User>;
     auditor: Maybe<User>;
     branch: Branch;
@@ -423,7 +428,6 @@ export type Task = {
     observations: Maybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
-    workOrderNumber: Maybe<Scalars['Int']>;
 };
 
 export type TaskCrudResult = {
@@ -434,6 +438,7 @@ export type TaskCrudResult = {
 };
 
 export type TaskInput = {
+    actNumber: InputMaybe<Scalars['Int']>;
     assigned: Array<Scalars['String']>;
     auditor: InputMaybe<Scalars['String']>;
     branch: Scalars['String'];
@@ -442,7 +447,6 @@ export type TaskInput = {
     movitecTicket: InputMaybe<Scalars['String']>;
     status: TaskStatus;
     taskType: TaskType;
-    workOrderNumber: InputMaybe<Scalars['Int']>;
 };
 
 export const TaskStatus = {
@@ -457,12 +461,14 @@ export const TaskType = {
     Actualizacion: 'Actualizacion',
     Correctivo: 'Correctivo',
     Desmonte: 'Desmonte',
+    InspeccionPolicial: 'InspeccionPolicial',
     Instalacion: 'Instalacion',
     Preventivo: 'Preventivo',
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
 export type UpdateMyTaskInput = {
+    actNumber: InputMaybe<Scalars['String']>;
     closedAt: InputMaybe<Scalars['DateTime']>;
     expenseIdsToDelete: InputMaybe<Array<Scalars['String']>>;
     expenses: InputMaybe<Array<ExpenseInput>>;
@@ -470,7 +476,6 @@ export type UpdateMyTaskInput = {
     imageIdsToDelete: InputMaybe<Array<Scalars['String']>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
-    workOrderNumber: InputMaybe<Scalars['String']>;
 };
 
 export type User = {
@@ -698,7 +703,7 @@ export type TaskByIdQuery = {
         createdAt: any;
         closedAt: any | null;
         description: string;
-        workOrderNumber: number | null;
+        actNumber: number | null;
         observations: string | null;
         taskType: TaskType;
         status: TaskStatus;
@@ -728,10 +733,12 @@ export type TaskByIdQuery = {
             id: string;
             amount: number;
             paySource: ExpensePaySource;
-            paySourceBank: ExpensePaySourceBank;
+            paySourceBank: ExpensePaySourceBank | null;
             expenseType: ExpenseType;
             observations: string | null;
             createdAt: any;
+            installments: number | null;
+            expenseDate: any | null;
             status: ExpenseStatus;
             doneBy: string;
             image: {
@@ -2040,7 +2047,7 @@ export const TaskByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'workOrderNumber' },
+                                    name: { kind: 'Name', value: 'actNumber' },
                                 },
                                 {
                                     kind: 'Field',
@@ -2260,6 +2267,20 @@ export const TaskByIdDocument = {
                                                             },
                                                         },
                                                     ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'installments',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseDate',
                                                 },
                                             },
                                             {

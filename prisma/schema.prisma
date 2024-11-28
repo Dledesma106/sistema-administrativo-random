@@ -144,9 +144,11 @@ model Expense {
   createdAt     DateTime              @default(now()) @db.Date
   updatedAt     DateTime              @updatedAt
   amount        Float
+  installments  Int?
   observations  String?
   deleted       Boolean               @default(false)
   deletedAt     DateTime?             @db.Date
+  expenseDate   DateTime?             @db.Date
   expenseType   ExpenseType
   paySource     ExpensePaySource
   paySourceBank ExpensePaySourceBank?
@@ -158,7 +160,7 @@ model Expense {
   doneBy String
 
   registeredById String @map("registeredBy") @db.ObjectId
-  registeredBy   User   @relation("expensesMade", fields: [registeredById], references: [id])
+  registeredBy   User   @relation("registeredExpenses", fields: [registeredById], references: [id])
 
   imageId String @map("image") @db.ObjectId
   image   Image  @relation(fields: [imageId], references: [id])
@@ -194,6 +196,7 @@ enum TaskType {
   Instalacion
   Desmonte
   Actualizacion
+  InspeccionPolicial
 }
 
 enum TaskStatus {
@@ -204,18 +207,18 @@ enum TaskStatus {
 }
 
 model Task {
-  id              String     @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt       DateTime   @default(now()) @db.Date
-  updatedAt       DateTime   @updatedAt
-  closedAt        DateTime?  @db.Date
-  openedAt        DateTime   @default(now()) @db.Date
-  deleted         Boolean    @default(false)
-  deletedAt       DateTime?  @db.Date
-  description     String
-  status          TaskStatus
-  taskType        TaskType
-  workOrderNumber Int?
-  movitecTicket   String?
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt     DateTime   @default(now()) @db.Date
+  updatedAt     DateTime   @updatedAt
+  closedAt      DateTime?  @db.Date
+  openedAt      DateTime   @default(now()) @db.Date
+  deleted       Boolean    @default(false)
+  deletedAt     DateTime?  @db.Date
+  description   String
+  status        TaskStatus
+  taskType      TaskType
+  actNumber     Int?
+  movitecTicket String?
 
   branchId String @map("branch") @db.ObjectId
   branch   Branch @relation(fields: [branchId], references: [id])
@@ -226,6 +229,9 @@ model Task {
   auditorId String? @db.ObjectId
   auditor   User?   @relation(name: "auditor", fields: [auditorId], references: [id])
 
+  createdById String? @db.ObjectId
+  createdBy   User?   @relation(name: "createdTasks", fields: [createdById], references: [id])
+
   assignedIDs String[] @db.ObjectId
   assigned    User[]   @relation(name: "assigned", fields: [assignedIDs], references: [id])
 
@@ -235,6 +241,8 @@ model Task {
   expenses Expense[]
 
   observations String?
+  User         User?   @relation(fields: [userId], references: [id])
+  userId       String? @db.ObjectId
 
   @@map("tasks")
 }
@@ -297,8 +305,11 @@ model User {
   preventivesIDs String[]     @map("preventives") @db.ObjectId
   preventives    Preventive[] @relation(fields: [preventivesIDs], references: [id])
 
-  expensesMade    Expense[] @relation("expensesMade")
-  expensesAudited Expense[] @relation("expensesAudited")
+  registeredExpenses Expense[] @relation("registeredExpenses")
+  expensesAudited    Expense[] @relation("expensesAudited")
+  createdTasks       Task[]    @relation("createdTasks")
+  createdTasksIds    String[]  @db.ObjectId
+  Task               Task[]
 
   @@map("users")
 }

@@ -170,7 +170,7 @@ export interface ITask extends Document {
     activity?: IActivity;
     operatorName?: string;
     imagesIDs?: IImage[];
-    workOrderNumber?: number;
+    actNumber?: number;
     closedAt?: Date;
     deleted: boolean;
 }

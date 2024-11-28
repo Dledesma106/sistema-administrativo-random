@@ -81,6 +81,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         },
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
+                console.log('creando gastoooo');
                 const newExpense = await prisma.expense.create({
                     data: {
                         amount: parseFloat(String(expenseData.amount)),
@@ -88,6 +89,8 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         paySource: expenseData.paySource,
                         doneBy: expenseData.doneBy,
                         paySourceBank: expenseData.paySourceBank,
+                        installments: expenseData.installments,
+                        expenseDate: expenseData.expenseDate,
                         observations: expenseData.observations,
                         status: ExpenseStatus.Enviado,
                         registeredBy: { connect: { id: _context.user.id } },
