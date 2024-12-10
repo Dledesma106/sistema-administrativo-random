@@ -1,4 +1,4 @@
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import ProvinceForm, {
     type IProvinceForm,
 } from '@/components/Forms/TechAdmin/ProvinceForm';
@@ -10,8 +10,8 @@ export default function NewProvince(): JSX.Element {
     };
 
     return (
-        <DashboardLayout>
+        <>
             <ProvinceForm provinceForm={provinceForm} />
-        </DashboardLayout>
+        </>
     );
 }

@@ -83,8 +83,8 @@ export default function SideMenu(): JSX.Element {
 
                 <div className="space-y-2 pr-4">
                     {dashboardMenuItems
-                        .filter(({ roles }: IDashboardMenuItem) => {
-                            if (roles === null) {
+                        .filter(({ roles: sectionRoles }: IDashboardMenuItem) => {
+                            if (sectionRoles === null) {
                                 return true;
                             }
 
@@ -92,9 +92,11 @@ export default function SideMenu(): JSX.Element {
                                 return false;
                             }
 
-                            return roles.some((allowedRole) => {
-                                return user.roles.includes(allowedRole);
+                            const userRoleIsInSectionRoles = sectionRoles.some((role) => {
+                                return user.roles.includes(role);
                             });
+
+                            return userRoleIsInSectionRoles;
                         })
                         .map((item: IDashboardMenuItem) => {
                             return (

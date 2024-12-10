@@ -1,6 +1,6 @@
 import { GetServerSideProps } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import ClientBranchForm, {
     type BranchFormValues,
 } from '@/components/Forms/TechAdmin/ClientBranchForm';
@@ -15,11 +15,11 @@ export default function EditClientBranch({
 }: EditClientBranchProps): JSX.Element {
     if (!branch) {
         return (
-            <DashboardLayout>
+            <>
                 <div className="flex min-h-screen items-center justify-center">
                     <p className="text-2xl">No se encontró la sucursal</p>
                 </div>
-            </DashboardLayout>
+            </>
         );
     }
 
@@ -35,7 +35,7 @@ export default function EditClientBranch({
     };
 
     return (
-        <DashboardLayout>
+        <>
             <ClientBranchForm
                 businesses={businesses}
                 cities={cities}
@@ -46,7 +46,7 @@ export default function EditClientBranch({
                 branchForm={branchForm}
                 idToUpdate={branch.id}
             />
-        </DashboardLayout>
+        </>
     );
 }
 

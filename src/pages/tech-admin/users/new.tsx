@@ -1,4 +1,4 @@
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import dbConnect from '@/lib/dbConnect';
 import CreateOrUpdateUserForm, { UserFormProps } from '@/modules/CreateOrUpdateUserForm';
 import { prisma } from 'lib/prisma';
@@ -9,9 +9,9 @@ interface NewUserPageProps {
 
 export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <CreateOrUpdateUserForm cities={cities} />
-        </DashboardLayout>
+        </>
     );
 }
 

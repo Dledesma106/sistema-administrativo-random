@@ -1,6 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import BusinessForm, {
     type IBusinessForm,
 } from '@/components/Forms/TechAdmin/BusinessForm';
@@ -19,9 +19,9 @@ export default function EditBusiness({ business }: Props): JSX.Element {
         name: business.name,
     };
     return (
-        <DashboardLayout>
+        <>
             <BusinessForm newBusiness={false} businessForm={businessForm} />
-        </DashboardLayout>
+        </>
     );
 }
 

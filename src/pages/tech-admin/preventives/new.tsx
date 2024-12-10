@@ -1,6 +1,5 @@
 import { Role } from '@prisma/client';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import CreateOrUpdatePreventiveForm from '@/components/Forms/TechAdmin/CreateOrUpdatePreventiveForm';
 import { prisma } from 'lib/prisma';
 
@@ -8,9 +7,9 @@ type Props = Awaited<ReturnType<typeof getNewPreventivePageProps>>;
 
 export default function NewTask(props: Props): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <CreateOrUpdatePreventiveForm {...props} />
-        </DashboardLayout>
+        </>
     );
 }
 

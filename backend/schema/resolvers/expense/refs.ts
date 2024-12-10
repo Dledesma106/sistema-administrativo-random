@@ -127,7 +127,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
         observations: t.exposeString('observations', {
             nullable: true,
         }),
-        task: t.relation('task'),
+        task: t.relation('task', { nullable: true }),
     }),
 });
 

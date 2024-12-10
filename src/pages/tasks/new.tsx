@@ -2,7 +2,6 @@ import { GetServerSideProps } from 'next';
 
 import { Role } from '@prisma/client';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import CreateOrUpdateTaskForm from '@/components/Forms/TechAdmin/CreateOrUpdateTaskForm';
 import { prisma } from 'lib/prisma';
 
@@ -67,11 +66,7 @@ const getNewTaskPageProps = async () => {
 };
 
 export default function NewTask(props: NewTaskPageProps): JSX.Element {
-    return (
-        <DashboardLayout>
-            <CreateOrUpdateTaskForm {...props} />
-        </DashboardLayout>
-    );
+    return <CreateOrUpdateTaskForm {...props} />;
 }
 
 export const getServerSideProps: GetServerSideProps<NewTaskPageProps> = async () => {

@@ -1,6 +1,6 @@
 import { GetServerSideProps } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import ClientBranchForm from '@/components/Forms/TechAdmin/ClientBranchForm';
 import { prisma } from 'lib/prisma';
 
@@ -13,16 +13,16 @@ export default function NewClientBranch({
 }: CreateClientBranchProps): JSX.Element {
     if (!client) {
         return (
-            <DashboardLayout>
+            <>
                 <div className="flex min-h-screen items-center justify-center">
                     <p className="text-2xl">No se encontró al cliente</p>
                 </div>
-            </DashboardLayout>
+            </>
         );
     }
 
     return (
-        <DashboardLayout>
+        <>
             <ClientBranchForm
                 client={{
                     id: client.id,
@@ -31,7 +31,7 @@ export default function NewClientBranch({
                 cities={cities}
                 businesses={businesses}
             />
-        </DashboardLayout>
+        </>
     );
 }
 

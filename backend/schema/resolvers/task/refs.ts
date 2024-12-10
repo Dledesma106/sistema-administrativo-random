@@ -110,10 +110,6 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
         description: t.string({
             required: true,
         }),
-        status: t.field({
-            type: TaskStatusPothosRef,
-            required: true,
-        }),
         taskType: t.field({
             type: TaskTypePothosRef,
             required: true,

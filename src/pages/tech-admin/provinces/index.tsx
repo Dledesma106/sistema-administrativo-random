@@ -1,4 +1,4 @@
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
@@ -12,14 +12,14 @@ interface Props {
 
 export default function Provinces({ provinces }: Props): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <TitleButton
                 title="Provincias"
                 path="/tech-admin/provinces/new"
                 nameButton="Agregar provincia"
             />
             <ProvinceTable provinces={provinces} />
-        </DashboardLayout>
+        </>
     );
 }
 

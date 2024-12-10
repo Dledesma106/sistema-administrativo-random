@@ -1,4 +1,4 @@
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import BusinessForm, {
     type IBusinessForm,
 } from '@/components/Forms/TechAdmin/BusinessForm';
@@ -10,8 +10,8 @@ export default function NewBusiness(): JSX.Element {
     };
 
     return (
-        <DashboardLayout>
+        <>
             <BusinessForm newBusiness={true} businessForm={businessForm} />
-        </DashboardLayout>
+        </>
     );
 }

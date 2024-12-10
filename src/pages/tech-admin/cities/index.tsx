@@ -1,6 +1,6 @@
 import { GetServerSideProps } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import TitleButton from '@/components/TitleButton';
 import { CityTable } from '@/modules/tables/city-table';
 import { prisma } from 'lib/prisma';
@@ -9,7 +9,7 @@ export type CitiesPageProps = Awaited<ReturnType<typeof getProps>>;
 
 export default function Cities({ provinces }: CitiesPageProps): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <main>
                 <TitleButton
                     title="Localidades"
@@ -19,7 +19,7 @@ export default function Cities({ provinces }: CitiesPageProps): JSX.Element {
 
                 <CityTable provinces={provinces} />
             </main>
-        </DashboardLayout>
+        </>
     );
 }
 

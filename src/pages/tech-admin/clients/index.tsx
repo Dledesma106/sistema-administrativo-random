@@ -1,6 +1,6 @@
 import { GetServerSideProps } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import TitleButton from '@/components/TitleButton';
 import ClientTable from '@/modules/tables/ClientTable';
 import { prisma } from 'lib/prisma';
@@ -9,7 +9,7 @@ export type ClientsPageProps = Awaited<ReturnType<typeof getProps>>;
 
 export default function Clients({ clients }: ClientsPageProps): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <main>
                 <TitleButton
                     title="Clientes"
@@ -18,7 +18,7 @@ export default function Clients({ clients }: ClientsPageProps): JSX.Element {
                 />
                 <ClientTable clients={clients} />
             </main>
-        </DashboardLayout>
+        </>
     );
 }
 

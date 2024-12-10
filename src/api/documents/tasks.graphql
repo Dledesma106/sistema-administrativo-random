@@ -143,14 +143,32 @@ mutation deleteTask($id: String!) {
     }
 }
 
-mutation updateTaskExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
-    updateTaskExpenseStatus(expenseId: $expenseId, status: $status) {
+mutation updateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
+    updateExpenseStatus(expenseId: $expenseId, status: $status) {
+        expense {
+            id
+            amount
+            expenseType
+            paySource
+            paySourceBank
+            installments
+            task {
+                id
+                expenses {
+                    id
+                    status
+                }
+            }
+        }
+        success
+    }
+}
+
+mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
+    updateTaskStatus(id: $id, status: $status) {
         task {
             id
-            expenses {
-                id
-                status
-            }
+            status
         }
         success
     }

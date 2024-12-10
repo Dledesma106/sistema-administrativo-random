@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
 import CreateOrUpdateUserForm from '@/modules/CreateOrUpdateUserForm';
@@ -16,25 +15,23 @@ interface Props {
 
 export default function EditUser({ cities, user }: Props): JSX.Element {
     return (
-        <DashboardLayout>
-            <CreateOrUpdateUserForm
-                defaultValues={{
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.email,
-                    roles:
-                        user.roles?.map((role) => {
-                            return {
-                                label: role,
-                                value: role,
-                            };
-                        }) || [],
-                    city: user.city?._id as string,
-                }}
-                cities={cities}
-                userIdToUpdate={user._id.toString()}
-            />
-        </DashboardLayout>
+        <CreateOrUpdateUserForm
+            defaultValues={{
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                roles:
+                    user.roles?.map((role) => {
+                        return {
+                            label: role,
+                            value: role,
+                        };
+                    }) || [],
+                city: user.city?._id as string,
+            }}
+            cities={cities}
+            userIdToUpdate={user._id.toString()}
+        />
     );
 }
 

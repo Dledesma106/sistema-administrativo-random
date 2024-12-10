@@ -5,14 +5,13 @@ import {
     TaskInputPothosRef,
     UpdateMyTaskInput,
     MyTaskInputPothosRef,
+    TaskStatusPothosRef,
 } from './refs';
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
-
-import { ExpenseStatusPothosRef } from '../expense/refs';
 
 builder.mutationFields((t) => ({
     createTask: t.field({
@@ -36,7 +35,6 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { input } = args;
-                console.log('tasktype: ', input.taskType);
                 const task = await prisma.task.create({
                     data: {
                         actNumber: input.actNumber,
@@ -44,7 +42,7 @@ builder.mutationFields((t) => ({
                         branchId: input.branch,
                         businessId: input.business,
                         description: input.description,
-                        status: input.status,
+                        status: TaskStatus.Pendiente,
                         taskType: input.taskType,
                         assignedIDs: {
                             set: input.assigned,
@@ -185,7 +183,7 @@ builder.mutationFields((t) => ({
                 },
             ],
         },
-        resolve: async (root, args, { user }, _info) => {
+        resolve: async (root, args, _info) => {
             try {
                 const { id, input } = args;
 
@@ -215,37 +213,12 @@ builder.mutationFields((t) => ({
                     branchId: input.branch,
                     businessId: input.business,
                     description: input.description,
-                    status: input.status,
                     taskType: input.taskType,
                     assignedIDs: {
                         set: input.assigned,
                     },
                     movitecTicket: input.movitecTicket,
                 };
-
-                if (foundTask.status === data.status) {
-                    data.auditorId = foundTask.auditorId;
-                } else {
-                    if (data.status === TaskStatus.Aprobada) {
-                        data.auditorId = user.id;
-                    } else {
-                        data.auditorId = null;
-                    }
-                }
-
-                if (data.status === TaskStatus.Aprobada) {
-                    const expenses = foundTask.expenses.filter(
-                        (expense) => expense.status === ExpenseStatus.Enviado,
-                    );
-
-                    if (expenses.length > 0) {
-                        return {
-                            message:
-                                'No se puede aprobar la tarea porque hay gastos pendientes de aprobar',
-                            success: false,
-                        };
-                    }
-                }
 
                 const task = await prisma.task.update({
                     where: {
@@ -260,6 +233,52 @@ builder.mutationFields((t) => ({
                 };
             } catch (error) {
                 return {
+                    success: false,
+                };
+            }
+        },
+    }),
+    updateTaskStatus: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+            status: t.arg({
+                type: TaskStatusPothosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                {
+                    or: ['IsAdministrativoTecnico'],
+                },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id, status } = args;
+                const task = await prisma.task.update({
+                    where: { id },
+                    data: { status },
+                });
+
+                if (!task) {
+                    return {
+                        message: 'La tarea no existe',
+                        success: false,
+                    };
+                }
+
+                return {
+                    success: true,
+                    task,
+                };
+            } catch (error) {
+                return {
+                    message: 'Error al eliminar la tarea',
                     success: false,
                 };
             }
@@ -521,84 +540,6 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 console.error(error);
                 return { success: false };
-            }
-        },
-    }),
-    updateTaskExpenseStatus: t.field({
-        type: TaskCrudResultPothosRef,
-        args: {
-            expenseId: t.arg.string({
-                required: true,
-            }),
-            status: t.arg({
-                type: ExpenseStatusPothosRef,
-                required: true,
-            }),
-        },
-        authz: {
-            compositeRules: [
-                {
-                    and: ['IsAuthenticated'],
-                },
-                {
-                    or: ['IsAdministrativoTecnico', 'IsAuditor'],
-                },
-            ],
-        },
-        resolve: async (root, args) => {
-            try {
-                const { expenseId, status } = args;
-                const foundExpense = await prisma.expense.findUniqueUndeleted({
-                    where: {
-                        id: expenseId,
-                    },
-                    select: {
-                        task: true,
-                    },
-                });
-
-                if (!foundExpense) {
-                    return {
-                        message: 'El gasto no existe',
-                        success: false,
-                    };
-                }
-
-                if (!foundExpense.task) {
-                    return {
-                        message: 'El gasto no pertenece a ninguna tarea',
-                        success: false,
-                    };
-                }
-
-                if (foundExpense.task.status === TaskStatus.Aprobada) {
-                    return {
-                        message:
-                            'No se puede actualizar el estado del gasto porque la tarea ya fue aprobada',
-                        success: false,
-                    };
-                }
-
-                await prisma.expense.update({
-                    where: {
-                        id: expenseId,
-                    },
-                    data: {
-                        status,
-                    },
-                    select: {
-                        task: true,
-                    },
-                });
-
-                return {
-                    success: true,
-                    task: foundExpense.task,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                };
             }
         },
     }),

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 
 import { Role } from '@prisma/client';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import CreateOrUpdatePreventiveForm from '@/components/Forms/TechAdmin/CreateOrUpdatePreventiveForm';
 import { Month, type Frequency } from 'backend/models/types';
 import { prisma } from 'lib/prisma';
@@ -36,7 +36,7 @@ export default function EditPreventive(props: Props) {
     const { preventive, ...rest } = props;
 
     return (
-        <DashboardLayout>
+        <>
             <CreateOrUpdatePreventiveForm
                 defaultValues={{
                     client: preventive.branch.clientId,
@@ -57,7 +57,7 @@ export default function EditPreventive(props: Props) {
                 preventiveIdToUpdate={router.query.id as string}
                 {...rest}
             />
-        </DashboardLayout>
+        </>
     );
 }
 

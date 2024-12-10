@@ -14,6 +14,7 @@ const ExpenseTypeBadge = ({ type }: Props) => {
       'h-2 w-2 rounded-full bg-blue-500': type === ExpenseType.Hospedaje,
       'h-2 w-2 rounded-full bg-red-500': type === ExpenseType.Herramienta,
       'h-2 w-2 rounded-full bg-orange-500': type === ExpenseType.Insumos,
+      'h-2 w-2 rounded-full bg-purple-500': type === ExpenseType.Otro,
     })
   return (
     <Badge variant="outline" className="space-x-2">                                  

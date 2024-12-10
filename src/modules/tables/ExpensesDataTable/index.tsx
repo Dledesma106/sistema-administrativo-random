@@ -14,11 +14,10 @@ import {
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
-import { useTasksTableColumns } from './columns';
-import { useTasksListQuery } from './queries';
-import { TasksDataTableToolbar } from './tasks-table-toolbar';
+import { useExpensesTableColumns } from './columns';
+import { ExpensesDataTableToolbar } from './expenses-table-toolbar';
 
-import { TasksQuery } from '@/api/graphql';
+import { ExpensesQuery } from '@/api/graphql';
 import { DataTablePagination } from '@/components/data-table-pagination';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -29,34 +28,33 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useGetExpenses } from '@/hooks/api/expenses/useGetExpenses';
 import { routesBuilder } from '@/lib/routes';
-import { TasksPageProps } from '@/pages/tasks';
+import { ExpensesPageProps } from '@/pages/expenses';
+import { ElementType } from '@/types';
 
-type TableItem = TasksQuery['tasks'][0];
+type TableItem = ElementType<ExpensesQuery['expenses']>;
 
-export default function TasksDataTable(props: TasksPageProps): JSX.Element {
+export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const router = useRouter();
-    const tasksQuery = useTasksListQuery({
-        assigneed: null,
-        business: null,
-        city: null,
-        client: null,
+    const { data, error } = useGetExpenses({
+        registeredBy: null,
         status: null,
-        taskType: null,
+        expenseType: null,
     });
 
-    const [tasks, setTasks] = useState(tasksQuery.data?.tasks);
+    const [expenses, setExpenses] = useState(data?.expenses);
 
-    const columns = useTasksTableColumns();
+    const columns = useExpensesTableColumns();
 
     useEffect(() => {
-        setTasks(tasksQuery.data?.tasks);
-    }, [tasksQuery.data?.tasks]);
+        setExpenses(data?.expenses);
+    }, [data?.expenses]);
 
     const table = useReactTable<TableItem>({
-        data: tasks || [],
+        data: expenses || [],
         columns: columns,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
@@ -66,23 +64,22 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         getFilteredRowModel: getFilteredRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: (table, columnId) => {
-            if (columnId === 'assigned') {
+            if (columnId === 'registeredBy') {
                 return () => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const uniqueValuesMap = new Map<any, number>();
                     const rows = table.getCoreRowModel().rows;
 
                     rows.forEach((row) => {
-                        const assigned: TableItem['assigned'] = row.getValue(columnId);
+                        const registeredBy: TableItem['registeredBy'] =
+                            row.getValue(columnId);
 
-                        for (const user of assigned) {
-                            const valueInMap = uniqueValuesMap.get(user.id);
+                        const valueInMap = uniqueValuesMap.get(registeredBy.id);
 
-                            if (typeof valueInMap !== 'undefined') {
-                                uniqueValuesMap.set(user.id, valueInMap + 1);
-                            } else {
-                                uniqueValuesMap.set(user.id, 1);
-                            }
+                        if (typeof valueInMap !== 'undefined') {
+                            uniqueValuesMap.set(registeredBy.id, valueInMap + 1);
+                        } else {
+                            uniqueValuesMap.set(registeredBy.id, 1);
                         }
                     });
 
@@ -103,10 +100,10 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         },
     });
 
-    if (tasks) {
+    if (expenses) {
         return (
             <div className="space-y-4 pb-8">
-                <TasksDataTableToolbar table={table} {...props} />
+                <ExpensesDataTableToolbar table={table} {...props} />
 
                 <div className="rounded-md border">
                     <Table>
@@ -133,14 +130,14 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow
                                         key={row.id}
+                                        data-state={row.getIsSelected() && 'selected'}
                                         onClick={() =>
                                             router.push(
-                                                routesBuilder.tasks.details(
+                                                routesBuilder.expenses.details(
                                                     row.original.id,
                                                 ),
                                             )
                                         }
-                                        data-state={row.getIsSelected() && 'selected'}
                                     >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
@@ -171,13 +168,13 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         );
     }
 
-    if (tasksQuery.error) {
+    if (error) {
         return <div>Hubo un error al cargar las tareas</div>;
     }
 
     return (
         <div className="space-y-4 pb-8">
-            <TasksDataTableToolbar table={table} {...props} />
+            <ExpensesDataTableToolbar table={table} {...props} />
 
             <Skeleton className="h-96 w-full" />
         </div>

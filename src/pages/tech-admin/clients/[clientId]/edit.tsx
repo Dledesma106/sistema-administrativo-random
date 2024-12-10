@@ -1,6 +1,6 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import ClientForm, { type IClientForm } from '@/components/Forms/TechAdmin/ClientForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
@@ -18,9 +18,9 @@ export default function ClientEdit({ client }: Props): JSX.Element {
     };
 
     return (
-        <DashboardLayout>
+        <>
             <ClientForm newClient={false} clientForm={clientForm} />
-        </DashboardLayout>
+        </>
     );
 }
 

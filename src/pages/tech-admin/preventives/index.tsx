@@ -1,6 +1,6 @@
 import { GetServerSideProps } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
+import {  } from '@/components/';
 import TitleButton from '@/components/TitleButton';
 import { PreventivesTable } from '@/modules/tables/preventives-table';
 import { prisma } from 'lib/prisma';
@@ -9,7 +9,7 @@ export type PreventivesPageProps = Awaited<ReturnType<typeof getProps>>;
 
 export default function Preventives(props: PreventivesPageProps): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <TitleButton
                 title="Preventivos"
                 path="/tech-admin/preventives/new"
@@ -22,7 +22,7 @@ export default function Preventives(props: PreventivesPageProps): JSX.Element {
                 provinces={props.provinces}
                 technicians={props.technicians}
             />
-        </DashboardLayout>
+        </>
     );
 }
 

@@ -5,7 +5,7 @@ import { TaskByIdDocument } from '@/api/graphql';
 
 export const TASK_DETAIL_QUERY_KEY = (id: string) => ['task', 'detail', id];
 
-export const useTaskByIdQuery = (id: string) => {
+export const useGetTaskById = (id: string) => {
     return useQuery({
         queryKey: TASK_DETAIL_QUERY_KEY(id),
         queryFn: async () => {
