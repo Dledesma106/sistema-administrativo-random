@@ -1,28 +1,28 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { TASK_DETAIL_QUERY_KEY } from './query';
-
 import { fetchClient } from '@/api/fetch-client';
 import {
     TaskByIdQuery,
-    UpdateTaskExpenseStatusDocument,
-    UpdateTaskExpenseStatusMutation,
-    UpdateTaskExpenseStatusMutationVariables,
+    UpdateExpenseStatusDocument,
+    UpdateExpenseStatusMutation,
+    UpdateExpenseStatusMutationVariables,
 } from '@/api/graphql';
 
-export const useUpdateTaskExpenseStatusMutation = () => {
+import { TASK_DETAIL_QUERY_KEY } from '../tasks/useGetTaskById';
+
+export const useUpdateExpenseStatus = () => {
     const client = useQueryClient();
 
     return useMutation<
-        UpdateTaskExpenseStatusMutation,
+        UpdateExpenseStatusMutation,
         Error,
-        UpdateTaskExpenseStatusMutationVariables
+        UpdateExpenseStatusMutationVariables
     >({
         mutationFn: (data) => {
-            return fetchClient(UpdateTaskExpenseStatusDocument, data);
+            return fetchClient(UpdateExpenseStatusDocument, data);
         },
         onSuccess: (data) => {
-            const task = data.updateTaskExpenseStatus.task;
+            const task = data.updateExpenseStatus.expense?.task;
             if (!task) {
                 return;
             }

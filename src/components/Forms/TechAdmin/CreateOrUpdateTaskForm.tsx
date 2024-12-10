@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 
-import { TaskStatus, TaskType } from '@prisma/client';
+import { TaskType } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -25,7 +25,7 @@ import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
 import { NewTaskPageProps } from '@/pages/tasks/new';
-import { taskStatusesOptions, taskTypesOptions } from 'backend/models/types';
+import { taskTypesOptions } from 'backend/models/types';
 
 type FormValues = {
     client: string;
@@ -37,7 +37,6 @@ type FormValues = {
     }[];
     description: string;
     taskType: TaskType;
-    status: TaskStatus;
     actNumber: number | null;
     movitecTicket: string;
 };
@@ -109,7 +108,6 @@ const CreateOrUpdateTaskForm = ({
                     branch: form.branch,
                     business: form.business,
                     description: form.description,
-                    status: form.status,
                     taskType: form.taskType,
                     actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
@@ -161,7 +159,6 @@ const CreateOrUpdateTaskForm = ({
                     branch: form.branch,
                     business: form.business,
                     description: form.description,
-                    status: form.status,
                     taskType: form.taskType,
                     actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
@@ -326,9 +323,7 @@ const CreateOrUpdateTaskForm = ({
                         rules={{
                             validate: (value) => {
                                 if (value.length === 0) {
-                                    if (form.watch('status') !== TaskStatus.SinAsignar) {
-                                        return 'Debe seleccionar al menos un tecnico';
-                                    }
+                                    return 'Debe seleccionar al menos un tecnico';
                                 }
 
                                 return true;
@@ -372,40 +367,6 @@ const CreateOrUpdateTaskForm = ({
                                             value={field.value}
                                             onChange={field.onChange}
                                             items={taskTypesOptions}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
-                    />
-
-                    <FormField
-                        name="status"
-                        control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                            validate: (value) => {
-                                if (value !== TaskStatus.SinAsignar) {
-                                    if (form.watch('assignedIDs').length === 0) {
-                                        return 'Debe seleccionar al menos un tecnico';
-                                    }
-                                }
-
-                                return true;
-                            },
-                        }}
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Estado</FormLabel>
-                                    <FormControl>
-                                        <Combobox
-                                            selectPlaceholder="Seleccione un estado"
-                                            searchPlaceholder="Buscar estado"
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            items={taskStatusesOptions}
                                         />
                                     </FormControl>
                                     <FormMessage />

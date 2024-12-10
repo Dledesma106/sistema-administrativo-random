@@ -2,7 +2,6 @@ import { GetServerSideProps } from 'next';
 
 import { Role } from '@prisma/client';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import CreateOrUpdateTaskForm from '@/components/Forms/TechAdmin/CreateOrUpdateTaskForm';
 import { prisma } from 'lib/prisma';
 
@@ -51,13 +50,13 @@ const propsAreValid = (props: Props): props is ValidProps => {
 
 export default function TaskView(props: Props): JSX.Element {
     if (propsAreValid(props) === false) {
-        return <DashboardLayout>Task not found</DashboardLayout>;
+        return <>Task not found</>;
     }
 
     const { task, ...rest } = props;
 
     return (
-        <DashboardLayout>
+        <>
             <CreateOrUpdateTaskForm
                 defaultValues={{
                     assignedIDs: task.assigned.map((user) => {
@@ -70,7 +69,6 @@ export default function TaskView(props: Props): JSX.Element {
                     business: task.businessId,
                     client: task.branch.clientId,
                     description: task.description,
-                    status: task.status,
                     taskType: task.taskType,
                     actNumber: task.actNumber,
                     movitecTicket: task.movitecTicket ?? '',
@@ -78,7 +76,7 @@ export default function TaskView(props: Props): JSX.Element {
                 taskIdToUpdate={task.id}
                 {...rest}
             />
-        </DashboardLayout>
+        </>
     );
 }
 

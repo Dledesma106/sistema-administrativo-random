@@ -1,18 +1,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
-import { ExpenseStatus } from '@prisma/client';
 import { DownloadIcon } from '@radix-ui/react-icons';
 import dayjs from 'dayjs';
 
-import { useUpdateTaskExpenseStatusMutation } from './mutation';
-import { useTaskByIdQuery } from './query';
-
-import { TaskByIdQuery } from '@/api/graphql';
-import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
+import { TaskByIdQuery, TaskStatus } from '@/api/graphql';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
-import ExpensePaySourceBankBadge from '@/components/ui/Badges/ExpensePaySourceBankBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +19,9 @@ import {
     TableCell,
 } from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
+import { useUserContext } from '@/context/userContext/UserProvider';
+import { useGetTaskById } from '@/hooks/api/tasks/useGetTaskById';
+import { useUpdateTaskStatus } from '@/hooks/api/tasks/useUpdateTaskStatus';
 import { routesBuilder } from '@/lib/routes';
 import { pascalCaseToSpaces } from '@/lib/utils';
 
@@ -36,15 +34,37 @@ type Props = {
 };
 
 const Content: React.FC<Props> = ({ task }) => {
-    const updateExpenseStatusMutation = useUpdateTaskExpenseStatusMutation();
+    const { user } = useUserContext();
+    const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
+    const router = useRouter();
 
     return (
         <main className="py-3.5">
             <div className="flex justify-between">
-                <TypographyH1 className="mb-2">Task #{task.id}</TypographyH1>
-                <Button asChild>
-                    <Link href={routesBuilder.tasks.edit(task.id)}>Editar</Link>
-                </Button>
+                <TypographyH1 className="mb-2">Tarea #{task.id}</TypographyH1>
+                {user.roles.includes('AdministrativoTecnico') && (
+                    <div>
+                        {['Pendiente', 'SinAsignar'].includes(task.status) && (
+                            <Button asChild>
+                                <Link href={routesBuilder.tasks.edit(task.id)}>
+                                    Editar
+                                </Link>
+                            </Button>
+                        )}
+                        {task.status === 'Finalizada' && (
+                            <Button
+                                onClick={() =>
+                                    updateTaskStatus({
+                                        id: task.id,
+                                        status: TaskStatus.Aprobada,
+                                    })
+                                }
+                            >
+                                Aprobar Tarea
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
             <p className="text-muted-foreground">{task.description}</p>
 
@@ -156,181 +176,119 @@ const Content: React.FC<Props> = ({ task }) => {
                         </div>
                     )}
                 </section>
-
-                {task.expenses.length === 0 ? (
+                {user.roles.includes('AdministrativoContable') && (
                     <section>
-                        <Title>Gastos</Title>
-                        <p className="text-muted-foreground">No hay gastos</p>
-                    </section>
-                ) : (
-                    <section>
-                        <Title>
-                            Gastos: $
-                            {task.expenses.reduce((acc, curr) => acc + curr.amount, 0)}
-                        </Title>
+                        {task.expenses.length === 0 ? (
+                            <>
+                                <Title>Gastos</Title>
+                                <p className="text-muted-foreground">No hay gastos</p>
+                            </>
+                        ) : (
+                            <>
+                                <Title>
+                                    Gastos: $
+                                    {task.expenses
+                                        .reduce((acc, curr) => acc + curr.amount, 0)
+                                        .toLocaleString('es-AR')}
+                                </Title>
 
-                        <div className="overflow-hidden rounded-md border border-gray-200">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Fecha de Registro</TableHead>
-                                        <TableHead>Fecha de Pago</TableHead>
-                                        <TableHead>Monto</TableHead>
-                                        <TableHead>Razón</TableHead>
-                                        <TableHead>Fuente de pago</TableHead>
-                                        <TableHead>Banco Emisor Tarjeta</TableHead>
-                                        <TableHead>Registrado por</TableHead>
-                                        <TableHead>Pagado por</TableHead>
-                                        <TableHead>Observaciones</TableHead>
-                                        <TableHead>Comprobante</TableHead>
-                                        <TableHead></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {task.expenses.map((expense) => (
-                                        <TableRow key={expense.id}>
-                                            <TableCell>
-                                                {dayjs(expense.createdAt).format(
-                                                    'DD/MM/YYYY',
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {dayjs(expense.expenseDate).format(
-                                                    'DD/MM/YYYY',
-                                                )}
-                                            </TableCell>
-                                            <TableCell>${expense.amount}</TableCell>
-                                            <TableCell>
-                                                <ExpenseTypeBadge
-                                                    type={expense.expenseType}
-                                                />
-                                            </TableCell>
-                                            <TableCell>
-                                                <ExpensePaySourceBadge
-                                                    paySource={expense.paySource}
-                                                />
-                                                {expense.paySource === 'Credito' &&
-                                                    expense.installments &&
-                                                    `${expense.installments} Cuotas`}
-                                            </TableCell>
-                                            <TableCell>
-                                                {expense.paySourceBank ? (
-                                                    <ExpensePaySourceBankBadge
-                                                        paySourceBank={
-                                                            expense.paySourceBank
-                                                        }
-                                                    />
-                                                ) : (
-                                                    '-'
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {expense.registeredBy.fullName || '-'}
-                                            </TableCell>
-                                            <TableCell>{expense.doneBy || '-'}</TableCell>
-                                            <TableCell>
-                                                {expense.observations || '-'}
-                                            </TableCell>
-                                            <TableCell className="w-32">
-                                                <a
-                                                    className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
-                                                    download={expense.image.id}
-                                                    href={expense.image.url}
-                                                    target="_blank"
-                                                    rel="noreferrer"
+                                <div className="overflow-hidden rounded-md border border-gray-200">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Monto</TableHead>
+                                                <TableHead>Fecha de Registro</TableHead>
+                                                <TableHead>Fecha de Pago</TableHead>
+                                                <TableHead>Razón</TableHead>
+                                                <TableHead>Fuente de pago</TableHead>
+                                                <TableHead>Registrado por</TableHead>
+                                                <TableHead>Pagado por</TableHead>
+                                                <TableHead>Observaciones</TableHead>
+                                                <TableHead>Comprobante</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {task.expenses.map((expense) => (
+                                                <TableRow
+                                                    key={expense.id}
+                                                    onClick={() =>
+                                                        router.push(
+                                                            routesBuilder.expenses.details(
+                                                                expense.id,
+                                                            ),
+                                                        )
+                                                    }
                                                 >
-                                                    <Image
-                                                        src={expense.image.url}
-                                                        width={640}
-                                                        height={1252}
-                                                        alt=""
-                                                        className="z-0 w-20"
-                                                    />
+                                                    <TableCell>
+                                                        $
+                                                        {expense.amount.toLocaleString(
+                                                            'es-AR',
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {dayjs(expense.createdAt).format(
+                                                            'DD/MM/YYYY',
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {dayjs(
+                                                            expense.expenseDate,
+                                                        ).format('DD/MM/YYYY')}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <ExpenseTypeBadge
+                                                            type={expense.expenseType}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <ExpensePaySourceBadge
+                                                            paySource={expense.paySource}
+                                                            installments={
+                                                                expense.installments
+                                                            }
+                                                            paySourceBank={
+                                                                expense.paySourceBank
+                                                            }
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {expense.registeredBy.fullName ||
+                                                            '-'}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {expense.doneBy || '-'}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {expense.observations || '-'}
+                                                    </TableCell>
+                                                    <TableCell className="w-32">
+                                                        <a
+                                                            className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
+                                                            download={expense.image.id}
+                                                            href={expense.image.url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            <Image
+                                                                src={expense.image.url}
+                                                                width={640}
+                                                                height={1252}
+                                                                alt=""
+                                                                className="z-0 w-20"
+                                                            />
 
-                                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
-                                                        <DownloadIcon />
-                                                    </div>
-                                                </a>
-                                            </TableCell>
-                                            <TableCell className="w-32 space-y-4">
-                                                {(expense.status ===
-                                                    ExpenseStatus.Enviado ||
-                                                    expense.status ===
-                                                        ExpenseStatus.Aprobado) && (
-                                                    <ButtonWithSpinner
-                                                        className="w-full"
-                                                        disabled={
-                                                            updateExpenseStatusMutation.isPending
-                                                        }
-                                                        showSpinner={
-                                                            updateExpenseStatusMutation.isPending &&
-                                                            updateExpenseStatusMutation
-                                                                .variables.expenseId ===
-                                                                expense.id &&
-                                                            updateExpenseStatusMutation
-                                                                .variables.status ===
-                                                                ExpenseStatus.Rechazado
-                                                        }
-                                                        variant="destructive"
-                                                        onClick={() => {
-                                                            updateExpenseStatusMutation.mutate(
-                                                                {
-                                                                    expenseId: expense.id,
-                                                                    status: ExpenseStatus.Rechazado,
-                                                                },
-                                                                {
-                                                                    onSuccess: () => {
-                                                                        updateExpenseStatusMutation.reset();
-                                                                    },
-                                                                },
-                                                            );
-                                                        }}
-                                                    >
-                                                        Rechazar
-                                                    </ButtonWithSpinner>
-                                                )}
-
-                                                {(expense.status ===
-                                                    ExpenseStatus.Rechazado ||
-                                                    expense.status ===
-                                                        ExpenseStatus.Enviado) && (
-                                                    <ButtonWithSpinner
-                                                        className="w-full"
-                                                        disabled={
-                                                            updateExpenseStatusMutation.isPending
-                                                        }
-                                                        showSpinner={
-                                                            updateExpenseStatusMutation.isPending &&
-                                                            updateExpenseStatusMutation
-                                                                .variables.expenseId ===
-                                                                expense.id &&
-                                                            updateExpenseStatusMutation
-                                                                .variables.status ===
-                                                                ExpenseStatus.Aprobado
-                                                        }
-                                                        onClick={() => {
-                                                            updateExpenseStatusMutation.mutate(
-                                                                {
-                                                                    expenseId: expense.id,
-                                                                    status: ExpenseStatus.Aprobado,
-                                                                },
-                                                                {
-                                                                    onSuccess: () => {
-                                                                        updateExpenseStatusMutation.reset();
-                                                                    },
-                                                                },
-                                                            );
-                                                        }}
-                                                    >
-                                                        Aprobar
-                                                    </ButtonWithSpinner>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
+                                                                <DownloadIcon />
+                                                            </div>
+                                                        </a>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </>
+                        )}
                     </section>
                 )}
             </div>
@@ -339,7 +297,7 @@ const Content: React.FC<Props> = ({ task }) => {
 };
 
 export const TaskDetail = ({ id }: { id: string }) => {
-    const result = useTaskByIdQuery(id);
+    const result = useGetTaskById(id);
 
     if (result.isPending) {
         return <p>Loading...</p>;

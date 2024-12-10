@@ -91,7 +91,7 @@ export type Expense = {
     paySourceBank: Maybe<ExpensePaySourceBank>;
     registeredBy: User;
     status: ExpenseStatus;
-    task: Task;
+    task: Maybe<Task>;
 };
 
 export type ExpenseCrudResult = {
@@ -185,10 +185,11 @@ export type Mutation = {
     sendNewUserRandomPassword: UserCrudPothosRef;
     updateBranch: BranchCrudResult;
     updateCity: CityCrudResult;
+    updateExpenseStatus: ExpenseCrudResult;
     updateMyAssignedTask: TaskCrudResult;
     updatePreventive: PreventiveCrudResult;
     updateTask: TaskCrudResult;
-    updateTaskExpenseStatus: TaskCrudResult;
+    updateTaskStatus: TaskCrudResult;
     updateUser: UserCrudPothosRef;
 };
 
@@ -266,6 +267,11 @@ export type MutationUpdateCityArgs = {
     input: CityInput;
 };
 
+export type MutationUpdateExpenseStatusArgs = {
+    expenseId: Scalars['String'];
+    status: ExpenseStatus;
+};
+
 export type MutationUpdateMyAssignedTaskArgs = {
     input: UpdateMyTaskInput;
 };
@@ -280,9 +286,9 @@ export type MutationUpdateTaskArgs = {
     input: TaskInput;
 };
 
-export type MutationUpdateTaskExpenseStatusArgs = {
-    expenseId: Scalars['String'];
-    status: ExpenseStatus;
+export type MutationUpdateTaskStatusArgs = {
+    id: Scalars['String'];
+    status: TaskStatus;
 };
 
 export type MutationUpdateUserArgs = {
@@ -356,6 +362,8 @@ export type Query = {
     cities: Array<City>;
     clientBranches: Array<Branch>;
     clients: Array<Client>;
+    expenseById: Maybe<Expense>;
+    expenses: Maybe<Array<Expense>>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
     myAssignedTasks: Array<Task>;
@@ -379,6 +387,16 @@ export type QueryClientBranchesArgs = {
     cityId: InputMaybe<Scalars['String']>;
     clientId: Scalars['String'];
     provinceId: InputMaybe<Scalars['String']>;
+};
+
+export type QueryExpenseByIdArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryExpensesArgs = {
+    expenseType: InputMaybe<ExpenseType>;
+    registeredBy: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<ExpenseStatus>;
 };
 
 export type QueryMyAssignedTaskByIdArgs = {
@@ -445,7 +463,6 @@ export type TaskInput = {
     business: Scalars['String'];
     description: Scalars['String'];
     movitecTicket: InputMaybe<Scalars['String']>;
-    status: TaskStatus;
     taskType: TaskType;
 };
 
@@ -625,6 +642,84 @@ export type DeleteCityMutation = {
     };
 };
 
+export type ExpenseByIdQueryVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type ExpenseByIdQuery = {
+    __typename?: 'Query';
+    expenseById: {
+        __typename?: 'Expense';
+        id: string;
+        amount: number;
+        expenseType: ExpenseType;
+        paySource: ExpensePaySource;
+        paySourceBank: ExpensePaySourceBank | null;
+        status: ExpenseStatus;
+        doneBy: string;
+        observations: string | null;
+        installments: number | null;
+        expenseDate: any | null;
+        createdAt: any;
+        task: { __typename?: 'Task'; id: string } | null;
+        registeredBy: { __typename?: 'User'; id: string; fullName: string };
+        image: { __typename?: 'Image'; id: string; url: string };
+        auditor: { __typename?: 'User'; id: string; fullName: string } | null;
+    } | null;
+};
+
+export type ExpensesQueryVariables = Exact<{
+    registeredBy: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<ExpenseStatus>;
+    expenseType: InputMaybe<ExpenseType>;
+}>;
+
+export type ExpensesQuery = {
+    __typename?: 'Query';
+    expenses: Array<{
+        __typename?: 'Expense';
+        amount: number;
+        createdAt: any;
+        expenseType: ExpenseType;
+        id: string;
+        paySource: ExpensePaySource;
+        paySourceBank: ExpensePaySourceBank | null;
+        installments: number | null;
+        expenseDate: any | null;
+        observations: string | null;
+        doneBy: string;
+        status: ExpenseStatus;
+        task: {
+            __typename?: 'Task';
+            id: string;
+            business: { __typename?: 'Business'; name: string };
+            branch: {
+                __typename?: 'Branch';
+                number: number;
+                client: { __typename?: 'Client'; name: string };
+                city: { __typename?: 'City'; name: string };
+            };
+        } | null;
+        registeredBy: { __typename?: 'User'; id: string; fullName: string };
+        image: { __typename?: 'Image'; id: string; url: string; key: string };
+    }> | null;
+};
+
+export type DeleteExpenseMutationVariables = Exact<{
+    id: Scalars['String'];
+    taskId: Scalars['String'];
+}>;
+
+export type DeleteExpenseMutation = {
+    __typename?: 'Mutation';
+    deleteExpense: {
+        __typename?: 'ExpenseCrudResult';
+        success: boolean;
+        message: string | null;
+        expense: { __typename?: 'Expense'; id: string } | null;
+    };
+};
+
 export type CreatePreventiveMutationVariables = Exact<{
     data: PreventiveInput;
 }>;
@@ -796,25 +891,48 @@ export type DeleteTaskMutation = {
     };
 };
 
-export type UpdateTaskExpenseStatusMutationVariables = Exact<{
+export type UpdateExpenseStatusMutationVariables = Exact<{
     expenseId: Scalars['String'];
     status: ExpenseStatus;
 }>;
 
-export type UpdateTaskExpenseStatusMutation = {
+export type UpdateExpenseStatusMutation = {
     __typename?: 'Mutation';
-    updateTaskExpenseStatus: {
+    updateExpenseStatus: {
+        __typename?: 'ExpenseCrudResult';
+        success: boolean;
+        expense: {
+            __typename?: 'Expense';
+            id: string;
+            amount: number;
+            expenseType: ExpenseType;
+            paySource: ExpensePaySource;
+            paySourceBank: ExpensePaySourceBank | null;
+            installments: number | null;
+            task: {
+                __typename?: 'Task';
+                id: string;
+                expenses: Array<{
+                    __typename?: 'Expense';
+                    id: string;
+                    status: ExpenseStatus;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type UpdateTaskStatusMutationVariables = Exact<{
+    id: Scalars['String'];
+    status: TaskStatus;
+}>;
+
+export type UpdateTaskStatusMutation = {
+    __typename?: 'Mutation';
+    updateTaskStatus: {
         __typename?: 'TaskCrudResult';
         success: boolean;
-        task: {
-            __typename?: 'Task';
-            id: string;
-            expenses: Array<{
-                __typename?: 'Expense';
-                id: string;
-                status: ExpenseStatus;
-            }>;
-        } | null;
+        task: { __typename?: 'Task'; id: string; status: TaskStatus } | null;
     };
 };
 
@@ -1545,6 +1663,501 @@ export const DeleteCityDocument = {
         },
     ],
 } as unknown as DocumentNode<DeleteCityMutation, DeleteCityMutationVariables>;
+export const ExpenseByIdDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'expenseById' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'expenseById' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'amount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenseType' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'paySource' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'paySourceBank' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'doneBy' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'task' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'registeredBy' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'image' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'auditor' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'installments' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenseDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<ExpenseByIdQuery, ExpenseByIdQueryVariables>;
+export const ExpensesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'expenses' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'registeredBy' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'ExpenseStatus' },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'expenseType' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'ExpenseType' },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'expenses' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'registeredBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'registeredBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseType' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseType' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'amount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenseType' },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'paySource' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'paySourceBank' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'installments' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenseDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'task' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'branch' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'number',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'client',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'city',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'registeredBy' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'doneBy' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'image' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<ExpensesQuery, ExpensesQueryVariables>;
+export const DeleteExpenseDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'deleteExpense' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'taskId' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deleteExpense' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'taskId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'taskId' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expense' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DeleteExpenseMutation, DeleteExpenseMutationVariables>;
 export const CreatePreventiveDocument = {
     kind: 'Document',
     definitions: [
@@ -2562,13 +3175,13 @@ export const DeleteTaskDocument = {
         },
     ],
 } as unknown as DocumentNode<DeleteTaskMutation, DeleteTaskMutationVariables>;
-export const UpdateTaskExpenseStatusDocument = {
+export const UpdateExpenseStatusDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'updateTaskExpenseStatus' },
+            name: { kind: 'Name', value: 'updateExpenseStatus' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -2604,7 +3217,7 @@ export const UpdateTaskExpenseStatusDocument = {
                 selections: [
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'updateTaskExpenseStatus' },
+                        name: { kind: 'Name', value: 'updateExpenseStatus' },
                         arguments: [
                             {
                                 kind: 'Argument',
@@ -2612,6 +3225,169 @@ export const UpdateTaskExpenseStatusDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'expenseId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expense' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseType',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'paySource',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'paySourceBank',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'installments',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'task' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'expenses',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'id',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'status',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    UpdateExpenseStatusMutation,
+    UpdateExpenseStatusMutationVariables
+>;
+export const UpdateTaskStatusDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'updateTaskStatus' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'TaskStatus' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateTaskStatus' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
                                 },
                             },
                             {
@@ -2638,26 +3414,7 @@ export const UpdateTaskExpenseStatusDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'expenses' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'id',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'status',
-                                                            },
-                                                        },
-                                                    ],
-                                                },
+                                                name: { kind: 'Name', value: 'status' },
                                             },
                                         ],
                                     },
@@ -2673,10 +3430,7 @@ export const UpdateTaskExpenseStatusDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<
-    UpdateTaskExpenseStatusMutation,
-    UpdateTaskExpenseStatusMutationVariables
->;
+} as unknown as DocumentNode<UpdateTaskStatusMutation, UpdateTaskStatusMutationVariables>;
 export const CreateUserDocument = {
     kind: 'Document',
     definitions: [

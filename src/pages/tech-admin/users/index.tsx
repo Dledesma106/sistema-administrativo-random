@@ -1,4 +1,3 @@
-import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';
@@ -12,7 +11,7 @@ interface Props {
 
 export default function Users({ users }: Props): JSX.Element {
     return (
-        <DashboardLayout>
+        <>
             <TitleButton
                 title="Usuarios"
                 path="/tech-admin/users/new"
@@ -20,7 +19,7 @@ export default function Users({ users }: Props): JSX.Element {
             />
 
             <UserTable users={users} />
-        </DashboardLayout>
+        </>
     );
 }
 

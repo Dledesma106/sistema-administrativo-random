@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';
@@ -23,13 +22,13 @@ export default function CityView({ city, provinces }: Props): JSX.Element {
     };
 
     return (
-        <DashboardLayout>
+        <>
             <CityForm
                 idToUpdate={city._id.toString()}
                 cityForm={cityForm}
                 provinces={provinces}
             />
-        </DashboardLayout>
+        </>
     );
 }
 

@@ -1,6 +1,10 @@
 import { ExpenseStatus } from '@prisma/client';
 
-import { ExpenseCrudResultPothosRef, ExpenseInputType } from './refs';
+import {
+    ExpenseCrudResultPothosRef,
+    ExpenseInputType,
+    ExpenseStatusPothosRef,
+} from './refs';
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
@@ -111,6 +115,73 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 };
             } catch (error) {
                 console.error(error);
+                return {
+                    success: false,
+                };
+            }
+        },
+    }),
+    updateExpenseStatus: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            expenseId: t.arg.string({
+                required: true,
+            }),
+            status: t.arg({
+                type: ExpenseStatusPothosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsAdministrativoContable'],
+                },
+            ],
+        },
+        resolve: async (root, args) => {
+            try {
+                const { expenseId, status } = args;
+                const foundExpense = await prisma.expense.findUniqueUndeleted({
+                    where: {
+                        id: expenseId,
+                    },
+                    select: {
+                        task: true,
+                    },
+                });
+
+                if (!foundExpense) {
+                    return {
+                        message: 'El gasto no existe',
+                        success: false,
+                    };
+                }
+
+                if (!foundExpense.task) {
+                    return {
+                        message: 'El gasto no pertenece a ninguna tarea',
+                        success: false,
+                    };
+                }
+
+                const newExpense = await prisma.expense.update({
+                    where: {
+                        id: expenseId,
+                    },
+                    data: {
+                        status,
+                    },
+                });
+
+                return {
+                    success: true,
+                    expense: newExpense,
+                };
+            } catch (error) {
                 return {
                     success: false,
                 };

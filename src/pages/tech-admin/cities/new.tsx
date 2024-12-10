@@ -1,6 +1,5 @@
 import { GetServerSideProps } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
 import { prisma } from 'lib/prisma';
 
@@ -13,9 +12,9 @@ export default function NewCity({ provinces }: NewCitiesPageProps): JSX.Element 
     };
 
     return (
-        <DashboardLayout>
+        <>
             <CityForm cityForm={cityForm} provinces={provinces} />
-        </DashboardLayout>
+        </>
     );
 }
 

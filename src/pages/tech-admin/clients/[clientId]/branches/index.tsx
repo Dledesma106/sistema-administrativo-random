@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import { DashboardLayout } from '@/components/DashboardLayout';
 import TitleButton from '@/components/TitleButton';
 import { ClientBranchesTable } from '@/modules/tables/client-branches-table';
 import { prisma } from 'lib/prisma';
@@ -38,17 +37,17 @@ export default function ClientView({
 }: ClientBranchesViewProps): JSX.Element {
     if (!client) {
         return (
-            <DashboardLayout>
+            <>
                 <div className="flex min-h-screen items-center justify-center">
                     <p className="text-2xl">No se encontró al cliente</p>
                 </div>
-            </DashboardLayout>
+            </>
         );
     }
 
     const name = `Cliente: ${client.name}`;
     return (
-        <DashboardLayout>
+        <>
             <main>
                 <TitleButton
                     title={name}
@@ -63,7 +62,7 @@ export default function ClientView({
                     businesses={businesses}
                 />
             </main>
-        </DashboardLayout>
+        </>
     );
 }
 

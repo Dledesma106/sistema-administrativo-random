@@ -4,6 +4,7 @@ import { PropsWithChildren, useEffect, useMemo } from 'react';
 
 import SideMenu from './SideMenu';
 
+import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
     const { isLoading, startLoading, stopLoading } = useLoading();
     const router = useRouter();
+    const { isLoggedIn } = useUserContext();
 
     useEffect(() => {
         const onRouteChangeStart = () => {
@@ -58,7 +60,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     function Main(): JSX.Element {
         return (
             <div className={cn('flex h-screen overflow-hidden pl-4')}>
-                <SideMenu />
+                {isLoggedIn && <SideMenu />}
 
                 <div className="flex flex-1 flex-col overflow-y-scroll">
                     <main className={cn('flex-1 px-4 py-3.5', className)}>
@@ -69,5 +71,5 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         );
     }
 
-    return useMemo(Main, [children, className, isLoading]);
+    return useMemo(Main, [children, className, isLoading, isLoggedIn]);
 };

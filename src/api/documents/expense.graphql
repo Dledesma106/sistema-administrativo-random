@@ -1,0 +1,80 @@
+query expenseById($id: String!) {
+    expenseById(id: $id) {
+        id
+        amount
+        expenseType
+        paySource
+        paySourceBank
+        status
+        doneBy
+        task {
+            id
+        }
+        registeredBy {
+            id
+            fullName
+        }
+        observations
+        image {
+            id
+            url
+        }
+        auditor {
+            id
+            fullName
+        }
+        installments
+        expenseDate
+        createdAt
+    }
+}
+
+query expenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType: ExpenseType) {
+    expenses(registeredBy: $registeredBy, status: $status, expenseType: $expenseType) {
+        amount
+        createdAt
+        expenseType
+        id
+        paySource
+        paySourceBank
+        installments
+        expenseDate
+        observations
+        task {
+            id
+            business {
+                name
+            }
+            branch {
+                number
+                client {
+                    name
+                }
+                city {
+                    name
+                }
+            }
+        }
+        registeredBy {
+            id
+            fullName
+        }
+        doneBy
+        image {
+            id
+            url
+            key
+        }
+        status
+    }
+}
+
+mutation deleteExpense ($id: String!, $taskId: String!) {
+    deleteExpense (id: $id, taskId: $taskId) {
+        expense{
+            id
+        }
+        success
+        message
+    }
+}

@@ -5,10 +5,12 @@ import Head from 'next/head';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import { DashboardLayout } from '@/components/DashboardLayout';
 import { Toaster } from '@/components/ui/toaster';
 import AlertProvider from '@/context/alertContext/AlertProvider';
 import LoadingProvider from '@/context/loadingContext/LoadingProvider';
 import UserProvider from '@/context/userContext/UserProvider';
+
 const queryClient = new QueryClient();
 
 export const fontSans = FontSans({
@@ -36,7 +38,9 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
                     <LoadingProvider>
                         <AlertProvider>
                             <UserProvider>
-                                <Component {...pageProps} />
+                                <DashboardLayout>
+                                    <Component {...pageProps} />
+                                </DashboardLayout>
                             </UserProvider>
                         </AlertProvider>
                     </LoadingProvider>

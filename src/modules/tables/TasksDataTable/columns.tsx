@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import { TaskStatus, TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 
@@ -7,7 +5,6 @@ import { TasksTableRowActions } from './tasks-table-row-actions';
 
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
-import { routesBuilder } from '@/lib/routes';
 import { dmyDateString, pascalCaseToSpaces } from '@/lib/utils';
 
 type Task = TasksQuery['tasks'][0];
@@ -21,16 +18,13 @@ export const useTasksTableColumns = () => [
             const task = info.row.original;
 
             return (
-                <Link
-                    className="space-y-2 hover:underline"
-                    href={routesBuilder.tasks.details(task.id)}
-                >
+                <>
                     <strong>{task.branch.client.name}</strong> - {task.business.name}
                     <p className="text-xs">
                         #{task.branch.number} - {task.branch.city.name},{' '}
                         {task.branch.city.province.name}
                     </p>
-                </Link>
+                </>
             );
         },
         header: 'Locación',
@@ -245,7 +239,7 @@ export const useTasksTableColumns = () => [
                 return acc + expense.amount;
             }, 0);
 
-            return `$${amount}`;
+            return `$${amount.toLocaleString('es-AR')}`;
         },
     }),
     columnHelper.display({

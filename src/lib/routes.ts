@@ -7,6 +7,10 @@ export const routesBuilder = {
         details: (id: string) => `/tasks/${id}`,
         edit: (id: string) => `/tasks/${id}/edit`,
     },
+    expenses: {
+        list: () => '/expenses',
+        details: (id: string) => `/expenses/${id}`,
+    },
     preventives: {
         list: () => '/tech-admin/preventives',
         create: () => '/tech-admin/preventives/new',
