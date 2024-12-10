@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import {  } from '@/components/';
 import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
 import dbConnect from '@/lib/dbConnect';
 import { deSlugify, mongooseDocumentToJSON } from '@/lib/utils';

@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import {  } from '@/components/';
 import TitleButton from '@/components/TitleButton';
 import { ClientBranchesTable } from '@/modules/tables/client-branches-table';
 import { prisma } from 'lib/prisma';

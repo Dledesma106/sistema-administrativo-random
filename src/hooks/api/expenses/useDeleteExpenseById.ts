@@ -1,21 +1,29 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Toast from 'react-native-root-toast';
 
-import { fetchGraphql } from '@/api/fetch-graphql';
+import { fetchClient } from '@/api/fetch-client';
 import {
     DeleteExpenseDocument,
     DeleteExpenseMutation,
     DeleteExpenseMutationVariables,
-    MyExpensesQuery,
+    ExpensesQuery,
+    TaskByIdQuery,
 } from '@/api/graphql';
-import { TASK_BY_ID_QUERY_KEY, TaskByIdQuery } from '../tasks/useGetMyAssignedTaskById';
-import Toast from 'react-native-root-toast';
+
+import { TASK_DETAIL_QUERY_KEY } from '../tasks/useGetTaskById';
 
 export const useDeleteExpenseById = (id: string) => {
     const client = useQueryClient();
     return useMutation<DeleteExpenseMutation, Error, DeleteExpenseMutationVariables>({
-        mutationFn: () => fetchGraphql(DeleteExpenseDocument, { id, taskId: '' }),
-        onSuccess: (data, { id, taskId }) => {
-            if (!data) return;
+        mutationFn: () =>
+            fetchClient(DeleteExpenseDocument, {
+                id,
+                taskId: '',
+            }),
+        onSuccess: (data, { taskId }) => {
+            if (!data) {
+                return;
+            }
 
             const {
                 deleteExpense: { expense: newExpense },
@@ -23,17 +31,19 @@ export const useDeleteExpenseById = (id: string) => {
 
             if (taskId) {
                 client.setQueryData<TaskByIdQuery>(
-                    TASK_BY_ID_QUERY_KEY(taskId),
+                    TASK_DETAIL_QUERY_KEY(taskId),
                     (oldData) => {
-                        if (!oldData || !oldData.myAssignedTaskById) {
+                        if (!oldData || !oldData.taskById) {
                             return oldData;
                         }
-                        if (!newExpense) return oldData;
+                        if (!newExpense) {
+                            return oldData;
+                        }
                         const newData: TaskByIdQuery = {
                             ...oldData,
-                            myAssignedTaskById: {
-                                ...oldData.myAssignedTaskById,
-                                expenses: oldData.myAssignedTaskById.expenses.filter(
+                            taskById: {
+                                ...oldData.taskById,
+                                expenses: oldData.taskById.expenses.filter(
                                     (expense) => expense.id !== newExpense.id,
                                 ),
                             },
@@ -42,13 +52,17 @@ export const useDeleteExpenseById = (id: string) => {
                     },
                 );
             } else {
-                client.setQueryData<MyExpensesQuery>(['expenses'], (oldData) => {
-                    if (!oldData || !oldData.myExpenses) return oldData;
-                    if (!newExpense) return oldData;
-                    const newData: MyExpensesQuery = {
+                client.setQueryData<ExpensesQuery>(['expenses'], (oldData) => {
+                    if (!oldData || !oldData.expenses) {
+                        return oldData;
+                    }
+                    if (!newExpense) {
+                        return oldData;
+                    }
+                    const newData: ExpensesQuery = {
                         ...oldData,
-                        myExpenses: [
-                            ...oldData.myExpenses.filter(
+                        expenses: [
+                            ...oldData.expenses.filter(
                                 (expense) => expense.id !== newExpense.id,
                             ),
                         ],

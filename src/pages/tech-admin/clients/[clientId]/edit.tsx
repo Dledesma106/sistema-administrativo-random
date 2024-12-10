@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import {  } from '@/components/';
 import ClientForm, { type IClientForm } from '@/components/Forms/TechAdmin/ClientForm';
 import dbConnect from '@/lib/dbConnect';
 import { mongooseDocumentToJSON } from '@/lib/utils';

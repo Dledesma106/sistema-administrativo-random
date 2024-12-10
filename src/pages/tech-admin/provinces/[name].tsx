@@ -1,6 +1,5 @@
 import { type GetServerSidePropsContext } from 'next';
 
-import {  } from '@/components/';
 import ProvinceForm, {
     type IProvinceForm,
 } from '@/components/Forms/TechAdmin/ProvinceForm';

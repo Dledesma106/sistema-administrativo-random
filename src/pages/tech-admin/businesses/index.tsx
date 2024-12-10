@@ -1,6 +1,5 @@
 import { GetServerSideProps } from 'next';
 
-import {  } from '@/components/';
 import TitleButton from '@/components/TitleButton';
 import BusinessTable from '@/modules/tables/BusinessTable';
 import { prisma } from 'lib/prisma';

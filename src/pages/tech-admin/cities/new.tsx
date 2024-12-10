@@ -1,6 +1,5 @@
 import { GetServerSideProps } from 'next';
 
-import {  } from '@/components/';
 import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
 import { prisma } from 'lib/prisma';
 

@@ -1,4 +1,3 @@
-import {  } from '@/components/';
 import ProvinceForm, {
     type IProvinceForm,
 } from '@/components/Forms/TechAdmin/ProvinceForm';

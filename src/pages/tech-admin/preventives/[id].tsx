@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 
 import { Role } from '@prisma/client';
 
-import {  } from '@/components/';
 import CreateOrUpdatePreventiveForm from '@/components/Forms/TechAdmin/CreateOrUpdatePreventiveForm';
 import { Month, type Frequency } from 'backend/models/types';
 import { prisma } from 'lib/prisma';
