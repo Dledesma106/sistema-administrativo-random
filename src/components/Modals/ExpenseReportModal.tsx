@@ -64,12 +64,18 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
                                         )}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
+                                <PopoverContent
+                                    className="w-auto p-0"
+                                    side="bottom"
+                                    align="start"
+                                    avoidCollisions={false}
+                                >
                                     <Calendar
                                         mode="single"
                                         selected={startDate}
                                         onSelect={setStartDate}
                                         locale={es}
+                                        disabled={{ after: new Date() }}
                                     />
                                 </PopoverContent>
                             </Popover>
@@ -91,12 +97,18 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
                                         )}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
+                                <PopoverContent
+                                    className="w-auto p-0"
+                                    side="bottom"
+                                    align="start"
+                                    avoidCollisions={false}
+                                >
                                     <Calendar
                                         mode="single"
                                         selected={endDate}
                                         onSelect={setEndDate}
                                         locale={es}
+                                        disabled={{ after: new Date() }}
                                     />
                                 </PopoverContent>
                             </Popover>

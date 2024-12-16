@@ -926,6 +926,7 @@ export type UpdateExpenseStatusMutation = {
     updateExpenseStatus: {
         __typename?: 'ExpenseCrudResult';
         success: boolean;
+        message: string | null;
         expense: {
             __typename?: 'Expense';
             id: string;
@@ -957,6 +958,7 @@ export type UpdateTaskStatusMutation = {
     updateTaskStatus: {
         __typename?: 'TaskCrudResult';
         success: boolean;
+        message: string | null;
         task: { __typename?: 'Task'; id: string; status: TaskStatus } | null;
     };
 };
@@ -3451,6 +3453,10 @@ export const UpdateExpenseStatusDocument = {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'success' },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
                             ],
                         },
                     },
@@ -3543,6 +3549,10 @@ export const UpdateTaskStatusDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
                                 },
                             ],
                         },

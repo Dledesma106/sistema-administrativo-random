@@ -52,3 +52,13 @@ export function calculateRowHeight(text: string, columnWidth: number) {
     // 15 píxeles por línea, con un mínimo de 25 y un factor de ajuste
     return Math.max(25, numberOfLines * 15 + 10);
 }
+
+export function calculateMaxRowHeight(columnWidths: {
+    [key: string]: { text: string; width: number };
+}) {
+    const heights = Object.values(columnWidths).map(({ text, width }) =>
+        calculateRowHeight(text || '', width),
+    );
+
+    return Math.max(...heights);
+}

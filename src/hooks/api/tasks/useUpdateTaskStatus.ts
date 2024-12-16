@@ -9,9 +9,11 @@ import {
     UpdateTaskStatusMutation,
     UpdateTaskStatusMutationVariables,
 } from '@/api/graphql';
+import useAlert from '@/context/alertContext/useAlert';
 
 export const useUpdateTaskStatus = () => {
     const client = useQueryClient();
+    const { triggerAlert } = useAlert();
     return useMutation<
         UpdateTaskStatusMutation,
         Error,
@@ -19,7 +21,12 @@ export const useUpdateTaskStatus = () => {
     >({
         mutationFn: (data) => fetchClient(UpdateTaskStatusDocument, data),
         onSuccess: (data) => {
-            const task = data.updateTaskStatus.task;
+            const serverResponse = data.updateTaskStatus;
+            triggerAlert({
+                type: serverResponse.success ? 'Success' : 'Failure',
+                message: serverResponse.message || '',
+            });
+            const task = serverResponse.task;
             if (!task) {
                 return;
             }
@@ -41,6 +48,12 @@ export const useUpdateTaskStatus = () => {
                     return nextData;
                 },
             );
+        },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: `Error: ${error}`,
+            });
         },
     });
 };
