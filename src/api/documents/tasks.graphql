@@ -173,3 +173,7 @@ mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
         success
     }
 }
+
+mutation GenerateApprovedTasksReport($startDate: String!, $endDate: String!) {
+    generateApprovedTasksReport(startDate: $startDate, endDate: $endDate)
+}

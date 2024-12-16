@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import {
@@ -13,6 +14,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
+import { BsPlus } from 'react-icons/bs';
 
 import { useTasksTableColumns } from './columns';
 import { useTasksListQuery } from './queries';
@@ -20,6 +22,7 @@ import { TasksDataTableToolbar } from './tasks-table-toolbar';
 
 import { TasksQuery } from '@/api/graphql';
 import { DataTablePagination } from '@/components/data-table-pagination';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
@@ -29,6 +32,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TaskReportButton } from '@/components/ui/TaskReportButton';
+import { TypographyH1 } from '@/components/ui/typography';
+import { useUserContext } from '@/context/userContext/UserProvider';
 import { routesBuilder } from '@/lib/routes';
 import { TasksPageProps } from '@/pages/tasks';
 
@@ -46,7 +52,7 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         status: null,
         taskType: null,
     });
-
+    const { user } = useUserContext();
     const [tasks, setTasks] = useState(tasksQuery.data?.tasks);
 
     const columns = useTasksTableColumns();
@@ -106,8 +112,23 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
     if (tasks) {
         return (
             <div className="space-y-4 pb-8">
+                <div className="flex justify-between">
+                    <TypographyH1>Tareas</TypographyH1>
+                    <div className="flex gap-2">
+                        {user.roles.includes('AdministrativoContable' || 'Auditor') && (
+                            <TaskReportButton table={table} />
+                        )}
+                        {user.roles.includes('AdministrativoTecnico') && (
+                            <Button asChild className="flex items-center space-x-2">
+                                <Link href={routesBuilder.tasks.create()}>
+                                    <BsPlus size="20" />
+                                    <span>Delegar tarea</span>
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
+                </div>
                 <TasksDataTableToolbar table={table} {...props} />
-
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader className="border-b bg-white">

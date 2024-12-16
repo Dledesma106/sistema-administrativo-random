@@ -31,8 +31,12 @@ export default function TechAdminTasks(props: ExpensesPageProps): JSX.Element {
     const { user } = useUserContext();
     return (
         <main>
-            {user.roles?.includes('AdministrativoContable') && (
-                <ExpensesDataTable {...props} />
+            {user.roles?.includes('AdministrativoContable') ? (
+                <>
+                    <ExpensesDataTable {...props} />
+                </>
+            ) : (
+                <div>No tienes permisos para ver esta página</div>
             )}
         </main>
     );

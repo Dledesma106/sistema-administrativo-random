@@ -1,4 +1,8 @@
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpenseStatus, TaskStatus } from '@prisma/client';
+import { format } from 'date-fns';
+import ExcelJS from 'exceljs';
 
 import {
     TaskCrudResultPothosRef,
@@ -12,6 +16,37 @@ import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
+
+function buildWhereClause(filters: any): any {
+    const whereClause: any = {};
+
+    filters.forEach((filter: { id: string; value: any }) => {
+        switch (filter.id) {
+            case 'client':
+                whereClause['branch.client.id'] = filter.value;
+                break;
+            case 'branch':
+                whereClause['branch.city.id'] = filter.value;
+                break;
+            case 'business':
+                whereClause['business.id'] = filter.value;
+                break;
+            case 'assigned':
+                whereClause['assigned.some'] = { id: { in: filter.value } };
+                break;
+            case 'taskStatus':
+                whereClause['status'] = { in: filter.value };
+                break;
+            case 'taskType':
+                whereClause['taskType'] = { in: filter.value };
+                break;
+            default:
+                break;
+        }
+    });
+
+    return whereClause;
+}
 
 builder.mutationFields((t) => ({
     createTask: t.field({
@@ -540,6 +575,165 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 console.error(error);
                 return { success: false };
+            }
+        },
+    }),
+    generateApprovedTasksReport: t.field({
+        type: 'String',
+        args: {
+            startDate: t.arg.string({ required: true }),
+            endDate: t.arg.string({ required: true }),
+            filters: t.arg({
+                type: 'JSON',
+                required: false,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, { startDate, endDate, filters }) => {
+            try {
+                const whereClause = {
+                    status: TaskStatus.Aprobada,
+                    deleted: false,
+                    closedAt: {
+                        gte: new Date(startDate),
+                        lte: new Date(endDate),
+                    },
+                    ...(filters && buildWhereClause(filters)),
+                };
+
+                const tasks = await prisma.task.findMany({
+                    where: whereClause,
+                    include: {
+                        assigned: true,
+                        business: true,
+                        branch: {
+                            include: {
+                                client: true,
+                            },
+                        },
+                        expenses: true,
+                    },
+                    orderBy: {
+                        closedAt: 'desc',
+                    },
+                });
+
+                // 2. Crear el archivo Excel
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('Tareas Aprobadas');
+
+                // 3. Definir encabezados
+                worksheet.columns = [
+                    {
+                        header: 'Técnicos',
+                        key: 'technicians',
+                        width: 30,
+                    },
+                    {
+                        header: 'Empresa',
+                        key: 'business',
+                        width: 20,
+                    },
+                    {
+                        header: 'Sucursal',
+                        key: 'branch',
+                        width: 15,
+                    },
+                    {
+                        header: 'Cliente',
+                        key: 'client',
+                        width: 20,
+                    },
+                    {
+                        header: 'Fecha de Cierre',
+                        key: 'closedAt',
+                        width: 20,
+                    },
+                    {
+                        header: 'Gastos Totales',
+                        key: 'expenses',
+                        width: 15,
+                    },
+                ];
+
+                // 4. Agregar datos
+                tasks.forEach((task) => {
+                    const totalExpenses = task.expenses.reduce((acc, expense) => {
+                        return acc + expense.amount;
+                    }, 0);
+
+                    worksheet.addRow({
+                        technicians: task.assigned
+                            .map((tech) => tech.fullName)
+                            .join(', '),
+                        business: task.business.name,
+                        branch: `#${task.branch.number}`,
+                        client: task.branch.client.name,
+                        closedAt: task.closedAt
+                            ? format(task.closedAt, 'dd/MM/yyyy')
+                            : 'N/A',
+                        expenses: totalExpenses.toLocaleString('es-AR', {
+                            style: 'currency',
+                            currency: 'ARS',
+                        }),
+                    });
+                });
+
+                // 5. Dar formato a la tabla
+                worksheet.getRow(1).font = { bold: true };
+                worksheet.getRow(1).alignment = {
+                    vertical: 'middle',
+                    horizontal: 'center',
+                };
+
+                // 6. Generar el buffer del archivo
+                const buffer = await workbook.xlsx.writeBuffer();
+
+                // 7. Configurar el cliente S3
+                const s3Client = new S3Client({
+                    region: process.env.AWS_REGION,
+                    credentials: {
+                        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                    },
+                });
+
+                // 8. Generar nombre único para el archivo
+                const fileName = `tareas-aprobadas-${format(
+                    new Date(),
+                    'yyyy-MM-dd-HH-mm-ss',
+                )}.xlsx`;
+
+                // 9. Subir a S3
+                await s3Client.send(
+                    new PutObjectCommand({
+                        Bucket: process.env.AWS_S3_BUCKET_NAME,
+                        Key: `reports/${fileName}`,
+                        Body: new Uint8Array(buffer),
+                        ContentType:
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    }),
+                );
+
+                // 10. Generar URL firmada para descarga
+                const getCommand = new GetObjectCommand({
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Key: `reports/${fileName}`,
+                });
+
+                const downloadUrl = await getSignedUrl(s3Client, getCommand, {
+                    expiresIn: 3600,
+                });
+
+                return downloadUrl;
+            } catch (error) {
+                console.error('Error generating report:', error);
+                throw new Error('Error al generar el reporte');
             }
         },
     }),

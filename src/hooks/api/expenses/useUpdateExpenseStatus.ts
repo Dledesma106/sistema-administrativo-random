@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { EXPENSE_DETAIL_QUERY_KEY } from './useGetExpenseById';
+
 import { fetchClient } from '@/api/fetch-client';
 import {
     TaskByIdQuery,
@@ -7,12 +9,13 @@ import {
     UpdateExpenseStatusMutation,
     UpdateExpenseStatusMutationVariables,
 } from '@/api/graphql';
+import useAlert from '@/context/alertContext/useAlert';
 
 import { TASK_DETAIL_QUERY_KEY } from '../tasks/useGetTaskById';
 
 export const useUpdateExpenseStatus = () => {
     const client = useQueryClient();
-
+    const { triggerAlert } = useAlert();
     return useMutation<
         UpdateExpenseStatusMutation,
         Error,
@@ -22,6 +25,15 @@ export const useUpdateExpenseStatus = () => {
             return fetchClient(UpdateExpenseStatusDocument, data);
         },
         onSuccess: (data) => {
+            client.invalidateQueries({
+                queryKey: EXPENSE_DETAIL_QUERY_KEY(
+                    data.updateExpenseStatus.expense?.id ?? '',
+                ),
+            });
+            triggerAlert({
+                type: 'Success',
+                message: 'Gasto actualizado correctamente',
+            });
             const task = data.updateExpenseStatus.expense?.task;
             if (!task) {
                 return;
@@ -60,6 +72,12 @@ export const useUpdateExpenseStatus = () => {
                     return nextData;
                 },
             );
+        },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: `Error: ${error}`,
+            });
         },
     });
 };
