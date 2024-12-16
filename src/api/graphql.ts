@@ -181,6 +181,8 @@ export type Mutation = {
     deleteImage: TaskCrudResult;
     deletePreventive: PreventiveCrudResult;
     deleteTask: TaskCrudResult;
+    generateApprovedExpensesReport: Scalars['String'];
+    generateApprovedTasksReport: Scalars['String'];
     login: LoginUserResult;
     sendNewUserRandomPassword: UserCrudPothosRef;
     updateBranch: BranchCrudResult;
@@ -246,6 +248,18 @@ export type MutationDeletePreventiveArgs = {
 
 export type MutationDeleteTaskArgs = {
     id: Scalars['String'];
+};
+
+export type MutationGenerateApprovedExpensesReportArgs = {
+    endDate: Scalars['String'];
+    filters: InputMaybe<Scalars['JSON']>;
+    startDate: Scalars['String'];
+};
+
+export type MutationGenerateApprovedTasksReportArgs = {
+    endDate: Scalars['String'];
+    filters: InputMaybe<Scalars['JSON']>;
+    startDate: Scalars['String'];
 };
 
 export type MutationLoginArgs = {
@@ -720,6 +734,17 @@ export type DeleteExpenseMutation = {
     };
 };
 
+export type GenerateApprovedExpensesReportMutationVariables = Exact<{
+    startDate: Scalars['String'];
+    endDate: Scalars['String'];
+    filters: InputMaybe<Scalars['JSON']>;
+}>;
+
+export type GenerateApprovedExpensesReportMutation = {
+    __typename?: 'Mutation';
+    generateApprovedExpensesReport: string;
+};
+
 export type CreatePreventiveMutationVariables = Exact<{
     data: PreventiveInput;
 }>;
@@ -934,6 +959,16 @@ export type UpdateTaskStatusMutation = {
         success: boolean;
         task: { __typename?: 'Task'; id: string; status: TaskStatus } | null;
     };
+};
+
+export type GenerateApprovedTasksReportMutationVariables = Exact<{
+    startDate: Scalars['String'];
+    endDate: Scalars['String'];
+}>;
+
+export type GenerateApprovedTasksReportMutation = {
+    __typename?: 'Mutation';
+    generateApprovedTasksReport: string;
 };
 
 export type CreateUserMutationVariables = Exact<{
@@ -2158,6 +2193,92 @@ export const DeleteExpenseDocument = {
         },
     ],
 } as unknown as DocumentNode<DeleteExpenseMutation, DeleteExpenseMutationVariables>;
+export const GenerateApprovedExpensesReportDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GenerateApprovedExpensesReport' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'startDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'endDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'filters' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'JSON' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'generateApprovedExpensesReport' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'filters' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'filters' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GenerateApprovedExpensesReportMutation,
+    GenerateApprovedExpensesReportMutationVariables
+>;
 export const CreatePreventiveDocument = {
     kind: 'Document',
     definitions: [
@@ -3431,6 +3552,76 @@ export const UpdateTaskStatusDocument = {
         },
     ],
 } as unknown as DocumentNode<UpdateTaskStatusMutation, UpdateTaskStatusMutationVariables>;
+export const GenerateApprovedTasksReportDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GenerateApprovedTasksReport' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'startDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'endDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'generateApprovedTasksReport' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GenerateApprovedTasksReportMutation,
+    GenerateApprovedTasksReportMutationVariables
+>;
 export const CreateUserDocument = {
     kind: 'Document',
     definitions: [

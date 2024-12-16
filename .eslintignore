@@ -6,3 +6,4 @@ src/api/graphql.ts
 stripe.env.js
 src/components/ui
 next.config.js
+scripts/*

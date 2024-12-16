@@ -26,6 +26,6 @@
         "strictPropertyInitialization": false,
         "experimentalDecorators": true
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "backend/migrations/index.js", "backend/migrations/expenseChanges.js"],
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "backend/migrations/index.js", "backend/migrations/expenseChanges.js", "scripts/updateExpenseDates.js", "scripts/**/*"],
     "exclude": ["node_modules", ".next"]
 }

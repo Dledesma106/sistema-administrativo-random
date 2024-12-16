@@ -78,3 +78,7 @@ mutation deleteExpense ($id: String!, $taskId: String!) {
         message
     }
 }
+
+mutation GenerateApprovedExpensesReport($startDate: String!, $endDate: String!, $filters: JSON) {
+    generateApprovedExpensesReport(startDate: $startDate, endDate: $endDate, filters: $filters)
+}

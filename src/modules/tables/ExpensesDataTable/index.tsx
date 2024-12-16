@@ -19,6 +19,7 @@ import { ExpensesDataTableToolbar } from './expenses-table-toolbar';
 
 import { ExpensesQuery } from '@/api/graphql';
 import { DataTablePagination } from '@/components/data-table-pagination';
+import { ExpenseReportButton } from '@/components/ui/ExpenseReportButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
@@ -28,6 +29,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TypographyH1 } from '@/components/ui/typography';
+import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetExpenses } from '@/hooks/api/expenses/useGetExpenses';
 import { routesBuilder } from '@/lib/routes';
 import { ExpensesPageProps } from '@/pages/expenses';
@@ -44,6 +47,7 @@ export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element
         status: null,
         expenseType: null,
     });
+    const { user } = useUserContext();
 
     const [expenses, setExpenses] = useState(data?.expenses);
 
@@ -103,6 +107,14 @@ export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element
     if (expenses) {
         return (
             <div className="space-y-4 pb-8">
+                <div className="flex justify-between">
+                    <TypographyH1>Gastos</TypographyH1>
+                    <div className="flex gap-2">
+                        {user.roles.includes('AdministrativoContable') && (
+                            <ExpenseReportButton table={table} />
+                        )}
+                    </div>
+                </div>
                 <ExpensesDataTableToolbar table={table} {...props} />
 
                 <div className="rounded-md border">
