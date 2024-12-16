@@ -692,7 +692,8 @@ builder.mutationFields((t) => ({
 
                 // 4. Agregar datos
                 tasks.forEach((task, index) => {
-                    const totalExpenses = task.expenses.reduce((acc, expense) => {
+                    const filteredExpenses = removeDeleted(task.expenses);
+                    const totalExpenses = filteredExpenses.reduce((acc, expense) => {
                         return acc + expense.amount;
                     }, 0);
 

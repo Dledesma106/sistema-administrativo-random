@@ -27,6 +27,10 @@ export const updateImageSignedUrlAsync = async (image: Image) => {
 
 type WithDeleted = { deleted: boolean };
 
+/* 
+    This function removes the deleted property from an array of objects.
+    It also recursively removes the deleted property from nested arrays.
+*/
 export function removeDeleted<T extends WithDeleted>(arr: T[]): T[] {
     return arr
         .filter((item) => !item.deleted)
