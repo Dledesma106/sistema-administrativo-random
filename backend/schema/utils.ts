@@ -40,3 +40,15 @@ export function removeDeleted<T extends WithDeleted>(arr: T[]): T[] {
             return item;
         });
 }
+
+export function calculateRowHeight(text: string, columnWidth: number) {
+    if (!text) {
+        return 25;
+    } // altura por defecto
+
+    const charactersPerLine = Math.floor(columnWidth * 1.8); // aproximadamente cuántos caracteres caben por línea
+    const numberOfLines = Math.ceil(text.length / charactersPerLine);
+
+    // 15 píxeles por línea, con un mínimo de 25 y un factor de ajuste
+    return Math.max(25, numberOfLines * 15 + 10);
+}

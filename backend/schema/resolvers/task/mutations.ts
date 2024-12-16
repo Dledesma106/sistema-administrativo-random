@@ -14,7 +14,7 @@ import {
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
-import { removeDeleted } from 'backend/schema/utils';
+import { removeDeleted, calculateRowHeight } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 function buildWhereClause(filters: any): any {
@@ -614,6 +614,7 @@ builder.mutationFields((t) => ({
                         branch: {
                             include: {
                                 client: true,
+                                city: true,
                             },
                         },
                         expenses: true,
@@ -640,14 +641,14 @@ builder.mutationFields((t) => ({
                         width: 20,
                     },
                     {
-                        header: 'Sucursal',
-                        key: 'branch',
-                        width: 15,
-                    },
-                    {
                         header: 'Cliente',
                         key: 'client',
                         width: 20,
+                    },
+                    {
+                        header: 'Sucursal',
+                        key: 'branch',
+                        width: 15,
                     },
                     {
                         header: 'Fecha de Cierre',
@@ -659,10 +660,16 @@ builder.mutationFields((t) => ({
                         key: 'expenses',
                         width: 15,
                     },
+                    {
+                        header: 'Observaciones',
+                        key: 'observations',
+                        width: 30,
+                        style: { alignment: { wrapText: true } },
+                    },
                 ];
 
                 // 4. Agregar datos
-                tasks.forEach((task) => {
+                tasks.forEach((task, index) => {
                     const totalExpenses = task.expenses.reduce((acc, expense) => {
                         return acc + expense.amount;
                     }, 0);
@@ -672,8 +679,8 @@ builder.mutationFields((t) => ({
                             .map((tech) => tech.fullName)
                             .join(', '),
                         business: task.business.name,
-                        branch: `#${task.branch.number}`,
                         client: task.branch.client.name,
+                        branch: `#${task.branch.number}, ${task.branch.city.name}`,
                         closedAt: task.closedAt
                             ? format(task.closedAt, 'dd/MM/yyyy')
                             : 'N/A',
@@ -681,7 +688,16 @@ builder.mutationFields((t) => ({
                             style: 'currency',
                             currency: 'ARS',
                         }),
+                        observations: task.observations,
                     });
+
+                    const row = worksheet.getRow(index + 2);
+                    const observationsHeight = calculateRowHeight(
+                        task.observations || '',
+                        40,
+                    ); // 30 es el width de la columna
+                    row.height = observationsHeight;
+                    row.alignment = { wrapText: true };
                 });
 
                 // 5. Dar formato a la tabla

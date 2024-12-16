@@ -14,6 +14,8 @@ import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { prisma } from 'lib/prisma';
 
+import { calculateRowHeight } from '../../utils';
+
 function buildWhereClause(filters: any) {
     const whereClause: any = {};
 
@@ -253,6 +255,8 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 const workbook = new ExcelJS.Workbook();
                 const worksheet = workbook.addWorksheet('Gastos Aprobados');
 
+                worksheet.properties.defaultRowHeight = 20;
+
                 worksheet.columns = [
                     {
                         header: 'Monto',
@@ -287,12 +291,13 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     {
                         header: 'Tarea',
                         key: 'task',
-                        width: 15,
+                        width: 30,
                     },
                     {
                         header: 'Observaciones',
                         key: 'observations',
                         width: 40,
+                        style: { alignment: { wrapText: true } },
                     },
                 ];
 
@@ -322,9 +327,16 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         observations: expense.observations || '-',
                     });
 
-                    worksheet.getRow(index + 2).height = -1;
+                    const row = worksheet.getRow(index + 2);
+                    const observationsHeight = calculateRowHeight(
+                        expense.observations || '',
+                        40,
+                    );
+                    row.height = observationsHeight;
+                    row.alignment = { wrapText: true };
                 });
 
+                worksheet.getRow(1).height = 30;
                 worksheet.getRow(1).font = { bold: true };
                 worksheet.getRow(1).alignment = {
                     vertical: 'middle',
