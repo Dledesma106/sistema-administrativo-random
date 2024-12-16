@@ -14,7 +14,7 @@ import {
 
 import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
-import { removeDeleted } from 'backend/schema/utils';
+import { removeDeleted, calculateMaxRowHeight } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 function buildWhereClause(filters: any): any {
@@ -295,25 +295,36 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { id, status } = args;
-                const task = await prisma.task.update({
+                const task = await prisma.task.findUniqueUndeleted({
+                    where: { id },
+                    select: {
+                        closedAt: true,
+                        status: true,
+                    },
+                });
+
+                if (!task?.closedAt) {
+                    throw new Error('La tarea no tiene fecha de cierre');
+                }
+
+                if (!task) {
+                    throw new Error('La tarea no existe');
+                }
+
+                const taskUpdated = await prisma.task.update({
                     where: { id },
                     data: { status },
                 });
 
-                if (!task) {
-                    return {
-                        message: 'La tarea no existe',
-                        success: false,
-                    };
-                }
-
                 return {
                     success: true,
-                    task,
+                    task: taskUpdated,
                 };
             } catch (error) {
                 return {
-                    message: 'Error al eliminar la tarea',
+                    message: `Error al actualizar el estado de la tarea: ${
+                        error instanceof Error ? error.message : 'Unknown error'
+                    }`,
                     success: false,
                 };
             }
@@ -614,6 +625,7 @@ builder.mutationFields((t) => ({
                         branch: {
                             include: {
                                 client: true,
+                                city: true,
                             },
                         },
                         expenses: true,
@@ -632,7 +644,7 @@ builder.mutationFields((t) => ({
                     {
                         header: 'Técnicos',
                         key: 'technicians',
-                        width: 30,
+                        width: 20,
                     },
                     {
                         header: 'Empresa',
@@ -640,14 +652,20 @@ builder.mutationFields((t) => ({
                         width: 20,
                     },
                     {
-                        header: 'Sucursal',
-                        key: 'branch',
-                        width: 15,
-                    },
-                    {
                         header: 'Cliente',
                         key: 'client',
                         width: 20,
+                    },
+                    {
+                        header: 'Sucursal',
+                        key: 'branch',
+                        width: 25,
+                    },
+                    {
+                        header: 'Descripción',
+                        key: 'description',
+                        width: 40,
+                        style: { alignment: { wrapText: true } },
                     },
                     {
                         header: 'Fecha de Cierre',
@@ -655,15 +673,27 @@ builder.mutationFields((t) => ({
                         width: 20,
                     },
                     {
+                        header: 'Número de Acta',
+                        key: 'actNumber',
+                        width: 16,
+                    },
+                    {
                         header: 'Gastos Totales',
                         key: 'expenses',
                         width: 15,
                     },
+                    {
+                        header: 'Observaciones',
+                        key: 'observations',
+                        width: 40,
+                        style: { alignment: { wrapText: true } },
+                    },
                 ];
 
                 // 4. Agregar datos
-                tasks.forEach((task) => {
-                    const totalExpenses = task.expenses.reduce((acc, expense) => {
+                tasks.forEach((task, index) => {
+                    const filteredExpenses = removeDeleted(task.expenses);
+                    const totalExpenses = filteredExpenses.reduce((acc, expense) => {
                         return acc + expense.amount;
                     }, 0);
 
@@ -672,16 +702,38 @@ builder.mutationFields((t) => ({
                             .map((tech) => tech.fullName)
                             .join(', '),
                         business: task.business.name,
-                        branch: `#${task.branch.number}`,
                         client: task.branch.client.name,
+                        branch: `#${task.branch.number}, ${task.branch.city.name}`,
+                        description: task.description,
                         closedAt: task.closedAt
                             ? format(task.closedAt, 'dd/MM/yyyy')
                             : 'N/A',
+                        actNumber: task.actNumber,
                         expenses: totalExpenses.toLocaleString('es-AR', {
                             style: 'currency',
                             currency: 'ARS',
                         }),
+                        observations: task.observations,
                     });
+
+                    const row = worksheet.getRow(index + 2);
+                    const rowHeight = calculateMaxRowHeight({
+                        description: {
+                            text: task.description || '',
+                            width: 40,
+                        },
+                        observations: {
+                            text: task.observations || '',
+                            width: 40,
+                        },
+                        technicians: {
+                            text: task.assigned.map((tech) => tech.fullName).join(', '),
+                            width: 20,
+                        },
+                    });
+
+                    row.height = rowHeight;
+                    row.alignment = { wrapText: true };
                 });
 
                 // 5. Dar formato a la tabla

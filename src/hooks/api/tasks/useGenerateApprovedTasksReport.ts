@@ -6,8 +6,10 @@ import {
     GenerateApprovedTasksReportDocument,
     GenerateApprovedTasksReportMutation,
 } from '@/api/graphql';
+import useAlert from '@/context/alertContext/useAlert';
 
 export const useGenerateApprovedTasksReport = () => {
+    const { triggerAlert } = useAlert();
     const { mutateAsync: generateReport, isPending: isGeneratingReport } = useMutation<
         GenerateApprovedTasksReportMutation,
         Error,
@@ -32,6 +34,17 @@ export const useGenerateApprovedTasksReport = () => {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            triggerAlert({
+                type: 'Success',
+                message: 'Reporte de tareas generado con éxito',
+            });
+        },
+        onError: (error) => {
+            triggerAlert({
+                type: 'Failure',
+                message: `Error al generar el reporte de tareas: ${error}`,
+            });
         },
     });
 

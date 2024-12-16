@@ -161,6 +161,7 @@ mutation updateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
             }
         }
         success
+        message
     }
 }
 
@@ -171,6 +172,7 @@ mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
             status
         }
         success
+        message
     }
 }
 
