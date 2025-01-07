@@ -67,7 +67,9 @@ export default function TaskView(props: Props): JSX.Element {
                     }),
                     branch: task.branchId,
                     business: task.businessId,
-                    client: task.branch.clientId,
+                    client: task.branch?.clientId ?? null,
+                    businessName: task.businessName ?? undefined,
+                    clientName: task.clientName ?? undefined,
                     description: task.description,
                     taskType: task.taskType,
                     actNumber: task.actNumber,
@@ -156,10 +158,19 @@ const getNewTaskPageProps = async () => {
             fullName: true,
         },
     });
-
+    const businesses = await prisma.business.findManyUndeleted({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
     return {
         branches,
         clients,
         technicians,
+        businesses,
     };
 };

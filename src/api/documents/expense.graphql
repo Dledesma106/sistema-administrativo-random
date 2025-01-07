@@ -3,12 +3,15 @@ query expenseById($id: String!) {
         id
         amount
         expenseType
+        expenseNumber
+        cityName
         paySource
         paySourceBank
         status
         doneBy
         task {
             id
+            taskNumber
         }
         registeredBy {
             id
@@ -42,6 +45,9 @@ query expenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType: E
         observations
         task {
             id
+            taskNumber
+            businessName
+            clientName
             business {
                 name
             }

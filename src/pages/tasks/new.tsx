@@ -57,11 +57,21 @@ const getNewTaskPageProps = async () => {
             fullName: true,
         },
     });
+    const businesses = await prisma.business.findManyUndeleted({
+        where: {
+            deleted: false,
+        },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
 
     return {
         branches,
         clients,
         technicians,
+        businesses,
     };
 };
 

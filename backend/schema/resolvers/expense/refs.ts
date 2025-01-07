@@ -59,6 +59,7 @@ export const ExpenseInputType = builder.inputType('ExpenseInput', {
         observations: t.string(),
         doneBy: t.string({ required: true }),
         imageKey: t.string({ required: true }),
+        cityName: t.string({ required: true }),
     }),
 });
 
@@ -66,6 +67,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
     name: 'Expense',
     fields: (t) => ({
         id: t.exposeID('id'),
+        expenseNumber: t.exposeString('expenseNumber', { nullable: false }),
         createdAt: t.field({
             type: 'DateTime',
             resolve: (root) => root.createdAt,
@@ -99,6 +101,7 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
         auditor: t.relation('auditor', {
             nullable: true,
         }),
+        cityName: t.exposeString('cityName', { nullable: true }),
         image: t.prismaField({
             type: 'Image',
             resolve: async (root, parent) => {

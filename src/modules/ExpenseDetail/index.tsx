@@ -29,7 +29,9 @@ const Content: React.FC<Props> = ({ expense }) => {
     return (
         <main className="py-3.5">
             <div className="flex justify-between">
-                <TypographyH1 className="mb-2">Gasto #{expense.id}</TypographyH1>
+                <TypographyH1 className="mb-2">
+                    Gasto #{expense.expenseNumber}
+                </TypographyH1>
                 {user.roles.includes('AdministrativoContable') && (
                     <div className="flex gap-4">
                         <Button
@@ -63,7 +65,7 @@ const Content: React.FC<Props> = ({ expense }) => {
                             className="space-y-2 hover:underline"
                             href={routesBuilder.tasks.details(expense.task.id)}
                         >
-                            {expense.task.id}
+                            #{expense.task.taskNumber}
                         </Link>
                     ) : (
                         'N/A'
@@ -89,10 +91,13 @@ const Content: React.FC<Props> = ({ expense }) => {
                     <Title>Fecha de pago</Title>
                     {dayjs(expense.expenseDate).format('DD/MM/YYYY')}
                 </div>
-
                 <div>
                     <Title>Estado</Title>
                     {expense.status}
+                </div>
+                <div>
+                    <Title>Ciudad</Title>
+                    {expense.cityName}
                 </div>
 
                 <div>

@@ -116,11 +116,58 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         },
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
-                console.log('creando gastoooo');
+                let expenseNumber;
+
+                if (taskId) {
+                    // Primero obtener la tarea para conseguir el taskNumber
+                    const task = await prisma.task.findUnique({
+                        where: { id: taskId },
+                        select: { taskNumber: true },
+                    });
+
+                    if (!task) {
+                        throw new Error('Tarea no encontrada');
+                    }
+
+                    // Ahora usar el taskNumber para la búsqueda de gastos
+                    const lastExpense = await prisma.expense.findFirst({
+                        where: {
+                            task: { id: taskId },
+                            expenseNumber: { contains: task.taskNumber.toString() },
+                        },
+                        orderBy: {
+                            expenseNumber: 'desc',
+                        },
+                    });
+
+                    const sequence = lastExpense
+                        ? parseInt(lastExpense.expenseNumber.split('-')[1]) + 1
+                        : 1;
+
+                    expenseNumber = `${task.taskNumber}-${sequence}`;
+                } else {
+                    // Si el gasto no pertenece a una tarea, buscar el último ID numérico
+                    const lastExpense = await prisma.expense.findFirst({
+                        where: {
+                            task: null,
+                            expenseNumber: { not: { contains: '-' } },
+                        },
+                        orderBy: {
+                            expenseNumber: 'desc',
+                        },
+                    });
+
+                    expenseNumber = lastExpense
+                        ? (parseInt(lastExpense.expenseNumber) + 1).toString()
+                        : '1';
+                }
+
                 const newExpense = await prisma.expense.create({
                     data: {
+                        expenseNumber,
                         amount: parseFloat(String(expenseData.amount)),
                         expenseType: expenseData.expenseType,
+                        cityName: expenseData.cityName,
                         paySource: expenseData.paySource,
                         doneBy: expenseData.doneBy,
                         paySourceBank: expenseData.paySourceBank,
@@ -259,6 +306,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
 
                 worksheet.columns = [
                     {
+                        header: 'Número de gasto',
+                        key: 'expenseNumber',
+                        width: 15,
+                    },
+                    {
                         header: 'Monto',
                         key: 'amount',
                         width: 15,
@@ -274,6 +326,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 30,
                     },
                     {
+                        header: 'Ciudad',
+                        key: 'cityName',
+                        width: 15,
+                    },
+                    {
                         header: 'Fecha',
                         key: 'expenseDate',
                         width: 15,
@@ -287,11 +344,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         header: 'Pagado por',
                         key: 'doneBy',
                         width: 25,
-                    },
-                    {
-                        header: 'Tarea',
-                        key: 'task',
-                        width: 30,
                     },
                     {
                         header: 'Observaciones',
@@ -311,6 +363,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     }
 
                     worksheet.addRow({
+                        expenseNumber: `#${expense.expenseNumber}`,
                         amount: expense.amount.toLocaleString('es-AR', {
                             style: 'currency',
                             currency: 'ARS',
@@ -321,9 +374,9 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                             new Date(expense.expenseDate ?? ''),
                             'dd/MM/yyyy',
                         ),
+                        cityName: expense.cityName ?? '-',
                         registeredBy: expense.registeredBy.fullName,
                         doneBy: expense.doneBy,
-                        task: expense.task?.id || 'Sin tarea',
                         observations: expense.observations || '-',
                     });
 

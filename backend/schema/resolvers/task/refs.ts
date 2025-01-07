@@ -22,15 +22,47 @@ export const TaskStatusPothosRef = builder.enumType('TaskStatus', {
 export const TaskPothosRef = builder.prismaObject('Task', {
     fields: (t) => ({
         id: t.exposeID('id'),
+        taskNumber: t.exposeInt('taskNumber', { nullable: false }),
         description: t.exposeString('description'),
+        clientName: t.field({
+            type: 'String',
+            nullable: true,
+            resolve: (task) => task.clientName,
+        }),
+        businessName: t.field({
+            type: 'String',
+            nullable: true,
+            resolve: (task) => task.businessName,
+        }),
         createdAt: t.field({
             type: 'DateTime',
             resolve: (root) => root.createdAt,
+        }),
+        updatedAt: t.field({
+            type: 'DateTime',
+            resolve: (root) => root.updatedAt,
         }),
         closedAt: t.field({
             type: 'DateTime',
             nullable: true,
             resolve: (root) => root.closedAt,
+        }),
+        startedAt: t.field({
+            type: 'DateTime',
+            nullable: true,
+            resolve: (root) => root.startedAt,
+        }),
+        openedAt: t.field({
+            type: 'DateTime',
+            resolve: (root) => root.openedAt,
+        }),
+        deleted: t.boolean({
+            resolve: (root) => root.deleted,
+        }),
+        deletedAt: t.field({
+            type: 'DateTime',
+            nullable: true,
+            resolve: (root) => root.deletedAt,
         }),
         status: t.field({
             type: TaskStatusPothosRef,
@@ -43,8 +75,11 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         actNumber: t.exposeInt('actNumber', {
             nullable: true,
         }),
-        branch: t.relation('branch'),
-        business: t.relation('business'),
+        movitecTicket: t.exposeString('movitecTicket', {
+            nullable: true,
+        }),
+        branch: t.relation('branch', { nullable: true }),
+        business: t.relation('business', { nullable: true }),
         auditor: t.relation('auditor', {
             nullable: true,
         }),
@@ -96,9 +131,6 @@ export const TaskPothosRef = builder.prismaObject('Task', {
                 });
             },
         }),
-        movitecTicket: t.exposeString('movitecTicket', {
-            nullable: true,
-        }),
         observations: t.exposeString('observations', {
             nullable: true,
         }),
@@ -118,10 +150,16 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
             required: false,
         }),
         branch: t.string({
-            required: true,
+            required: false,
         }),
         business: t.string({
-            required: true,
+            required: false,
+        }),
+        clientName: t.string({
+            required: false,
+        }),
+        businessName: t.string({
+            required: false,
         }),
         auditor: t.string({
             required: false,
@@ -141,8 +179,8 @@ export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
             type: TaskTypePothosRef,
             required: true,
         }),
-        branch: t.string({ required: true }),
-        business: t.string({ required: true }),
+        branch: t.string({ required: false }),
+        business: t.string({ required: false }),
         assigned: t.stringList({ required: false }),
         actNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),
@@ -151,10 +189,16 @@ export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
             type: 'DateTime',
             required: false,
         }),
+        startedAt: t.field({
+            type: 'DateTime',
+            required: false,
+        }),
         expenses: t.field({
             type: [ExpenseInputType],
             required: false,
         }),
+        clientName: t.string({ required: false }),
+        businessName: t.string({ required: false }),
     }),
 });
 
@@ -166,6 +210,10 @@ export const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
         expenseIdsToDelete: t.stringList({ required: false }),
         imageIdsToDelete: t.stringList({ required: false }),
         observations: t.string({ required: false }),
+        startedAt: t.field({
+            type: 'DateTime',
+            required: false,
+        }),
         closedAt: t.field({
             type: 'DateTime',
             required: false,
