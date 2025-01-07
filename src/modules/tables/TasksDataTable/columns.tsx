@@ -19,11 +19,14 @@ export const useTasksTableColumns = () => [
 
             return (
                 <>
-                    <strong>{task.branch.client.name}</strong> - {task.business.name}
-                    <p className="text-xs">
-                        #{task.branch.number} - {task.branch.city.name},{' '}
-                        {task.branch.city.province.name}
-                    </p>
+                    <strong>{task.branch?.client.name ?? task.clientName}</strong> -{' '}
+                    {task.business?.name ?? task.businessName}
+                    {task.branch?.number && (
+                        <p className="text-xs">
+                            #{task.branch?.number} - {task.branch?.city.name},{' '}
+                            {task.branch?.city.province.name}
+                        </p>
+                    )}
                 </>
             );
         },
@@ -43,11 +46,11 @@ export const useTasksTableColumns = () => [
             return <p className="max-w-[250px] text-muted-foreground">{description}</p>;
         },
     }),
-    columnHelper.accessor((row) => row.business.id, {
+    columnHelper.accessor((row) => row.business?.id, {
         id: 'business',
         cell: (info) => {
             const task = info.row.original;
-            return task.business.name;
+            return task.business?.name ?? task.businessName;
         },
         header: 'Empresa',
         filterFn: (row, id, businessesIDs: string[]) => {
@@ -55,7 +58,7 @@ export const useTasksTableColumns = () => [
                 return true;
             }
 
-            const businessID = row.getValue<Task['business']['id']>(id);
+            const businessID = row.getValue<Task['business']>(id)?.id;
             const businessIsInFilteredList = businessesIDs.some(
                 (someId) => someId === businessID,
             );
@@ -63,15 +66,19 @@ export const useTasksTableColumns = () => [
             return businessIsInFilteredList;
         },
     }),
-    columnHelper.accessor((row) => row.branch.client.id, {
+    columnHelper.accessor((row) => row.branch?.client?.id, {
         id: 'client',
         header: 'Cliente',
+        cell: (info) => {
+            const task = info.row.original;
+            return task.clientName ?? task.branch?.client.name;
+        },
         filterFn: (row, id, clientsIDs: string[]) => {
             if (!clientsIDs) {
                 return true;
             }
 
-            const clientId = row.getValue<Task['branch']['client']['id']>(id);
+            const clientId = row.getValue<Task['branch']>(id)?.client?.id;
             const clientIsInFilteredList = clientsIDs.some(
                 (clientID) => clientID === clientId,
             );
@@ -79,7 +86,7 @@ export const useTasksTableColumns = () => [
             return clientIsInFilteredList;
         },
     }),
-    columnHelper.accessor((row) => row.branch.city.id, {
+    columnHelper.accessor((row) => row.branch?.city?.id, {
         id: 'branch',
         header: 'Sucursal',
         filterFn: (row, id, cityIDs: string[]) => {
@@ -87,7 +94,7 @@ export const useTasksTableColumns = () => [
                 return true;
             }
 
-            const currentCityId = row.getValue<Task['branch']['city']['id']>(id);
+            const currentCityId = row.getValue<Task['branch']>(id)?.city?.id;
             const branchIsInFilteredList = cityIDs.some(
                 (someId) => someId === currentCityId,
             );

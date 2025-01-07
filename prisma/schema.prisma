@@ -141,11 +141,13 @@ enum ExpenseStatus {
 
 model Expense {
   id            String                @id @default(auto()) @map("_id") @db.ObjectId
+  expenseNumber String                @db.String
   createdAt     DateTime              @default(now()) @db.Date
   updatedAt     DateTime              @updatedAt
   amount        Float
   installments  Int?
   observations  String?
+  cityName      String?
   deleted       Boolean               @default(false)
   deletedAt     DateTime?             @db.Date
   expenseDate   DateTime?             @db.Date
@@ -208,10 +210,12 @@ enum TaskStatus {
 
 model Task {
   id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  taskNumber    Int        @unique
   createdAt     DateTime   @default(now()) @db.Date
   updatedAt     DateTime   @updatedAt
   closedAt      DateTime?  @db.Date
   openedAt      DateTime   @default(now()) @db.Date
+  startedAt     DateTime?  @db.Date
   deleted       Boolean    @default(false)
   deletedAt     DateTime?  @db.Date
   description   String
@@ -219,12 +223,14 @@ model Task {
   taskType      TaskType
   actNumber     Int?
   movitecTicket String?
+  clientName    String?
+  businessName  String?
 
-  branchId String @map("branch") @db.ObjectId
-  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String? @map("branch") @db.ObjectId
+  branch   Branch? @relation(fields: [branchId], references: [id])
 
-  businessId String   @map("business") @db.ObjectId
-  business   Business @relation(fields: [businessId], references: [id])
+  businessId String?   @map("business") @db.ObjectId
+  business   Business? @relation(fields: [businessId], references: [id])
 
   auditorId String? @db.ObjectId
   auditor   User?   @relation(name: "auditor", fields: [auditorId], references: [id])

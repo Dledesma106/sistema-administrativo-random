@@ -28,9 +28,11 @@ import { NewTaskPageProps } from '@/pages/tasks/new';
 import { taskTypesOptions } from 'backend/models/types';
 
 type FormValues = {
-    client: string;
-    branch: string | null;
-    business: string | null;
+    client?: string | null;
+    branch?: string | null;
+    business?: string | null;
+    clientName?: string;
+    businessName?: string;
     assignedIDs: {
         label: string;
         value: string;
@@ -52,6 +54,7 @@ const CreateOrUpdateTaskForm = ({
     branches,
     clients,
     technicians,
+    businesses,
 }: Props): JSX.Element => {
     const router = useRouter();
     const form = useForm<FormValues>({
@@ -78,11 +81,40 @@ const CreateOrUpdateTaskForm = ({
         };
     }, [watch, setValue]);
 
+    useEffect(() => {
+        if (taskIdToUpdate) {
+            if (!defaultValues?.client) {
+                setValue('client', 'Otro');
+            }
+            if (!defaultValues?.branch) {
+                setValue('branch', null);
+            }
+            if (!defaultValues?.business) {
+                setValue('business', 'Otro');
+            }
+        }
+    }, [taskIdToUpdate]);
+
     const watchedBusiness = watch('business');
     const watchedBranch = watch('branch');
     const selectedBranch = watchedBranch
         ? branches.find((branch) => branch.id === watchedBranch)
         : null;
+    const businessOptions = [
+        {
+            label: 'Otro',
+            value: 'Otro',
+        },
+        ...(selectedBranch
+            ? selectedBranch.businesses
+            : watch('client') === 'Otro'
+              ? businesses
+              : []
+        ).map((business) => ({
+            label: business.name,
+            value: business.id,
+        })),
+    ];
     const selectedBusiness =
         watchedBusiness && selectedBranch
             ? selectedBranch.businesses.find(
@@ -94,19 +126,33 @@ const CreateOrUpdateTaskForm = ({
 
     const postMutation = useMutation({
         mutationFn: async (form: FormValues) => {
-            if (!form.branch) {
+            if (!form.client) {
+                throw new Error('Debe seleccionar un cliente');
+            }
+
+            if (form.client !== 'Otro' && !form.branch) {
                 throw new Error('Debe seleccionar una sucursal');
             }
 
-            if (!form.business) {
+            if (form.client === 'Otro' && !form.clientName) {
+                throw new Error('Debe especificar el nombre del cliente');
+            }
+
+            if (!form.businessName && !form.business) {
                 throw new Error('Debe seleccionar una empresa');
+            }
+
+            if (form.business === 'Otro' && !form.businessName) {
+                throw new Error('Debe especificar el nombre de la empresa');
             }
 
             return fetchClient(CreateTaskDocument, {
                 input: {
                     auditor: null,
-                    branch: form.branch,
-                    business: form.business,
+                    branch: form.branch ?? null,
+                    business: form.business === 'Otro' ? null : form.business ?? null,
+                    clientName: form.clientName ?? null,
+                    businessName: form.businessName ?? null,
                     description: form.description,
                     taskType: form.taskType,
                     actNumber: form.actNumber,
@@ -144,20 +190,34 @@ const CreateOrUpdateTaskForm = ({
                 throw new Error('No se pudo actualizar la tarea');
             }
 
-            if (!form.branch) {
+            if (!form.client) {
+                throw new Error('Debe seleccionar un cliente');
+            }
+
+            if (form.client !== 'Otro' && !form.branch) {
                 throw new Error('Debe seleccionar una sucursal');
+            }
+
+            if (form.client === 'Otro' && !form.clientName) {
+                throw new Error('Debe especificar el nombre del cliente');
             }
 
             if (!form.business) {
                 throw new Error('Debe seleccionar una empresa');
             }
 
+            if (form.business === 'Otro' && !form.businessName) {
+                throw new Error('Debe especificar el nombre de la empresa');
+            }
+
             return fetchClient(UpdateTaskDocument, {
                 id: taskIdToUpdate,
                 input: {
                     auditor: null,
-                    branch: form.branch,
-                    business: form.business,
+                    branch: form.branch ?? null,
+                    business: form.business === 'Otro' ? null : form.business ?? null,
+                    clientName: form.clientName ?? null,
+                    businessName: form.businessName ?? null,
                     description: form.description,
                     taskType: form.taskType,
                     actNumber: form.actNumber,
@@ -219,12 +279,18 @@ const CreateOrUpdateTaskForm = ({
                                         <Combobox
                                             selectPlaceholder="Seleccione un cliente"
                                             searchPlaceholder="Buscar cliente"
-                                            value={field.value}
+                                            value={field.value ?? ''}
                                             onChange={field.onChange}
-                                            items={clients.map((client) => ({
-                                                label: client.name,
-                                                value: client.id,
-                                            }))}
+                                            items={[
+                                                {
+                                                    label: 'Otro',
+                                                    value: 'Otro',
+                                                },
+                                                ...clients.map((client) => ({
+                                                    label: client.name,
+                                                    value: client.id,
+                                                })),
+                                            ]}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -233,46 +299,69 @@ const CreateOrUpdateTaskForm = ({
                         }}
                     />
 
-                    <FormField
-                        name="branch"
-                        control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                        }}
-                        disabled={form.watch('client') === undefined}
-                        render={({ field }) => {
-                            return (
-                                <FormItem
-                                    className={
-                                        field.disabled
-                                            ? 'pointer-events-none opacity-30'
-                                            : ''
-                                    }
-                                >
-                                    <FormLabel>Sucursal</FormLabel>
-                                    <FormControl>
-                                        <Combobox
-                                            selectPlaceholder="Seleccione una sucursal"
-                                            searchPlaceholder="Buscar sucursal"
-                                            value={field.value || ''}
-                                            onChange={field.onChange}
-                                            items={branches
-                                                .filter(
-                                                    (branch) =>
-                                                        branch.clientId ===
-                                                        form.watch('client'),
-                                                )
-                                                .map((branch) => ({
-                                                    label: `${branch.number}, ${branch.city.name}`,
-                                                    value: branch.id,
-                                                }))}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
-                    />
+                    {watch('client') !== 'Otro' && (
+                        <FormField
+                            name="branch"
+                            control={form.control}
+                            rules={{
+                                required: 'Este campo es requerido',
+                            }}
+                            disabled={form.watch('client') === undefined}
+                            render={({ field }) => {
+                                return (
+                                    <FormItem
+                                        className={
+                                            field.disabled
+                                                ? 'pointer-events-none opacity-30'
+                                                : ''
+                                        }
+                                    >
+                                        <FormLabel>Sucursal</FormLabel>
+                                        <FormControl>
+                                            <Combobox
+                                                selectPlaceholder="Seleccione una sucursal"
+                                                searchPlaceholder="Buscar sucursal"
+                                                value={field.value || ''}
+                                                onChange={field.onChange}
+                                                items={branches
+                                                    .filter(
+                                                        (branch) =>
+                                                            branch.clientId ===
+                                                            form.watch('client'),
+                                                    )
+                                                    .map((branch) => ({
+                                                        label: `${branch.number}, ${branch.city.name}`,
+                                                        value: branch.id,
+                                                    }))}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    )}
+                    {watch('client') === 'Otro' && (
+                        <FormField
+                            name="clientName"
+                            control={form.control}
+                            render={({ field }) => {
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Nombre del cliente</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Nombre del cliente"
+                                                type="text"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    )}
 
                     <FormField
                         name="business"
@@ -280,7 +369,10 @@ const CreateOrUpdateTaskForm = ({
                         rules={{
                             required: 'Este campo es requerido',
                         }}
-                        disabled={form.watch('branch') === undefined}
+                        disabled={
+                            form.watch('branch') === undefined &&
+                            form.watch('client') !== 'Otro'
+                        }
                         render={({ field }) => {
                             return (
                                 <FormItem
@@ -297,18 +389,7 @@ const CreateOrUpdateTaskForm = ({
                                             searchPlaceholder="Buscar empresa"
                                             value={field.value || ''}
                                             onChange={field.onChange}
-                                            items={
-                                                branches
-                                                    .find(
-                                                        (branch) =>
-                                                            branch.id ===
-                                                            form.watch('branch'),
-                                                    )
-                                                    ?.businesses.map((business) => ({
-                                                        label: business.name,
-                                                        value: business.id,
-                                                    })) || []
-                                            }
+                                            items={businessOptions}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -316,6 +397,28 @@ const CreateOrUpdateTaskForm = ({
                             );
                         }}
                     />
+
+                    {watch('business') === 'Otro' && (
+                        <FormField
+                            name="businessName"
+                            control={form.control}
+                            render={({ field }) => {
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Nombre de la empresa</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Nombre de la empresa"
+                                                type="text"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    )}
 
                     <FormField
                         name="assignedIDs"

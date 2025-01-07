@@ -32,11 +32,16 @@ export const useExpensesTableColumns = () => [
                     className="space-y-2 hover:underline"
                     href={routesBuilder.tasks.details(expense.task.id)}
                 >
-                    <strong>{expense.task.branch.client.name}</strong> -{' '}
-                    {expense.task.business.name}
-                    <p className="text-xs">
-                        #{expense.task.branch.number} - {expense.task.branch.city.name}
-                    </p>
+                    <strong>
+                        {expense.task.branch?.client?.name ?? expense.task.clientName}
+                    </strong>{' '}
+                    - {expense.task.business?.name ?? expense.task.businessName}
+                    {expense.task.branch && (
+                        <p className="text-xs">
+                            #{expense.task.branch.number} -{' '}
+                            {expense.task.branch.city.name}
+                        </p>
+                    )}
                 </Link>
             );
         },

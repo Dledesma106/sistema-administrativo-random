@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import { DownloadIcon } from '@radix-ui/react-icons';
-import dayjs from 'dayjs';
+import { format } from 'date-fns';
 
 import { TaskByIdQuery, TaskStatus } from '@/api/graphql';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -41,7 +41,7 @@ const Content: React.FC<Props> = ({ task }) => {
     return (
         <main className="py-3.5">
             <div className="flex justify-between">
-                <TypographyH1 className="mb-2">Tarea #{task.id}</TypographyH1>
+                <TypographyH1 className="mb-2">Tarea #{task.taskNumber}</TypographyH1>
                 {user.roles.includes('AdministrativoTecnico') && (
                     <div>
                         {['Pendiente', 'SinAsignar'].includes(task.status) && (
@@ -71,12 +71,17 @@ const Content: React.FC<Props> = ({ task }) => {
             <div className="space-y-4 pt-4">
                 <div>
                     <Title>Fecha de creación</Title>
-                    {dayjs(task.createdAt).format('DD/MM/YYYY')}
+                    {format(task.createdAt, 'dd/MM/yyyy')}
+                </div>
+
+                <div>
+                    <Title>Fecha de inicio</Title>
+                    {task.startedAt ? format(task.startedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
                 </div>
 
                 <div>
                     <Title>Fecha de cierre</Title>
-                    {task.closedAt ? dayjs(task.closedAt).format('DD/MM/YYYY') : 'N/A'}
+                    {task.closedAt ? format(task.closedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}
                 </div>
 
                 <div>
@@ -89,16 +94,25 @@ const Content: React.FC<Props> = ({ task }) => {
                     {pascalCaseToSpaces(task.taskType)}
                 </div>
 
-                <div>
-                    <Title>Sucursal</Title>
+                {task.branch ? (
+                    <div>
+                        <Title>Sucursal</Title>
 
-                    <p className="mb-1">
-                        #{task.branch.number} - {task.branch.client.name} -{' '}
-                        {task.business.name}
-                    </p>
-                </div>
+                        <p className="mb-1">
+                            #{task.branch.number} - {task.branch.client.name} -{' '}
+                            {task.business?.name || 'N/A'}
+                        </p>
+                    </div>
+                ) : (
+                    <div>
+                        <Title>Cliente y Empresa</Title>
+                        <p className="mb-1">
+                            {task.clientName} - {task.businessName || 'N/A'}
+                        </p>
+                    </div>
+                )}
 
-                {task.business.name === 'GIASA' && (
+                {task.business?.name === 'GIASA' && (
                     <div>
                         <Title>Número de Ticket Movitec</Title>
                         <p className="mb-1">{task.movitecTicket}</p>
@@ -226,14 +240,16 @@ const Content: React.FC<Props> = ({ task }) => {
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {dayjs(expense.createdAt).format(
-                                                            'DD/MM/YYYY',
+                                                        {format(
+                                                            expense.createdAt,
+                                                            'dd/MM/yyyy',
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        {dayjs(
+                                                        {format(
                                                             expense.expenseDate,
-                                                        ).format('DD/MM/YYYY')}
+                                                            'dd/MM/yyyy',
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
                                                         <ExpenseTypeBadge

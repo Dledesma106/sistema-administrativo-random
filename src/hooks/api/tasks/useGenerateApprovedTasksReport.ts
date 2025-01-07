@@ -23,7 +23,7 @@ export const useGenerateApprovedTasksReport = () => {
             fetchClient(GenerateApprovedTasksReportDocument, {
                 startDate,
                 endDate,
-                filters,
+                filters: filters || [],
             }),
         onSuccess: (data) => {
             const downloadUrl = data.generateApprovedTasksReport;

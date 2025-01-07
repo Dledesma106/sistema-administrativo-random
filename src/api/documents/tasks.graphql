@@ -16,12 +16,15 @@ query tasks(
     ) {
         id
         createdAt
+        startedAt
         closedAt
         description
         business {
             id
             name
         }
+        businessName
+        clientName
         branch {
             id
             number
@@ -53,11 +56,15 @@ query tasks(
 query taskById($id: String!) {
     taskById(id: $id) {
         id
+        taskNumber
+        startedAt
         createdAt
         closedAt
         description
         actNumber
         observations
+        clientName
+        businessName
         business {
             id
             name
@@ -176,6 +183,14 @@ mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
     }
 }
 
-mutation GenerateApprovedTasksReport($startDate: String!, $endDate: String!) {
-    generateApprovedTasksReport(startDate: $startDate, endDate: $endDate)
+mutation GenerateApprovedTasksReport(
+    $startDate: String!,
+    $endDate: String!,
+    $filters: [TaskReportFilterInput!]!
+) {
+    generateApprovedTasksReport(
+        startDate: $startDate,
+        endDate: $endDate,
+        filters: $filters
+    )
 }

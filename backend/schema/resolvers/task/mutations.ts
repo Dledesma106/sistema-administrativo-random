@@ -1,6 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { ExpenseStatus, TaskStatus } from '@prisma/client';
+import { ExpenseStatus, TaskStatus, Task } from '@prisma/client';
 import { format } from 'date-fns';
 import ExcelJS from 'exceljs';
 
@@ -48,6 +48,16 @@ function buildWhereClause(filters: any): any {
     return whereClause;
 }
 
+const TaskReportFilterInput = builder.inputType('TaskReportFilterInput', {
+    fields: (t) => ({
+        id: t.string({ required: true }),
+        value: t.field({
+            type: 'JSON',
+            required: true,
+        }),
+    }),
+});
+
 builder.mutationFields((t) => ({
     createTask: t.field({
         type: TaskCrudResultPothosRef,
@@ -70,12 +80,19 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { input } = args;
-                const task = await prisma.task.create({
+                const maxTaskNumber = await prisma.task.findFirst({
+                    orderBy: { taskNumber: 'desc' },
+                    select: { taskNumber: true },
+                });
+                const task: Task = await prisma.task.create({
                     data: {
+                        taskNumber: (maxTaskNumber?.taskNumber ?? 0) + 1,
                         actNumber: input.actNumber,
                         auditorId: input.auditor,
-                        branchId: input.branch,
-                        businessId: input.business,
+                        branchId: input.branch ?? undefined,
+                        businessId: input.business ?? undefined,
+                        clientName: input.clientName ?? undefined,
+                        businessName: input.businessName ?? undefined,
                         description: input.description,
                         status: TaskStatus.Pendiente,
                         taskType: input.taskType,
@@ -116,38 +133,35 @@ builder.mutationFields((t) => ({
         },
         resolve: async (root, args, _context, _info) => {
             try {
-                const {
-                    input: {
-                        actNumber,
-                        branch,
-                        business,
-                        observations,
-                        closedAt,
-                        imageKeys,
-                        expenses,
-                        taskType,
-                        assigned,
-                    },
-                } = args;
-                const task = await prisma.task.create({
+                const { user } = _context;
+                const { input } = args;
+                const maxTaskNumber = await prisma.task.findFirst({
+                    orderBy: { taskNumber: 'desc' },
+                    select: { taskNumber: true },
+                });
+                const taskNumber = (maxTaskNumber?.taskNumber ?? 0) + 1;
+                const task: Task = await prisma.task.create({
                     data: {
-                        actNumber: Number(actNumber),
-                        branchId: branch,
-                        businessId: business,
-                        description: 'Tarea de emergencia',
-                        observations,
+                        taskNumber,
+                        actNumber: Number(input.actNumber),
+                        branchId: input.branch ?? undefined,
+                        businessId: input.business ?? undefined,
+                        clientName: input.clientName ?? undefined,
+                        businessName: input.businessName ?? undefined,
+                        description: `Tarea creada por ${user.fullName} desde APK`,
+                        observations: input.observations,
                         status: TaskStatus.Finalizada,
-                        taskType: taskType,
-                        ...(assigned && {
+                        taskType: input.taskType,
+                        ...(input.assigned && {
                             assignedIDs: {
-                                set: assigned,
+                                set: input.assigned,
                             },
                         }),
-                        closedAt: closedAt,
+                        closedAt: input.closedAt,
                         images: {
-                            create: imageKeys
+                            create: input.imageKeys
                                 ? await Promise.all(
-                                      imageKeys.map(async (key) => {
+                                      input.imageKeys.map(async (key) => {
                                           return {
                                               ...(await createImageSignedUrlAsync(key)),
                                               key,
@@ -157,10 +171,11 @@ builder.mutationFields((t) => ({
                                 : [],
                         },
                         expenses: {
-                            create: expenses
+                            create: input.expenses
                                 ? await Promise.all(
-                                      expenses.map(async (expenseData) => {
+                                      input.expenses.map(async (expenseData, index) => {
                                           return {
+                                              expenseNumber: `${taskNumber}-${index + 1}`,
                                               amount: expenseData.amount,
                                               expenseType: expenseData.expenseType,
                                               paySource: expenseData.paySource,
@@ -169,6 +184,7 @@ builder.mutationFields((t) => ({
                                               expenseDate: expenseData.expenseDate,
                                               doneBy: expenseData.doneBy,
                                               status: ExpenseStatus.Enviado,
+                                              cityName: expenseData.cityName,
                                               registeredBy: {
                                                   connect: { id: _context.user.id },
                                               },
@@ -195,6 +211,9 @@ builder.mutationFields((t) => ({
                 console.log(error);
                 return {
                     success: false,
+                    message: `Error al crear la tarea: ${
+                        error instanceof Error ? error.message : 'Unknown error'
+                    }`,
                 };
             }
         },
@@ -243,16 +262,16 @@ builder.mutationFields((t) => ({
                     };
                 }
                 const data = {
-                    actNumber: input.actNumber,
-                    auditorId: input.auditor,
-                    branchId: input.branch,
-                    businessId: input.business,
+                    actNumber: input.actNumber ?? undefined,
+                    auditorId: input.auditor ?? undefined,
+                    branchId: input.branch ?? undefined,
+                    businessId: input.business ?? undefined,
                     description: input.description,
                     taskType: input.taskType,
                     assignedIDs: {
                         set: input.assigned,
                     },
-                    movitecTicket: input.movitecTicket,
+                    movitecTicket: input.movitecTicket ?? undefined,
                 };
 
                 const task = await prisma.task.update({
@@ -417,6 +436,7 @@ builder.mutationFields((t) => ({
                         imageKeys,
                         observations,
                         closedAt,
+                        startedAt,
                         expenses,
                         expenseIdsToDelete,
                         imageIdsToDelete,
@@ -488,6 +508,7 @@ builder.mutationFields((t) => ({
                         status: TaskStatus.Finalizada,
                         observations: observations ?? foundTask.observations,
                         closedAt: closedAt,
+                        startedAt: startedAt,
                         images: {
                             create: imageKeys
                                 ? await Promise.all(
@@ -503,13 +524,49 @@ builder.mutationFields((t) => ({
                         expenses: {
                             create: expenses
                                 ? await Promise.all(
-                                      expenses.map(async (expenseData) => {
+                                      expenses.map(async (expenseData, index) => {
+                                          // Encontrar el último número de secuencia para esta tarea
+                                          const task = await prisma.task.findUnique({
+                                              where: { id },
+                                              select: { taskNumber: true },
+                                          });
+
+                                          if (!task) {
+                                              throw new Error('Task not found');
+                                          }
+
+                                          const lastExpense =
+                                              await prisma.expense.findFirst({
+                                                  where: {
+                                                      task: { id },
+                                                      expenseNumber: {
+                                                          contains:
+                                                              task.taskNumber.toString(),
+                                                      },
+                                                  },
+                                                  orderBy: {
+                                                      expenseNumber: 'desc',
+                                                  },
+                                              });
+
+                                          const sequence = lastExpense
+                                              ? parseInt(
+                                                    lastExpense.expenseNumber.split(
+                                                        '-',
+                                                    )[1],
+                                                ) + 1
+                                              : 1;
+
                                           return {
+                                              expenseNumber: `${task.taskNumber}-${
+                                                  sequence + index
+                                              }`,
                                               amount: expenseData.amount,
                                               expenseType: expenseData.expenseType,
                                               paySource: expenseData.paySource,
                                               status: ExpenseStatus.Enviado,
                                               doneBy: expenseData.doneBy,
+                                              cityName: expenseData.cityName,
                                               installments: expenseData.installments,
                                               expenseDate: expenseData.expenseDate,
                                               paySourceBank: expenseData.paySourceBank,
@@ -595,7 +652,7 @@ builder.mutationFields((t) => ({
             startDate: t.arg.string({ required: true }),
             endDate: t.arg.string({ required: true }),
             filters: t.arg({
-                type: 'JSON',
+                type: [TaskReportFilterInput],
                 required: false,
             }),
         },
@@ -642,6 +699,11 @@ builder.mutationFields((t) => ({
                 // 3. Definir encabezados
                 worksheet.columns = [
                     {
+                        header: 'Número de tarea',
+                        key: 'taskNumber',
+                        width: 15,
+                    },
+                    {
                         header: 'Técnicos',
                         key: 'technicians',
                         width: 20,
@@ -666,6 +728,11 @@ builder.mutationFields((t) => ({
                         key: 'description',
                         width: 40,
                         style: { alignment: { wrapText: true } },
+                    },
+                    {
+                        header: 'Fecha de Inicio',
+                        key: 'startedAt',
+                        width: 20,
                     },
                     {
                         header: 'Fecha de Cierre',
@@ -698,21 +765,27 @@ builder.mutationFields((t) => ({
                     }, 0);
 
                     worksheet.addRow({
+                        taskNumber: `#${task.taskNumber}`,
                         technicians: task.assigned
                             .map((tech) => tech.fullName)
                             .join(', '),
-                        business: task.business.name,
-                        client: task.branch.client.name,
-                        branch: `#${task.branch.number}, ${task.branch.city.name}`,
+                        business: task.business?.name ?? task.businessName,
+                        client: task.branch?.client.name ?? task.clientName,
+                        branch: `#${
+                            `${task.branch?.number}, ${task.branch?.city.name}` ?? 'N/A'
+                        }`,
                         description: task.description,
+                        startedAt: task.startedAt
+                            ? format(task.startedAt, 'dd/MM/yyyy HH:mm')
+                            : 'N/A',
                         closedAt: task.closedAt
-                            ? format(task.closedAt, 'dd/MM/yyyy')
+                            ? format(task.closedAt, 'dd/MM/yyyy HH:mm')
                             : 'N/A',
                         actNumber: task.actNumber,
-                        expenses: totalExpenses.toLocaleString('es-AR', {
+                        expenses: `${totalExpenses.toLocaleString('es-AR', {
                             style: 'currency',
                             currency: 'ARS',
-                        }),
+                        })} en ${filteredExpenses.length} gastos distintos`,
                         observations: task.observations,
                     });
 

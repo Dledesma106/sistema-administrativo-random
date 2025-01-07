@@ -79,9 +79,11 @@ export type Expense = {
     __typename?: 'Expense';
     amount: Scalars['Float'];
     auditor: Maybe<User>;
+    cityName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
     doneBy: Scalars['String'];
     expenseDate: Maybe<Scalars['DateTime']>;
+    expenseNumber: Scalars['String'];
     expenseType: ExpenseType;
     id: Scalars['ID'];
     image: Image;
@@ -103,6 +105,7 @@ export type ExpenseCrudResult = {
 
 export type ExpenseInput = {
     amount: Scalars['Float'];
+    cityName: Scalars['String'];
     doneBy: Scalars['String'];
     expenseDate: InputMaybe<Scalars['DateTime']>;
     expenseType: ExpenseType;
@@ -258,7 +261,7 @@ export type MutationGenerateApprovedExpensesReportArgs = {
 
 export type MutationGenerateApprovedTasksReportArgs = {
     endDate: Scalars['String'];
-    filters: InputMaybe<Scalars['JSON']>;
+    filters: InputMaybe<Array<TaskReportFilterInput>>;
     startDate: Scalars['String'];
 };
 
@@ -313,12 +316,15 @@ export type MutationUpdateUserArgs = {
 export type MyTaskInput = {
     actNumber: InputMaybe<Scalars['String']>;
     assigned: InputMaybe<Array<Scalars['String']>>;
-    branch: Scalars['String'];
-    business: Scalars['String'];
+    branch: InputMaybe<Scalars['String']>;
+    business: InputMaybe<Scalars['String']>;
+    businessName: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     closedAt: InputMaybe<Scalars['DateTime']>;
     expenses: InputMaybe<Array<ExpenseInput>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
+    startedAt: InputMaybe<Scalars['DateTime']>;
     taskType: TaskType;
 };
 
@@ -447,10 +453,14 @@ export type Task = {
     actNumber: Maybe<Scalars['Int']>;
     assigned: Array<User>;
     auditor: Maybe<User>;
-    branch: Branch;
-    business: Business;
+    branch: Maybe<Branch>;
+    business: Maybe<Business>;
+    businessName: Maybe<Scalars['String']>;
+    clientName: Maybe<Scalars['String']>;
     closedAt: Maybe<Scalars['DateTime']>;
     createdAt: Scalars['DateTime'];
+    deleted: Scalars['Boolean'];
+    deletedAt: Maybe<Scalars['DateTime']>;
     description: Scalars['String'];
     expenses: Array<Expense>;
     id: Scalars['ID'];
@@ -458,8 +468,12 @@ export type Task = {
     imagesIDs: Array<Scalars['String']>;
     movitecTicket: Maybe<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
+    openedAt: Scalars['DateTime'];
+    startedAt: Maybe<Scalars['DateTime']>;
     status: TaskStatus;
+    taskNumber: Scalars['Int'];
     taskType: TaskType;
+    updatedAt: Scalars['DateTime'];
 };
 
 export type TaskCrudResult = {
@@ -473,11 +487,18 @@ export type TaskInput = {
     actNumber: InputMaybe<Scalars['Int']>;
     assigned: Array<Scalars['String']>;
     auditor: InputMaybe<Scalars['String']>;
-    branch: Scalars['String'];
-    business: Scalars['String'];
+    branch: InputMaybe<Scalars['String']>;
+    business: InputMaybe<Scalars['String']>;
+    businessName: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     description: Scalars['String'];
     movitecTicket: InputMaybe<Scalars['String']>;
     taskType: TaskType;
+};
+
+export type TaskReportFilterInput = {
+    id: Scalars['String'];
+    value: Scalars['JSON'];
 };
 
 export const TaskStatus = {
@@ -507,6 +528,7 @@ export type UpdateMyTaskInput = {
     imageIdsToDelete: InputMaybe<Array<Scalars['String']>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
+    startedAt: InputMaybe<Scalars['DateTime']>;
 };
 
 export type User = {
@@ -667,6 +689,8 @@ export type ExpenseByIdQuery = {
         id: string;
         amount: number;
         expenseType: ExpenseType;
+        expenseNumber: string;
+        cityName: string | null;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
         status: ExpenseStatus;
@@ -675,7 +699,7 @@ export type ExpenseByIdQuery = {
         installments: number | null;
         expenseDate: any | null;
         createdAt: any;
-        task: { __typename?: 'Task'; id: string } | null;
+        task: { __typename?: 'Task'; id: string; taskNumber: number } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
         image: { __typename?: 'Image'; id: string; url: string };
         auditor: { __typename?: 'User'; id: string; fullName: string } | null;
@@ -706,13 +730,16 @@ export type ExpensesQuery = {
         task: {
             __typename?: 'Task';
             id: string;
-            business: { __typename?: 'Business'; name: string };
+            taskNumber: number;
+            businessName: string | null;
+            clientName: string | null;
+            business: { __typename?: 'Business'; name: string } | null;
             branch: {
                 __typename?: 'Branch';
                 number: number;
                 client: { __typename?: 'Client'; name: string };
                 city: { __typename?: 'City'; name: string };
-            };
+            } | null;
         } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
         image: { __typename?: 'Image'; id: string; url: string; key: string };
@@ -789,11 +816,14 @@ export type TasksQuery = {
         __typename?: 'Task';
         id: string;
         createdAt: any;
+        startedAt: any | null;
         closedAt: any | null;
         description: string;
+        businessName: string | null;
+        clientName: string | null;
         taskType: TaskType;
         status: TaskStatus;
-        business: { __typename?: 'Business'; id: string; name: string };
+        business: { __typename?: 'Business'; id: string; name: string } | null;
         branch: {
             __typename?: 'Branch';
             id: string;
@@ -805,7 +835,7 @@ export type TasksQuery = {
                 province: { __typename?: 'Province'; id: string; name: string };
             };
             client: { __typename?: 'Client'; id: string; name: string };
-        };
+        } | null;
         assigned: Array<{ __typename?: 'User'; id: string; fullName: string }>;
         expenses: Array<{ __typename?: 'Expense'; amount: number }>;
     }>;
@@ -820,15 +850,19 @@ export type TaskByIdQuery = {
     taskById: {
         __typename?: 'Task';
         id: string;
+        taskNumber: number;
+        startedAt: any | null;
         createdAt: any;
         closedAt: any | null;
         description: string;
         actNumber: number | null;
         observations: string | null;
+        clientName: string | null;
+        businessName: string | null;
         taskType: TaskType;
         status: TaskStatus;
         movitecTicket: string | null;
-        business: { __typename?: 'Business'; id: string; name: string };
+        business: { __typename?: 'Business'; id: string; name: string } | null;
         images: Array<{ __typename?: 'Image'; id: string; url: string }>;
         branch: {
             __typename?: 'Branch';
@@ -839,7 +873,7 @@ export type TaskByIdQuery = {
                 province: { __typename?: 'Province'; name: string };
             };
             client: { __typename?: 'Client'; name: string };
-        };
+        } | null;
         assigned: Array<{
             __typename?: 'User';
             id: string;
@@ -966,6 +1000,7 @@ export type UpdateTaskStatusMutation = {
 export type GenerateApprovedTasksReportMutationVariables = Exact<{
     startDate: Scalars['String'];
     endDate: Scalars['String'];
+    filters: Array<TaskReportFilterInput>;
 }>;
 
 export type GenerateApprovedTasksReportMutation = {
@@ -1750,6 +1785,14 @@ export const ExpenseByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenseNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cityName' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'paySource' },
                                 },
                                 {
@@ -1773,6 +1816,13 @@ export const ExpenseByIdDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'taskNumber',
+                                                },
                                             },
                                         ],
                                     },
@@ -1977,6 +2027,27 @@ export const ExpensesDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'taskNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'businessName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'clientName',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -2571,6 +2642,10 @@ export const TasksDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'startedAt' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'closedAt' },
                                 },
                                 {
@@ -2593,6 +2668,14 @@ export const TasksDocument = {
                                             },
                                         ],
                                     },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'businessName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'clientName' },
                                 },
                                 {
                                     kind: 'Field',
@@ -2771,6 +2854,14 @@ export const TaskByIdDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'taskNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'startedAt' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'createdAt' },
                                 },
                                 {
@@ -2788,6 +2879,14 @@ export const TaskByIdDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'clientName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'businessName' },
                                 },
                                 {
                                     kind: 'Field',
@@ -3598,6 +3697,29 @@ export const GenerateApprovedTasksReportDocument = {
                         },
                     },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'filters' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'ListType',
+                            type: {
+                                kind: 'NonNullType',
+                                type: {
+                                    kind: 'NamedType',
+                                    name: {
+                                        kind: 'Name',
+                                        value: 'TaskReportFilterInput',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -3620,6 +3742,14 @@ export const GenerateApprovedTasksReportDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'filters' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'filters' },
                                 },
                             },
                         ],
