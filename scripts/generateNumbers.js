@@ -55,7 +55,10 @@ async function updateIds() {
                 const lastExpense = await expensesCollection.findOne(
                     {
                         task: expense.task,
-                        expenseNumber: { $exists: true, $regex: task.taskNumber }
+                        expenseNumber: { 
+                            $exists: true, 
+                            $regex: task.taskNumber.toString()
+                        }
                     },
                     { sort: { expenseNumber: -1 } }
                 );
@@ -73,7 +76,10 @@ async function updateIds() {
                 const lastExpense = await expensesCollection.findOne(
                     {
                         task: null,
-                        expenseNumber: { $exists: true, $not: { $regex: '-' } }
+                        expenseNumber: { 
+                            $exists: true, 
+                            $not: { $regex: '-' }
+                        }
                     },
                     { sort: { expenseNumber: -1 } }
                 );

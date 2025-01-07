@@ -105,7 +105,13 @@ export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
                         </button>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                        <button className="w-full cursor-default" onClick={openModal}>
+                        <button
+                            className="w-full cursor-default"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openModal();
+                            }}
+                        >
                             Eliminar
                         </button>
                     </DropdownMenuItem>

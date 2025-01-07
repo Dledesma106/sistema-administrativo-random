@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,13 +32,16 @@ interface Props {
 export function TasksTableRowActions({ task }: Props): JSX.Element {
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
+    const router = useRouter();
     const queryClient = useQueryClient();
 
-    const openModal = (): void => {
+    const openModal = (e: React.MouseEvent): void => {
+        e.stopPropagation();
         setModal(true);
     };
 
-    const closeModal = (): void => {
+    const closeModal = (e?: React.MouseEvent): void => {
+        e?.stopPropagation();
         setModal(false);
     };
 
@@ -82,7 +85,7 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
     return (
         <>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                     <Button
                         variant="ghost"
                         className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
@@ -91,10 +94,23 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
                         <span className="sr-only">Abrir menú</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[160px]">
-                    <DropdownMenuItem asChild>
-                        <Link href={routesBuilder.tasks.edit(task.id)}>Editar</Link>
-                    </DropdownMenuItem>
+                <DropdownMenuContent
+                    align="end"
+                    className="w-[160px]"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {task.status === 'Pendiente' && (
+                        <DropdownMenuItem asChild>
+                            <div
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(routesBuilder.tasks.edit(task.id));
+                                }}
+                            >
+                                Editar
+                            </div>
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                         <button className="w-full cursor-default" onClick={openModal}>
                             Eliminar

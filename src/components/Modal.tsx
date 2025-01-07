@@ -16,7 +16,8 @@ export default function Modal({
     action,
     msg,
 }: Props): JSX.Element {
-    const handleOk = (): void => {
+    const handleOk = (e: React.MouseEvent): void => {
+        e.stopPropagation();
         action();
         handleToggleModal();
     };
@@ -49,7 +50,7 @@ export default function Modal({
                                 No, cancelar.
                             </Button>
 
-                            <Button color="failure" onClick={handleOk}>
+                            <Button color="failure" onClick={(e) => handleOk(e)}>
                                 Si, aceptar.
                             </Button>
                         </div>
