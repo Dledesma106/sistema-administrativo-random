@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -58,7 +57,41 @@ const CreateOrUpdatePreventiveForm = ({
     defaultValues,
 }: Props): JSX.Element => {
     const router = useRouter();
-    const form = useForm<FormValues>({ defaultValues });
+    const form = useForm<FormValues>({
+        defaultValues,
+        resolver: (values) => {
+            const errors: Record<string, { type: string; message: string }> = {};
+
+            // Validar que se use frequency O months, pero no ambos
+            if (values.frequency && values.months?.length > 0) {
+                errors.frequency = {
+                    type: 'manual',
+                    message: 'No puede especificar frecuencia y meses simultáneamente',
+                };
+                errors.months = {
+                    type: 'manual',
+                    message: 'No puede especificar frecuencia y meses simultáneamente',
+                };
+            }
+
+            // Validar que al menos uno esté presente
+            if (!values.frequency && (!values.months || values.months.length === 0)) {
+                errors.frequency = {
+                    type: 'manual',
+                    message: 'Debe especificar una frecuencia o seleccionar meses',
+                };
+                errors.months = {
+                    type: 'manual',
+                    message: 'Debe especificar una frecuencia o seleccionar meses',
+                };
+            }
+
+            return {
+                values,
+                errors,
+            };
+        },
+    });
     const { watch, setValue } = form;
     const { triggerAlert } = useAlert();
 
@@ -87,16 +120,12 @@ const CreateOrUpdatePreventiveForm = ({
                 throw new Error('Branch and business are required');
             }
 
-            if (typeof form.frequency !== 'number') {
-                throw new Error('Frequency is required');
-            }
-
             return fetchClient(CreatePreventiveDocument, {
                 data: {
                     assignedIDs: form.assigned.map((technician) => technician.value),
                     branchId: form.branch,
                     businessId: form.business,
-                    frequency: form.frequency,
+                    frequency: form.frequency ?? 0,
                     months: form.months.map((month) => month.value),
                     observations: form.observations,
                     status: PreventiveStatus.Pendiente,
@@ -128,17 +157,13 @@ const CreateOrUpdatePreventiveForm = ({
                 throw new Error('Branch and business are required');
             }
 
-            if (typeof form.frequency !== 'number') {
-                throw new Error('Frequency is required');
-            }
-
             return fetchClient(UpdatePreventiveDocument, {
                 id: preventiveIdToUpdate,
                 data: {
                     assignedIDs: form.assigned.map((technician) => technician.value),
                     branchId: form.branch,
                     businessId: form.business,
-                    frequency: form.frequency,
+                    frequency: form.frequency ?? 0,
                     months: form.months.map((month) => month.value),
                     observations: form.observations,
                     status: form.status,
@@ -324,85 +349,61 @@ const CreateOrUpdatePreventiveForm = ({
                     <FormField
                         name="frequency"
                         control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                        }}
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Frecuencia</FormLabel>
-                                    <FormControl>
-                                        <Combobox
-                                            selectPlaceholder="Seleccione una frecuencia"
-                                            searchPlaceholder="Buscar frecuencia"
-                                            value={field.value?.toString() || ''}
-                                            onChange={(val) => {
-                                                if (val.length === 0) {
-                                                    field.onChange(null);
-                                                } else {
-                                                    field.onChange(parseInt(val, 10));
-                                                }
-                                            }}
-                                            items={types.frequencies.map(
-                                                (frequency, index) => {
-                                                    if (index === 0) {
-                                                        return {
-                                                            label: 'Todos los meses',
-                                                            value: index.toString(),
-                                                        };
-                                                    }
-
-                                                    return {
-                                                        label: `Cada ${frequency} meses`,
-                                                        value: index.toString(),
-                                                    };
-                                                },
-                                            )}
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Frecuencia en la que se realizara el preventivo
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Frecuencia (meses)</FormLabel>
+                                <FormControl>
+                                    <Combobox
+                                        selectPlaceholder="Seleccione la frecuencia"
+                                        searchPlaceholder="Buscar frecuencia"
+                                        value={field.value?.toString() ?? ''}
+                                        onChange={(value) => {
+                                            const numValue = value
+                                                ? parseInt(value)
+                                                : null;
+                                            field.onChange(numValue);
+                                            if (numValue) {
+                                                form.setValue('months', []);
+                                            }
+                                        }}
+                                        items={Array.from({ length: 12 }, (_, i) => ({
+                                            label: `${i + 1} ${
+                                                i + 1 === 1 ? 'mes' : 'meses'
+                                            }`,
+                                            value: (i + 1).toString(),
+                                        }))}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
 
                     <FormField
                         name="months"
                         control={form.control}
-                        rules={{
-                            validate: (value) => {
-                                if (!value || value.length === 0) {
-                                    return 'Debe seleccionar al menos un mes';
-                                }
-
-                                return true;
-                            },
-                        }}
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Meses</FormLabel>
-                                    <FormControl>
-                                        <FancyMultiSelect
-                                            placeholder="Seleccione un mes"
-                                            onChange={field.onChange}
-                                            options={types.months.map((month) => ({
-                                                label: month,
-                                                value: month,
-                                            }))}
-                                            value={field.value}
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Meses impuestos por el cliente
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Meses</FormLabel>
+                                <FormControl>
+                                    <FancyMultiSelect
+                                        {...field}
+                                        onChange={(value) => {
+                                            field.onChange(value);
+                                            // Limpiar frecuencia si se seleccionan meses
+                                            if (value.length > 0) {
+                                                form.setValue('frequency', null);
+                                            }
+                                        }}
+                                        options={types.months.map((month) => ({
+                                            label: month,
+                                            value: month,
+                                        }))}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
 
                     <FormField
