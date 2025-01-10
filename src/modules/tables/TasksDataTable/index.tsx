@@ -42,7 +42,14 @@ type TableItem = TasksQuery['tasks'][0];
 
 export default function TasksDataTable(props: TasksPageProps): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('tasksTableFilters');
+        return saved ? JSON.parse(saved) : [];
+    });
+
     const router = useRouter();
     const tasksQuery = useTasksListQuery({
         assigneed: null,
@@ -61,6 +68,10 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         setTasks(tasksQuery.data?.tasks);
     }, [tasksQuery.data?.tasks]);
 
+    useEffect(() => {
+        localStorage.setItem('tasksTableFilters', JSON.stringify(columnFilters));
+    }, [columnFilters]);
+
     const table = useReactTable<TableItem>({
         data: tasks || [],
         columns: columns,
@@ -74,7 +85,6 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
         getFacetedUniqueValues: (table, columnId) => {
             if (columnId === 'assigned') {
                 return () => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const uniqueValuesMap = new Map<any, number>();
                     const rows = table.getCoreRowModel().rows;
 
@@ -199,7 +209,6 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
     return (
         <div className="space-y-4 pb-8">
             <TasksDataTableToolbar table={table} {...props} />
-
             <Skeleton className="h-96 w-full" />
         </div>
     );

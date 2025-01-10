@@ -40,7 +40,14 @@ type TableItem = ElementType<ExpensesQuery['expenses']>;
 
 export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('expensesTableFilters');
+        return saved ? JSON.parse(saved) : [];
+    });
+
     const router = useRouter();
     const { data, error } = useGetExpenses({
         registeredBy: null,
@@ -48,14 +55,16 @@ export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element
         expenseType: null,
     });
     const { user } = useUserContext();
-
     const [expenses, setExpenses] = useState(data?.expenses);
-
     const columns = useExpensesTableColumns();
 
     useEffect(() => {
         setExpenses(data?.expenses);
     }, [data?.expenses]);
+
+    useEffect(() => {
+        localStorage.setItem('expensesTableFilters', JSON.stringify(columnFilters));
+    }, [columnFilters]);
 
     const table = useReactTable<TableItem>({
         data: expenses || [],
