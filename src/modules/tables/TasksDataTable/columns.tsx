@@ -46,7 +46,7 @@ export const useTasksTableColumns = () => [
             return <p className="max-w-[250px] text-muted-foreground">{description}</p>;
         },
     }),
-    columnHelper.accessor((row) => row.business?.id, {
+    columnHelper.accessor((row) => row.business?.id ?? row.businessName, {
         id: 'business',
         cell: (info) => {
             const task = info.row.original;
@@ -54,19 +54,15 @@ export const useTasksTableColumns = () => [
         },
         header: 'Empresa',
         filterFn: (row, id, businessesIDs: string[]) => {
-            if (!businessesIDs) {
+            if (!businessesIDs?.length) {
                 return true;
             }
 
-            const businessID = row.getValue<Task['business']>(id)?.id;
-            const businessIsInFilteredList = businessesIDs.some(
-                (someId) => someId === businessID,
-            );
-
-            return businessIsInFilteredList;
+            const task = row.original;
+            return businessesIDs.includes(task.business?.id ?? '');
         },
     }),
-    columnHelper.accessor((row) => row.branch?.client?.id, {
+    columnHelper.accessor((row) => row.branch?.client?.id ?? row.clientName, {
         id: 'client',
         header: 'Cliente',
         cell: (info) => {
@@ -74,32 +70,24 @@ export const useTasksTableColumns = () => [
             return task.clientName ?? task.branch?.client.name;
         },
         filterFn: (row, id, clientsIDs: string[]) => {
-            if (!clientsIDs) {
+            if (!clientsIDs?.length) {
                 return true;
             }
 
-            const clientId = row.getValue<Task['branch']>(id)?.client?.id;
-            const clientIsInFilteredList = clientsIDs.some(
-                (clientID) => clientID === clientId,
-            );
-
-            return clientIsInFilteredList;
+            const task = row.original;
+            return clientsIDs.includes(task.branch?.client?.id ?? '');
         },
     }),
     columnHelper.accessor((row) => row.branch?.city?.id, {
         id: 'branch',
         header: 'Sucursal',
         filterFn: (row, id, cityIDs: string[]) => {
-            if (!cityIDs) {
+            if (!cityIDs?.length) {
                 return true;
             }
 
-            const currentCityId = row.getValue<Task['branch']>(id)?.city?.id;
-            const branchIsInFilteredList = cityIDs.some(
-                (someId) => someId === currentCityId,
-            );
-
-            return branchIsInFilteredList;
+            const task = row.original;
+            return cityIDs.includes(task.branch?.city?.id ?? '');
         },
     }),
     columnHelper.accessor((row) => row.assigned, {
