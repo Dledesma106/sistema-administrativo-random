@@ -1,66 +1,89 @@
-import { GetServerSideProps } from 'next';
-
-import { useRouter } from 'next/router';
+import { GetServerSidePropsContext } from 'next';
 
 import { Role } from '@prisma/client';
 
 import CreateOrUpdatePreventiveForm from '@/components/Forms/TechAdmin/CreateOrUpdatePreventiveForm';
-import { Month, type Frequency } from 'backend/models/types';
+import * as types from 'backend/models/types';
 import { prisma } from 'lib/prisma';
 
 export type EditPreventivePageProps = Awaited<
     ReturnType<typeof getEditPreventivePageProps>
 >;
 
+type EmptyProps = Record<string, never>;
 type ValidProps = EditPreventivePageProps & {
     preventive: NonNullable<Awaited<ReturnType<typeof getPreventive>>>;
 };
 
-type Props = ValidProps | Record<string, never>;
+type Props = EmptyProps | ValidProps;
+
+const getPreventive = async (id: string) => {
+    const preventive = await prisma.preventive.findUniqueUndeleted({
+        where: {
+            id,
+        },
+        include: {
+            branch: {
+                select: {
+                    clientId: true,
+                },
+            },
+            assigned: {
+                select: {
+                    id: true,
+                    fullName: true,
+                },
+                where: {
+                    deleted: false,
+                },
+            },
+        },
+    });
+
+    return preventive;
+};
 
 const propsAreValid = (props: Props): props is ValidProps => {
     return 'preventive' in props;
 };
 
-type Params = {
-    id: string;
-};
-
-export default function EditPreventive(props: Props) {
-    const router = useRouter();
-
-    if (!propsAreValid(props)) {
-        return null;
+export default function EditPreventive(props: Props): JSX.Element {
+    if (propsAreValid(props) === false) {
+        return <>Preventive not found</>;
     }
-    const { preventive, ...rest } = props;
 
+    const { preventive, ...rest } = props;
     return (
         <>
             <CreateOrUpdatePreventiveForm
+                {...rest}
+                preventiveIdToUpdate={preventive.id}
                 defaultValues={{
                     client: preventive.branch.clientId,
-                    branch: preventive.branch.id,
                     business: preventive.businessId,
-                    assigned: preventive.assigned.map((user) => ({
-                        label: user.fullName,
-                        value: user.id,
+                    branch: preventive.branchId,
+                    lastDoneAt: preventive.lastDoneAt,
+                    batteryChangedAt: preventive.batteryChangedAt,
+                    assigned: preventive.assigned.map((assigned) => ({
+                        label: assigned.fullName,
+                        value: assigned.id,
                     })),
-                    frequency: preventive.frequency as Frequency,
+                    frequency: preventive.frequency,
+                    observations: preventive.observations,
                     months: preventive.months.map((month) => ({
                         label: month,
-                        value: month as Month,
+                        value: month as types.Month,
                     })),
-                    observations: preventive.observations,
                     status: preventive.status,
                 }}
-                preventiveIdToUpdate={router.query.id as string}
-                {...rest}
             />
         </>
     );
 }
 
-export const getServerSideProps: GetServerSideProps<Props, Params> = async (ctx) => {
+export async function getServerSideProps(
+    ctx: GetServerSidePropsContext,
+): Promise<{ props: Props }> {
     const { params } = ctx;
     const id = params?.id;
     if (!id || Array.isArray(id)) {
@@ -84,7 +107,7 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async (ctx)
             ...rest,
         },
     };
-};
+}
 
 const getEditPreventivePageProps = async () => {
     const branches = await prisma.branch.findManyUndeleted({
@@ -142,33 +165,4 @@ const getEditPreventivePageProps = async () => {
         clients,
         technicians,
     };
-};
-
-const getPreventive = async (id: string) => {
-    return await prisma.preventive.findUniqueUndeleted({
-        where: {
-            id,
-            deleted: false,
-        },
-        select: {
-            id: true,
-            frequency: true,
-            status: true,
-            months: true,
-            businessId: true,
-            branch: {
-                select: {
-                    id: true,
-                    clientId: true,
-                },
-            },
-            assigned: {
-                select: {
-                    id: true,
-                    fullName: true,
-                },
-            },
-            observations: true,
-        },
-    });
 };

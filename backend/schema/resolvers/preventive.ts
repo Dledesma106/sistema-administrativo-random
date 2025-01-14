@@ -64,6 +64,12 @@ const PreventiveInputPothosRef = builder.inputType('PreventiveInput', {
         assignedIDs: t.stringList({
             required: true,
         }),
+        lastDoneAt: t.string({
+            required: false,
+        }),
+        batteryChangedAt: t.string({
+            required: false,
+        }),
     }),
 });
 
@@ -112,6 +118,8 @@ builder.mutationFields((t) => ({
                 businessId,
                 branchId,
                 assignedIDs,
+                lastDoneAt,
+                batteryChangedAt,
             } = data;
 
             const preventive = await prisma.preventive.create({
@@ -122,6 +130,8 @@ builder.mutationFields((t) => ({
                     status,
                     businessId,
                     branchId,
+                    lastDoneAt,
+                    batteryChangedAt,
                     assignedIDs: {
                         set: assignedIDs,
                     },
@@ -159,8 +169,9 @@ builder.mutationFields((t) => ({
                 businessId,
                 branchId,
                 assignedIDs,
+                lastDoneAt,
+                batteryChangedAt,
             } = data;
-
             const preventive = await prisma.preventive.update({
                 where: {
                     id,
@@ -175,6 +186,8 @@ builder.mutationFields((t) => ({
                     assignedIDs: {
                         set: assignedIDs,
                     },
+                    lastDoneAt,
+                    batteryChangedAt,
                 },
             });
 
