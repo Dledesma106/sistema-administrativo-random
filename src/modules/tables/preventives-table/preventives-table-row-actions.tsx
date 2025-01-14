@@ -96,7 +96,9 @@ export function PreventivesTableRowActions({ preventive }: Props): JSX.Element {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[160px]">
                     <DropdownMenuItem asChild>
-                        <Link href={routesBuilder.tasks.edit(preventive.id)}>Editar</Link>
+                        <Link href={routesBuilder.preventives.edit(preventive.id)}>
+                            Editar
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <button className="w-full cursor-default" onClick={openModal}>

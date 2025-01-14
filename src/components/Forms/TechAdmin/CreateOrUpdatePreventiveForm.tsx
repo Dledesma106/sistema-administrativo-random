@@ -2,6 +2,9 @@ import { useRouter } from 'next/navigation';
 
 import { PreventiveStatus } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { CalendarIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -11,6 +14,7 @@ import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Form,
     FormControl,
@@ -19,11 +23,12 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
-import { getCleanErrorMessage } from '@/lib/utils';
+import { getCleanErrorMessage, cn } from '@/lib/utils';
 import { EditPreventivePageProps } from '@/pages/tech-admin/preventives/[id]';
 import * as types from 'backend/models/types';
 
@@ -42,6 +47,8 @@ type FormValues = {
         value: types.Month;
     }[];
     status: PreventiveStatus;
+    lastDoneAt: Date | null;
+    batteryChangedAt: Date | null;
 };
 
 type Props = {
@@ -125,6 +132,8 @@ const CreateOrUpdatePreventiveForm = ({
                     assignedIDs: form.assigned.map((technician) => technician.value),
                     branchId: form.branch,
                     businessId: form.business,
+                    lastDoneAt: form.lastDoneAt,
+                    batteryChangedAt: form.batteryChangedAt,
                     frequency: form.frequency ?? 0,
                     months: form.months.map((month) => month.value),
                     observations: form.observations,
@@ -164,6 +173,8 @@ const CreateOrUpdatePreventiveForm = ({
                     branchId: form.branch,
                     businessId: form.business,
                     frequency: form.frequency ?? 0,
+                    lastDoneAt: form.lastDoneAt,
+                    batteryChangedAt: form.batteryChangedAt,
                     months: form.months.map((month) => month.value),
                     observations: form.observations,
                     status: form.status,
@@ -407,23 +418,107 @@ const CreateOrUpdatePreventiveForm = ({
                     />
 
                     <FormField
+                        name="lastDoneAt"
+                        control={form.control}
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Última fecha realizado</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant={'outline'}
+                                                className={cn(
+                                                    'w-full pl-3 text-left font-normal',
+                                                    !field.value &&
+                                                        'text-muted-foreground',
+                                                )}
+                                            >
+                                                {field.value ? (
+                                                    format(field.value, 'PPP', {
+                                                        locale: es,
+                                                    })
+                                                ) : (
+                                                    <span>Seleccione una fecha</span>
+                                                )}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value || undefined}
+                                            onSelect={field.onChange}
+                                            disabled={(date) => date > new Date()}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        name="batteryChangedAt"
+                        control={form.control}
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Última fecha de cambio de batería</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant={'outline'}
+                                                className={cn(
+                                                    'w-full pl-3 text-left font-normal',
+                                                    !field.value &&
+                                                        'text-muted-foreground',
+                                                )}
+                                            >
+                                                {field.value ? (
+                                                    format(field.value, 'PPP', {
+                                                        locale: es,
+                                                    })
+                                                ) : (
+                                                    <span>Seleccione una fecha</span>
+                                                )}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value || undefined}
+                                            onSelect={field.onChange}
+                                            disabled={(date) => date > new Date()}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
                         name="observations"
                         control={form.control}
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Observaciones (opcional)</FormLabel>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Ingrese las observaciones"
-                                            value={field.value || ''}
-                                            onChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Observaciones (opcional)</FormLabel>
+                                <FormControl>
+                                    <Textarea
+                                        placeholder="Ingrese las observaciones"
+                                        value={field.value || ''}
+                                        onChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
 
                     <div className="mt-4 flex flex-row justify-between">
