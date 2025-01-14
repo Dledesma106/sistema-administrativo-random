@@ -172,7 +172,6 @@ builder.mutationFields((t) => ({
                 lastDoneAt,
                 batteryChangedAt,
             } = data;
-            console.log(batteryChangedAt);
             const preventive = await prisma.preventive.update({
                 where: {
                     id,
