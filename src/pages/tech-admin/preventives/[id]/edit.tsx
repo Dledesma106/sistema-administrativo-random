@@ -6,7 +6,9 @@ import CreateOrUpdatePreventiveForm from '@/components/Forms/TechAdmin/CreateOrU
 import * as types from 'backend/models/types';
 import { prisma } from 'lib/prisma';
 
-type EditPreventivePageProps = Awaited<ReturnType<typeof getEditPreventivePageProps>>;
+export type EditPreventivePageProps = Awaited<
+    ReturnType<typeof getEditPreventivePageProps>
+>;
 
 type EmptyProps = Record<string, never>;
 type ValidProps = EditPreventivePageProps & {

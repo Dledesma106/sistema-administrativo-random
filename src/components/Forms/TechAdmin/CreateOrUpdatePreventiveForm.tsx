@@ -29,7 +29,7 @@ import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage, cn } from '@/lib/utils';
-import { EditPreventivePageProps } from '@/pages/tech-admin/preventives/[id]';
+import { EditPreventivePageProps } from '@/pages/tech-admin/preventives/[id]/edit';
 import * as types from 'backend/models/types';
 
 type FormValues = {
