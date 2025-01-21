@@ -158,6 +158,7 @@ builder.mutationFields((t) => ({
                             },
                         }),
                         closedAt: input.closedAt,
+                        startedAt: input.startedAt,
                         images: {
                             create: input.imageKeys
                                 ? await Promise.all(
