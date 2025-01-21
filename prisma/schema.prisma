@@ -250,6 +250,9 @@ model Task {
   User         User?   @relation(fields: [userId], references: [id])
   userId       String? @db.ObjectId
 
+  preventiveId String?     @map("preventive") @db.ObjectId
+  preventive   Preventive? @relation(fields: [preventiveId], references: [id])
+
   @@map("tasks")
 }
 
@@ -282,6 +285,8 @@ model Preventive {
 
   assignedIDs String[] @db.ObjectId
   assigned    User[]   @relation(fields: [assignedIDs], references: [id])
+
+  tasks Task[]
 
   @@map("preventives")
 }

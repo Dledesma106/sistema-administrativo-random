@@ -1,6 +1,12 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { ExpenseStatus, TaskStatus, Task } from '@prisma/client';
+import {
+    ExpenseStatus,
+    TaskStatus,
+    Task,
+    PreventiveStatus,
+    TaskType,
+} from '@prisma/client';
 import { format } from 'date-fns';
 import ExcelJS from 'exceljs';
 
@@ -320,6 +326,7 @@ builder.mutationFields((t) => ({
                     select: {
                         closedAt: true,
                         status: true,
+                        preventiveId: true,
                     },
                 });
 
@@ -335,6 +342,16 @@ builder.mutationFields((t) => ({
                     where: { id },
                     data: { status },
                 });
+
+                if (status === TaskStatus.Aprobada && task.preventiveId) {
+                    await prisma.preventive.update({
+                        where: { id: task.preventiveId },
+                        data: {
+                            status: PreventiveStatus.AlDia,
+                            lastDoneAt: task.closedAt,
+                        },
+                    });
+                }
 
                 return {
                     success: true,
@@ -861,6 +878,89 @@ builder.mutationFields((t) => ({
                 console.error('Error generating report:', error);
                 throw new Error('Error al generar el reporte');
             }
+        },
+    }),
+    generatePreventiveTasks: t.field({
+        type: 'Boolean',
+        args: {},
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (_parent, _args, _context, _info) => {
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+
+            const preventives = await prisma.preventive.findMany({
+                where: { deleted: false },
+                include: {
+                    business: true,
+                    branch: true,
+                    assigned: true,
+                    tasks: {
+                        where: {
+                            createdAt: {
+                                gte: new Date(currentYear, currentMonth - 1, 1),
+                                lt: new Date(currentYear, currentMonth, 1),
+                            },
+                            deleted: false,
+                        },
+                        orderBy: { createdAt: 'desc' },
+                        take: 1,
+                    },
+                },
+            });
+
+            for (const preventive of preventives) {
+                const shouldCreateTask =
+                    (preventive.months.length > 0 &&
+                        preventive.months.includes(currentMonth.toString())) ||
+                    (preventive.frequency > 0 &&
+                        currentMonth % preventive.frequency === 0);
+
+                if (shouldCreateTask) {
+                    const existingTask = preventive.tasks[0];
+
+                    if (!existingTask) {
+                        await prisma.preventive.update({
+                            where: { id: preventive.id },
+                            data: { status: PreventiveStatus.Pendiente },
+                        });
+
+                        const maxTaskNumber = await prisma.task.findFirst({
+                            orderBy: { taskNumber: 'desc' },
+                            select: { taskNumber: true },
+                        });
+
+                        await prisma.task.create({
+                            data: {
+                                taskNumber: (maxTaskNumber?.taskNumber ?? 0) + 1,
+                                taskType: TaskType.Preventivo,
+                                status: TaskStatus.Pendiente,
+                                description: `Mantenimiento Preventivo ${currentMonth} ${currentYear}`,
+                                businessId: preventive.businessId,
+                                branchId: preventive.branchId,
+                                assignedIDs: preventive.assignedIDs,
+                                preventiveId: preventive.id,
+                            },
+                        });
+                    } else if (existingTask.status === TaskStatus.Aprobada) {
+                        await prisma.preventive.update({
+                            where: { id: preventive.id },
+                            data: { status: PreventiveStatus.AlDia },
+                        });
+                    } else {
+                        await prisma.preventive.update({
+                            where: { id: preventive.id },
+                            data: { status: PreventiveStatus.Pendiente },
+                        });
+                    }
+                }
+            }
+
+            return true;
         },
     }),
 }));

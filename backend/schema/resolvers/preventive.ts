@@ -226,6 +226,72 @@ builder.mutationFields((t) => ({
             };
         },
     }),
+    generatePreventiveTasks: t.field({
+        type: 'Boolean',
+        authz: {
+            rules: ['IsAuthenticated', 'IsAdministrativoTecnico'],
+        },
+        resolve: async (_parent, _args, _context, _info) => {
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+
+            // Obtener todos los preventivos activos
+            const preventives = await prisma.preventive.findMany({
+                where: {
+                    deleted: false,
+                },
+                include: {
+                    business: true,
+                    branch: true,
+                    assigned: true,
+                },
+            });
+
+            for (const preventive of preventives) {
+                // Verificar si corresponde crear tarea este mes
+                const shouldCreateTask =
+                    (preventive.months.length > 0 &&
+                        preventive.months.includes(currentMonth.toString())) ||
+                    (preventive.frequency > 0 &&
+                        currentMonth % preventive.frequency === 0);
+
+                if (shouldCreateTask) {
+                    // Verificar si ya existe una tarea para este preventivo este mes
+                    const existingTask = await prisma.task.findFirst({
+                        where: {
+                            preventiveId: preventive.id,
+                            createdAt: {
+                                gte: new Date(currentYear, currentMonth - 1, 1),
+                                lt: new Date(currentYear, currentMonth, 1),
+                            },
+                        },
+                    });
+
+                    if (!existingTask) {
+                        const maxTaskNumber = await prisma.task.findFirst({
+                            orderBy: { taskNumber: 'desc' },
+                            select: { taskNumber: true },
+                        });
+
+                        await prisma.task.create({
+                            data: {
+                                taskNumber: (maxTaskNumber?.taskNumber ?? 0) + 1,
+                                taskType: 'Preventivo',
+                                status: 'Pendiente',
+                                description: `Tarea preventiva generada automáticamente - ${currentMonth}/${currentYear}`,
+                                businessId: preventive.businessId,
+                                branchId: preventive.branchId,
+                                assignedIDs: preventive.assignedIDs,
+                                preventiveId: preventive.id, // Asociar con el preventivo
+                            },
+                        });
+                    }
+                }
+            }
+
+            return true;
+        },
+    }),
 }));
 
 builder.queryFields((t) => ({
