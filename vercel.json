@@ -1,0 +1,6 @@
+{
+  "crons": [{
+    "path": "/api/cron/generate-preventive-tasks",
+    "schedule": "0 0 1 * *"
+  }]
+} 
