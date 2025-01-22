@@ -17,4 +17,10 @@ export const routesBuilder = {
         details: (id: string) => `/tech-admin/preventives/${id}`,
         edit: (id: string) => `/tech-admin/preventives/${id}/edit`,
     },
+    accounting: {
+        budgets: {
+            list: () => '/accounting/budgets',
+            new: () => '/accounting/budgets/new',
+        },
+    },
 } as const;

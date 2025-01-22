@@ -57,16 +57,12 @@ const Combobox = (props: Props) => {
                                 .toLowerCase()
                                 .includes(search?.toLowerCase());
 
-                            if (matches) {
-                                return 1;
-                            }
-
-                            return 0;
+                            return matches ? 1 : 0;
                         }}
                     >
                         <CommandInput placeholder={searchPlaceholder} />
                         <CommandEmpty>No hay resultados</CommandEmpty>
-                        <CommandGroup>
+                        <CommandGroup className="max-h-[400px] overflow-auto">
                             {items.map((item) => (
                                 <CommandItem
                                     className={
