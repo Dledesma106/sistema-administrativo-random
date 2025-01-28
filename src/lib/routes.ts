@@ -30,5 +30,10 @@ export const routesBuilder = {
             new: () => '/accounting/billing-profiles/new',
             edit: (id: string) => `/accounting/billing-profiles/${id}/edit`,
         },
+        taskPrices: {
+            list: () => '/accounting/task-prices',
+            new: () => '/accounting/task-prices/new',
+            edit: (id: string) => `/accounting/task-prices/${id}/edit`,
+        },
     },
 } as const;
