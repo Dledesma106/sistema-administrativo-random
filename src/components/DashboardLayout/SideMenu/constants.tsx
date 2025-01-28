@@ -6,9 +6,11 @@ import {
     RiMapPinLine,
     RiMapPin2Fill,
     RiGroupLine,
-    RiFileWarningLine,
     RiCustomerService2Line,
     RiCoinsLine,
+    RiMoneyDollarCircleLine,
+    RiFileListLine,
+    RiFileUserLine,
 } from 'react-icons/ri';
 
 import { routesBuilder } from '@/lib/routes';
@@ -50,21 +52,29 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
     {
         id: 5,
         title: 'Presupuestos',
-        path: '/accounting/budgets',
-        icon: <RiFileWarningLine />,
+        path: routesBuilder.accounting.budgets.list(),
+        icon: <RiMoneyDollarCircleLine />,
         toggle: false,
         roles: [Role.AdministrativoContable],
     },
     {
         id: 6,
+        title: 'Perfiles de facturación',
+        path: routesBuilder.accounting.billingProfiles.list(),
+        icon: <RiFileUserLine />,
+        toggle: false,
+        roles: [Role.AdministrativoContable],
+    },
+    {
+        id: 7,
         title: 'Preventivos',
         path: '/tech-admin/preventives',
-        icon: <RiFileWarningLine />,
+        icon: <RiFileListLine />,
         toggle: false,
         roles: [Role.AdministrativoTecnico],
     },
     {
-        id: 7,
+        id: 8,
         title: 'Clientes',
         path: '/tech-admin/clients',
         icon: <RiCustomerService2Line />,
@@ -72,7 +82,7 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
         roles: [Role.AdministrativoTecnico],
     },
     {
-        id: 8,
+        id: 9,
         title: 'Empresas',
         path: '/tech-admin/businesses',
         icon: <RiBuilding3Line />,
@@ -80,7 +90,7 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
         roles: [Role.AdministrativoTecnico, Role.AdministrativoContable],
     },
     {
-        id: 9,
+        id: 10,
         title: 'Provincias',
         path: '/tech-admin/provinces',
         icon: <RiMapPinLine />,
@@ -88,7 +98,7 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
         roles: [Role.AdministrativoTecnico],
     },
     {
-        id: 10,
+        id: 11,
         title: 'Localidades',
         path: '/tech-admin/cities',
         icon: <RiMapPin2Fill />,
@@ -96,7 +106,7 @@ export const dashboardMenuItems: IDashboardMenuItem[] = [
         roles: [Role.AdministrativoTecnico],
     },
     {
-        id: 11,
+        id: 12,
         title: 'Usuarios',
         path: '/tech-admin/users',
         icon: <RiGroupLine />,

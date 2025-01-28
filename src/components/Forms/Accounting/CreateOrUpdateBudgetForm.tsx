@@ -29,6 +29,7 @@ type FormValues = {
     description: string;
     price: number;
     businessName?: string;
+    businessContactName?: string;
     businessCUIT?: string;
     businessContactEmail?: string;
     businessBillingEmail?: string;
@@ -212,6 +213,27 @@ const CreateOrUpdateBudgetForm = ({
                             />
 
                             <FormField
+                                name="businessContactName"
+                                control={form.control}
+                                rules={{
+                                    required: 'Este campo es requerido',
+                                }}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Nombre de Contacto</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Nombre de contacto"
+                                                type="text"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
                                 name="businessContactEmail"
                                 control={form.control}
                                 rules={{
@@ -295,7 +317,7 @@ const CreateOrUpdateBudgetForm = ({
                         )}
                     />
 
-                    {form.watch('client') === 'Otro' && (
+                    {form.watch('client') === 'other' && (
                         <FormField
                             name="clientName"
                             control={form.control}
@@ -318,14 +340,14 @@ const CreateOrUpdateBudgetForm = ({
                         />
                     )}
 
-                    {form.watch('client') !== 'Otro' && (
+                    {form.watch('client') !== 'other' && form.watch('client') && (
                         <FormField
                             name="branch"
                             control={form.control}
                             rules={{
                                 required: 'Este campo es requerido',
                             }}
-                            disabled={form.watch('client') === undefined}
+                            disabled={!form.watch('client')}
                             render={({ field }) => (
                                 <FormItem
                                     className={

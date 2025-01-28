@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 
 import {
     ColumnFiltersState,
@@ -15,11 +15,11 @@ import {
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { BudgetsDataTableToolbar } from './budgets-table-toolbar';
-import { useBudgetsTableColumns } from './columns';
+import { BillingProfilesDataTableToolbar } from './billing-profiles-table-toolbar';
+import { useBillingProfilesTableColumns } from './columns';
+import type { BillingProfile } from './columns';
 
 import { DataTablePagination } from '@/components/data-table-pagination';
-import { BudgetStatus } from '@/components/ui/Badges/BudgetStatusBadge';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -30,23 +30,18 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
+import { routesBuilder } from '@/lib/routes';
 
 type Props = {
-    data: {
-        id: string;
-        company: string;
-        description: string;
-        price: number;
-        status: BudgetStatus;
-    }[];
+    data: BillingProfile[];
 };
 
-export default function BudgetsDataTable({ data }: Props) {
+export default function BillingProfilesDataTable({ data }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-    const columns = useBudgetsTableColumns();
+    const columns = useBillingProfilesTableColumns();
 
     const table = useReactTable({
         data,
@@ -67,16 +62,16 @@ export default function BudgetsDataTable({ data }: Props) {
     return (
         <div className="space-y-4">
             <div className="flex justify-between">
-                <TypographyH1>Presupuestos</TypographyH1>
+                <TypographyH1>Perfiles de Facturación</TypographyH1>
                 <Button asChild className="flex items-center space-x-2">
-                    <Link href="/accounting/budgets/new">
+                    <Link href="/accounting/billing-profiles/new">
                         <BsPlus size="20" />
-                        <span>Crear Presupuesto</span>
+                        <span>Crear Perfil</span>
                     </Link>
                 </Button>
             </div>
 
-            <BudgetsDataTableToolbar table={table} />
+            <BillingProfilesDataTableToolbar table={table} />
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -102,7 +97,9 @@ export default function BudgetsDataTable({ data }: Props) {
                                     key={row.id}
                                     onClick={() =>
                                         router.push(
-                                            `/accounting/budgets/${row.original.id}`,
+                                            routesBuilder.accounting.billingProfiles.edit(
+                                                row.original.id,
+                                            ),
                                         )
                                     }
                                     className="cursor-pointer"
@@ -123,7 +120,7 @@ export default function BudgetsDataTable({ data }: Props) {
                                     colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
-                                    No se encontraron presupuestos.
+                                    No se encontraron perfiles de facturación.
                                 </TableCell>
                             </TableRow>
                         )}
