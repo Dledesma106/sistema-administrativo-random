@@ -43,15 +43,15 @@ const Content: React.FC<Props> = ({ task }) => {
             <div className="flex justify-between">
                 <TypographyH1 className="mb-2">Tarea #{task.taskNumber}</TypographyH1>
                 {user.roles.includes('AdministrativoTecnico') && (
-                    <div>
-                        {['Pendiente', 'SinAsignar'].includes(task.status) && (
+                    <div className="flex gap-2">
+                        {task.status !== TaskStatus.Aprobada && (
                             <Button asChild>
                                 <Link href={routesBuilder.tasks.edit(task.id)}>
                                     Editar
                                 </Link>
                             </Button>
                         )}
-                        {task.status === 'Finalizada' && (
+                        {task.status === TaskStatus.Finalizada && (
                             <Button
                                 onClick={() =>
                                     updateTaskStatus({
