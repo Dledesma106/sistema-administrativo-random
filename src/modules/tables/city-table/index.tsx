@@ -12,8 +12,8 @@ import { useState, useEffect } from 'react';
 
 import { CITIES_TABLE_COLUMNS } from './cities-table-columns';
 import { CitiesTableToolbar } from './cities-table-toolbar';
-import { useCitiesListQuery } from './query';
 
+import { GetProvincesQuery } from '@/api/graphql';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
@@ -23,13 +23,17 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { CitiesPageProps } from '@/pages/tech-admin/cities';
+import { useGetCities } from '@/hooks/api/city/useGetCities';
 
-export const CityTable = ({ provinces }: CitiesPageProps) => {
+type CityTableProps = {
+    provinces: NonNullable<GetProvincesQuery['provinces']>;
+};
+
+export const CityTable = ({ provinces }: CityTableProps) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-    const citiesQuery = useCitiesListQuery({});
+    const citiesQuery = useGetCities({});
 
     const [cities, setCities] = useState(citiesQuery.data?.cities);
 

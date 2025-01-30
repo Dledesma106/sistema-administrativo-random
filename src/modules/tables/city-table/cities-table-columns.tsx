@@ -5,20 +5,20 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
-import { CITIES_LIST_QUERY_KEY_DOMAIN } from './query';
-
 import { fetchClient } from '@/api/fetch-client';
 import {
-    CitiesQuery,
+    GetCitiesQuery,
     DeleteCityDocument,
     DeleteCityMutation,
     DeleteCityMutationVariables,
 } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import useAlert from '@/context/alertContext/useAlert';
+import { CITIES_QUERY_KEY } from '@/hooks/api/city/useGetCities';
+import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
 
-type City = CitiesQuery['cities'][number];
+type City = GetCitiesQuery['cities'][number];
 
 const columnHelper = createColumnHelper<City>();
 
@@ -56,7 +56,7 @@ const RowActions = ({ city }: { city: City }) => {
             }
 
             queryClient.invalidateQueries({
-                queryKey: [CITIES_LIST_QUERY_KEY_DOMAIN],
+                queryKey: [CITIES_QUERY_KEY],
             });
 
             triggerAlert({
@@ -76,7 +76,7 @@ const RowActions = ({ city }: { city: City }) => {
         <div className="flex items-center justify-center gap-2">
             <Link
                 className="rounded-lg p-0.5 hover:bg-gray-200"
-                href={`/tech-admin/cities/${city.id}`}
+                href={routesBuilder.cities.edit(city.id)}
             >
                 <BsFillPencilFill color="gray" size="15" />
             </Link>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import Item from './Item';
 
+import { GetBusinessesQuery } from '@/api/graphql';
 import {
     Table,
     TableBody,
@@ -9,13 +10,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { BusinessesPageProps } from '@/pages/tech-admin/businesses';
 
-export default function BusinessTable({ businesses }: BusinessesPageProps): JSX.Element {
+type Props = {
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+};
+
+export default function BusinessTable({ businesses }: Props): JSX.Element {
     const [tableBusinesses, setTableBusinesses] = useState(businesses);
 
     const deleteBusiness = (id: string): void => {
-        const newTable = (prev: BusinessesPageProps['businesses']) =>
+        const newTable = (prev: Props['businesses']) =>
             prev.filter((business) => business.id !== id);
         setTableBusinesses(newTable(tableBusinesses));
     };

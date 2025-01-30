@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { useMutation } from '@tanstack/react-query';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
-import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -17,16 +15,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
-import useLoading from '@/hooks/useLoading';
-import * as api from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
+import { useCreateBusiness } from '@/hooks/api/business/useCreateBusiness';
+import { useUpdateBusiness } from '@/hooks/api/business/useUpdateBusiness';
 
 export interface IBusinessForm {
-    _id: string;
-    name: string;
-}
-
-export interface IBusinessFormErrors {
+    id: string;
     name: string;
 }
 
@@ -40,40 +33,39 @@ export default function BusinessForm({
     newBusiness = true,
 }: Props): JSX.Element {
     const router = useRouter();
-    const { stopLoading, startLoading } = useLoading();
     const form = useForm<IBusinessForm>({ defaultValues: businessForm });
     const { triggerAlert } = useAlert();
 
-    const mutation = useMutation({
-        mutationFn: async (form: IBusinessForm) => {
+    const createBusiness = useCreateBusiness();
+    const updateBusiness = useUpdateBusiness();
+
+    const onSubmit: SubmitHandler<IBusinessForm> = async (data) => {
+        try {
             if (newBusiness) {
-                await fetcher.post(form, api.techAdmin.businesses);
+                await createBusiness.mutateAsync({
+                    data: { name: data.name },
+                });
+                triggerAlert({
+                    type: 'Success',
+                    message: 'Se creó la empresa correctamente',
+                });
             } else {
-                await fetcher.put(form, api.techAdmin.businesses);
+                await updateBusiness.mutateAsync({
+                    id: data.id,
+                    data: { name: data.name },
+                });
+                triggerAlert({
+                    type: 'Success',
+                    message: 'Se actualizó la empresa correctamente',
+                });
             }
-        },
-        onSuccess: () => {
             router.push('/tech-admin/businesses');
-            triggerAlert({
-                type: 'Success',
-                message: `Se ${
-                    newBusiness ? 'creó' : 'actualizó'
-                } la empresa correctamente`,
-            });
-            stopLoading();
-        },
-        onError: () => {
+        } catch (error) {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo ${newBusiness ? 'crear' : 'actualizar'} la empresa`,
-            }),
-                stopLoading();
-        },
-    });
-
-    const onSubmit: SubmitHandler<IBusinessForm> = (data) => {
-        startLoading();
-        mutation.mutate(data);
+            });
+        }
     };
 
     return (
@@ -85,20 +77,18 @@ export default function BusinessForm({
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                     <FormField
                         name="name"
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Nombre</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            placeholder="Nombre de la Empresa"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nombre</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        placeholder="Nombre de la Empresa"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                         control={form.control}
                         rules={{ required: 'Este campo es requerido' }}
                     />
@@ -107,7 +97,14 @@ export default function BusinessForm({
                         <Button variant="secondary" type="button" asChild>
                             <Link href="/tech-admin/businesses">Cancelar</Link>
                         </Button>
-                        <ButtonWithSpinner type="submit">Guardar</ButtonWithSpinner>
+                        <Button
+                            type="submit"
+                            disabled={
+                                createBusiness.isPending || updateBusiness.isPending
+                            }
+                        >
+                            Guardar
+                        </Button>
                     </div>
                 </form>
             </Form>

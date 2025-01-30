@@ -1,4 +1,4 @@
-query expenseById($id: String!) {
+query GetExpense($id: String!) {
     expenseById(id: $id) {
         id
         amount
@@ -32,7 +32,7 @@ query expenseById($id: String!) {
     }
 }
 
-query expenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType: ExpenseType) {
+query GetExpenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType: ExpenseType) {
     expenses(registeredBy: $registeredBy, status: $status, expenseType: $expenseType) {
         amount
         createdAt
@@ -75,7 +75,7 @@ query expenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType: E
     }
 }
 
-mutation deleteExpense ($id: String!, $taskId: String!) {
+mutation DeleteExpense ($id: String!, $taskId: String!) {
     deleteExpense (id: $id, taskId: $taskId) {
         expense{
             id
@@ -87,4 +87,27 @@ mutation deleteExpense ($id: String!, $taskId: String!) {
 
 mutation GenerateApprovedExpensesReport($startDate: String!, $endDate: String!, $filters: JSON) {
     generateApprovedExpensesReport(startDate: $startDate, endDate: $endDate, filters: $filters)
+}
+
+
+mutation UpdateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
+    updateExpenseStatus(expenseId: $expenseId, status: $status) {
+        expense {
+            id
+            amount
+            expenseType
+            paySource
+            paySourceBank
+            installments
+            task {
+                id
+                expenses {
+                    id
+                    status
+                }
+            }
+        }
+        success
+        message
+    }
 }

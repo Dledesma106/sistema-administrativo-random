@@ -1,15 +1,15 @@
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
+import { GetProvincesQuery } from '@/api/graphql';
 import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { CitiesPageProps } from '@/pages/tech-admin/cities';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
-} & Omit<CitiesPageProps, 'client'>;
-
+    provinces: NonNullable<GetProvincesQuery['provinces']>;
+};
 export function CitiesTableToolbar<TData>({
     table,
     provinces,

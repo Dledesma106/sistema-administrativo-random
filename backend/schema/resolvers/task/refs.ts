@@ -5,7 +5,7 @@ import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
 import { ExpenseInputType, ExpensePothosRef } from '../expense/refs';
-import { UserPothosRef } from '../users';
+import { UserPothosRef } from '../users/refs';
 
 export const TaskTypePothosRef = builder.enumType('TaskType', {
     values: Object.fromEntries(

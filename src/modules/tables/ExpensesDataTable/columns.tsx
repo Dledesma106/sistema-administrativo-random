@@ -6,14 +6,13 @@ import { format } from 'date-fns';
 
 import { ExpensesTableRowActions } from './expenses-table-row-actions';
 
-import { ExpensePaySource, ExpensesQuery } from '@/api/graphql';
+import { ExpensePaySource, GetExpensesQuery } from '@/api/graphql';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseStatusBadge from '@/components/ui/Badges/ExpenseStatusBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { routesBuilder } from '@/lib/routes';
-import { ElementType } from '@/types';
 
-type Expense = ElementType<ExpensesQuery['expenses']>;
+type Expense = NonNullable<GetExpensesQuery['expenses']>[number];
 
 const columnHelper = createColumnHelper<Expense>();
 

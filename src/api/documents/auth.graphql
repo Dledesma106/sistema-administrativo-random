@@ -12,3 +12,17 @@ mutation login($email: String!, $password: String!) {
         }
     }
 }
+
+mutation logout {
+    logout {
+        success
+        message
+    }
+}
+
+mutation changePassword($data: ChangePasswordInput!) {
+    changePassword(data: $data) {
+        success
+        message
+    }
+}

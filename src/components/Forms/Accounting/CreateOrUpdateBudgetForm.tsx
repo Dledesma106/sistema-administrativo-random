@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
+import { GetBranchesQuery, GetClientsQuery, GetBusinessesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,6 @@ import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
-import { NewBudgetPageProps } from '@/pages/accounting/budgets/new';
 
 type FormValues = {
     client?: string | null;
@@ -38,10 +38,10 @@ type FormValues = {
 type Props = {
     defaultValues?: FormValues;
     budgetIdToUpdate?: string;
-    businesses: { id: string; name: string }[];
-    clients: { id: string; name: string }[];
-    branches: { id: string; number: string; city: { name: string }; clientId: string }[];
-} & NewBudgetPageProps;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+    clients: NonNullable<GetClientsQuery['clients']>;
+    branches: NonNullable<GetBranchesQuery['branches']>;
+};
 
 const CreateOrUpdateBudgetForm = ({
     defaultValues,
@@ -366,7 +366,7 @@ const CreateOrUpdateBudgetForm = ({
                                             items={branches
                                                 .filter(
                                                     (branch) =>
-                                                        branch.clientId ===
+                                                        branch.client.id ===
                                                         form.watch('client'),
                                                 )
                                                 .map((branch) => ({

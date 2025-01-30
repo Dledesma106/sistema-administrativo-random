@@ -10,6 +10,7 @@ import {
     CreateCityMutationVariables,
     UpdateCityDocument,
     UpdateCityMutationVariables,
+    GetProvincesQuery,
 } from '@/api/graphql';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,6 @@ import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
-import { NewCitiesPageProps } from '@/pages/tech-admin/cities/new';
 
 export interface CityFormValues {
     name: string;
@@ -34,7 +34,7 @@ export interface CityFormValues {
 
 interface Props {
     cityForm?: CityFormValues;
-    provinces: NewCitiesPageProps['provinces'];
+    provinces: NonNullable<GetProvincesQuery['provinces']>;
     idToUpdate?: string;
 }
 

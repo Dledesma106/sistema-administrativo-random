@@ -2,14 +2,23 @@ import { TaskStatus, TaskType } from '@prisma/client';
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
+import {
+    GetBusinessesQuery,
+    GetCitiesQuery,
+    GetClientsQuery,
+    GetTechniciansQuery,
+} from '@/api/graphql';
 import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { TasksPageProps } from '@/pages/tasks';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
-} & TasksPageProps;
+    cities: NonNullable<GetCitiesQuery['cities']>;
+    clients: NonNullable<GetClientsQuery['clients']>;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+    techs: NonNullable<GetTechniciansQuery['technicians']>;
+};
 
 export function TasksDataTableToolbar<TData>({
     table,

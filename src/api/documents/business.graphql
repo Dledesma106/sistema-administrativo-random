@@ -1,0 +1,38 @@
+mutation CreateBusiness($data: BusinessInput!) {
+    createBusiness(data: $data) {
+        id
+        name
+    }
+}
+
+mutation UpdateBusiness($id: String!, $data: BusinessInput!) {
+    updateBusiness(id: $id, data: $data) {
+        id
+        name
+    }
+}
+
+mutation DeleteBusiness($id: String!) {
+    deleteBusiness(id: $id) {
+        success
+        message
+        business {
+            id
+            name
+        }
+    }
+}
+
+query GetBusiness($id: String!) {
+    business(id: $id) {
+        id
+        name
+    }
+}
+
+query GetBusinesses {
+    businesses {
+        id
+        name
+    }
+} 

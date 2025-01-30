@@ -5,11 +5,12 @@ import { useRouter } from 'next/router';
 import { DownloadIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
 
-import { TaskByIdQuery, TaskStatus } from '@/api/graphql';
+import { GetTaskQuery, TaskStatus } from '@/api/graphql';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
+import { FormSkeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableHead,
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
-import { useGetTaskById } from '@/hooks/api/tasks/useGetTaskById';
+import { useGetTask } from '@/hooks/api/tasks/useGetTask';
 import { useUpdateTaskStatus } from '@/hooks/api/tasks/useUpdateTaskStatus';
 import { routesBuilder } from '@/lib/routes';
 import { pascalCaseToSpaces } from '@/lib/utils';
@@ -30,7 +31,7 @@ const Title = ({ children }: { children: React.ReactNode }) => (
 );
 
 type Props = {
-    task: NonNullable<TaskByIdQuery['taskById']>;
+    task: NonNullable<GetTaskQuery['taskById']>;
 };
 
 const Content: React.FC<Props> = ({ task }) => {
@@ -227,7 +228,7 @@ const Content: React.FC<Props> = ({ task }) => {
                                                     key={expense.id}
                                                     onClick={() =>
                                                         router.push(
-                                                            routesBuilder.expenses.details(
+                                                            routesBuilder.accounting.expenses.details(
                                                                 expense.id,
                                                             ),
                                                         )
@@ -313,10 +314,10 @@ const Content: React.FC<Props> = ({ task }) => {
 };
 
 export const TaskDetail = ({ id }: { id: string }) => {
-    const result = useGetTaskById(id);
+    const result = useGetTask(id);
 
     if (result.isPending) {
-        return <p>Loading...</p>;
+        return <FormSkeleton />;
     }
 
     if (result.isError) {

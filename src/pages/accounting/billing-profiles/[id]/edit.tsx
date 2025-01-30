@@ -1,58 +1,31 @@
-import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 import CreateOrUpdateBillingProfileForm from '@/components/Forms/Accounting/CreateOrUpdateBillingProfileForm';
-import { prisma } from 'lib/prisma';
+import { FormSkeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 
-export type EditBillingProfilePageProps = Awaited<
-    ReturnType<typeof getEditBillingProfilePageProps>
->;
+export default function EditBillingProfile(): JSX.Element {
+    const {
+        query: { id },
+    } = useRouter();
 
-const getEditBillingProfilePageProps = async (id: string) => {
-    const businesses = await prisma.business.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-
-    // Mock data - Reemplazar con datos reales de tu API
+    const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
     const mockProfile = {
-        id,
+        id: id as string,
         business: '1', // ID de la empresa existente
         cuit: '30123456789',
         contactName: 'Juan Pérez',
         contactEmail: 'juan.perez@empresaa.com',
         billingEmail: 'facturacion@empresaa.com',
     };
-
-    return {
-        businesses,
-        defaultValues: mockProfile,
-        profileIdToUpdate: id,
-    };
-};
-
-export default function EditBillingProfile(
-    props: EditBillingProfilePageProps,
-): JSX.Element {
-    return <CreateOrUpdateBillingProfileForm {...props} />;
-}
-
-export const getServerSideProps: GetServerSideProps<
-    EditBillingProfilePageProps
-> = async ({ params }) => {
-    const id = params?.id as string;
-
-    if (!id) {
-        return {
-            notFound: true,
-        };
+    if (isLoadingBusinesses) {
+        return <FormSkeleton />;
     }
-
-    return {
-        props: await getEditBillingProfilePageProps(id),
-    };
-};
+    return (
+        <CreateOrUpdateBillingProfileForm
+            profileIdToUpdate={mockProfile.id}
+            businesses={businessesData?.businesses || []}
+            defaultValues={mockProfile}
+        />
+    );
+}

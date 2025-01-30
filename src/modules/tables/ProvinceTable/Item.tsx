@@ -3,25 +3,25 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
+import { GetProvincesQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
+import { useDeleteProvince } from '@/hooks/api/province/useDeleteProvince';
 import useLoading from '@/hooks/useLoading';
-import * as apiEndpoints from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
-import { slugify } from '@/lib/utils';
-import { type IProvince } from 'backend/models/interfaces';
+import { routesBuilder } from '@/lib/routes';
 
 interface Props {
-    province: IProvince;
-    deleteProvince: (id: string) => void;
+    province: NonNullable<GetProvincesQuery>['provinces'][number];
 }
 
-export default function Item({ province, deleteProvince }: Props): JSX.Element {
+export default function Item({ province }: Props): JSX.Element {
     const { startLoading, stopLoading } = useLoading();
     const router = useRouter();
     const { triggerAlert } = useAlert();
     const [toggleModal, setToggleModal] = useState(false);
+    const deleteProvinceMutation = useDeleteProvince();
+
     function openModal(): void {
         setToggleModal(true);
     }
@@ -29,19 +29,23 @@ export default function Item({ province, deleteProvince }: Props): JSX.Element {
         setToggleModal(false);
     }
 
-    const deleteData = async (): Promise<void> => {
+    const handleDelete = async (): Promise<void> => {
         try {
-            await fetcher.delete(
-                {
-                    _id: province._id,
-                },
-                apiEndpoints.techAdmin.provinces,
-            );
-            deleteProvince(province._id as string);
-            triggerAlert({
-                type: 'Success',
-                message: `La provincia ${province.name} se elimino correctamente`,
-            });
+            const result = await deleteProvinceMutation.mutateAsync({ id: province.id });
+            if (result.deleteProvince.success) {
+                triggerAlert({
+                    type: 'Success',
+                    message: `La provincia ${province.name} se eliminó correctamente`,
+                });
+                closeModal();
+            } else {
+                triggerAlert({
+                    type: 'Failure',
+                    message:
+                        result.deleteProvince.message ||
+                        `No se pudo eliminar la provincia ${province.name}`,
+                });
+            }
         } catch (error) {
             triggerAlert({
                 type: 'Failure',
@@ -50,13 +54,9 @@ export default function Item({ province, deleteProvince }: Props): JSX.Element {
         }
     };
 
-    const handleDelete = (): void => {
-        void deleteData();
-    };
-
     async function navigateEdit(): Promise<void> {
         startLoading();
-        await router.push(`/tech-admin/provinces/${slugify(province.name)}`);
+        await router.push(routesBuilder.provinces.edit(province.id));
         stopLoading();
     }
 

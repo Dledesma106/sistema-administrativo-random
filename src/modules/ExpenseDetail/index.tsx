@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { DownloadIcon } from '@radix-ui/react-icons';
 import dayjs from 'dayjs';
 
-import { ExpenseByIdQuery, ExpenseStatus } from '@/api/graphql';
+import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
-import { useGetExpenseById } from '@/hooks/api/expenses/useGetExpenseById';
+import { useGetExpense } from '@/hooks/api/expenses/useGetExpense';
 import { useUpdateExpenseStatus } from '@/hooks/api/expenses/useUpdateExpenseStatus';
 import { routesBuilder } from '@/lib/routes';
 
@@ -19,7 +19,7 @@ const Title = ({ children }: { children: React.ReactNode }) => (
 );
 
 type Props = {
-    expense: NonNullable<ExpenseByIdQuery['expenseById']>;
+    expense: NonNullable<GetExpenseQuery['expenseById']>;
 };
 
 const Content: React.FC<Props> = ({ expense }) => {
@@ -146,7 +146,7 @@ const Content: React.FC<Props> = ({ expense }) => {
 };
 
 export const ExpenseDetail = ({ id }: { id: string }) => {
-    const result = useGetExpenseById(id);
+    const result = useGetExpense(id);
 
     if (result.isPending) {
         return <p>Loading...</p>;

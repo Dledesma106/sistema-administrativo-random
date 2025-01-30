@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { useExpensesTableColumns } from './columns';
 import { ExpensesDataTableToolbar } from './expenses-table-toolbar';
 
-import { ExpensesQuery } from '@/api/graphql';
+import { GetExpensesQuery, GetTechniciansQuery } from '@/api/graphql';
 import { DataTablePagination } from '@/components/data-table-pagination';
 import { ExpenseReportButton } from '@/components/ui/ExpenseReportButton';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,12 +33,14 @@ import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetExpenses } from '@/hooks/api/expenses/useGetExpenses';
 import { routesBuilder } from '@/lib/routes';
-import { ExpensesPageProps } from '@/pages/expenses';
-import { ElementType } from '@/types';
 
-type TableItem = ElementType<ExpensesQuery['expenses']>;
+type TableItem = NonNullable<GetExpensesQuery['expenses']>[number];
 
-export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element {
+interface ExpensesDataTableProps {
+    techs: NonNullable<GetTechniciansQuery['technicians']>;
+}
+
+export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
         if (typeof window === 'undefined') {
@@ -154,7 +156,7 @@ export default function ExpensesDataTable(props: ExpensesPageProps): JSX.Element
                                         data-state={row.getIsSelected() && 'selected'}
                                         onClick={() =>
                                             router.push(
-                                                routesBuilder.expenses.details(
+                                                routesBuilder.accounting.expenses.details(
                                                     row.original.id,
                                                 ),
                                             )

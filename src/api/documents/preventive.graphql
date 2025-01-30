@@ -1,5 +1,69 @@
-mutation createPreventive($data: PreventiveInput!) {
-    createPreventive(data: $data) {
+query GetPreventives {
+    preventives {
+        id
+        lastDoneAt
+        batteryChangedAt
+        frequency
+        months
+        observations
+        status
+        business {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            client {
+                id
+                name
+            }
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+        }
+        assigned {
+            id
+            fullName
+        }
+    }
+}
+
+query GetPreventive($id: String!) {
+    preventive(id: $id) {
+        id
+        lastDoneAt
+        batteryChangedAt
+        frequency
+        months
+        observations
+        status
+        business {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            client {
+                id
+                name
+            }
+        }
+        assigned {
+            id
+            fullName
+        }
+    }
+}
+
+mutation CreatePreventive($input: PreventiveInput!) {
+    createPreventive(input: $input) {
         success
         message
         preventive {
@@ -8,8 +72,18 @@ mutation createPreventive($data: PreventiveInput!) {
     }
 }
 
-mutation updatePreventive($id: String!, $data: PreventiveInput!) {
-    updatePreventive(id: $id, data: $data) {
+mutation UpdatePreventive($id: String!, $input: PreventiveInput!) {
+    updatePreventive(id: $id, input: $input) {
+        success
+        message
+        preventive {
+            id
+        }
+    }
+}
+
+mutation DeletePreventive($id: String!) {
+    deletePreventive(id: $id) {
         success
         message
         preventive {

@@ -9,7 +9,7 @@ import {
     DeleteExpenseDocument,
     DeleteExpenseMutation,
     DeleteExpenseMutationVariables,
-    ExpensesQuery,
+    GetExpensesQuery,
 } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import { Button } from '@/components/ui/button';
@@ -23,10 +23,9 @@ import useAlert from '@/context/alertContext/useAlert';
 import { EXPENSES_LIST_QUERY_KEY } from '@/hooks/api/expenses/useGetExpenses';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
-import { ElementType } from '@/types';
 
 interface Props {
-    expense: ElementType<ExpensesQuery['expenses']>;
+    expense: NonNullable<GetExpensesQuery['expenses']>[number];
 }
 
 export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
@@ -98,7 +97,9 @@ export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
                         <button
                             className="w-full cursor-default"
                             onClick={() =>
-                                router.push(routesBuilder.expenses.details(expense.id))
+                                router.push(
+                                    routesBuilder.accounting.expenses.details(expense.id),
+                                )
                             }
                         >
                             Detalles

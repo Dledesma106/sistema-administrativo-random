@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import UserItemActions from './Item';
 
+import { GetUsersQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
 import {
     Table,
@@ -11,17 +12,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { type IUser } from 'backend/models/interfaces';
 
 interface Props {
-    users: IUser[];
+    users: GetUsersQuery['users'];
 }
 export default function UserTable({ users }: Props): JSX.Element {
-    const [tableUsers, setTableUsers] = useState<IUser[]>(users);
+    const [tableUsers, setTableUsers] = useState<GetUsersQuery['users']>(users);
 
     const deleteUser = (id: string): void => {
-        const newTable = (prev: IUser[]): IUser[] =>
-            prev.filter((user) => user._id !== id);
+        const newTable = (prev: GetUsersQuery['users']): GetUsersQuery['users'] =>
+            prev.filter((user) => user.id !== id);
         setTableUsers(newTable(users));
     };
 

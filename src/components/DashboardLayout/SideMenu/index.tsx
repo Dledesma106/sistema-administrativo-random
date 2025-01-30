@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { useMutation } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -18,17 +16,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import useAlert from '@/context/alertContext/useAlert';
 import { useUserContext } from '@/context/userContext/UserProvider';
+import { useLogout } from '@/hooks/api/auth/useLogout';
 import useLoading from '@/hooks/useLoading';
-import * as apiEndpoints from '@/lib/apiEndpoints';
-import { axiosInstance } from '@/lib/fetcher';
 
 export default function SideMenu(): JSX.Element {
     const { user, logoutUser } = useUserContext();
     const { startLoading, stopLoading } = useLoading();
-
     const router = useRouter();
     const [pathname, setPathname] = useState(router.pathname);
+    const { triggerAlert } = useAlert();
+    const logoutMutation = useLogout({});
 
     useEffect(() => {
         const onRouteChangeStart = (url: string) => {
@@ -42,36 +41,24 @@ export default function SideMenu(): JSX.Element {
         };
     }, [startLoading, router, stopLoading]);
 
-    const logoutMutation = useMutation<unknown, AxiosError>({
-        mutationFn: () => {
-            return axiosInstance.post(apiEndpoints.logoutUrl);
-        },
-        onSuccess: () => {
-            logoutUser();
-            router.push('/login');
-        },
-        onError: (error) => {
-            const { response } = error;
-            const statusCode = response?.status;
-
-            if (statusCode === 401) {
+    const handleLogout = async () => {
+        try {
+            const result = await logoutMutation.mutateAsync();
+            if (result.logout.success) {
                 logoutUser();
                 router.push('/login');
             } else {
-                alert('Falló al intentar desloguear al usuario');
+                triggerAlert({
+                    type: 'Failure',
+                    message: result.logout.message || 'Falló al intentar cerrar sesión',
+                });
             }
-        },
-        onMutate: () => {
-            startLoading();
-        },
-        onSettled: () => {
-            stopLoading();
-        },
-        retry: false,
-    });
-
-    const logout = () => {
-        logoutMutation.mutate();
+        } catch (error) {
+            triggerAlert({
+                type: 'Failure',
+                message: 'Falló al intentar cerrar sesión',
+            });
+        }
     };
 
     return (
@@ -152,9 +139,10 @@ export default function SideMenu(): JSX.Element {
                         </DropdownMenuGroup>
                         <DropdownMenuItem asChild>
                             <Button
-                                onClick={logout}
+                                onClick={handleLogout}
                                 className="w-full cursor-pointer justify-start"
                                 variant="ghost"
+                                disabled={logoutMutation.isPending}
                             >
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Cerrar sesión</span>

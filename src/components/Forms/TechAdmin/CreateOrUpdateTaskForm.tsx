@@ -6,7 +6,14 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { fetchClient } from '@/api/fetch-client';
-import { CreateTaskDocument, UpdateTaskDocument } from '@/api/graphql';
+import {
+    CreateTaskDocument,
+    UpdateTaskDocument,
+    GetBusinessesQuery,
+    GetClientsQuery,
+    GetTechniciansQuery,
+    GetBranchesQuery,
+} from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -24,8 +31,6 @@ import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
-import { NewTaskPageProps } from '@/pages/tasks/new';
-import { taskTypesOptions } from 'backend/models/types';
 
 type FormValues = {
     client?: string | null;
@@ -46,9 +51,13 @@ type FormValues = {
 type Props = {
     defaultValues?: FormValues;
     taskIdToUpdate?: string;
-} & NewTaskPageProps;
+    branches: NonNullable<GetBranchesQuery['branches']>;
+    clients: NonNullable<GetClientsQuery['clients']>;
+    technicians: NonNullable<GetTechniciansQuery['technicians']>;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+};
 
-const CreateOrUpdateTaskForm = ({
+const CreateOrUpdateTaskForm: React.FC<Props> = ({
     defaultValues,
     taskIdToUpdate,
     branches,
@@ -326,7 +335,7 @@ const CreateOrUpdateTaskForm = ({
                                                 items={branches
                                                     .filter(
                                                         (branch) =>
-                                                            branch.clientId ===
+                                                            branch.client.id ===
                                                             form.watch('client'),
                                                     )
                                                     .map((branch) => ({
@@ -469,7 +478,12 @@ const CreateOrUpdateTaskForm = ({
                                             searchPlaceholder="Buscar tipo de tarea"
                                             value={field.value}
                                             onChange={field.onChange}
-                                            items={taskTypesOptions}
+                                            items={Object.entries(TaskType).map(
+                                                ([key, value]) => ({
+                                                    label: key,
+                                                    value: value,
+                                                }),
+                                            )}
                                         />
                                     </FormControl>
                                     <FormMessage />

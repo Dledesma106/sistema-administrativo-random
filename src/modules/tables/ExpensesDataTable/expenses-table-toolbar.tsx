@@ -1,16 +1,16 @@
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
-import { ExpenseStatus, ExpenseType } from '@/api/graphql';
+import { ExpenseStatus, ExpenseType, GetTechniciansQuery } from '@/api/graphql';
 import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { pascalCaseToSpaces } from '@/lib/utils';
-import { ExpensesPageProps } from '@/pages/expenses';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
-} & ExpensesPageProps;
+    techs: NonNullable<GetTechniciansQuery['technicians']>;
+};
 
 export function ExpensesDataTableToolbar<TData>({
     table,

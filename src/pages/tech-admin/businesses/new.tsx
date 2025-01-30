@@ -4,7 +4,7 @@ import BusinessForm, {
 
 export default function NewBusiness(): JSX.Element {
     const businessForm: IBusinessForm = {
-        _id: '',
+        id: '',
         name: '',
     };
 

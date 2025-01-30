@@ -1,48 +1,16 @@
-import dbConnect from '@/lib/dbConnect';
-import CreateOrUpdateUserForm, { UserFormProps } from '@/modules/CreateOrUpdateUserForm';
-import { prisma } from 'lib/prisma';
+import { GetCitiesQuery } from '@/api/graphql';
+import { FormSkeleton } from '@/components/ui/skeleton';
+import { useGetCities } from '@/hooks/api/city/useGetCities';
+import CreateOrUpdateUserForm from '@/modules/CreateOrUpdateUserForm';
 
-interface NewUserPageProps {
-    cities: UserFormProps['cities'];
-}
+export default function NewUser(): JSX.Element {
+    const { data: citiesData, isLoading } = useGetCities({});
 
-export default function NewUser({ cities }: NewUserPageProps): JSX.Element {
-    return (
-        <>
-            <CreateOrUpdateUserForm cities={cities} />
-        </>
-    );
-}
+    if (isLoading) {
+        return <FormSkeleton />;
+    }
 
-export async function getServerSideProps(): Promise<{ props: NewUserPageProps }> {
-    await dbConnect();
+    const cities: GetCitiesQuery['cities'] = citiesData?.cities || [];
 
-    const cities = await prisma.city.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            name: true,
-            province: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-        },
-    });
-
-    return {
-        props: {
-            cities: cities.map((city) => ({
-                _id: city.id,
-                name: city.name,
-                provinceId: {
-                    id: city.province.id,
-                    name: city.province.name,
-                },
-            })),
-        },
-    };
+    return <CreateOrUpdateUserForm cities={cities} />;
 }

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { useMutation } from '@tanstack/react-query';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -16,16 +15,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
+import { useCreateProvince } from '@/hooks/api/province/useCreateProvince';
+import { useUpdateProvince } from '@/hooks/api/province/useUpdateProvince';
 import useLoading from '@/hooks/useLoading';
-import * as api from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
 
-export interface IProvinceForm {
-    _id: string;
-    name: string;
-}
-
-export interface IProvinceFormErrors {
+interface IProvinceForm {
+    id: string;
     name: string;
 }
 
@@ -43,38 +38,60 @@ export default function ProvinceForm({
     const form = useForm<IProvinceForm>({ defaultValues: provinceForm });
     const { triggerAlert } = useAlert();
 
-    const mutation = useMutation({
-        mutationFn: async (form: IProvinceForm) => {
+    const createProvince = useCreateProvince();
+    const updateProvince = useUpdateProvince();
+
+    const onSubmit: SubmitHandler<IProvinceForm> = async (data) => {
+        startLoading();
+        try {
             if (newProvince) {
-                await fetcher.post(form, api.techAdmin.provinces);
+                const result = await createProvince.mutateAsync({
+                    data: { name: data.name },
+                });
+                if (result.createProvince.success) {
+                    router.push('/tech-admin/provinces');
+                    triggerAlert({
+                        type: 'Success',
+                        message: 'Se creó la provincia correctamente',
+                    });
+                } else {
+                    triggerAlert({
+                        type: 'Failure',
+                        message:
+                            result.createProvince.message ||
+                            'No se pudo crear la provincia',
+                    });
+                }
             } else {
-                await fetcher.put(form, api.techAdmin.provinces);
+                const result = await updateProvince.mutateAsync({
+                    id: data.id,
+                    data: { name: data.name },
+                });
+                if (result.updateProvince.success) {
+                    router.push('/tech-admin/provinces');
+                    triggerAlert({
+                        type: 'Success',
+                        message: 'Se actualizó la provincia correctamente',
+                    });
+                } else {
+                    triggerAlert({
+                        type: 'Failure',
+                        message:
+                            result.updateProvince.message ||
+                            'No se pudo actualizar la provincia',
+                    });
+                }
             }
-        },
-        onSuccess: () => {
-            router.push('/tech-admin/provinces');
-            triggerAlert({
-                type: 'Success',
-                message: `Se ${
-                    newProvince ? 'creó' : 'actualizó'
-                } la provincia correctamente`,
-            });
-            stopLoading();
-        },
-        onError: () => {
+        } catch (error) {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo ${
                     newProvince ? 'crear' : 'actualizar'
                 } la provincia`,
-            }),
-                stopLoading();
-        },
-    });
-
-    const onSubmit: SubmitHandler<IProvinceForm> = (data) => {
-        startLoading();
-        mutation.mutate(data);
+            });
+        } finally {
+            stopLoading();
+        }
     };
 
     return (
@@ -86,20 +103,18 @@ export default function ProvinceForm({
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                     <FormField
                         name="name"
-                        render={({ field }) => {
-                            return (
-                                <FormItem>
-                                    <FormLabel>Nombre</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            placeholder="Nombre de la Provincia"
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            );
-                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nombre</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        placeholder="Nombre de la Provincia"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                         control={form.control}
                         rules={{ required: 'Este campo es requerido' }}
                     />
@@ -108,7 +123,14 @@ export default function ProvinceForm({
                         <Button variant="secondary" type="button">
                             <Link href={'/tech-admin/provinces'}>Cancelar</Link>
                         </Button>
-                        <Button type="submit">Guardar</Button>
+                        <Button
+                            type="submit"
+                            disabled={
+                                createProvince.isPending || updateProvince.isPending
+                            }
+                        >
+                            Guardar
+                        </Button>
                     </div>
                 </form>
             </Form>

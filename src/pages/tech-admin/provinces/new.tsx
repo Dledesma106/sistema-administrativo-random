@@ -1,10 +1,8 @@
-import ProvinceForm, {
-    type IProvinceForm,
-} from '@/components/Forms/TechAdmin/ProvinceForm';
+import ProvinceForm from '@/components/Forms/TechAdmin/ProvinceForm';
 
 export default function NewProvince(): JSX.Element {
-    const provinceForm: IProvinceForm = {
-        _id: '',
+    const provinceForm = {
+        id: '',
         name: '',
     };
 

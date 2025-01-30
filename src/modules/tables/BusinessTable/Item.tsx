@@ -3,65 +3,55 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 
+import { GetBusinessesQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
-import useLoading from '@/hooks/useLoading';
-import * as apiEndpoints from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
-import { slugify } from '@/lib/utils';
-import { BusinessesPageProps } from '@/pages/tech-admin/businesses';
+import { useDeleteBusiness } from '@/hooks/api/business/useDeleteBusiness';
+import { routesBuilder } from '@/lib/routes';
 
-interface Props {
-    business: BusinessesPageProps['businesses'][0];
+type Props = {
+    business: NonNullable<GetBusinessesQuery['businesses']>[0];
     deleteBusiness: (id: string) => void;
-}
+};
 
 export default function Item({ business, deleteBusiness }: Props): JSX.Element {
     const router = useRouter();
-    const { startLoading, stopLoading } = useLoading();
     const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
-    const openModal = (): void => {
-        setModal(true);
-    };
-    const closeModal = (): void => {
-        setModal(false);
-    };
+    const deleteMutation = useDeleteBusiness();
 
-    const deleteData = async (): Promise<void> => {
+    const openModal = (): void => setModal(true);
+    const closeModal = (): void => setModal(false);
+
+    const handleDelete = async (): Promise<void> => {
         try {
-            await fetcher.delete(
-                {
-                    _id: business.id,
-                },
-                apiEndpoints.techAdmin.businesses,
-            );
-            deleteBusiness(business.id);
-            triggerAlert({
-                type: 'Success',
-                message: `La empresa ${business.name} fue eliminada correctamente`,
-            });
+            const result = await deleteMutation.mutateAsync({ id: business.id });
+            if (result.deleteBusiness.success) {
+                deleteBusiness(business.id);
+                triggerAlert({
+                    type: 'Success',
+                    message: `La empresa ${business.name} fue eliminada correctamente`,
+                });
+            } else {
+                triggerAlert({
+                    type: 'Failure',
+                    message:
+                        result.deleteBusiness.message ||
+                        `No se pudo eliminar la empresa ${business.name}`,
+                });
+            }
         } catch (error) {
             triggerAlert({
                 type: 'Failure',
                 message: `No se pudo eliminar la empresa ${business.name}, compruebe la conexión a internet`,
             });
         }
+        closeModal();
     };
 
-    async function navigateEdit(): Promise<void> {
-        startLoading();
-        await router.push(`/tech-admin/businesses/${slugify(business.name)}`);
-        stopLoading();
-    }
-
-    const handleDelete = (): void => {
-        void deleteData();
-    };
-
-    const handleNavigateEdit = (): void => {
-        void navigateEdit();
+    const handleNavigateEdit = async (): Promise<void> => {
+        await router.push(routesBuilder.businesses.edit(business.id));
     };
 
     return (
@@ -78,6 +68,7 @@ export default function Item({ business, deleteBusiness }: Props): JSX.Element {
                     <button
                         className="rounded-lg p-0.5 hover:bg-gray-200"
                         onClick={openModal}
+                        disabled={deleteMutation.isPending}
                     >
                         <BsFillTrashFill color="gray" size="15" />
                     </button>

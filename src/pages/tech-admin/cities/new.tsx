@@ -1,37 +1,18 @@
-import { GetServerSideProps } from 'next';
-
 import CityForm, { type CityFormValues } from '@/components/Forms/TechAdmin/CityForm';
-import { prisma } from 'lib/prisma';
+import { FormSkeleton } from '@/components/ui/skeleton';
+import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
 
-export type NewCitiesPageProps = Awaited<ReturnType<typeof getProps>>;
+export default function NewCity(): JSX.Element {
+    const { data: provincesData, isLoading } = useGetProvinces({});
 
-export default function NewCity({ provinces }: NewCitiesPageProps): JSX.Element {
+    if (isLoading) {
+        return <FormSkeleton />;
+    }
+
     const cityForm: CityFormValues = {
         name: '',
         provinceId: '',
     };
 
-    return (
-        <>
-            <CityForm cityForm={cityForm} provinces={provinces} />
-        </>
-    );
-}
-
-export const getServerSideProps: GetServerSideProps<NewCitiesPageProps> = async () => {
-    const props = await getProps();
-    return {
-        props,
-    };
-};
-async function getProps() {
-    const provinces = await prisma.province.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-    return {
-        provinces,
-    };
+    return <CityForm cityForm={cityForm} provinces={provincesData?.provinces || []} />;
 }

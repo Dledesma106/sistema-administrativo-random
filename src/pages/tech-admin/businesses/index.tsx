@@ -1,12 +1,19 @@
-import { GetServerSideProps } from 'next';
-
 import TitleButton from '@/components/TitleButton';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 import BusinessTable from '@/modules/tables/BusinessTable';
-import { prisma } from 'lib/prisma';
 
-export type BusinessesPageProps = Awaited<ReturnType<typeof getProps>>;
+export default function Businesses(): JSX.Element {
+    const { data, isLoading, error } = useGetBusinesses({});
 
-export default function Businesses({ businesses }: BusinessesPageProps): JSX.Element {
+    if (isLoading) {
+        return <Skeleton className="h-96 w-full" />;
+    }
+
+    if (error) {
+        return <div>Error al cargar las empresas</div>;
+    }
+
     return (
         <>
             <main>
@@ -15,27 +22,8 @@ export default function Businesses({ businesses }: BusinessesPageProps): JSX.Ele
                     path="/tech-admin/businesses/new"
                     nameButton="Agregar una empresa"
                 />
-                <BusinessTable businesses={businesses} />
+                <BusinessTable businesses={data?.businesses || []} />
             </main>
         </>
     );
-}
-
-export const getServerSideProps: GetServerSideProps<BusinessesPageProps> = async () => {
-    const props = await getProps();
-    return {
-        props,
-    };
-};
-
-async function getProps() {
-    const businesses = await prisma.business.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-    return {
-        businesses,
-    };
 }
