@@ -1,15 +1,15 @@
 import TitleButton from '@/components/TitleButton';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
 import ProvinceTable from '@/modules/tables/ProvinceTable';
-import { type IProvince } from 'backend/models/interfaces';
-import ProvinceModel from 'backend/models/Province';
 
-interface Props {
-    provinces: IProvince[];
-}
+export default function Provinces(): JSX.Element {
+    const { data: provincesData, isLoading } = useGetProvinces({});
 
-export default function Provinces({ provinces }: Props): JSX.Element {
+    if (isLoading) {
+        return <Skeleton className="h-96 w-full" />;
+    }
+
     return (
         <>
             <TitleButton
@@ -17,19 +17,7 @@ export default function Provinces({ provinces }: Props): JSX.Element {
                 path="/tech-admin/provinces/new"
                 nameButton="Agregar provincia"
             />
-            <ProvinceTable provinces={provinces} />
+            <ProvinceTable provinces={provincesData?.provinces || []} />
         </>
     );
-}
-
-export async function getServerSideProps(): Promise<{ props: Props }> {
-    // ctx.res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=59')
-    await dbConnect();
-    const docProvinces = await ProvinceModel.findUndeleted({});
-    const provinces = mongooseDocumentToJSON(docProvinces);
-    return {
-        props: {
-            provinces,
-        },
-    };
 }

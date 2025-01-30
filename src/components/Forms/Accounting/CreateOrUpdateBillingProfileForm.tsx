@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
+import { GetBusinessesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ type FormValues = {
 type Props = {
     defaultValues?: FormValues;
     profileIdToUpdate?: string;
-    businesses: { id: string; name: string }[];
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
 };
 
 const CreateOrUpdateBillingProfileForm = ({

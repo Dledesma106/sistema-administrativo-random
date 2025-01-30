@@ -53,7 +53,7 @@ query tasks(
     }
 }
 
-query taskById($id: String!) {
+query GetTask($id: String!) {
     taskById(id: $id) {
         id
         taskNumber
@@ -74,14 +74,18 @@ query taskById($id: String!) {
             url
         }
         branch {
+            id
             number
             city {
+                id
                 name
                 province {
+                    id
                     name
                 }
             }
             client {
+                id
                 name
             }
         }
@@ -144,28 +148,6 @@ mutation deleteTask($id: String!) {
     deleteTask(id: $id) {
         task {
             id
-        }
-        success
-        message
-    }
-}
-
-mutation updateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
-    updateExpenseStatus(expenseId: $expenseId, status: $status) {
-        expense {
-            id
-            amount
-            expenseType
-            paySource
-            paySourceBank
-            installments
-            task {
-                id
-                expenses {
-                    id
-                    status
-                }
-            }
         }
         success
         message

@@ -1,6 +1,6 @@
-import { IUser } from 'backend/models/interfaces';
+import { User } from '@prisma/client';
 
-export default function ResetPassword({ user }: { user: IUser }): JSX.Element {
+export default function ResetPassword({ user }: { user: User }): JSX.Element {
     return (
         <>
             <div>

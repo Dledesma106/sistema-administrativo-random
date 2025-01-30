@@ -4,8 +4,6 @@ import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { TASKS_LIST_QUERY_KEY } from './queries';
-
 import { fetchClient } from '@/api/fetch-client';
 import {
     DeleteTaskDocument,
@@ -22,6 +20,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import useAlert from '@/context/alertContext/useAlert';
+import { TASKS_QUERY_KEY } from '@/hooks/api/tasks/useGetTasks';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
 
@@ -66,7 +65,7 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
             }
 
             queryClient.invalidateQueries({
-                queryKey: TASKS_LIST_QUERY_KEY,
+                queryKey: TASKS_QUERY_KEY,
             });
 
             triggerAlert({

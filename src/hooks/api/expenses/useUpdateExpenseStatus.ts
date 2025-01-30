@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { EXPENSE_DETAIL_QUERY_KEY } from './useGetExpenseById';
+import { EXPENSE_DETAIL_QUERY_KEY } from './useGetExpense';
 
 import { fetchClient } from '@/api/fetch-client';
 import {
-    TaskByIdQuery,
+    GetTaskQuery,
     UpdateExpenseStatusDocument,
     UpdateExpenseStatusMutation,
     UpdateExpenseStatusMutationVariables,
 } from '@/api/graphql';
 import useAlert from '@/context/alertContext/useAlert';
 
-import { TASK_DETAIL_QUERY_KEY } from '../tasks/useGetTaskById';
+import { TASK_DETAIL_QUERY_KEY } from '../tasks/useGetTask';
 
 export const useUpdateExpenseStatus = () => {
     const client = useQueryClient();
@@ -41,14 +41,14 @@ export const useUpdateExpenseStatus = () => {
 
             const expenses = task.expenses;
 
-            client.setQueryData<TaskByIdQuery>(
+            client.setQueryData<GetTaskQuery>(
                 TASK_DETAIL_QUERY_KEY(task.id),
                 (oldData) => {
                     if (!oldData || !oldData.taskById) {
                         return oldData;
                     }
 
-                    const nextData: TaskByIdQuery = {
+                    const nextData: GetTaskQuery = {
                         ...oldData,
                         taskById: {
                             ...oldData.taskById,

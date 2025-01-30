@@ -1,7 +1,5 @@
 import { useRouter } from 'next/router';
 
-import { useMutation } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -16,10 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
-import * as api from '@/lib/apiEndpoints';
-import { axiosInstance } from '@/lib/fetcher';
-
-import { ButtonWithSpinner } from '../ButtonWithSpinner';
+import { useChangePassword } from '@/hooks/api/auth/useChangePassword';
 
 interface IEditProfileForm {
     currentPassword: string;
@@ -31,38 +26,44 @@ export default function EditProfileForm() {
     const formMethods = useForm<IEditProfileForm>();
     const { triggerAlert } = useAlert();
     const router = useRouter();
-
-    const changePasswordMutation = useMutation<unknown, AxiosError, IEditProfileForm>({
-        mutationFn: (passwordData) => {
-            return axiosInstance.post(api.changePassword, {
-                currentPassword: passwordData.currentPassword,
-                newPassword: passwordData.newPassword,
-            });
-        },
-        onSuccess: () => {
-            triggerAlert({
-                type: 'Success',
-                message: 'Su contraseña fue actualizada correctamente',
-            });
-            router.push('/');
-        },
-        onError: (error) => {
-            if (error.response?.status === 403) {
-                formMethods.setError('currentPassword', {
-                    type: 'custom',
-                    message: 'Contraseña incorrecta',
-                });
-            } else {
-                triggerAlert({
-                    type: 'Failure',
-                    message: 'Error al actualizar contraseña',
-                });
-            }
-        },
-    });
+    const changePasswordMutation = useChangePassword();
 
     const onSubmit: SubmitHandler<IEditProfileForm> = async (data) => {
-        changePasswordMutation.mutate(data);
+        try {
+            const result = await changePasswordMutation.mutateAsync({
+                data: {
+                    currentPassword: data.currentPassword,
+                    newPassword: data.newPassword,
+                },
+            });
+
+            if (result.changePassword.success) {
+                triggerAlert({
+                    type: 'Success',
+                    message: 'Su contraseña fue actualizada correctamente',
+                });
+                router.push('/');
+            } else {
+                if (result.changePassword.message?.includes('actual incorrecta')) {
+                    formMethods.setError('currentPassword', {
+                        type: 'custom',
+                        message: 'Contraseña incorrecta',
+                    });
+                } else {
+                    triggerAlert({
+                        type: 'Failure',
+                        message:
+                            result.changePassword.message ||
+                            'Error al actualizar contraseña',
+                    });
+                }
+            }
+        } catch (error) {
+            triggerAlert({
+                type: 'Failure',
+                message: 'Error al actualizar contraseña',
+            });
+        }
     };
 
     return (
@@ -75,7 +76,7 @@ export default function EditProfileForm() {
                 <FormField
                     control={formMethods.control}
                     name="currentPassword"
-                    rules={{ required: true }}
+                    rules={{ required: 'Este campo es requerido' }}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Introduzca su contraseña actual</FormLabel>
@@ -94,7 +95,7 @@ export default function EditProfileForm() {
                 <FormField
                     control={formMethods.control}
                     name="newPassword"
-                    rules={{ required: true }}
+                    rules={{ required: 'Este campo es requerido' }}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Nueva contraseña</FormLabel>
@@ -117,7 +118,7 @@ export default function EditProfileForm() {
                         validate: (value) =>
                             value === formMethods.getValues('newPassword') ||
                             'Las contraseñas no coinciden',
-                        required: true,
+                        required: 'Este campo es requerido',
                     }}
                     render={({ field }) => (
                         <FormItem>
@@ -142,12 +143,9 @@ export default function EditProfileForm() {
                     >
                         Cancelar
                     </Button>
-                    <ButtonWithSpinner
-                        showSpinner={changePasswordMutation.isPending}
-                        type="submit"
-                    >
+                    <Button type="submit" disabled={changePasswordMutation.isPending}>
                         Guardar
-                    </ButtonWithSpinner>
+                    </Button>
                 </div>
             </form>
         </Form>

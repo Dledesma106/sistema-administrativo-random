@@ -1,38 +1,15 @@
-import { GetServerSideProps } from 'next';
-
 import CreateOrUpdateBillingProfileForm from '@/components/Forms/Accounting/CreateOrUpdateBillingProfileForm';
-import { prisma } from 'lib/prisma';
+import { FormSkeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 
-export type NewBillingProfilePageProps = Awaited<
-    ReturnType<typeof getNewBillingProfilePageProps>
->;
+export default function NewBillingProfile(): JSX.Element {
+    const { data: businessesData, isLoading } = useGetBusinesses({});
 
-const getNewBillingProfilePageProps = async () => {
-    const businesses = await prisma.business.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            name: true,
-        },
-    });
+    if (isLoading) {
+        return <FormSkeleton />;
+    }
 
-    return {
-        businesses,
-    };
-};
-
-export default function NewBillingProfile(
-    props: NewBillingProfilePageProps,
-): JSX.Element {
-    return <CreateOrUpdateBillingProfileForm {...props} />;
+    return (
+        <CreateOrUpdateBillingProfileForm businesses={businessesData?.businesses || []} />
+    );
 }
-
-export const getServerSideProps: GetServerSideProps<
-    NewBillingProfilePageProps
-> = async () => {
-    return {
-        props: await getNewBillingProfilePageProps(),
-    };
-};

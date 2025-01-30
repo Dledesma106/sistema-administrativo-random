@@ -1,7 +1,6 @@
-import { useState } from 'react';
-
 import Item from './Item';
 
+import { type GetProvincesQuery } from '@/api/graphql';
 import {
     Table,
     TableBody,
@@ -9,22 +8,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { type IProvince } from 'backend/models/interfaces';
 
 interface Props {
-    provinces: IProvince[];
+    provinces: NonNullable<GetProvincesQuery>['provinces'];
 }
 
 export default function ProvinceTable({ provinces }: Props): JSX.Element {
-    const [tableProvinces, setTableProvinces] = useState<IProvince[]>(provinces);
-    const deleteProvince = async (id: string): Promise<void> => {
-        setTableProvinces(tableProvinces.filter((province) => province._id !== id));
-    };
-
-    const handleDelete = (id: string): void => {
-        void deleteProvince(id);
-    };
-
     return (
         <Table>
             <TableHeader className="border-b bg-white">
@@ -34,8 +23,8 @@ export default function ProvinceTable({ provinces }: Props): JSX.Element {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {tableProvinces.map((province, index) => (
-                    <Item key={index} province={province} deleteProvince={handleDelete} />
+                {provinces.map((province, index) => (
+                    <Item key={index} province={province} />
                 ))}
             </TableBody>
         </Table>

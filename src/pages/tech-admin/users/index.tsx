@@ -1,15 +1,15 @@
 import TitleButton from '@/components/TitleButton';
-import dbConnect from '@/lib/dbConnect';
-import { mongooseDocumentToJSON } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGetUsers } from '@/hooks/api/user/useGetUsers';
 import UserTable from '@/modules/tables/UserTable';
-import { type IUser } from 'backend/models/interfaces';
-import UserModel from 'backend/models/User';
 
-interface Props {
-    users: IUser[];
-}
+export default function Users(): JSX.Element {
+    const { data: users, isLoading } = useGetUsers({});
 
-export default function Users({ users }: Props): JSX.Element {
+    if (isLoading) {
+        return <Skeleton className="h-96 w-full" />;
+    }
+
     return (
         <>
             <TitleButton
@@ -18,18 +18,7 @@ export default function Users({ users }: Props): JSX.Element {
                 nameButton="Agregar usuario"
             />
 
-            <UserTable users={users} />
+            <UserTable users={users?.users || []} />
         </>
     );
-}
-
-export async function getServerSideProps(): Promise<{ props: Props }> {
-    await dbConnect();
-
-    const docUsers = (await UserModel.findUndeleted({})) as IUser[];
-    return {
-        props: {
-            users: mongooseDocumentToJSON(docUsers),
-        },
-    };
 }

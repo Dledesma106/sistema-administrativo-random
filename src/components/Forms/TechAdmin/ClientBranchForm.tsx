@@ -10,6 +10,8 @@ import {
     CreateBranchMutationVariables,
     UpdateBranchDocument,
     UpdateBranchMutationVariables,
+    GetBusinessesQuery,
+    GetCitiesQuery,
 } from '@/api/graphql';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -26,7 +28,6 @@ import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
-import { EditClientBranchProps } from '@/pages/tech-admin/clients/[clientId]/branches/[number]';
 
 export interface BranchFormValues {
     number?: number;
@@ -44,7 +45,9 @@ type Props = {
         name: string;
     };
     idToUpdate?: string;
-} & Pick<EditClientBranchProps, 'cities' | 'businesses'>;
+    cities: NonNullable<GetCitiesQuery['cities']>;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+};
 
 export default function ClientBranchForm({
     branchForm,

@@ -4,143 +4,119 @@ import { useState } from 'react';
 import { BsFillPencilFill, BsFillTrashFill } from 'react-icons/bs';
 import { CgPassword } from 'react-icons/cg';
 
-import { useSendNewUserRandomPasswordMutation } from './mutations';
-
+import { GetUsersQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
-import { TableCell } from '@/components/ui/table';
+import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
+import { useDeleteUser } from '@/hooks/api/user/useDeleteUser';
+import { useSendNewUserRandomPassword } from '@/hooks/api/user/useSendNewUserRandomPassword';
 import useLoading from '@/hooks/useLoading';
-import * as apiEndpoints from '@/lib/apiEndpoints';
-import fetcher from '@/lib/fetcher';
-import { type IUser } from 'backend/models/interfaces';
+import { slugify } from '@/lib/utils';
+
+type User = GetUsersQuery['users'][0];
 
 interface Props {
-    user: IUser;
+    user: User;
     deleteUser: (id: string) => void;
 }
 
-export default function UserItemActions({ user, deleteUser }: Props): JSX.Element {
+export default function Item({ user, deleteUser }: Props): JSX.Element {
     const { startLoading, stopLoading } = useLoading();
     const router = useRouter();
-    const [deleteModal, setDeleteModal] = useState<boolean>(false);
-    const [newPasswordModal, setNewPasswordModal] = useState<boolean>(false);
+    const [modal, setModal] = useState(false);
     const { triggerAlert } = useAlert();
+    const deleteMutation = useDeleteUser();
+    const sendNewRandomPassword = useSendNewUserRandomPassword();
 
-    const sendNewRandomPassword = useSendNewUserRandomPasswordMutation();
+    const openModal = (): void => setModal(true);
+    const closeModal = (): void => setModal(false);
 
-    const openDeleteModal = (): void => {
-        setDeleteModal(true);
-    };
-
-    const closeDeleteModal = (): void => {
-        setDeleteModal(false);
-    };
-
-    const openNewPasswordModal = (): void => {
-        setNewPasswordModal(true);
-    };
-
-    const closeNewPasswordModal = (): void => {
-        setNewPasswordModal(false);
-    };
-
-    const deleteData = async (): Promise<void> => {
+    const handleDelete = async (): Promise<void> => {
         try {
-            await fetcher.delete(
-                {
-                    _id: user._id,
-                },
-                apiEndpoints.techAdmin.users,
-            );
-            deleteUser(user._id as string);
-            triggerAlert({
-                type: 'Success',
-                message: `El usuario ${user.firstName} ${user.lastName} fue eliminado correctamente`,
-            });
+            const result = await deleteMutation.mutateAsync({ id: user.id });
+            if (result.deleteUser.success) {
+                deleteUser(user.id);
+                triggerAlert({
+                    type: 'Success',
+                    message: `El usuario ${user.fullName} fue eliminado correctamente`,
+                });
+            } else {
+                triggerAlert({
+                    type: 'Failure',
+                    message:
+                        result.deleteUser.message ||
+                        `No se pudo eliminar el usuario ${user.fullName}`,
+                });
+            }
         } catch (error) {
             triggerAlert({
                 type: 'Failure',
-                message: `No se pudo eliminar el usuario ${user.firstName} ${user.lastName}`,
+                message: `No se pudo eliminar el usuario ${user.fullName}, compruebe la conexión a internet`,
             });
         }
+        closeModal();
     };
 
-    async function navigateEdit(): Promise<void> {
-        startLoading();
-        await router.push(`/tech-admin/users/${user._id as string}`);
-        stopLoading();
-    }
+    const handleNavigateEdit = async (): Promise<void> => {
+        await router.push(`/tech-admin/users/${slugify(user.fullName)}`);
+    };
 
     async function reGeneratePassword(): Promise<void> {
         try {
             startLoading();
             await sendNewRandomPassword.mutateAsync({
-                id: user._id as string,
+                id: user.id,
             });
             triggerAlert({
                 type: 'Success',
-                message: `Se generó una nueva contraseña para ${
-                    user.fullName as string
-                } correctamente`,
+                message: `Se generó una nueva contraseña para ${user.fullName} correctamente`,
             });
             stopLoading();
         } catch (error) {
             stopLoading();
             triggerAlert({
                 type: 'Failure',
-                message: `No se pudo generar una nueva contraseña para ${
-                    user.fullName as string
-                }`,
+                message: `No se pudo generar una nueva contraseña para ${user.fullName}`,
             });
         }
     }
 
-    const handleDelete = (): void => {
-        void deleteData();
-    };
-
-    const handleNavigate = (): void => {
-        void navigateEdit();
-    };
-
-    const handleRegeneratePassword = (): void => {
-        void reGeneratePassword();
-    };
-
     return (
-        <TableCell>
-            <div className="flex items-center justify-center gap-2">
-                <button
-                    className="rounded-lg p-0.5 hover:bg-gray-200"
-                    onClick={handleNavigate}
-                >
-                    <BsFillPencilFill color="gray" size="15" />
-                </button>
-                <button
-                    className="rounded-lg p-0.5 hover:bg-gray-200"
-                    onClick={openDeleteModal}
-                >
-                    <BsFillTrashFill color="gray" size="15" />
-                </button>
-                <button
-                    className="rounded-lg p-0.5 hover:bg-gray-200"
-                    onClick={openNewPasswordModal}
-                >
-                    <CgPassword color="gray" size="15" />
-                </button>
-                <Modal
-                    openModal={deleteModal}
-                    handleToggleModal={closeDeleteModal}
-                    action={handleDelete}
-                    msg="¿Seguro que quiere eliminar este usuario?"
-                />
-                <Modal
-                    openModal={newPasswordModal}
-                    handleToggleModal={closeNewPasswordModal}
-                    action={handleRegeneratePassword}
-                    msg="¿Seguro que quiere generar una nueva contraseña para este usuario?"
-                />
-            </div>
-        </TableCell>
+        <TableRow className="border-b">
+            <TableCell>{user.firstName}</TableCell>
+            <TableCell>{user.lastName}</TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.city?.name}</TableCell>
+            <TableCell>{user.roles.join(', ')}</TableCell>
+            <TableCell className="w-40">
+                <div className="flex items-center justify-center gap-2">
+                    <button
+                        className="rounded-lg p-0.5 hover:bg-gray-200"
+                        onClick={handleNavigateEdit}
+                    >
+                        <BsFillPencilFill color="gray" size="15" />
+                    </button>
+                    <button
+                        className="rounded-lg p-0.5 hover:bg-gray-200"
+                        onClick={openModal}
+                        disabled={deleteMutation.isPending}
+                    >
+                        <BsFillTrashFill color="gray" size="15" />
+                    </button>
+                    <button
+                        className="rounded-lg p-0.5 hover:bg-gray-200"
+                        onClick={reGeneratePassword}
+                    >
+                        <CgPassword color="gray" size="15" />
+                    </button>
+                    <Modal
+                        openModal={modal}
+                        handleToggleModal={closeModal}
+                        action={handleDelete}
+                        msg="¿Seguro que quiere eliminar este usuario?"
+                    />
+                </div>
+            </TableCell>
+        </TableRow>
     );
 }

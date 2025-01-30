@@ -9,5 +9,6 @@ import './resolvers/business';
 import './resolvers/image';
 import './resolvers/expense';
 import './resolvers/preventive';
+import './resolvers/auth';
 
 export const schema = builder.toSchema();

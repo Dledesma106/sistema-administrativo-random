@@ -1,3 +1,4 @@
+import { User } from '@prisma/client';
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { NodemailerMockTransporter } from 'nodemailer-mock';
@@ -5,10 +6,6 @@ import { renderToString } from 'react-dom/server';
 
 import NewUserEmail, { NewUserEmailProps } from '@/components/Emails/NewUserPassword';
 import ResetPassword from '@/components/Emails/ResetPassword';
-import TaskFinishedEmail, {
-    TaskFinishedEmailProps,
-} from '@/components/Emails/TaskFinished';
-import { IUser } from 'backend/models/interfaces';
 
 class TransporterProvider {
     private static instance: TransporterProvider;
@@ -82,26 +79,13 @@ const Mailer = {
 
         return info;
     },
-    sendResetPassword: async (user: IUser) => {
+    sendResetPassword: async (user: User) => {
         const html = renderToString(ResetPassword({ user }));
         const info = (await TransporterProvider.getInstance()).sendMail({
             from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
             to: user.email,
             subject:
                 'Creacion de nueva contraseña para tu usuario en el Sistema de Administracion Tecnica',
-            html,
-        });
-
-        logInfoInDev(info, html);
-
-        return info;
-    },
-    sendTaskFinished: async (props: TaskFinishedEmailProps) => {
-        const html = renderToString(TaskFinishedEmail(props));
-        const info = (await TransporterProvider.getInstance()).sendMail({
-            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
-            to: props.auditor.email,
-            subject: 'Tarea Finalizada',
             html,
         });
 

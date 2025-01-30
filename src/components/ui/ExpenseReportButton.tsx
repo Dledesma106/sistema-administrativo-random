@@ -1,12 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { ExpenseReportModal } from '@/components/Modals/ExpenseReportModal';
 import { Table } from '@tanstack/react-table';
-import { ElementType } from '@/types';
-import { ExpensesQuery } from '@/api/graphql';
+import { GetExpensesQuery } from '@/api/graphql';
 import { useState } from 'react';
 
 type Props = {
-    table: Table<ElementType<ExpensesQuery['expenses']>>;
+    table: Table<NonNullable<GetExpensesQuery['expenses']>[number]>;
 };
 
 export function ExpenseReportButton({ table }: Props) {

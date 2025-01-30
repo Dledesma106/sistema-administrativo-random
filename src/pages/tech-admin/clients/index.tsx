@@ -1,12 +1,15 @@
-import { GetServerSideProps } from 'next';
-
 import TitleButton from '@/components/TitleButton';
+import { TableSkeleton } from '@/components/ui/skeleton';
+import { useGetClients } from '@/hooks/api/client/useGetClients';
 import ClientTable from '@/modules/tables/ClientTable';
-import { prisma } from 'lib/prisma';
 
-export type ClientsPageProps = Awaited<ReturnType<typeof getProps>>;
+export default function Clients(): JSX.Element {
+    const { data: clientsData, isLoading } = useGetClients({});
 
-export default function Clients({ clients }: ClientsPageProps): JSX.Element {
+    if (isLoading) {
+        return <TableSkeleton />;
+    }
+
     return (
         <>
             <main>
@@ -15,28 +18,8 @@ export default function Clients({ clients }: ClientsPageProps): JSX.Element {
                     path="/tech-admin/clients/new"
                     nameButton="Agregar cliente"
                 />
-                <ClientTable clients={clients} />
+                <ClientTable clients={clientsData?.clients || []} />
             </main>
         </>
     );
-}
-
-export const getServerSideProps: GetServerSideProps<ClientsPageProps> = async () => {
-    const props = await getProps();
-
-    return {
-        props,
-    };
-};
-
-async function getProps() {
-    const clients = await prisma.client.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-    return {
-        clients,
-    };
 }

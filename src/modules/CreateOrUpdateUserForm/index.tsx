@@ -4,9 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Role } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
-import { useCreateUserMutation, useUpdateUserMutation } from './mutations';
-
-import { UserInput } from '@/api/graphql';
+import { UserInput, GetCitiesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -22,11 +20,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
-import { CityWithProvince } from '@/types';
-import { rolesOptions } from 'backend/models/types';
+import { useCreateUser } from '@/hooks/api/user/useCreateUser';
+import { useUpdateUser } from '@/hooks/api/user/useUpdateUser';
 
 export interface UserFormProps {
-    cities: CityWithProvince[];
+    cities: GetCitiesQuery['cities'];
     userIdToUpdate?: string;
     defaultValues?: UserFormValues;
 }
@@ -53,8 +51,8 @@ export default function CreateOrUpdateUserForm({
     });
     const { triggerAlert } = useAlert();
 
-    const postUserMutation = useCreateUserMutation();
-    const putUserMutation = useUpdateUserMutation();
+    const postUserMutation = useCreateUser();
+    const putUserMutation = useUpdateUser();
 
     const onSubmit: SubmitHandler<UserFormValues> = (data) => {
         const input: UserInput = {
@@ -236,12 +234,10 @@ export default function CreateOrUpdateUserForm({
                                     <Combobox
                                         searchPlaceholder="Buscar ciudad"
                                         selectPlaceholder="Seleccione una ciudad"
-                                        items={cities.map((city) => {
-                                            return {
-                                                value: city._id.toString(),
-                                                label: `${city.name}, ${city.provinceId.name}`,
-                                            };
-                                        })}
+                                        items={cities.map((city) => ({
+                                            value: city.id,
+                                            label: `${city.name}, ${city.province.name}`,
+                                        }))}
                                         {...field}
                                     />
                                 </FormControl>
@@ -259,7 +255,12 @@ export default function CreateOrUpdateUserForm({
                                 <FormControl>
                                     <FancyMultiSelect
                                         placeholder="Añade roles"
-                                        options={rolesOptions}
+                                        options={Object.entries(Role).map(
+                                            ([key, value]) => ({
+                                                label: key,
+                                                value: value,
+                                            }),
+                                        )}
                                         {...field}
                                     />
                                 </FormControl>

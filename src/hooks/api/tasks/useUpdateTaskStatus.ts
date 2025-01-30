@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { TASK_DETAIL_QUERY_KEY } from './useGetTaskById';
+import { TASK_DETAIL_QUERY_KEY } from './useGetTask';
 
 import { fetchClient } from '@/api/fetch-client';
 import {
-    TaskByIdQuery,
+    GetTaskQuery,
     UpdateTaskStatusDocument,
     UpdateTaskStatusMutation,
     UpdateTaskStatusMutationVariables,
@@ -31,14 +31,14 @@ export const useUpdateTaskStatus = () => {
                 return;
             }
 
-            client.setQueryData<TaskByIdQuery>(
+            client.setQueryData<GetTaskQuery>(
                 TASK_DETAIL_QUERY_KEY(task.id),
                 (oldData) => {
                     if (!oldData || !oldData.taskById) {
                         return oldData;
                     }
 
-                    const nextData: TaskByIdQuery = {
+                    const nextData: GetTaskQuery = {
                         ...oldData,
                         taskById: {
                             ...oldData.taskById,

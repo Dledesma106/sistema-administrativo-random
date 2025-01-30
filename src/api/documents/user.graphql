@@ -1,0 +1,106 @@
+query GetUsers {
+    users {
+        id
+        email
+        firstName
+        lastName
+        fullName
+        roles
+        city {
+            id
+            name
+        }
+    }
+}
+
+query GetTechnicians {
+    technicians {
+        id
+        email
+        firstName
+        lastName
+        fullName
+        roles
+        city {
+            id
+            name
+        }
+    }
+}
+
+mutation CreateUser($input: UserInput!) {
+    createUser(input: $input) {
+        success
+        message
+        user {
+            id
+            email
+            firstName
+            lastName
+            fullName
+            roles
+            city {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation UpdateUser($id: String!, $input: UserInput!) {
+    updateUser(id: $id, input: $input) {
+        success
+        message
+        user {
+            id
+            email
+            firstName
+            lastName
+            fullName
+            roles
+            city {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation DeleteUser($id: String!) {
+    deleteUser(id: $id) {
+        success
+        message
+        user {
+            id
+            email
+            firstName
+            lastName
+            fullName
+        }
+    }
+}
+
+mutation sendNewUserRandomPassword($id: String!) {
+    sendNewUserRandomPassword(id: $id) {
+        user {
+            id
+        }
+        success
+        message
+    }
+}
+
+query GetUser($id: String!) {
+    user(id: $id) {
+        id
+        email
+        firstName
+        lastName
+        fullName
+        roles
+        city {
+            id
+            name
+        }
+    }
+}

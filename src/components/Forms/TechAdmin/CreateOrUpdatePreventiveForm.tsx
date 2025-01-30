@@ -27,10 +27,24 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
+import { useGetClientsWithBranches } from '@/hooks/api/client/useGetClientsWithBranches';
+import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage, cn } from '@/lib/utils';
-import { EditPreventivePageProps } from '@/pages/tech-admin/preventives/[id]/edit';
-import * as types from 'backend/models/types';
+
+export type Month =
+    | 'Enero'
+    | 'Febrero'
+    | 'Marzo'
+    | 'Abril'
+    | 'Mayo'
+    | 'Junio'
+    | 'Julio'
+    | 'Agosto'
+    | 'Septiembre'
+    | 'Octubre'
+    | 'Noviembre'
+    | 'Diciembre';
 
 type FormValues = {
     client: string;
@@ -44,7 +58,7 @@ type FormValues = {
     observations: string | null;
     months: {
         label: string;
-        value: types.Month;
+        value: Month;
     }[];
     status: PreventiveStatus;
     lastDoneAt: Date | null;
@@ -54,11 +68,27 @@ type FormValues = {
 type Props = {
     defaultValues?: FormValues;
     preventiveIdToUpdate?: string;
-} & EditPreventivePageProps;
+    clients: NonNullable<ReturnType<typeof useGetClientsWithBranches>['data']>['clients'];
+    technicians: NonNullable<ReturnType<typeof useGetTechnicians>['data']>['technicians'];
+};
+
+export const MONTHS: Month[] = [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+];
 
 const CreateOrUpdatePreventiveForm = ({
     preventiveIdToUpdate,
-    branches,
     clients,
     technicians,
     defaultValues,
@@ -128,12 +158,16 @@ const CreateOrUpdatePreventiveForm = ({
             }
 
             return fetchClient(CreatePreventiveDocument, {
-                data: {
-                    assignedIDs: form.assigned.map((technician) => technician.value),
+                input: {
+                    assignedIds: form.assigned.map((technician) => technician.value),
                     branchId: form.branch,
                     businessId: form.business,
-                    lastDoneAt: form.lastDoneAt,
-                    batteryChangedAt: form.batteryChangedAt,
+                    lastDoneAt: form.lastDoneAt
+                        ? new Date(form.lastDoneAt).toISOString()
+                        : null,
+                    batteryChangedAt: form.batteryChangedAt
+                        ? new Date(form.batteryChangedAt).toISOString()
+                        : null,
                     frequency: form.frequency ?? 0,
                     months: form.months.map((month) => month.value),
                     observations: form.observations,
@@ -168,13 +202,17 @@ const CreateOrUpdatePreventiveForm = ({
 
             return fetchClient(UpdatePreventiveDocument, {
                 id: preventiveIdToUpdate,
-                data: {
-                    assignedIDs: form.assigned.map((technician) => technician.value),
+                input: {
+                    assignedIds: form.assigned.map((technician) => technician.value),
                     branchId: form.branch,
                     businessId: form.business,
                     frequency: form.frequency ?? 0,
-                    lastDoneAt: form.lastDoneAt,
-                    batteryChangedAt: form.batteryChangedAt,
+                    lastDoneAt: form.lastDoneAt
+                        ? new Date(form.lastDoneAt).toISOString()
+                        : null,
+                    batteryChangedAt: form.batteryChangedAt
+                        ? new Date(form.batteryChangedAt).toISOString()
+                        : null,
                     months: form.months.map((month) => month.value),
                     observations: form.observations,
                     status: form.status,
@@ -203,6 +241,23 @@ const CreateOrUpdatePreventiveForm = ({
             postMutation.mutateAsync(form);
         }
     };
+
+    const branchOptions =
+        clients
+            .find((client) => client.id === form.watch('client'))
+            ?.branches.map((branch) => ({
+                label: `${branch.number}, ${branch.city.name}`,
+                value: branch.id,
+            })) || [];
+
+    const businessOptions =
+        clients
+            .find((client) => client.id === form.watch('client'))
+            ?.branches.find((branch) => branch.id === form.watch('branch'))
+            ?.businesses.map((business) => ({
+                label: business.name,
+                value: business.id,
+            })) || [];
 
     return (
         <main>
@@ -263,16 +318,7 @@ const CreateOrUpdatePreventiveForm = ({
                                             searchPlaceholder="Buscar sucursal"
                                             value={field.value || ''}
                                             onChange={field.onChange}
-                                            items={branches
-                                                .filter(
-                                                    (branch) =>
-                                                        branch.clientId ===
-                                                        form.watch('client'),
-                                                )
-                                                .map((branch) => ({
-                                                    label: `${branch.number}, ${branch.city.name}`,
-                                                    value: branch.id,
-                                                }))}
+                                            items={branchOptions}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -304,18 +350,7 @@ const CreateOrUpdatePreventiveForm = ({
                                             searchPlaceholder="Buscar empresa"
                                             value={field.value || ''}
                                             onChange={field.onChange}
-                                            items={
-                                                branches
-                                                    .find(
-                                                        (branch) =>
-                                                            branch.id ===
-                                                            form.watch('branch'),
-                                                    )
-                                                    ?.businesses.map((business) => ({
-                                                        label: business.name,
-                                                        value: business.id,
-                                                    })) || []
-                                            }
+                                            items={businessOptions}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -401,12 +436,11 @@ const CreateOrUpdatePreventiveForm = ({
                                         {...field}
                                         onChange={(value) => {
                                             field.onChange(value);
-                                            // Limpiar frecuencia si se seleccionan meses
                                             if (value.length > 0) {
                                                 form.setValue('frequency', null);
                                             }
                                         }}
-                                        options={types.months.map((month) => ({
+                                        options={MONTHS.map((month) => ({
                                             label: month,
                                             value: month,
                                         }))}

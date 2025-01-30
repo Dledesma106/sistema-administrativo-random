@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+import { Role } from '@prisma/client';
 import {
     ColumnFiltersState,
     SortingState,
@@ -17,13 +18,19 @@ import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useTasksTableColumns } from './columns';
-import { useTasksListQuery } from './queries';
 import { TasksDataTableToolbar } from './tasks-table-toolbar';
 
-import { TasksQuery } from '@/api/graphql';
+import {
+    GetCitiesQuery,
+    GetProvincesQuery,
+    GetClientsQuery,
+    GetBusinessesQuery,
+    GetTechniciansQuery,
+    TasksQuery,
+} from '@/api/graphql';
 import { DataTablePagination } from '@/components/data-table-pagination';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -35,12 +42,20 @@ import {
 import { TaskReportButton } from '@/components/ui/TaskReportButton';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
+import { useGetTasks } from '@/hooks/api/tasks/useGetTasks';
 import { routesBuilder } from '@/lib/routes';
-import { TasksPageProps } from '@/pages/tasks';
 
 type TableItem = TasksQuery['tasks'][0];
 
-export default function TasksDataTable(props: TasksPageProps): JSX.Element {
+type Props = {
+    cities: NonNullable<GetCitiesQuery['cities']>;
+    provinces: NonNullable<GetProvincesQuery['provinces']>;
+    clients: NonNullable<GetClientsQuery['clients']>;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+    techs: NonNullable<GetTechniciansQuery['technicians']>;
+};
+
+export default function TasksDataTable(props: Props): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
         if (typeof window === 'undefined') {
@@ -51,7 +66,7 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
     });
 
     const router = useRouter();
-    const tasksQuery = useTasksListQuery({
+    const tasksQuery = useGetTasks({
         assigneed: null,
         business: null,
         city: null,
@@ -125,10 +140,11 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
                 <div className="flex justify-between">
                     <TypographyH1>Tareas</TypographyH1>
                     <div className="flex gap-2">
-                        {user.roles.includes('AdministrativoContable' || 'Auditor') && (
+                        {(user.roles.includes(Role.AdministrativoContable) ||
+                            user.roles.includes(Role.Auditor)) && (
                             <TaskReportButton table={table} />
                         )}
-                        {user.roles.includes('AdministrativoTecnico') && (
+                        {user.roles.includes(Role.AdministrativoTecnico) && (
                             <Button asChild className="flex items-center space-x-2">
                                 <Link href={routesBuilder.tasks.create()}>
                                     <BsPlus size="20" />
@@ -209,7 +225,7 @@ export default function TasksDataTable(props: TasksPageProps): JSX.Element {
     return (
         <div className="space-y-4 pb-8">
             <TasksDataTableToolbar table={table} {...props} />
-            <Skeleton className="h-96 w-full" />
+            <TableSkeleton />
         </div>
     );
 }

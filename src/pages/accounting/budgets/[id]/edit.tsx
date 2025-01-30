@@ -1,48 +1,19 @@
-import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 
 import CreateOrUpdateBudgetForm from '@/components/Forms/Accounting/CreateOrUpdateBudgetForm';
-import { prisma } from 'lib/prisma';
+import { FormSkeleton } from '@/components/ui/skeleton';
+import { useGetBranches } from '@/hooks/api/branch/useGetBranches';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
+import { useGetClients } from '@/hooks/api/client/useGetClients';
 
-export type EditBudgetPageProps = Awaited<ReturnType<typeof getEditBudgetPageProps>>;
+export default function EditBudget(): JSX.Element {
+    const {
+        query: { id },
+    } = useRouter();
+    const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
+    const { data: clientsData, isLoading: isLoadingClients } = useGetClients({});
+    const { data: branchesData, isLoading: isLoadingBranches } = useGetBranches({});
 
-const getEditBudgetPageProps = async (id: string) => {
-    const businesses = await prisma.business.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-
-    const clients = await prisma.client.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-
-    const branches = await prisma.branch.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            number: true,
-            clientId: true,
-            city: {
-                select: {
-                    name: true,
-                },
-            },
-        },
-    });
-
-    // Mock data - Reemplazar con datos reales de tu API
     const mockBudget = {
         id,
         business: '1', // ID de la empresa existente
@@ -52,34 +23,17 @@ const getEditBudgetPageProps = async (id: string) => {
         price: 150000,
     };
 
-    return {
-        businesses,
-        clients,
-        branches: branches.map((branch) => ({
-            ...branch,
-            number: String(branch.number),
-        })),
-        defaultValues: mockBudget,
-        budgetIdToUpdate: id,
-    };
-};
-
-export default function EditBudget(props: EditBudgetPageProps): JSX.Element {
-    return <CreateOrUpdateBudgetForm {...props} />;
-}
-
-export const getServerSideProps: GetServerSideProps<EditBudgetPageProps> = async ({
-    params,
-}) => {
-    const id = params?.id as string;
-
-    if (!id) {
-        return {
-            notFound: true,
-        };
+    if (isLoadingBusinesses || isLoadingClients || isLoadingBranches) {
+        return <FormSkeleton />;
     }
 
-    return {
-        props: await getEditBudgetPageProps(id),
-    };
-};
+    return (
+        <CreateOrUpdateBudgetForm
+            budgetIdToUpdate={mockBudget.id as string}
+            businesses={businessesData?.businesses || []}
+            clients={clientsData?.clients || []}
+            branches={branchesData?.branches || []}
+            defaultValues={mockBudget}
+        />
+    );
+}

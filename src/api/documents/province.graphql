@@ -1,0 +1,46 @@
+query GetProvinces {
+    provinces {
+        id
+        name
+    }
+}
+
+query GetProvince($id: String!) {
+    provinceById(id: $id) {
+        id
+        name
+    }
+}
+
+mutation CreateProvince($data: ProvinceInput!) {
+    createProvince(data: $data) {
+        success
+        message
+        province {
+            id
+            name
+        }
+    }
+}
+
+mutation UpdateProvince($id: String!, $data: ProvinceInput!) {
+    updateProvince(id: $id, data: $data) {
+        success
+        message
+        province {
+            id
+            name
+        }
+    }
+}
+
+mutation DeleteProvince($id: String!) {
+    deleteProvince(id: $id) {
+        success
+        message
+        province {
+            id
+            name
+        }
+    }
+} 

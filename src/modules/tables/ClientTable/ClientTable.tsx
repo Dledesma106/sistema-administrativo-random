@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import Item from './Item';
 
+import { GetClientsQuery } from '@/api/graphql';
 import {
     Table,
     TableBody,
@@ -9,9 +10,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { ClientsPageProps } from '@/pages/tech-admin/clients';
 
-export default function ClientTable({ clients }: ClientsPageProps): JSX.Element {
+export default function ClientTable({
+    clients,
+}: {
+    clients: NonNullable<GetClientsQuery['clients']>;
+}): JSX.Element {
     const [tableClients, setTableClients] = useState(clients);
 
     const deleteClient = (id: string): void => {

@@ -27,3 +27,60 @@ mutation deleteBranch($id: String!) {
         message
     }
 }
+
+query GetClientBranches($clientId: String!) {
+    clientBranches(clientId: $clientId) {
+        id
+        number
+        city {
+            id
+            name
+        }
+        businesses {
+            id
+            name
+        }
+    }
+}
+
+query GetBranches {
+    branches {
+        id
+        number
+        city {
+            id
+            name
+        }
+        businesses {
+            id
+            name
+        }
+        client {
+            id
+            name
+        }
+    }
+}
+
+query GetBranch($id: String!) {
+    branch(id: $id) {
+        id
+        number
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+        client {
+            id
+            name
+        }
+        businesses {
+            id
+            name
+        }
+    }
+} 

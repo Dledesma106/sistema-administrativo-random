@@ -1,12 +1,28 @@
-import { GetServerSideProps } from 'next';
-
 import TitleButton from '@/components/TitleButton';
-import { PreventivesTable } from '@/modules/tables/preventives-table';
-import { prisma } from 'lib/prisma';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
+import { useGetClients } from '@/hooks/api/client/useGetClients';
+import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
+import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
+import { PreventivesTable } from '@/modules/tables/PreventivesTable';
 
-export type PreventivesPageProps = Awaited<ReturnType<typeof getProps>>;
+export default function Preventives(): JSX.Element {
+    const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
+    const { data: clientsData, isLoading: isLoadingClients } = useGetClients({});
+    const { data: provincesData, isLoading: isLoadingProvinces } = useGetProvinces({});
+    const { data: techniciansData, isLoading: isLoadingTechnicians } = useGetTechnicians(
+        {},
+    );
 
-export default function Preventives(props: PreventivesPageProps): JSX.Element {
+    if (
+        isLoadingBusinesses ||
+        isLoadingClients ||
+        isLoadingProvinces ||
+        isLoadingTechnicians
+    ) {
+        return <Skeleton className="h-96 w-full" />;
+    }
+
     return (
         <>
             <TitleButton
@@ -14,61 +30,12 @@ export default function Preventives(props: PreventivesPageProps): JSX.Element {
                 path="/tech-admin/preventives/new"
                 nameButton="Agregar preventivo"
             />
-
             <PreventivesTable
-                businesses={props.businesses}
-                clients={props.clients}
-                provinces={props.provinces}
-                technicians={props.technicians}
+                businesses={businessesData?.businesses || []}
+                clients={clientsData?.clients || []}
+                provinces={provincesData?.provinces || []}
+                technicians={techniciansData?.technicians || []}
             />
         </>
     );
 }
-
-export const getServerSideProps: GetServerSideProps<PreventivesPageProps> = async () => {
-    return {
-        props: await getProps(),
-    };
-};
-
-const getProps = async () => {
-    const provinces = await prisma.province.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-
-    const businesses = await prisma.business.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-
-    const technicians = await prisma.user.findManyUndeleted({
-        where: {
-            roles: {
-                has: 'Tecnico',
-            },
-        },
-        select: {
-            id: true,
-            fullName: true,
-        },
-    });
-
-    const clients = await prisma.client.findManyUndeleted({
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-
-    return {
-        clients,
-        provinces,
-        businesses,
-        technicians,
-    };
-};

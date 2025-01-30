@@ -1,32 +1,13 @@
-import { GetServerSideProps } from 'next';
-
 import CreateOrUpdateTaskPriceForm from '@/components/Forms/Accounting/CreateOrUpdateTaskPriceForm';
-import { prisma } from 'lib/prisma';
+import { FormSkeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 
-export type NewTaskPricePageProps = Awaited<ReturnType<typeof getNewTaskPricePageProps>>;
+export default function NewTaskPrice(): JSX.Element {
+    const { data: businessesData, isLoading } = useGetBusinesses({});
 
-const getNewTaskPricePageProps = async () => {
-    const businesses = await prisma.business.findManyUndeleted({
-        where: {
-            deleted: false,
-        },
-        select: {
-            id: true,
-            name: true,
-        },
-    });
+    if (isLoading) {
+        return <FormSkeleton />;
+    }
 
-    return {
-        businesses,
-    };
-};
-
-export default function NewTaskPrice(props: NewTaskPricePageProps): JSX.Element {
-    return <CreateOrUpdateTaskPriceForm {...props} />;
+    return <CreateOrUpdateTaskPriceForm businesses={businessesData?.businesses || []} />;
 }
-
-export const getServerSideProps: GetServerSideProps<NewTaskPricePageProps> = async () => {
-    return {
-        props: await getNewTaskPricePageProps(),
-    };
-};
