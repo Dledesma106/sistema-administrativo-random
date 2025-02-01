@@ -1,21 +1,28 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+
 import { PreventiveStatus, TaskStatus, TaskType } from '@prisma/client';
 
 import { prisma } from '../../../../lib/prisma';
 
 export const config = {
-    runtime: 'edge',
+    runtime: 'nodejs',
 };
 
-export default async function handler(request: Request) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         // Verificar que la solicitud viene de Vercel Cron
-        const authHeader = request.headers.get('authorization');
-        if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-            return new Response('Unauthorized', { status: 401 });
+        console.log('cron secret', process.env.CRON_SECRET);
+        const authHeader = req.headers.authorization;
+        console.log('authHeader', authHeader);
+        if (authHeader !== `${process.env.CRON_SECRET}`) {
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
         const currentMonth = new Date().getMonth() + 1;
         const currentYear = new Date().getFullYear();
+
+        console.log('Cron iniciado:', new Date());
+        console.log('Mes actual:', currentMonth);
 
         const preventives = await prisma.preventive.findMany({
             where: { deleted: false },
@@ -83,31 +90,15 @@ export default async function handler(request: Request) {
             }
         }
 
-        return new Response(
-            JSON.stringify({
-                success: true,
-                message: `Procesados ${preventives.length} preventivos`,
-            }),
-            {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            },
-        );
+        return res.status(200).json({
+            success: true,
+            message: `Procesados ${preventives.length} preventivos`,
+        });
     } catch (error) {
         console.error('Error en cron job:', error);
-        return new Response(
-            JSON.stringify({
-                success: false,
-                error: error instanceof Error ? error.message : 'Unknown error',
-            }),
-            {
-                status: 500,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            },
-        );
+        return res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+        });
     }
 }
