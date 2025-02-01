@@ -11,9 +11,8 @@ export const config = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         // Verificar que la solicitud viene de Vercel Cron
-        console.log('cron secret', process.env.CRON_SECRET);
+
         const authHeader = req.headers.authorization;
-        console.log('authHeader', authHeader);
         if (authHeader !== `${process.env.CRON_SECRET}`) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
