@@ -7,9 +7,9 @@ import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
 import { dmyDateString, pascalCaseToSpaces } from '@/lib/utils';
 
-type Task = TasksQuery['tasks'][0];
+type Task = TasksQuery['tasks'][number];
 
-const columnHelper = createColumnHelper<TasksQuery['tasks'][0]>();
+const columnHelper = createColumnHelper<TasksQuery['tasks'][number]>();
 
 export const useTasksTableColumns = () => [
     columnHelper.accessor((row) => row, {

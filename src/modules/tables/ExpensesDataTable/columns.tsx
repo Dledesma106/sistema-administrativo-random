@@ -145,23 +145,19 @@ export const useExpensesTableColumns = () => [
         },
     ),
     columnHelper.accessor((row) => row.status, {
-        id: 'expenseStatus',
+        id: 'status',
         header: 'Estado',
         cell: (info) => {
             const status = info.getValue();
             return <ExpenseStatusBadge status={status} />;
         },
         filterFn: (row, id, statuses: ExpenseStatus[]) => {
-            if (!statuses) {
+            if (!statuses?.length) {
                 return true;
             }
 
-            const thisStatus = row.getValue<Expense['status']>(id);
-            const statusIsInFilteredList = statuses.some(
-                (status) => status === thisStatus,
-            );
-
-            return statusIsInFilteredList;
+            const thisStatus = row.getValue<ExpenseStatus>(id);
+            return statuses.includes(thisStatus);
         },
     }),
     columnHelper.display({

@@ -4,10 +4,9 @@ import { TaskReportModal } from '@/components/Modals/TaskReportModal';
 import { useState } from 'react';
 import { Table } from '@tanstack/react-table';
 import { TasksQuery } from '@/api/graphql';
-import { ElementType } from '@/types';
 
 type Props = {
-    table: Table<ElementType<TasksQuery['tasks']>>;
+    table: Table<NonNullable<TasksQuery['tasks']>[number]>;
 };
 
 export function TaskReportButton({ table }: Props) {

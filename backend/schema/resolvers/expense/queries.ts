@@ -1,8 +1,29 @@
-import { ExpenseStatusPothosRef, ExpenseTypePothosRef } from './refs';
+import { Expense } from '@prisma/client';
+
+import { ExpenseStatusPothosRef, ExpenseTypePothosRef, ExpensePothosRef } from './refs';
 
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
+
+interface ExpensesResponse {
+    items: Expense[];
+    total: number;
+}
+
+const ExpensesResponseRef = builder.objectRef<ExpensesResponse>('ExpensesResponse');
+
+ExpensesResponseRef.implement({
+    fields: (t) => ({
+        items: t.field({
+            type: [ExpensePothosRef],
+            resolve: (parent: ExpensesResponse) => parent.items,
+        }),
+        total: t.int({
+            resolve: (parent: ExpensesResponse) => parent.total,
+        }),
+    }),
+});
 
 builder.queryFields((t) => ({
     myExpenseById: t.prismaField({
@@ -97,41 +118,73 @@ builder.queryFields((t) => ({
     }),
     expenses: t.prismaField({
         type: ['Expense'],
-        nullable: true,
         args: {
             registeredBy: t.arg({
                 type: ['String'],
                 required: false,
             }),
             status: t.arg({
-                type: ExpenseStatusPothosRef,
+                type: [ExpenseStatusPothosRef],
                 required: false,
             }),
             expenseType: t.arg({
-                type: ExpenseTypePothosRef,
+                type: [ExpenseTypePothosRef],
+                required: false,
+            }),
+            skip: t.arg.int({ required: false }),
+            take: t.arg.int({ required: false }),
+        },
+        resolve: async (query, _parent, { skip, take, ...filters }) => {
+            return prisma.expense.findManyUndeleted({
+                ...query,
+                where: {
+                    deleted: false,
+                    ...(filters.status?.length && {
+                        status: { in: filters.status },
+                    }),
+                    ...(filters.expenseType?.length && {
+                        expenseType: { in: filters.expenseType },
+                    }),
+                    ...(filters.registeredBy?.length && {
+                        registeredById: { in: filters.registeredBy },
+                    }),
+                },
+                skip: skip || 0,
+                take: take || 10,
+                orderBy: { createdAt: 'desc' },
+            });
+        },
+    }),
+    expensesCount: t.int({
+        args: {
+            registeredBy: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            status: t.arg({
+                type: [ExpenseStatusPothosRef],
+                required: false,
+            }),
+            expenseType: t.arg({
+                type: [ExpenseTypePothosRef],
                 required: false,
             }),
         },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                {
-                    or: ['IsAdministrativoContable'],
+        resolve: async (_parent, filters) => {
+            return prisma.expense.count({
+                where: {
+                    deleted: false,
+                    ...(filters.status?.length && {
+                        status: { in: filters.status },
+                    }),
+                    ...(filters.expenseType?.length && {
+                        expenseType: { in: filters.expenseType },
+                    }),
+                    ...(filters.registeredBy?.length && {
+                        registeredById: { in: filters.registeredBy },
+                    }),
                 },
-            ],
-        },
-        resolve: async (query) => {
-            const expenses = await prisma.expense.findManyUndeleted({
-                orderBy: {
-                    createdAt: 'desc',
-                },
-                ...query,
             });
-            if (!expenses) {
-                return null;
-            }
-
-            return expenses;
         },
     }),
 }));

@@ -9,52 +9,118 @@ import { prisma } from 'lib/prisma';
 builder.queryFields((t) => ({
     tasks: t.prismaField({
         type: ['Task'],
-        authz: {
-            compositeRules: [
-                {
-                    and: ['IsAuthenticated'],
-                },
-                {
-                    or: [
-                        'IsAdministrativoTecnico',
-                        'IsAuditor',
-                        'IsAdministrativoContable',
-                    ],
-                },
-            ],
-        },
         args: {
-            city: t.arg.string({
-                required: false,
-            }),
-            assigneed: t.arg({
+            city: t.arg({
                 type: ['String'],
                 required: false,
             }),
-            business: t.arg.string({
+            assigned: t.arg({
+                type: ['String'],
                 required: false,
             }),
-            client: t.arg.string({
+            business: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            client: t.arg({
+                type: ['String'],
                 required: false,
             }),
             status: t.arg({
-                type: TaskStatusPothosRef,
+                type: [TaskStatusPothosRef],
                 required: false,
             }),
             taskType: t.arg({
-                type: TaskTypePothosRef,
+                type: [TaskTypePothosRef],
+                required: false,
+            }),
+            skip: t.arg.int({ required: false }),
+            take: t.arg.int({ required: false }),
+        },
+        resolve: async (query, _parent, { skip, take, ...filters }) => {
+            return removeDeleted(
+                await prisma.task.findManyUndeleted({
+                    ...query,
+                    where: {
+                        deleted: false,
+                        ...(filters.status?.length && {
+                            status: { in: filters.status },
+                        }),
+                        ...(filters.taskType?.length && {
+                            taskType: { in: filters.taskType },
+                        }),
+                        ...(filters.business?.length && {
+                            businessId: { in: filters.business },
+                        }),
+                        ...(filters.city?.length && {
+                            branch: { cityId: { in: filters.city } },
+                        }),
+                        ...(filters.client?.length && {
+                            branch: { clientId: { in: filters.client } },
+                        }),
+                        ...(filters.assigned?.length && {
+                            assignedIDs: { hasSome: filters.assigned },
+                        }),
+                    },
+                    skip: skip || 0,
+                    take: take || 10,
+                    orderBy: { createdAt: 'desc' },
+                }),
+            );
+        },
+    }),
+    tasksCount: t.int({
+        args: {
+            city: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            assigned: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            business: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            client: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            status: t.arg({
+                type: [TaskStatusPothosRef],
+                required: false,
+            }),
+            taskType: t.arg({
+                type: [TaskTypePothosRef],
                 required: false,
             }),
         },
-        resolve: async (query) => {
-            const tasks = await prisma.task.findManyUndeleted({
-                orderBy: {
-                    createdAt: 'desc',
+        resolve: async (_parent, filters) => {
+            return prisma.task.count({
+                where: {
+                    deleted: false,
+                    ...(filters.status?.length && {
+                        status: { in: filters.status },
+                    }),
+                    ...(filters.taskType?.length && {
+                        taskType: { in: filters.taskType },
+                    }),
+                    ...(filters.business?.length && {
+                        businessId: { in: filters.business },
+                    }),
+                    ...(filters.city?.length && {
+                        branch: { cityId: { in: filters.city } },
+                    }),
+                    ...(filters.client?.length && {
+                        branch: { clientId: { in: filters.client } },
+                    }),
+
+                    ...(filters.assigned?.length && {
+                        assignedIDs: { hasSome: filters.assigned },
+                    }),
                 },
-                ...query,
             });
-            const filteredTasks = removeDeleted(tasks);
-            return filteredTasks;
         },
     }),
     taskById: t.prismaField({

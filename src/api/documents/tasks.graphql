@@ -1,18 +1,22 @@
 query tasks(
-    $assigneed: [String!]
-    $business: String
-    $city: String
-    $status: TaskStatus
-    $client: String
-    $taskType: TaskType
+    $assigned: [String!]
+    $business: [String!]
+    $city: [String!]
+    $status: [TaskStatus!]
+    $client: [String!]
+    $taskType: [TaskType!]
+    $skip: Int
+    $take: Int
 ) {
     tasks(
-        assigneed: $assigneed
+        assigned: $assigned
         business: $business
-        city: $city
         status: $status
+        city: $city
         client: $client
         taskType: $taskType
+        skip: $skip
+        take: $take
     ) {
         id
         createdAt
@@ -51,7 +55,17 @@ query tasks(
         taskType
         status
     }
+    tasksCount(
+        assigned: $assigned
+        business: $business
+        city: $city
+        status: $status
+        client: $client
+        taskType: $taskType
+
+    )
 }
+
 
 query GetTask($id: String!) {
     taskById(id: $id) {
