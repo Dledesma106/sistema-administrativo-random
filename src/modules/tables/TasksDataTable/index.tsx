@@ -1,17 +1,12 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { Role } from '@prisma/client';
+import { Role, TaskStatus, TaskType } from '@prisma/client';
 import {
     ColumnFiltersState,
-    SortingState,
     flexRender,
     getCoreRowModel,
-    getFacetedRowModel,
-    getFacetedUniqueValues as globalGetFacetedUniqueValues,
-    getFilteredRowModel,
     getPaginationRowModel,
-    getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
@@ -45,7 +40,7 @@ import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetTasks } from '@/hooks/api/tasks/useGetTasks';
 import { routesBuilder } from '@/lib/routes';
 
-type TableItem = TasksQuery['tasks'][0];
+type TableItem = TasksQuery['tasks'][number];
 
 type Props = {
     cities: NonNullable<GetCitiesQuery['cities']>;
@@ -56,7 +51,6 @@ type Props = {
 };
 
 export default function TasksDataTable(props: Props): JSX.Element {
-    const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
         if (typeof window === 'undefined') {
             return [];
@@ -66,62 +60,40 @@ export default function TasksDataTable(props: Props): JSX.Element {
     });
 
     const router = useRouter();
-    const tasksQuery = useGetTasks({
-        assigneed: null,
-        business: null,
-        city: null,
-        client: null,
-        status: null,
-        taskType: null,
+    const [page, setPage] = useState(0);
+    const pageSize = 10;
+
+    const { data, error } = useGetTasks({
+        skip: page * pageSize,
+        take: pageSize,
+        assigned:
+            (columnFilters.find((f) => f.id === 'assigned')?.value as string[]) || null,
+        business:
+            (columnFilters.find((f) => f.id === 'business')?.value as string[]) || null,
+
+        city: (columnFilters.find((f) => f.id === 'city')?.value as string[]) || null,
+        status:
+            (columnFilters.find((f) => f.id === 'status')?.value as TaskStatus[]) || null,
+        client: (columnFilters.find((f) => f.id === 'client')?.value as string[]) || null,
+        taskType:
+            (columnFilters.find((f) => f.id === 'taskType')?.value as TaskType[]) || null,
     });
+
     const { user } = useUserContext();
-    const [tasks, setTasks] = useState(tasksQuery.data?.tasks);
-
     const columns = useTasksTableColumns();
-
-    useEffect(() => {
-        setTasks(tasksQuery.data?.tasks);
-    }, [tasksQuery.data?.tasks]);
 
     useEffect(() => {
         localStorage.setItem('tasksTableFilters', JSON.stringify(columnFilters));
     }, [columnFilters]);
 
     const table = useReactTable<TableItem>({
-        data: tasks || [],
-        columns: columns,
-        onSortingChange: setSorting,
+        data: data?.tasks || [],
+        columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        onColumnFiltersChange: setColumnFilters,
-        getFilteredRowModel: getFilteredRowModel(),
-        getFacetedRowModel: getFacetedRowModel(),
-        getFacetedUniqueValues: (table, columnId) => {
-            if (columnId === 'assigned') {
-                return () => {
-                    const uniqueValuesMap = new Map<any, number>();
-                    const rows = table.getCoreRowModel().rows;
-
-                    rows.forEach((row) => {
-                        const assigned: TableItem['assigned'] = row.getValue(columnId);
-
-                        for (const user of assigned) {
-                            const valueInMap = uniqueValuesMap.get(user.id);
-
-                            if (typeof valueInMap !== 'undefined') {
-                                uniqueValuesMap.set(user.id, valueInMap + 1);
-                            } else {
-                                uniqueValuesMap.set(user.id, 1);
-                            }
-                        }
-                    });
-
-                    return uniqueValuesMap;
-                };
-            }
-
-            return globalGetFacetedUniqueValues<TableItem>()(table, columnId);
+        onColumnFiltersChange: (filters) => {
+            setColumnFilters(filters);
+            setPage(0);
         },
         state: {
             columnVisibility: {
@@ -129,103 +101,104 @@ export default function TasksDataTable(props: Props): JSX.Element {
                 business: false,
                 client: false,
             },
-            sorting,
             columnFilters,
         },
     });
 
-    if (tasks) {
+    if (error) {
+        return <div>Hubo un error al cargar las tareas</div>;
+    }
+
+    if (!data) {
         return (
             <div className="space-y-4 pb-8">
-                <div className="flex justify-between">
-                    <TypographyH1>Tareas</TypographyH1>
-                    <div className="flex gap-2">
-                        {(user.roles.includes(Role.AdministrativoContable) ||
-                            user.roles.includes(Role.Auditor)) && (
-                            <TaskReportButton table={table} />
-                        )}
-                        {user.roles.includes(Role.AdministrativoTecnico) && (
-                            <Button asChild className="flex items-center space-x-2">
-                                <Link href={routesBuilder.tasks.create()}>
-                                    <BsPlus size="20" />
-                                    <span>Delegar tarea</span>
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                </div>
                 <TasksDataTableToolbar table={table} {...props} />
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader className="border-b bg-white">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <TableHead key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext(),
-                                                      )}
-                                            </TableHead>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        onClick={() =>
-                                            router.push(
-                                                routesBuilder.tasks.details(
-                                                    row.original.id,
-                                                ),
-                                            )
-                                        }
-                                        data-state={row.getIsSelected() && 'selected'}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No se encontraron resultados.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                <DataTablePagination table={table} />
+                <TableSkeleton />
             </div>
         );
     }
 
-    if (tasksQuery.error) {
-        return <div>Hubo un error al cargar las tareas</div>;
-    }
-
     return (
         <div className="space-y-4 pb-8">
+            <div className="flex justify-between">
+                <TypographyH1>Tareas</TypographyH1>
+                <div className="flex gap-2">
+                    {(user.roles.includes(Role.AdministrativoContable) ||
+                        user.roles.includes(Role.Auditor)) && (
+                        <TaskReportButton table={table} />
+                    )}
+                    {user.roles.includes(Role.AdministrativoTecnico) && (
+                        <Button asChild className="flex items-center space-x-2">
+                            <Link href={routesBuilder.tasks.create()}>
+                                <BsPlus size="20" />
+                                <span>Delegar tarea</span>
+                            </Link>
+                        </Button>
+                    )}
+                </div>
+            </div>
             <TasksDataTableToolbar table={table} {...props} />
-            <TableSkeleton />
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader className="border-b bg-white">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead key={header.id}>
+                                        {header.isPlaceholder
+                                            ? null
+                                            : flexRender(
+                                                  header.column.columnDef.header,
+                                                  header.getContext(),
+                                              )}
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                                <TableRow
+                                    key={row.id}
+                                    onClick={() =>
+                                        router.push(
+                                            routesBuilder.tasks.details(row.original.id),
+                                        )
+                                    }
+                                    data-state={row.getIsSelected() && 'selected'}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext(),
+                                            )}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={columns.length}
+                                    className="h-24 text-center"
+                                >
+                                    No se encontraron resultados.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+
+            <DataTablePagination
+                table={table}
+                totalCount={data?.tasksCount || 0}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+            />
         </div>
     );
 }

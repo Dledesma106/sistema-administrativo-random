@@ -193,6 +193,12 @@ export const ExpenseType = {
 } as const;
 
 export type ExpenseType = (typeof ExpenseType)[keyof typeof ExpenseType];
+export type ExpensesResponse = {
+    __typename?: 'ExpensesResponse';
+    items: Array<Expense>;
+    total: Scalars['Int'];
+};
+
 export type Image = {
     __typename?: 'Image';
     id: Scalars['ID'];
@@ -500,7 +506,8 @@ export type Query = {
     clientBranches: Array<Branch>;
     clients: Array<Client>;
     expenseById: Maybe<Expense>;
-    expenses: Maybe<Array<Expense>>;
+    expenses: Array<Expense>;
+    expensesCount: Scalars['Int'];
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
     myAssignedTasks: Array<Task>;
@@ -513,6 +520,7 @@ export type Query = {
     taskById: Maybe<Task>;
     taskTypes: Array<TaskType>;
     tasks: Array<Task>;
+    tasksCount: Scalars['Int'];
     technicians: Array<User>;
     user: User;
     users: Array<User>;
@@ -550,9 +558,17 @@ export type QueryExpenseByIdArgs = {
 };
 
 export type QueryExpensesArgs = {
-    expenseType: InputMaybe<ExpenseType>;
+    expenseType: InputMaybe<Array<ExpenseType>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
-    status: InputMaybe<ExpenseStatus>;
+    skip: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<Array<ExpenseStatus>>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryExpensesCountArgs = {
+    expenseType: InputMaybe<Array<ExpenseType>>;
+    registeredBy: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<Array<ExpenseStatus>>;
 };
 
 export type QueryMyAssignedTaskByIdArgs = {
@@ -576,12 +592,23 @@ export type QueryTaskByIdArgs = {
 };
 
 export type QueryTasksArgs = {
-    assigneed: InputMaybe<Array<Scalars['String']>>;
-    business: InputMaybe<Scalars['String']>;
-    city: InputMaybe<Scalars['String']>;
-    client: InputMaybe<Scalars['String']>;
-    status: InputMaybe<TaskStatus>;
-    taskType: InputMaybe<TaskType>;
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    business: InputMaybe<Array<Scalars['String']>>;
+    city: InputMaybe<Array<Scalars['String']>>;
+    client: InputMaybe<Array<Scalars['String']>>;
+    skip: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<Array<TaskStatus>>;
+    take: InputMaybe<Scalars['Int']>;
+    taskType: InputMaybe<Array<TaskType>>;
+};
+
+export type QueryTasksCountArgs = {
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    business: InputMaybe<Array<Scalars['String']>>;
+    city: InputMaybe<Array<Scalars['String']>>;
+    client: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<Array<TaskStatus>>;
+    taskType: InputMaybe<Array<TaskType>>;
 };
 
 export type QueryUserArgs = {
@@ -1076,18 +1103,20 @@ export type GetExpenseQuery = {
 
 export type GetExpensesQueryVariables = Exact<{
     registeredBy: InputMaybe<Array<Scalars['String']>>;
-    status: InputMaybe<ExpenseStatus>;
-    expenseType: InputMaybe<ExpenseType>;
+    status: InputMaybe<Array<ExpenseStatus>>;
+    expenseType: InputMaybe<Array<ExpenseType>>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
 }>;
 
 export type GetExpensesQuery = {
     __typename?: 'Query';
+    expensesCount: number;
     expenses: Array<{
         __typename?: 'Expense';
-        amount: number;
-        createdAt: any;
-        expenseType: ExpenseType;
         id: string;
+        amount: number;
+        expenseType: ExpenseType;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
         installments: number | null;
@@ -1111,7 +1140,7 @@ export type GetExpensesQuery = {
         } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
         image: { __typename?: 'Image'; id: string; url: string; key: string };
-    }> | null;
+    }>;
 };
 
 export type DeleteExpenseMutationVariables = Exact<{
@@ -1331,16 +1360,19 @@ export type DeleteProvinceMutation = {
 };
 
 export type TasksQueryVariables = Exact<{
-    assigneed: InputMaybe<Array<Scalars['String']>>;
-    business: InputMaybe<Scalars['String']>;
-    city: InputMaybe<Scalars['String']>;
-    status: InputMaybe<TaskStatus>;
-    client: InputMaybe<Scalars['String']>;
-    taskType: InputMaybe<TaskType>;
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    business: InputMaybe<Array<Scalars['String']>>;
+    city: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<Array<TaskStatus>>;
+    client: InputMaybe<Array<Scalars['String']>>;
+    taskType: InputMaybe<Array<TaskType>>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
 }>;
 
 export type TasksQuery = {
     __typename?: 'Query';
+    tasksCount: number;
     tasks: Array<{
         __typename?: 'Task';
         id: string;
@@ -3630,8 +3662,14 @@ export const GetExpensesDocument = {
                         name: { kind: 'Name', value: 'status' },
                     },
                     type: {
-                        kind: 'NamedType',
-                        name: { kind: 'Name', value: 'ExpenseStatus' },
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'ExpenseStatus' },
+                            },
+                        },
                     },
                 },
                 {
@@ -3641,9 +3679,25 @@ export const GetExpensesDocument = {
                         name: { kind: 'Name', value: 'expenseType' },
                     },
                     type: {
-                        kind: 'NamedType',
-                        name: { kind: 'Name', value: 'ExpenseType' },
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'ExpenseType' },
+                            },
+                        },
                     },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
             ],
             selectionSet: {
@@ -3677,23 +3731,35 @@ export const GetExpensesDocument = {
                                     name: { kind: 'Name', value: 'expenseType' },
                                 },
                             },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
                         ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'amount' },
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'createdAt' },
-                                },
-                                {
-                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'expenseType' },
                                 },
-                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'paySource' },
@@ -3866,6 +3932,36 @@ export const GetExpensesDocument = {
                                 },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'expensesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'registeredBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'registeredBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseType' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseType' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -5087,7 +5183,7 @@ export const TasksDocument = {
                     kind: 'VariableDefinition',
                     variable: {
                         kind: 'Variable',
-                        name: { kind: 'Name', value: 'assigneed' },
+                        name: { kind: 'Name', value: 'assigned' },
                     },
                     type: {
                         kind: 'ListType',
@@ -5106,12 +5202,30 @@ export const TasksDocument = {
                         kind: 'Variable',
                         name: { kind: 'Name', value: 'business' },
                     },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
                 },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'city' } },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
                 },
                 {
                     kind: 'VariableDefinition',
@@ -5120,8 +5234,14 @@ export const TasksDocument = {
                         name: { kind: 'Name', value: 'status' },
                     },
                     type: {
-                        kind: 'NamedType',
-                        name: { kind: 'Name', value: 'TaskStatus' },
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'TaskStatus' },
+                            },
+                        },
                     },
                 },
                 {
@@ -5130,7 +5250,16 @@ export const TasksDocument = {
                         kind: 'Variable',
                         name: { kind: 'Name', value: 'client' },
                     },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
                 },
                 {
                     kind: 'VariableDefinition',
@@ -5139,9 +5268,25 @@ export const TasksDocument = {
                         name: { kind: 'Name', value: 'taskType' },
                     },
                     type: {
-                        kind: 'NamedType',
-                        name: { kind: 'Name', value: 'TaskType' },
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'TaskType' },
+                            },
+                        },
                     },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
             ],
             selectionSet: {
@@ -5153,10 +5298,10 @@ export const TasksDocument = {
                         arguments: [
                             {
                                 kind: 'Argument',
-                                name: { kind: 'Name', value: 'assigneed' },
+                                name: { kind: 'Name', value: 'assigned' },
                                 value: {
                                     kind: 'Variable',
-                                    name: { kind: 'Name', value: 'assigneed' },
+                                    name: { kind: 'Name', value: 'assigned' },
                                 },
                             },
                             {
@@ -5169,18 +5314,18 @@ export const TasksDocument = {
                             },
                             {
                                 kind: 'Argument',
-                                name: { kind: 'Name', value: 'city' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'city' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
                                 name: { kind: 'Name', value: 'status' },
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'city' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'city' },
                                 },
                             },
                             {
@@ -5197,6 +5342,22 @@ export const TasksDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'taskType' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
                                 },
                             },
                         ],
@@ -5374,6 +5535,60 @@ export const TasksDocument = {
                                 },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'tasksCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'assigned' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'assigned' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'business' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'business' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'city' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'city' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'client' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'client' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'taskType' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'taskType' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },

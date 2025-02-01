@@ -36,7 +36,7 @@ export function ExpensesDataTableToolbar<TData>({
             />
 
             <DataTableFacetedFilter
-                column={table.getColumn('expenseStatus')}
+                column={table.getColumn('status')}
                 title="Estado"
                 options={Object.values(ExpenseStatus).map((value) => ({
                     label: pascalCaseToSpaces(value),

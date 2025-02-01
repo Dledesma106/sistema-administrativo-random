@@ -1,6 +1,7 @@
 import { CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons';
 import { Column } from '@tanstack/react-table';
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 
 import { Badge } from '@/components/ui/Badges/badge';
 import { Button } from '@/components/ui/button';
@@ -25,45 +26,59 @@ interface DataTableFacetedFilterProps<TData, TValue> {
         value: string;
         icon?: React.ComponentType<{ className?: string }>;
     }[];
-    onSelect?: (value: string[] | undefined) => void;
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
     column,
     title,
     options,
-    onSelect,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-    const facets = column?.getFacetedUniqueValues();
-    const selectedValues = new Set(column?.getFilterValue() as string[]);
+    const [open, setOpen] = useState(false);
+    const [localSelectedValues, setLocalSelectedValues] = useState<Set<string>>(
+        new Set((column?.getFilterValue() as string[]) || []),
+    );
+
+    // Sincronizar valores locales cuando cambian los filtros externos
+    useEffect(() => {
+        setLocalSelectedValues(new Set((column?.getFilterValue() as string[]) || []));
+    }, [column?.getFilterValue()]);
+
+    // Aplicar filtros cuando se cierra el popover
+    const handleOpenChange = (isOpen: boolean) => {
+        setOpen(isOpen);
+        if (!isOpen) {
+            const filterValues = Array.from(localSelectedValues);
+            column?.setFilterValue(filterValues.length ? filterValues : undefined);
+        }
+    };
 
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={handleOpenChange} modal={false}>
             <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="h-8 border-dashed">
                     <PlusCircledIcon className="mr-2 h-4 w-4" />
                     {title}
-                    {selectedValues?.size > 0 && (
+                    {localSelectedValues?.size > 0 && (
                         <>
                             <Separator orientation="vertical" className="mx-2 h-4" />
                             <Badge
                                 variant="secondary"
                                 className="rounded-sm px-1 font-normal lg:hidden"
                             >
-                                {selectedValues.size}
+                                {localSelectedValues.size}
                             </Badge>
                             <div className="hidden space-x-1 lg:flex">
-                                {selectedValues.size > 2 ? (
+                                {localSelectedValues.size > 2 ? (
                                     <Badge
                                         variant="secondary"
                                         className="rounded-sm px-1 font-normal"
                                     >
-                                        {selectedValues.size} selected
+                                        {localSelectedValues.size} seleccionados
                                     </Badge>
                                 ) : (
                                     options
                                         .filter((option) =>
-                                            selectedValues.has(option.value),
+                                            localSelectedValues.has(option.value),
                                         )
                                         .map((option) => (
                                             <Badge
@@ -87,29 +102,20 @@ export function DataTableFacetedFilter<TData, TValue>({
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => {
-                                const isSelected = selectedValues.has(option.value);
+                                const isSelected = localSelectedValues.has(option.value);
                                 return (
                                     <CommandItem
                                         key={option.value}
                                         onSelect={() => {
+                                            const newSelectedValues = new Set(
+                                                localSelectedValues,
+                                            );
                                             if (isSelected) {
-                                                selectedValues.delete(option.value);
+                                                newSelectedValues.delete(option.value);
                                             } else {
-                                                selectedValues.add(option.value);
+                                                newSelectedValues.add(option.value);
                                             }
-
-                                            const filterValues =
-                                                Array.from(selectedValues);
-                                            const nextValue =
-                                                filterValues.length > 0
-                                                    ? filterValues
-                                                    : undefined;
-
-                                            column?.setFilterValue(nextValue);
-
-                                            if (onSelect) {
-                                                onSelect(nextValue);
-                                            }
+                                            setLocalSelectedValues(newSelectedValues);
                                         }}
                                     >
                                         <div
@@ -126,29 +132,21 @@ export function DataTableFacetedFilter<TData, TValue>({
                                             <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         )}
                                         <span>{option.label}</span>
-                                        {facets?.get(option.value) && (
-                                            <span className="ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs">
-                                                {facets.get(option.value)}
-                                            </span>
-                                        )}
                                     </CommandItem>
                                 );
                             })}
                         </CommandGroup>
-                        {selectedValues.size > 0 && (
+                        {localSelectedValues.size > 0 && (
                             <>
                                 <CommandSeparator />
                                 <CommandGroup>
                                     <CommandItem
                                         onSelect={() => {
-                                            column?.setFilterValue(undefined);
-                                            if (onSelect) {
-                                                onSelect(undefined);
-                                            }
+                                            setLocalSelectedValues(new Set());
                                         }}
                                         className="justify-center text-center"
                                     >
-                                        Clear filters
+                                        Limpiar filtros
                                     </CommandItem>
                                 </CommandGroup>
                             </>

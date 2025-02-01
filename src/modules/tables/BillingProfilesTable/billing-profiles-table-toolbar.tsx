@@ -20,9 +20,14 @@ export function BillingProfilesDataTableToolbar<TData>({
                 <Label>Buscar empresa</Label>
                 <Input
                     placeholder="Filtrar por empresa..."
-                    value={(table.getColumn('company')?.getFilterValue() as string) ?? ''}
+                    value={
+                        (table.getColumn('businessName')?.getFilterValue() as string) ??
+                        ''
+                    }
                     onChange={(event) =>
-                        table.getColumn('company')?.setFilterValue(event.target.value)
+                        table
+                            .getColumn('businessName')
+                            ?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />

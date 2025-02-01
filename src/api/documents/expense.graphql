@@ -32,12 +32,23 @@ query GetExpense($id: String!) {
     }
 }
 
-query GetExpenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType: ExpenseType) {
-    expenses(registeredBy: $registeredBy, status: $status, expenseType: $expenseType) {
-        amount
-        createdAt
-        expenseType
+query GetExpenses(
+    $registeredBy: [String!], 
+    $status: [ExpenseStatus!], 
+    $expenseType: [ExpenseType!],
+    $skip: Int,
+    $take: Int
+) {
+    expenses(
+        registeredBy: $registeredBy, 
+        status: $status, 
+        expenseType: $expenseType,
+        skip: $skip,
+        take: $take
+    ) {
         id
+        amount
+        expenseType
         paySource
         paySourceBank
         installments
@@ -73,6 +84,11 @@ query GetExpenses($registeredBy: [String!], $status: ExpenseStatus, $expenseType
         }
         status
     }
+    expensesCount(
+        registeredBy: $registeredBy, 
+        status: $status, 
+        expenseType: $expenseType
+    )
 }
 
 mutation DeleteExpense ($id: String!, $taskId: String!) {

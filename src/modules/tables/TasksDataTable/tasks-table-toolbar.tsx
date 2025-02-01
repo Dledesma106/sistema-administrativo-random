@@ -44,7 +44,7 @@ export function TasksDataTableToolbar<TData>({
 
             <DataTableFacetedFilter
                 column={table.getColumn('branch')}
-                title="Sucursal"
+                title="Localidad"
                 options={cities.map((city) => ({
                     value: city.id.toString(),
                     label: city.name,
