@@ -38,11 +38,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     const router = useRouter();
     const { isLoggedIn, logoutUser } = useUserContext();
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (!isLoggedIn && router.pathname !== '/login') {
             router.push('/login');
             logoutUser();
         }
-    }, [isLoggedIn, logoutUser]);
+    }, [isLoggedIn, logoutUser, router]);
 
     useEffect(() => {
         const onRouteChangeStart = () => {
