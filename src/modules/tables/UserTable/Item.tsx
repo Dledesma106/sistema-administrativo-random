@@ -6,12 +6,12 @@ import { CgPassword } from 'react-icons/cg';
 
 import { GetUsersQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
+import { Badge } from '@/components/ui/Badges/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
 import { useDeleteUser } from '@/hooks/api/user/useDeleteUser';
 import { useSendNewUserRandomPassword } from '@/hooks/api/user/useSendNewUserRandomPassword';
 import useLoading from '@/hooks/useLoading';
-import { slugify } from '@/lib/utils';
 
 type User = GetUsersQuery['users'][0];
 
@@ -58,7 +58,7 @@ export default function Item({ user, deleteUser }: Props): JSX.Element {
     };
 
     const handleNavigateEdit = async (): Promise<void> => {
-        await router.push(`/tech-admin/users/${slugify(user.fullName)}`);
+        await router.push(`/tech-admin/users/${user.id}/edit`);
     };
 
     async function reGeneratePassword(): Promise<void> {
@@ -83,11 +83,23 @@ export default function Item({ user, deleteUser }: Props): JSX.Element {
 
     return (
         <TableRow className="border-b">
-            <TableCell>{user.firstName}</TableCell>
-            <TableCell>{user.lastName}</TableCell>
-            <TableCell>{user.email}</TableCell>
+            <TableCell>
+                {user.firstName} {user.lastName}
+            </TableCell>
             <TableCell>{user.city?.name}</TableCell>
-            <TableCell>{user.roles.join(', ')}</TableCell>
+
+            <TableCell>{user.email}</TableCell>
+            <TableCell>
+                <div className="-ml-1 -mt-1 flex flex-wrap">
+                    {user.roles?.map((rol) => {
+                        return (
+                            <Badge key={rol} className="ml-1 mt-1">
+                                {rol}
+                            </Badge>
+                        );
+                    })}
+                </div>
+            </TableCell>
             <TableCell className="w-40">
                 <div className="flex items-center justify-center gap-2">
                     <button

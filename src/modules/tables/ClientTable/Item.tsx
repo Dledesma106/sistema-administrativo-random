@@ -9,7 +9,6 @@ import Modal from '@/components/Modal';
 import { TableCell, TableRow } from '@/components/ui/table';
 import useAlert from '@/context/alertContext/useAlert';
 import { useDeleteClient } from '@/hooks/api/client/useDeleteClient';
-import { slugify } from '@/lib/utils';
 
 interface Props {
     client: GetClientsQuery['clients'][0];
@@ -52,7 +51,7 @@ export default function Item({ client, deleteClient }: Props): JSX.Element {
     };
 
     const handleNavigateEdit = async (): Promise<void> => {
-        await router.push(`/tech-admin/clients/${slugify(client.name)}`);
+        await router.push(`/tech-admin/clients/${client.id}`);
     };
 
     const handleNavigateBranches = async (): Promise<void> => {

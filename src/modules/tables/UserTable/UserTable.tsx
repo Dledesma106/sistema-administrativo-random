@@ -3,11 +3,9 @@ import { useState } from 'react';
 import UserItemActions from './Item';
 
 import { GetUsersQuery } from '@/api/graphql';
-import { Badge } from '@/components/ui/Badges/badge';
 import {
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableHeader,
     TableRow,
@@ -38,27 +36,12 @@ export default function UserTable({ users }: Props): JSX.Element {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {tableUsers.map((user, index) => (
-                        <TableRow key={index}>
-                            <TableCell>
-                                {user.firstName} {user.lastName}
-                            </TableCell>
-                            <TableCell>{user.city?.name}</TableCell>
-
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                                <div className="-ml-1 -mt-1 flex flex-wrap">
-                                    {user.roles?.map((rol) => {
-                                        return (
-                                            <Badge key={rol} className="ml-1 mt-1">
-                                                {rol}
-                                            </Badge>
-                                        );
-                                    })}
-                                </div>
-                            </TableCell>
-                            <UserItemActions user={user} deleteUser={deleteUser} />
-                        </TableRow>
+                    {tableUsers.map((user) => (
+                        <UserItemActions
+                            user={user}
+                            deleteUser={deleteUser}
+                            key={user.id}
+                        />
                     ))}
                 </TableBody>
             </Table>

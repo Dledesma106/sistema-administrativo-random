@@ -1,10 +1,10 @@
 import { createColumnHelper } from '@tanstack/react-table';
+import { format } from 'date-fns';
 
 import { PreventivesTableRowActions } from './preventives-table-row-actions';
 
 import { GetPreventivesQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
-import { dmyDateString } from '@/lib/utils';
 
 type Preventive = GetPreventivesQuery['preventives'][0];
 
@@ -134,7 +134,7 @@ export const PREVENTIVES_TABLE_COLUMNS = [
             const preventive = props.row.original;
 
             return preventive.lastDoneAt
-                ? dmyDateString(new Date(preventive.lastDoneAt))
+                ? format(new Date(preventive.lastDoneAt), 'dd/MM/yyyy')
                 : '';
         },
     }),
@@ -157,7 +157,7 @@ export const PREVENTIVES_TABLE_COLUMNS = [
             const preventive = props.row.original;
 
             return preventive.batteryChangedAt
-                ? dmyDateString(new Date(preventive.batteryChangedAt))
+                ? format(new Date(preventive.batteryChangedAt), 'dd/MM/yyyy')
                 : '';
         },
     }),
