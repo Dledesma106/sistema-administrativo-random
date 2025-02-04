@@ -11,6 +11,7 @@ import {
 import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
@@ -43,7 +44,7 @@ export function TasksDataTableToolbar<TData>({
             />
 
             <DataTableFacetedFilter
-                column={table.getColumn('branch')}
+                column={table.getColumn('city')}
                 title="Localidad"
                 options={cities.map((city) => ({
                     value: city.id.toString(),
@@ -74,53 +75,21 @@ export function TasksDataTableToolbar<TData>({
             />
 
             <DataTableFacetedFilter
-                column={table.getColumn('taskStatus')}
+                column={table.getColumn('status')}
                 title="Estado"
-                options={[
-                    {
-                        value: TaskStatus.SinAsignar,
-                        label: 'Sin asignar',
-                    },
-                    {
-                        value: TaskStatus.Pendiente,
-                        label: 'Pendiente',
-                    },
-                    {
-                        value: TaskStatus.Finalizada,
-                        label: 'Finalizada',
-                    },
-                    {
-                        value: TaskStatus.Aprobada,
-                        label: 'Aprobada',
-                    },
-                ]}
+                options={Object.values(TaskStatus).map((status) => ({
+                    value: status,
+                    label: capitalizeFirstLetter(pascalCaseToSpaces(status)),
+                }))}
             />
 
             <DataTableFacetedFilter
                 column={table.getColumn('taskType')}
                 title="Tipo"
-                options={[
-                    {
-                        value: TaskType.Preventivo,
-                        label: 'Preventivo',
-                    },
-                    {
-                        value: TaskType.Correctivo,
-                        label: 'Correctivo',
-                    },
-                    {
-                        value: TaskType.Instalacion,
-                        label: 'Instalacion',
-                    },
-                    {
-                        value: TaskType.Desmonte,
-                        label: 'Desmonte',
-                    },
-                    {
-                        value: TaskType.Actualizacion,
-                        label: 'Actualizacion',
-                    },
-                ]}
+                options={Object.values(TaskType).map((type) => ({
+                    value: type,
+                    label: capitalizeFirstLetter(pascalCaseToSpaces(type)),
+                }))}
             />
 
             {isFiltered && (

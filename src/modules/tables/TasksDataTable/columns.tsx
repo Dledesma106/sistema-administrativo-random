@@ -1,11 +1,13 @@
 import { TaskStatus, TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
+import { format } from 'date-fns';
 
 import { TasksTableRowActions } from './tasks-table-row-actions';
 
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
-import { dmyDateString, pascalCaseToSpaces } from '@/lib/utils';
+import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
+import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
 
 type Task = TasksQuery['tasks'][number];
 
@@ -13,7 +15,7 @@ const columnHelper = createColumnHelper<TasksQuery['tasks'][number]>();
 
 export const useTasksTableColumns = () => [
     columnHelper.accessor((row) => row, {
-        id: 'location',
+        id: 'city',
         cell: (info) => {
             const task = info.row.original;
 
@@ -31,6 +33,14 @@ export const useTasksTableColumns = () => [
             );
         },
         header: 'Locación',
+        filterFn: (row, id, cityIds: string[]) => {
+            if (!cityIds?.length) {
+                return true;
+            }
+
+            const task = row.original;
+            return cityIds.includes(task.branch?.city?.id ?? '');
+        },
     }),
     columnHelper.accessor((row) => row.description, {
         id: 'description',
@@ -78,18 +88,18 @@ export const useTasksTableColumns = () => [
             return clientsIDs.includes(task.branch?.client?.id ?? '');
         },
     }),
-    columnHelper.accessor((row) => row.branch?.city?.id, {
-        id: 'branch',
-        header: 'Sucursal',
-        filterFn: (row, id, cityIDs: string[]) => {
-            if (!cityIDs?.length) {
-                return true;
-            }
+    // columnHelper.accessor((row) => row.branch?.city?.id, {
+    //     id: 'branch',
+    //     header: 'Sucursal',
+    //     filterFn: (row, id, cityIDs: string[]) => {
+    //         if (!cityIDs?.length) {
+    //             return true;
+    //         }
 
-            const task = row.original;
-            return cityIDs.includes(task.branch?.city?.id ?? '');
-        },
-    }),
+    //         const task = row.original;
+    //         return cityIDs.includes(task.branch?.city?.id ?? '');
+    //     },
+    // }),
     columnHelper.accessor((row) => row.assigned, {
         id: 'assigned',
         cell: (info) => {
@@ -138,64 +148,16 @@ export const useTasksTableColumns = () => [
         },
         cell: (info) => {
             const type = info.getValue();
-            return pascalCaseToSpaces(type);
+            return capitalizeFirstLetter(pascalCaseToSpaces(type));
         },
     }),
     columnHelper.accessor((row) => row.status, {
-        id: 'taskStatus',
+        id: 'status',
         header: 'Estado',
         cell: (info) => {
             const status = info.getValue();
 
-            if (status === TaskStatus.Aprobada) {
-                return (
-                    <Badge
-                        className="inline-flex space-x-2 whitespace-nowrap"
-                        variant="outline"
-                    >
-                        <span className="h-2 w-2 rounded-full bg-success"></span>
-                        <span>Aprobada</span>
-                    </Badge>
-                );
-            }
-
-            if (status === TaskStatus.Pendiente) {
-                return (
-                    <Badge
-                        className="inline-flex space-x-2 whitespace-nowrap"
-                        variant="outline"
-                    >
-                        <span className="h-2 w-2 rounded-full bg-yellow-500"></span>
-                        <span>Pendiente</span>
-                    </Badge>
-                );
-            }
-
-            if (status === TaskStatus.Finalizada) {
-                return (
-                    <Badge
-                        className="inline-flex space-x-2 whitespace-nowrap"
-                        variant="outline"
-                    >
-                        <span className="h-2 w-2 rounded-full bg-blue-400"></span>
-                        <span>Finalizada</span>
-                    </Badge>
-                );
-            }
-
-            if (status === TaskStatus.SinAsignar) {
-                return (
-                    <Badge
-                        className="inline-flex space-x-2 whitespace-nowrap"
-                        variant="outline"
-                    >
-                        <span className="h-2 w-2 rounded-full bg-destructive"></span>
-                        <span>Sin Asignar</span>
-                    </Badge>
-                );
-            }
-
-            return <Badge variant="outline">{status}</Badge>;
+            return <TaskStatusBadge status={status} />;
         },
         filterFn: (row, id, statuses: string[]) => {
             if (!statuses) {
@@ -208,7 +170,7 @@ export const useTasksTableColumns = () => [
             return statusIsInFilteredList;
         },
     }),
-    columnHelper.accessor((row) => dmyDateString(new Date(row.createdAt)), {
+    columnHelper.accessor((row) => format(new Date(row.createdAt), 'dd/MM/yyyy'), {
         id: 'openedAt',
         header: 'Fecha apertura',
     }),
@@ -216,7 +178,7 @@ export const useTasksTableColumns = () => [
         id: 'closedAt',
         cell: (info) => {
             const closedAt = info.getValue();
-            return !!closedAt ? dmyDateString(new Date(closedAt)) : closedAt;
+            return !!closedAt ? format(new Date(closedAt), 'dd/MM/yyyy') : closedAt;
         },
         header: 'Fecha cierre',
     }),

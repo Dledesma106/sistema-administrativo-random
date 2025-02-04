@@ -5,29 +5,6 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export const mongooseDocumentToJSON = <
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    T extends Record<string, any> | Record<string, any>[],
->(
-    doc: T,
-): T => {
-    return JSON.parse(JSON.stringify(doc));
-};
-
-export function dmyDateString(date: Date): string {
-    return `${date.getDate() > 10 ? `${date.getDate()}` : `0${date.getDate()}`}/${
-        date.getMonth() + 1 > 10 ? `${date.getMonth() + 1}` : `0${date.getMonth() + 1}`
-    }/${date.getFullYear()}`;
-}
-
-export function slugify(string: string): string {
-    return string.replace(' ', '-');
-}
-
-export function deSlugify(string: string): string {
-    return string.replace('-', ' ');
-}
-
 export const getCleanErrorMessage = (err: Error) => {
     let message = err.message;
 
@@ -62,4 +39,8 @@ export function pascalCaseToSpaces(input: string): string {
         .replace(/([a-z])([A-Z])/g, '$1 $2')
         .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
         .replace(/(^\w|\s\w)/g, (m) => m.toLowerCase());
+}
+
+export function capitalizeFirstLetter(input: string): string {
+    return input.charAt(0).toUpperCase() + input.slice(1);
 }

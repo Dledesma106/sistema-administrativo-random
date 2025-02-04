@@ -110,12 +110,7 @@ export default function TasksDataTable(props: Props): JSX.Element {
     }
 
     if (!data) {
-        return (
-            <div className="space-y-4 pb-8">
-                <TasksDataTableToolbar table={table} {...props} />
-                <TableSkeleton />
-            </div>
-        );
+        return <TableSkeleton />;
     }
 
     return (
