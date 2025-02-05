@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 import { useGetCities } from '@/hooks/api/city/useGetCities';
 import { useGetClients } from '@/hooks/api/client/useGetClients';
@@ -22,7 +22,7 @@ export default function TechAdminTasks(): JSX.Element {
         isLoadingBusinesses ||
         isLoadingTechnicians
     ) {
-        return <Skeleton className="h-96 w-full" />;
+        return <TableSkeleton />;
     }
 
     return (

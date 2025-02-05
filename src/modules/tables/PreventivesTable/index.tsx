@@ -10,12 +10,19 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { PREVENTIVES_TABLE_COLUMNS } from './columns';
 import { PreventivesTableToolbar } from './preventives-table-toolbar';
 
-import { Skeleton } from '@/components/ui/skeleton';
+import {
+    GetBusinessesQuery,
+    GetCitiesQuery,
+    GetClientsQuery,
+    GetPreventivesQuery,
+    GetTechniciansQuery,
+} from '@/api/graphql';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -24,35 +31,24 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
-import { useGetClients } from '@/hooks/api/client/useGetClients';
-import { useGetPreventives } from '@/hooks/api/preventive/useGetPreventives';
-import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
-import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
 
 interface PreventivesTableProps {
-    clients: NonNullable<ReturnType<typeof useGetClients>['data']>['clients'];
-    provinces: NonNullable<ReturnType<typeof useGetProvinces>['data']>['provinces'];
-    businesses: NonNullable<ReturnType<typeof useGetBusinesses>['data']>['businesses'];
-    technicians: NonNullable<ReturnType<typeof useGetTechnicians>['data']>['technicians'];
+    clients: NonNullable<GetClientsQuery['clients']>;
+    cities: NonNullable<GetCitiesQuery['cities']>;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+    technicians: NonNullable<GetTechniciansQuery['technicians']>;
+    preventives: NonNullable<GetPreventivesQuery['preventives']>;
 }
 
 export const PreventivesTable = ({
     clients,
-    provinces,
+    cities,
     businesses,
     technicians,
+    preventives,
 }: PreventivesTableProps) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
-    const preventivesQuery = useGetPreventives({});
-
-    const [preventives, setPreventives] = useState(preventivesQuery.data?.preventives);
-
-    useEffect(() => {
-        setPreventives(preventivesQuery.data?.preventives);
-    }, [preventivesQuery.data?.preventives]);
 
     const table = useReactTable({
         data: preventives || [],
@@ -68,7 +64,7 @@ export const PreventivesTable = ({
             sorting,
             columnFilters,
             columnVisibility: {
-                provinceId: false,
+                city: false,
                 'branch.client.id': false,
             },
         },
@@ -79,7 +75,7 @@ export const PreventivesTable = ({
             <div className="space-y-4 pb-8">
                 <PreventivesTableToolbar
                     table={table}
-                    provinces={provinces}
+                    cities={cities}
                     businesses={businesses}
                     clients={clients}
                     technicians={technicians}
@@ -140,21 +136,9 @@ export const PreventivesTable = ({
         );
     }
 
-    if (preventivesQuery.error) {
-        return <div>Hubo un error al cargar las preventivas</div>;
-    }
-
     return (
         <div className="space-y-4 pb-8">
-            <PreventivesTableToolbar
-                table={table}
-                provinces={provinces}
-                businesses={businesses}
-                clients={clients}
-                technicians={technicians}
-            />
-
-            <Skeleton className="h-96 w-full" />
+            <TableSkeleton />
         </div>
     );
 };

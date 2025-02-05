@@ -127,7 +127,7 @@ export default function BillingProfilesDataTable({ data }: Props) {
                     </TableBody>
                 </Table>
             </div>
-            <DataTablePagination table={table} />
+            <DataTablePagination />
         </div>
     );
 }
