@@ -1,26 +1,32 @@
 import TitleButton from '@/components/TitleButton';
-import { Skeleton } from '@/components/ui/skeleton';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
+import { useGetCities } from '@/hooks/api/city/useGetCities';
 import { useGetClients } from '@/hooks/api/client/useGetClients';
-import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
+import { useGetPreventives } from '@/hooks/api/preventive/useGetPreventives';
 import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
 import { PreventivesTable } from '@/modules/tables/PreventivesTable';
 
 export default function Preventives(): JSX.Element {
     const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
     const { data: clientsData, isLoading: isLoadingClients } = useGetClients({});
-    const { data: provincesData, isLoading: isLoadingProvinces } = useGetProvinces({});
+    const { data: citiesData, isLoading: isLoadingCities } = useGetCities({});
     const { data: techniciansData, isLoading: isLoadingTechnicians } = useGetTechnicians(
+        {},
+    );
+
+    const { data: preventivesData, isLoading: isLoadingPreventives } = useGetPreventives(
         {},
     );
 
     if (
         isLoadingBusinesses ||
         isLoadingClients ||
-        isLoadingProvinces ||
-        isLoadingTechnicians
+        isLoadingCities ||
+        isLoadingTechnicians ||
+        isLoadingPreventives
     ) {
-        return <Skeleton className="h-96 w-full" />;
+        return <TableSkeleton />;
     }
 
     return (
@@ -33,8 +39,9 @@ export default function Preventives(): JSX.Element {
             <PreventivesTable
                 businesses={businessesData?.businesses || []}
                 clients={clientsData?.clients || []}
-                provinces={provincesData?.provinces || []}
+                cities={citiesData?.cities || []}
                 technicians={techniciansData?.technicians || []}
+                preventives={preventivesData?.preventives || []}
             />
         </>
     );

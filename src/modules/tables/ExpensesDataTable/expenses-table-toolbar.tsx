@@ -5,7 +5,7 @@ import { ExpenseStatus, ExpenseType, GetTechniciansQuery } from '@/api/graphql';
 import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { pascalCaseToSpaces } from '@/lib/utils';
+import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
@@ -39,7 +39,7 @@ export function ExpensesDataTableToolbar<TData>({
                 column={table.getColumn('status')}
                 title="Estado"
                 options={Object.values(ExpenseStatus).map((value) => ({
-                    label: pascalCaseToSpaces(value),
+                    label: capitalizeFirstLetter(pascalCaseToSpaces(value)),
                     value,
                 }))}
             />
@@ -48,7 +48,7 @@ export function ExpensesDataTableToolbar<TData>({
                 column={table.getColumn('expenseType')}
                 title="Tipo"
                 options={Object.values(ExpenseType).map((value) => ({
-                    label: pascalCaseToSpaces(value),
+                    label: capitalizeFirstLetter(pascalCaseToSpaces(value)),
                     value,
                 }))}
             />

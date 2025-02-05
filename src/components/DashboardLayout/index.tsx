@@ -17,7 +17,7 @@ type LoadingWrapperProps = PropsWithChildren<{
 function LoadingWrapper({ isLoading, children }: LoadingWrapperProps) {
     if (isLoading) {
         return (
-            <div className="flex h-full flex-1 items-center justify-center bg-white">
+            <div className="flex h-full items-center justify-center">
                 <LoadingSpinner />
             </div>
         );

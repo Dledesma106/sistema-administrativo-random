@@ -37,17 +37,16 @@ export const PREVENTIVES_TABLE_COLUMNS = [
             return <Badge variant="secondary">{preventive.status}</Badge>;
         },
     }),
-    columnHelper.accessor('branch.city.province.id', {
-        id: 'provinceId',
+    columnHelper.accessor('branch.city', {
+        id: 'city',
+        enableHiding: true,
         filterFn: (rows, id, ids: string[]) => {
-            if (!ids) {
+            if (!ids?.length) {
                 return true;
             }
 
-            const provinceId =
-                rows.getValue<Preventive['branch']['city']['province']['id']>(id);
-
-            return ids.includes(provinceId);
+            const preventive = rows.original;
+            return ids.includes(preventive.branch.city.id);
         },
     }),
     columnHelper.accessor('branch', {

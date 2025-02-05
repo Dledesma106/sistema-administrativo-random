@@ -130,7 +130,7 @@ export default function BudgetsDataTable({ data }: Props) {
                     </TableBody>
                 </Table>
             </div>
-            <DataTablePagination table={table} />
+            <DataTablePagination />
         </div>
     );
 }

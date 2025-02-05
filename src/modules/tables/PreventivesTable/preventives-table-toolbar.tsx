@@ -1,26 +1,28 @@
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
+import {
+    GetBusinessesQuery,
+    GetTechniciansQuery,
+    GetCitiesQuery,
+    GetClientsQuery,
+} from '@/api/graphql';
 import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
-import { useGetClients } from '@/hooks/api/client/useGetClients';
-import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
-import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
 
 type DataTableToolbarProps<TData> = {
     table: Table<TData>;
-    clients: NonNullable<ReturnType<typeof useGetClients>['data']>['clients'];
-    provinces: NonNullable<ReturnType<typeof useGetProvinces>['data']>['provinces'];
-    businesses: NonNullable<ReturnType<typeof useGetBusinesses>['data']>['businesses'];
-    technicians: NonNullable<ReturnType<typeof useGetTechnicians>['data']>['technicians'];
+    clients: NonNullable<GetClientsQuery['clients']>;
+    cities: NonNullable<GetCitiesQuery['cities']>;
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
+    technicians: NonNullable<GetTechniciansQuery['technicians']>;
 };
 
 export function PreventivesTableToolbar<TData>({
     table,
     clients,
-    provinces,
+    cities,
     businesses,
     technicians,
 }: DataTableToolbarProps<TData>) {
@@ -39,11 +41,11 @@ export function PreventivesTableToolbar<TData>({
             />
 
             <DataTableFacetedFilter
-                column={table.getColumn('provinceId')}
-                title="Provincia"
-                options={provinces.map((province) => ({
-                    value: province.id.toString(),
-                    label: province.name,
+                column={table.getColumn('city')}
+                title="Localidad"
+                options={cities.map((city) => ({
+                    value: city.id.toString(),
+                    label: city.name,
                 }))}
             />
 

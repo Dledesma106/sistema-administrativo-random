@@ -35,20 +35,20 @@ export function TasksDataTableToolbar<TData>({
             <Label className="block">Filtrar por</Label>
 
             <DataTableFacetedFilter
-                column={table.getColumn('client')}
-                title="Cliente"
-                options={clients.map((client) => ({
-                    value: client.id.toString(),
-                    label: client.name,
-                }))}
-            />
-
-            <DataTableFacetedFilter
                 column={table.getColumn('city')}
                 title="Localidad"
                 options={cities.map((city) => ({
                     value: city.id.toString(),
                     label: city.name,
+                }))}
+            />
+
+            <DataTableFacetedFilter
+                column={table.getColumn('client')}
+                title="Cliente"
+                options={clients.map((client) => ({
+                    value: client.id.toString(),
+                    label: client.name,
                 }))}
             />
 
