@@ -8,6 +8,7 @@ import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
+import { PDFViewer } from '@/components/ui/PDFViewer';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetExpense } from '@/hooks/api/expenses/useGetExpense';
@@ -36,10 +37,10 @@ const Content: React.FC<Props> = ({ expense }) => {
                 <>
                     <Title>Archivo PDF</Title>
                     <div className="h-[600px] w-full max-w-3xl">
-                        <iframe
-                            src={expense.file.url}
-                            className="h-full w-full rounded-md border border-gray-200"
-                            title="PDF Viewer"
+                        <PDFViewer
+                            url={expense.file.url}
+                            filename={expense.file.filename}
+                            showPreviewButton={false}
                         />
                     </div>
                 </>

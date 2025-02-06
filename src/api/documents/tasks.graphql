@@ -129,6 +129,7 @@ query GetTask($id: String!) {
                 url
                 key
                 mimeType
+                filename
             }
             installments
             expenseDate

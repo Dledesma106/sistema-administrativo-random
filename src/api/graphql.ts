@@ -1147,7 +1147,13 @@ export type GetExpenseQuery = {
         task: { __typename?: 'Task'; id: string; taskNumber: number } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
         image: { __typename?: 'Image'; id: string; url: string } | null;
-        file: { __typename?: 'File'; id: string; url: string; mimeType: string } | null;
+        file: {
+            __typename?: 'File';
+            id: string;
+            url: string;
+            mimeType: string;
+            filename: string;
+        } | null;
         auditor: { __typename?: 'User'; id: string; fullName: string } | null;
     } | null;
 };
@@ -1521,6 +1527,7 @@ export type GetTaskQuery = {
                 url: string;
                 key: string;
                 mimeType: string;
+                filename: string;
             } | null;
             registeredBy: { __typename?: 'User'; fullName: string };
         }>;
@@ -3667,6 +3674,10 @@ export const GetExpenseDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'mimeType' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'filename' },
                                             },
                                         ],
                                     },
@@ -6001,6 +6012,13 @@ export const GetTaskDocument = {
                                                             name: {
                                                                 kind: 'Name',
                                                                 value: 'mimeType',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'filename',
                                                             },
                                                         },
                                                     ],
