@@ -2,11 +2,11 @@ import {
     ExpenseStatus,
     ExpenseType,
     ExpensePaySource,
-    Image,
     Expense,
     ExpensePaySourceBank,
 } from '@prisma/client';
 
+import { createFileSignedUrlAsync } from 'backend/s3Client';
 import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
@@ -58,7 +58,11 @@ export const ExpenseInputType = builder.inputType('ExpenseInput', {
         }),
         observations: t.string(),
         doneBy: t.string({ required: true }),
-        imageKey: t.string({ required: true }),
+        imageKey: t.string({ required: false }),
+        fileKey: t.string({ required: false }),
+        filename: t.string({ required: false }),
+        mimeType: t.string({ required: false }),
+        size: t.int({ required: false }),
         cityName: t.string({ required: true }),
     }),
 });
@@ -104,25 +108,54 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
         cityName: t.exposeString('cityName', { nullable: true }),
         image: t.prismaField({
             type: 'Image',
+            nullable: true,
             resolve: async (root, parent) => {
+                if (!parent.imageId) {
+                    return null;
+                }
+
                 const image = await prisma.image.findUniqueUndeleted({
-                    where: {
-                        id: parent.imageId,
-                    },
+                    where: { id: parent.imageId },
                 });
 
                 if (!image) {
-                    await prisma.expense.softDeleteOne({ id: parent.id });
-                    throw new Error('Un gasto debe tener una imagen asociada');
+                    return null;
                 }
 
                 await updateImageSignedUrlAsync(image);
+                return image;
+            },
+        }),
+        file: t.prismaField({
+            type: 'File',
+            nullable: true,
+            resolve: async (root, parent) => {
+                if (!parent.fileId) {
+                    return null;
+                }
 
-                return prisma.image.findUniqueUndeleted({
-                    where: {
-                        id: parent.imageId,
-                    },
-                }) as Promise<Image>;
+                const file = await prisma.file.findUniqueUndeleted({
+                    where: { id: parent.fileId },
+                });
+
+                if (!file) {
+                    return null;
+                }
+
+                if (!file.urlExpire || new Date(file.urlExpire) <= new Date()) {
+                    const { url, urlExpire } = await createFileSignedUrlAsync(file.key);
+                    await prisma.file.update({
+                        where: { id: file.id },
+                        data: {
+                            url,
+                            urlExpire,
+                        },
+                    });
+                }
+
+                return prisma.file.findUniqueUndeleted({
+                    where: { id: parent.fileId },
+                });
             },
         }),
         registeredBy: t.relation('registeredBy'),

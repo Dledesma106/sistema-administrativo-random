@@ -126,8 +126,9 @@ export type Expense = {
     expenseDate: Maybe<Scalars['DateTime']>;
     expenseNumber: Scalars['String'];
     expenseType: ExpenseType;
+    file: Maybe<File>;
     id: Scalars['ID'];
-    image: Image;
+    image: Maybe<Image>;
     installments: Maybe<Scalars['Int']>;
     observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
@@ -150,11 +151,15 @@ export type ExpenseInput = {
     doneBy: Scalars['String'];
     expenseDate: InputMaybe<Scalars['DateTime']>;
     expenseType: ExpenseType;
-    imageKey: Scalars['String'];
+    fileKey: InputMaybe<Scalars['String']>;
+    filename: InputMaybe<Scalars['String']>;
+    imageKey: InputMaybe<Scalars['String']>;
     installments: Scalars['Int'];
+    mimeType: InputMaybe<Scalars['String']>;
     observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
     paySourceBank: InputMaybe<ExpensePaySourceBank>;
+    size: InputMaybe<Scalars['Int']>;
 };
 
 export const ExpensePaySource = {
@@ -199,6 +204,35 @@ export type ExpensesResponse = {
     total: Scalars['Int'];
 };
 
+export type File = {
+    __typename?: 'File';
+    createdAt: Scalars['Date'];
+    expenses: Array<Expense>;
+    filename: Scalars['String'];
+    id: Scalars['ID'];
+    key: Scalars['String'];
+    mimeType: Scalars['String'];
+    size: Scalars['Int'];
+    updatedAt: Scalars['Date'];
+    url: Scalars['String'];
+    urlExpire: Maybe<Scalars['Date']>;
+};
+
+export type FileCrudRef = {
+    __typename?: 'FileCrudRef';
+    file: Maybe<File>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type FileInput = {
+    filename: Scalars['String'];
+    key: Scalars['String'];
+    mimeType: Scalars['String'];
+    size: Scalars['Int'];
+    url: Scalars['String'];
+};
+
 export type Image = {
     __typename?: 'Image';
     id: Scalars['ID'];
@@ -224,6 +258,7 @@ export type Mutation = {
     createCity: CityCrudRef;
     createClient: ClientResult;
     createExpense: ExpenseCrudResult;
+    createFile: FileCrudRef;
     createMyTask: TaskCrudResult;
     createPreventive: PreventiveCrudRef;
     createProvince: ProvinceCrudResult;
@@ -234,6 +269,7 @@ export type Mutation = {
     deleteCity: CityCrudRef;
     deleteClient: ClientResult;
     deleteExpense: ExpenseCrudResult;
+    deleteFile: FileCrudRef;
     deleteImage: TaskCrudResult;
     deletePreventive: PreventiveCrudRef;
     deleteProvince: ProvinceCrudResult;
@@ -282,6 +318,10 @@ export type MutationCreateExpenseArgs = {
     taskId: InputMaybe<Scalars['String']>;
 };
 
+export type MutationCreateFileArgs = {
+    input: FileInput;
+};
+
 export type MutationCreateMyTaskArgs = {
     input: MyTaskInput;
 };
@@ -321,6 +361,10 @@ export type MutationDeleteClientArgs = {
 export type MutationDeleteExpenseArgs = {
     id: Scalars['String'];
     taskId: Scalars['String'];
+};
+
+export type MutationDeleteFileArgs = {
+    id: Scalars['String'];
 };
 
 export type MutationDeleteImageArgs = {
@@ -508,6 +552,8 @@ export type Query = {
     expenseById: Maybe<Expense>;
     expenses: Array<Expense>;
     expensesCount: Scalars['Int'];
+    file: File;
+    files: Array<File>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
     myAssignedTasks: Array<Task>;
@@ -569,6 +615,10 @@ export type QueryExpensesCountArgs = {
     expenseType: InputMaybe<Array<ExpenseType>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
     status: InputMaybe<Array<ExpenseStatus>>;
+};
+
+export type QueryFileArgs = {
+    id: Scalars['String'];
 };
 
 export type QueryMyAssignedTaskByIdArgs = {
@@ -1096,7 +1146,8 @@ export type GetExpenseQuery = {
         createdAt: any;
         task: { __typename?: 'Task'; id: string; taskNumber: number } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
-        image: { __typename?: 'Image'; id: string; url: string };
+        image: { __typename?: 'Image'; id: string; url: string } | null;
+        file: { __typename?: 'File'; id: string; url: string; mimeType: string } | null;
         auditor: { __typename?: 'User'; id: string; fullName: string } | null;
     } | null;
 };
@@ -1139,7 +1190,6 @@ export type GetExpensesQuery = {
             } | null;
         } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
-        image: { __typename?: 'Image'; id: string; url: string; key: string };
     }>;
 };
 
@@ -1464,7 +1514,14 @@ export type GetTaskQuery = {
                 url: string;
                 urlExpire: any | null;
                 key: string;
-            };
+            } | null;
+            file: {
+                __typename?: 'File';
+                id: string;
+                url: string;
+                key: string;
+                mimeType: string;
+            } | null;
             registeredBy: { __typename?: 'User'; fullName: string };
         }>;
     } | null;
@@ -3595,6 +3652,27 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'file' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mimeType' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'auditor' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -3904,27 +3982,6 @@ export const GetExpensesDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'doneBy' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'image' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'url' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'key' },
-                                            },
-                                        ],
-                                    },
                                 },
                                 {
                                     kind: 'Field',
@@ -5907,6 +5964,43 @@ export const GetTaskDocument = {
                                                             name: {
                                                                 kind: 'Name',
                                                                 value: 'key',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'file' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'url',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'key',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'mimeType',
                                                             },
                                                         },
                                                     ],
