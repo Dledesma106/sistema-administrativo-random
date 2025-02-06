@@ -16,21 +16,18 @@ export const FileRef = builder.prismaObject('File', {
         size: t.exposeInt('size'),
         url: t.string({
             resolve: async (parent) => {
-                if (!parent.urlExpire || new Date(parent.urlExpire) <= new Date()) {
-                    const { url, urlExpire } = await getFileSignedUrl(
-                        parent.key,
-                        parent.mimeType,
-                    );
-                    await prisma.file.update({
-                        where: { id: parent.id },
-                        data: {
-                            url,
-                            urlExpire,
-                        },
-                    });
-                    return url;
-                }
-                return parent.url;
+                const { url, urlExpire } = await getFileSignedUrl(
+                    parent.key,
+                    parent.mimeType,
+                );
+                await prisma.file.update({
+                    where: { id: parent.id },
+                    data: {
+                        url,
+                        urlExpire,
+                    },
+                });
+                return url;
             },
         }),
         urlExpire: t.expose('urlExpire', {

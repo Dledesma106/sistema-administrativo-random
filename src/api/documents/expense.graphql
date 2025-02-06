@@ -26,6 +26,7 @@ query GetExpense($id: String!) {
             id
             url
             mimeType
+            filename
         }
         auditor {
             id
