@@ -124,6 +124,12 @@ query GetTask($id: String!) {
                 urlExpire
                 key
             }
+            file {
+                id
+                url
+                key
+                mimeType
+            }
             installments
             expenseDate
             status

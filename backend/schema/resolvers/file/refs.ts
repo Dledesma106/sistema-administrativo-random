@@ -1,5 +1,8 @@
 import { File } from '@prisma/client';
 
+import { getFileSignedUrl } from 'backend/s3Client';
+import { prisma } from 'lib/prisma';
+
 import { builder } from '../../builder';
 
 export const FileRef = builder.prismaObject('File', {
@@ -11,7 +14,25 @@ export const FileRef = builder.prismaObject('File', {
         filename: t.exposeString('filename'),
         mimeType: t.exposeString('mimeType'),
         size: t.exposeInt('size'),
-        url: t.exposeString('url'),
+        url: t.string({
+            resolve: async (parent) => {
+                if (!parent.urlExpire || new Date(parent.urlExpire) <= new Date()) {
+                    const { url, urlExpire } = await getFileSignedUrl(
+                        parent.key,
+                        parent.mimeType,
+                    );
+                    await prisma.file.update({
+                        where: { id: parent.id },
+                        data: {
+                            url,
+                            urlExpire,
+                        },
+                    });
+                    return url;
+                }
+                return parent.url;
+            },
+        }),
         urlExpire: t.expose('urlExpire', {
             type: 'Date',
             nullable: true,

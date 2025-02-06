@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { FormSkeleton } from '@/components/ui/skeleton';
 import {
     Table,
@@ -279,25 +280,60 @@ const Content: React.FC<Props> = ({ task }) => {
                                                         {expense.observations || '-'}
                                                     </TableCell>
                                                     <TableCell className="w-32">
-                                                        <a
-                                                            className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
-                                                            download={expense.image.id}
-                                                            href={expense.image.url}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                        >
-                                                            <Image
-                                                                src={expense.image.url}
-                                                                width={640}
-                                                                height={1252}
-                                                                alt=""
-                                                                className="z-0 w-20"
-                                                            />
+                                                        {expense.image && (
+                                                            <a
+                                                                className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
+                                                                download={
+                                                                    expense.image.id
+                                                                }
+                                                                href={expense.image.url}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                            >
+                                                                <Image
+                                                                    src={
+                                                                        expense.image.url
+                                                                    }
+                                                                    width={640}
+                                                                    height={1252}
+                                                                    alt=""
+                                                                    className="z-0 w-20"
+                                                                />
 
-                                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
-                                                                <DownloadIcon />
-                                                            </div>
-                                                        </a>
+                                                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
+                                                                    <DownloadIcon />
+                                                                </div>
+                                                            </a>
+                                                        )}
+                                                        {expense.file?.mimeType.startsWith(
+                                                            'application/pdf',
+                                                        ) && (
+                                                            <Dialog>
+                                                                <DialogTrigger asChild>
+                                                                    <button
+                                                                        className="flex items-center gap-2 rounded-md border border-gray-200 p-2 hover:bg-gray-50"
+                                                                        onClick={(e) =>
+                                                                            e.stopPropagation()
+                                                                        }
+                                                                    >
+                                                                        <DownloadIcon className="h-4 w-4" />
+                                                                        Ver PDF
+                                                                    </button>
+                                                                </DialogTrigger>
+                                                                <DialogContent className="max-w-4xl">
+                                                                    <iframe
+                                                                        src={
+                                                                            expense.file
+                                                                                .url
+                                                                        }
+                                                                        className="h-[600px] w-full rounded-md"
+                                                                        title="PDF Viewer"
+                                                                        sandbox="allow-same-origin allow-scripts"
+                                                                        loading="lazy"
+                                                                    />
+                                                                </DialogContent>
+                                                            </Dialog>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

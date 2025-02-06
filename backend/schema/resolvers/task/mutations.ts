@@ -12,7 +12,7 @@ import {
     TaskStatusPothosRef,
 } from './refs';
 
-import { createImageSignedUrlAsync } from 'backend/s3Client';
+import { createImageSignedUrlAsync, getFileSignedUrl } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { removeDeleted, calculateMaxRowHeight } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
@@ -189,14 +189,30 @@ builder.mutationFields((t) => ({
                                               registeredBy: {
                                                   connect: { id: _context.user.id },
                                               },
-                                              image: {
-                                                  create: {
-                                                      ...(await createImageSignedUrlAsync(
-                                                          expenseData.imageKey,
-                                                      )),
-                                                      key: expenseData.imageKey,
+                                              ...(expenseData.imageKey && {
+                                                  image: {
+                                                      create: {
+                                                          ...(await createImageSignedUrlAsync(
+                                                              expenseData.imageKey,
+                                                          )),
+                                                          key: expenseData.imageKey,
+                                                      },
                                                   },
-                                              },
+                                              }),
+                                              ...(expenseData.fileKey && {
+                                                  file: {
+                                                      create: {
+                                                          ...(await getFileSignedUrl(
+                                                              expenseData.fileKey,
+                                                              expenseData.mimeType!,
+                                                          )),
+                                                          key: expenseData.fileKey,
+                                                          filename: expenseData.filename!,
+                                                          mimeType: expenseData.mimeType!,
+                                                          size: expenseData.size!,
+                                                      },
+                                                  },
+                                              }),
                                           };
                                       }),
                                   )
@@ -400,7 +416,12 @@ builder.mutationFields((t) => ({
                     const expenseToDelete = await prisma.expense.softDeleteOne({
                         id: expense.id,
                     });
-                    await prisma.image.softDeleteOne({ id: expenseToDelete.imageId });
+                    if (expenseToDelete.imageId) {
+                        await prisma.image.softDeleteOne({ id: expenseToDelete.imageId });
+                    }
+                    if (expenseToDelete.fileId) {
+                        await prisma.file.softDeleteOne({ id: expenseToDelete.fileId });
+                    }
                 }
 
                 const imagesToDelete = task.imagesIDs;
@@ -494,12 +515,20 @@ builder.mutationFields((t) => ({
                                 success: false,
                             };
                         }
-                        await prisma.image.softDeleteOne({
-                            id: expense.imageId,
-                        });
+                        if (expense.imageId) {
+                            await prisma.image.softDeleteOne({
+                                id: expense.imageId,
+                            });
+                        }
+                        if (expense.fileId) {
+                            await prisma.file.softDeleteOne({
+                                id: expense.fileId,
+                            });
+                        }
                     }
                 }
                 const filteredImages = removeDeleted(foundTask.images);
+
                 if (imageIdsToDelete) {
                     for (const id of imageIdsToDelete) {
                         const image = filteredImages.find((img) => img.id === id);
@@ -584,14 +613,30 @@ builder.mutationFields((t) => ({
                                               paySourceBank: expenseData.paySourceBank,
                                               observations: expenseData.observations,
                                               registeredBy: { connect: { id: user.id } },
-                                              image: {
-                                                  create: {
-                                                      ...(await createImageSignedUrlAsync(
-                                                          expenseData.imageKey,
-                                                      )),
-                                                      key: expenseData.imageKey,
+                                              ...(expenseData.imageKey && {
+                                                  image: {
+                                                      create: {
+                                                          ...(await createImageSignedUrlAsync(
+                                                              expenseData.imageKey,
+                                                          )),
+                                                          key: expenseData.imageKey,
+                                                      },
                                                   },
-                                              },
+                                              }),
+                                              ...(expenseData.fileKey && {
+                                                  file: {
+                                                      create: {
+                                                          ...(await getFileSignedUrl(
+                                                              expenseData.fileKey,
+                                                              expenseData.mimeType!,
+                                                          )),
+                                                          key: expenseData.fileKey,
+                                                          filename: expenseData.filename!,
+                                                          mimeType: expenseData.mimeType!,
+                                                          size: expenseData.size!,
+                                                      },
+                                                  },
+                                              }),
                                           };
                                       }),
                                   )
@@ -783,9 +828,9 @@ builder.mutationFields((t) => ({
                             .join(', '),
                         business: task.business?.name ?? task.businessName,
                         client: task.branch?.client.name ?? task.clientName,
-                        branch: `#${
-                            `${task.branch?.number}, ${task.branch?.city.name}` ?? 'N/A'
-                        }`,
+                        branch: task.branch
+                            ? `#${task.branch?.number}, ${task.branch?.city.name}`
+                            : 'N/A',
                         description: task.description,
                         startedAt: task.startedAt
                             ? format(task.startedAt, 'dd/MM/yyyy HH:mm')

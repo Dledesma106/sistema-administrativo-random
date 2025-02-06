@@ -1515,6 +1515,13 @@ export type GetTaskQuery = {
                 urlExpire: any | null;
                 key: string;
             } | null;
+            file: {
+                __typename?: 'File';
+                id: string;
+                url: string;
+                key: string;
+                mimeType: string;
+            } | null;
             registeredBy: { __typename?: 'User'; fullName: string };
         }>;
     } | null;
@@ -5957,6 +5964,43 @@ export const GetTaskDocument = {
                                                             name: {
                                                                 kind: 'Name',
                                                                 value: 'key',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'file' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'url',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'key',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'mimeType',
                                                             },
                                                         },
                                                     ],
