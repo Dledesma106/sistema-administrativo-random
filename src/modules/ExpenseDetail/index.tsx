@@ -26,6 +26,42 @@ const Content: React.FC<Props> = ({ expense }) => {
     const { user } = useUserContext();
     const { mutateAsync: updateExpenseStatus } = useUpdateExpenseStatus();
 
+    const renderFilePreview = () => {
+        if (!expense.file) {
+            return null;
+        }
+
+        if (expense.file.mimeType.startsWith('application/pdf')) {
+            return (
+                <>
+                    <Title>Archivo PDF</Title>
+                    <div className="h-[600px] w-full max-w-3xl">
+                        <iframe
+                            src={expense.file.url}
+                            className="h-full w-full rounded-md border border-gray-200"
+                            title="PDF Viewer"
+                        />
+                    </div>
+                </>
+            );
+        }
+
+        return (
+            <>
+                <Title>Archivo</Title>
+                <a
+                    className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-4 py-2 hover:bg-gray-50"
+                    href={expense.file.url}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    <DownloadIcon />
+                    Descargar archivo
+                </a>
+            </>
+        );
+    };
+
     return (
         <main className="py-3.5">
             <div className="flex justify-between">
@@ -119,26 +155,32 @@ const Content: React.FC<Props> = ({ expense }) => {
                 </div>
 
                 <section>
-                    <Title>Imágen</Title>
-                    <a
-                        className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
-                        download={expense.image.id}
-                        href={expense.image.url}
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        <Image
-                            src={expense.image.url}
-                            width={640}
-                            height={1252}
-                            alt=""
-                            className="z-0"
-                        />
+                    {expense.image && (
+                        <>
+                            <Title>Imágen</Title>
+                            <a
+                                className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
+                                download={expense.image.id}
+                                href={expense.image.url}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <Image
+                                    src={expense.image.url}
+                                    width={640}
+                                    height={1252}
+                                    alt=""
+                                    className="z-0"
+                                />
 
-                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
-                            <DownloadIcon />
-                        </div>
-                    </a>
+                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
+                                    <DownloadIcon />
+                                </div>
+                            </a>
+                        </>
+                    )}
+
+                    {expense.file && renderFilePreview()}
                 </section>
             </div>
         </main>

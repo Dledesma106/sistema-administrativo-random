@@ -30,6 +30,43 @@ export const createImageSignedUrlAsync = async (key: string) => {
     };
 };
 
+export const createFileSignedUrlAsync = async (key: string) => {
+    const command = new GetObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+        Key: key,
+        ResponseContentDisposition: 'inline',
+    });
+
+    const url = await getSignedUrl(s3Client, command, {
+        expiresIn: EXPIRE_1_HOUR,
+    });
+
+    return {
+        url,
+        urlExpire: dayjs()
+            .add(EXPIRE_1_HOUR - 120, 'second')
+            .toISOString(),
+    };
+};
+
+export const getFileSignedUrl = async (key: string, mimeType: string) => {
+    const command = new GetObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Key: key,
+        ResponseContentType: mimeType,
+        ResponseContentDisposition: 'inline',
+    });
+
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+    return {
+        url,
+        urlExpire: dayjs()
+            .add(3600 - 120, 'second')
+            .toISOString(),
+    };
+};
+
 export const deletePhoto = async (key: string) => {
     try {
         const command = new DeleteObjectCommand({

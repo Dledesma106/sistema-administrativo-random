@@ -139,6 +139,26 @@ enum ExpenseStatus {
   Rechazado
 }
 
+model File {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
+  key      String
+  filename String
+  mimeType String
+  size     Int
+
+  url       String    @unique(map: "url_1")
+  urlExpire DateTime?
+
+  expenses Expense[]
+
+  @@map("files")
+}
+
 model Expense {
   id            String                @id @default(auto()) @map("_id") @db.ObjectId
   expenseNumber String                @db.String
@@ -164,8 +184,11 @@ model Expense {
   registeredById String @map("registeredBy") @db.ObjectId
   registeredBy   User   @relation("registeredExpenses", fields: [registeredById], references: [id])
 
-  imageId String @map("image") @db.ObjectId
-  image   Image  @relation(fields: [imageId], references: [id])
+  imageId String? @map("image") @db.ObjectId
+  image   Image?  @relation(fields: [imageId], references: [id])
+
+  fileId String? @map("file") @db.ObjectId
+  file   File?   @relation(fields: [fileId], references: [id])
 
   auditorId String? @map("auditor") @db.ObjectId
   auditor   User?   @relation("expensesAudited", fields: [auditorId], references: [id])

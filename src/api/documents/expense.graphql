@@ -22,6 +22,11 @@ query GetExpense($id: String!) {
             id
             url
         }
+        file {
+            id
+            url
+            mimeType
+        }
         auditor {
             id
             fullName
@@ -77,11 +82,6 @@ query GetExpenses(
             fullName
         }
         doneBy
-        image {
-            id
-            url
-            key
-        }
         status
     }
     expensesCount(

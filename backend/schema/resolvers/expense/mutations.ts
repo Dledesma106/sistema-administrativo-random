@@ -10,7 +10,7 @@ import {
     ExpenseStatusPothosRef,
 } from './refs';
 
-import { createImageSignedUrlAsync } from 'backend/s3Client';
+import { createImageSignedUrlAsync, getFileSignedUrl } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { prisma } from 'lib/prisma';
 
@@ -74,9 +74,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         success: false,
                     };
                 }
-                const image = await prisma.image.softDeleteOne({
-                    id: expense.imageId,
-                });
+                const image = expense.imageId
+                    ? await prisma.image.softDeleteOne({
+                          id: expense.imageId,
+                      })
+                    : null;
 
                 if (!image) {
                     return {
@@ -162,6 +164,14 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         : '1';
                 }
 
+                // Validar que se proporcione imagen o archivo
+                if (!expenseData.imageKey && !expenseData.fileKey) {
+                    return {
+                        success: false,
+                        message: 'Se debe proporcionar una imagen o un archivo',
+                    };
+                }
+
                 const newExpense = await prisma.expense.create({
                     data: {
                         expenseNumber,
@@ -177,14 +187,30 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         status: ExpenseStatus.Enviado,
                         registeredBy: { connect: { id: _context.user.id } },
                         ...(taskId && { task: { connect: { id: taskId } } }),
-                        image: {
-                            create: {
-                                ...(await createImageSignedUrlAsync(
-                                    expenseData.imageKey,
-                                )),
-                                key: expenseData.imageKey,
+                        ...(expenseData.imageKey && {
+                            image: {
+                                create: {
+                                    ...(await createImageSignedUrlAsync(
+                                        expenseData.imageKey,
+                                    )),
+                                    key: expenseData.imageKey,
+                                },
                             },
-                        },
+                        }),
+                        ...(expenseData.fileKey && {
+                            file: {
+                                create: {
+                                    ...(await getFileSignedUrl(
+                                        expenseData.fileKey,
+                                        expenseData.mimeType!,
+                                    )),
+                                    key: expenseData.fileKey,
+                                    filename: expenseData.filename!,
+                                    mimeType: expenseData.mimeType!,
+                                    size: expenseData.size!,
+                                },
+                            },
+                        }),
                     },
                 });
                 return {
