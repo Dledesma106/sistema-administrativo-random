@@ -3,6 +3,8 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
+import CreateOrUpdateBillingProfileForm from './CreateOrUpdateBillingProfileForm';
+
 import { GetBranchesQuery, GetClientsQuery, GetBusinessesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
@@ -165,122 +167,28 @@ const CreateOrUpdateBudgetForm = ({
 
                     {isNewBusiness && (
                         <div className="space-y-4 rounded-lg border border-gray-200 p-4">
-                            <FormField
-                                name="businessName"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
+                            <CreateOrUpdateBillingProfileForm
+                                businesses={businesses}
+                                isEmbedded={true}
+                                onSubmit={(billingData) => {
+                                    form.setValue(
+                                        'businessName',
+                                        billingData.businessName,
+                                    );
+                                    form.setValue('businessCUIT', billingData.cuit);
+                                    form.setValue(
+                                        'businessContactName',
+                                        billingData.contactName,
+                                    );
+                                    form.setValue(
+                                        'businessContactEmail',
+                                        billingData.contactEmail,
+                                    );
+                                    form.setValue(
+                                        'businessBillingEmail',
+                                        billingData.billingEmail,
+                                    );
                                 }}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nombre de la Empresa</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Nombre de la empresa"
-                                                type="text"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                name="businessCUIT"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                    pattern: {
-                                        value: /^[0-9]{11}$/,
-                                        message: 'El CUIT debe tener 11 dígitos',
-                                    },
-                                }}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>CUIT</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="CUIT sin guiones"
-                                                type="number"
-                                                className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                name="businessContactName"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                }}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nombre de Contacto</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Nombre de contacto"
-                                                type="text"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                name="businessContactEmail"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                    pattern: {
-                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: 'Email inválido',
-                                    },
-                                }}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Email de Contacto</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Email de contacto"
-                                                type="email"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                name="businessBillingEmail"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                    pattern: {
-                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: 'Email inválido',
-                                    },
-                                }}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Email de Facturación</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Email de facturación"
-                                                type="email"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
                             />
                         </div>
                     )}

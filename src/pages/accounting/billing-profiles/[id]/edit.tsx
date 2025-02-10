@@ -17,6 +17,7 @@ export default function EditBillingProfile(): JSX.Element {
         contactName: 'Juan Pérez',
         contactEmail: 'juan.perez@empresaa.com',
         billingEmail: 'facturacion@empresaa.com',
+        billingAddress: 'Av. Siempre Viva 123',
     };
     if (isLoadingBusinesses) {
         return <FormSkeleton />;
