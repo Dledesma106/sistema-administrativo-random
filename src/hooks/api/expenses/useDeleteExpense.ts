@@ -1,19 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import Toast from 'react-native-root-toast';
 
 import { fetchClient } from '@/api/fetch-client';
 import {
     DeleteExpenseDocument,
     DeleteExpenseMutation,
     DeleteExpenseMutationVariables,
-    GetExpensesQuery,
-    GetTaskQuery,
 } from '@/api/graphql';
-
-import { TASK_DETAIL_QUERY_KEY } from '../tasks/useGetTask';
+import useAlert from '@/context/alertContext/useAlert';
+import { getCleanErrorMessage } from '@/lib/utils';
 
 export const useDeleteExpense = (id: string) => {
     const client = useQueryClient();
+    const { triggerAlert } = useAlert();
+
     return useMutation<DeleteExpenseMutation, Error, DeleteExpenseMutationVariables>({
         mutationFn: () =>
             fetchClient(DeleteExpenseDocument, {
@@ -25,60 +24,24 @@ export const useDeleteExpense = (id: string) => {
                 return;
             }
 
-            const {
-                deleteExpense: { expense: newExpense },
-            } = data;
+            // Invalidar la query de gastos para forzar una recarga
+            client.invalidateQueries({ queryKey: ['expenses'] });
 
             if (taskId) {
-                client.setQueryData<GetTaskQuery>(
-                    TASK_DETAIL_QUERY_KEY(taskId),
-                    (oldData) => {
-                        if (!oldData || !oldData.taskById) {
-                            return oldData;
-                        }
-                        if (!newExpense) {
-                            return oldData;
-                        }
-                        const newData: GetTaskQuery = {
-                            ...oldData,
-                            taskById: {
-                                ...oldData.taskById,
-                                expenses: oldData.taskById.expenses.filter(
-                                    (expense) => expense.id !== newExpense.id,
-                                ),
-                            },
-                        };
-                        return newData;
-                    },
-                );
-            } else {
-                client.setQueryData<GetExpensesQuery>(['expenses'], (oldData) => {
-                    if (!oldData || !oldData.expenses) {
-                        return oldData;
-                    }
-                    if (!newExpense) {
-                        return oldData;
-                    }
-                    const newData: GetExpensesQuery = {
-                        ...oldData,
-                        expenses: [
-                            ...oldData.expenses.filter(
-                                (expense) => expense.id !== newExpense.id,
-                            ),
-                        ],
-                    };
-                    return newData;
+                client.invalidateQueries({
+                    queryKey: ['task', taskId],
                 });
             }
-            Toast.show('Gasto Eliminado', {
-                duration: Toast.durations.LONG,
-                position: Toast.positions.BOTTOM,
+
+            triggerAlert({
+                type: 'Success',
+                message: 'Gasto eliminado correctamente',
             });
         },
         onError: (error) => {
-            Toast.show(`Ocurrió un error: ${error}`, {
-                duration: Toast.durations.LONG,
-                position: Toast.positions.BOTTOM,
+            triggerAlert({
+                type: 'Failure',
+                message: `Error al eliminar el gasto: ${getCleanErrorMessage(error)}`,
             });
         },
     });

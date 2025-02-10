@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 interface Props {
     openModal: boolean;
     handleToggleModal: () => void;
-    action: () => void;
+    action: (e: React.MouseEvent) => void;
     msg: string;
 }
 
@@ -18,7 +18,7 @@ export default function Modal({
 }: Props): JSX.Element {
     const handleOk = (e: React.MouseEvent): void => {
         e.stopPropagation();
-        action();
+        action(e);
         handleToggleModal();
     };
 
