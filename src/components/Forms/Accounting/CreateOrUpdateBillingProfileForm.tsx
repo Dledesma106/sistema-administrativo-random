@@ -25,6 +25,7 @@ import { getCleanErrorMessage } from '@/lib/utils';
 type FormValues = {
     business: string;
     businessName?: string;
+    legalName: string;
     cuit: string;
     contactName: string;
     contactEmail: string;
@@ -53,6 +54,7 @@ const CreateOrUpdateBillingProfileForm = ({
     const form = useForm<FormValues>({
         defaultValues: defaultValues || {
             cuit: '',
+            legalName: '',
             contactName: '',
             contactEmail: '',
             billingEmail: '',
@@ -167,8 +169,7 @@ const CreateOrUpdateBillingProfileForm = ({
                     />
                 )}
 
-                {(isEmbedded ||
-                    !businesses.some((b) => b.id === form.watch('business'))) && (
+                {(isEmbedded || form.watch('business') === 'other') && (
                     <FormField
                         name="businessName"
                         control={form.control}
@@ -177,10 +178,7 @@ const CreateOrUpdateBillingProfileForm = ({
                             <FormItem>
                                 <FormLabel>Nombre de la Empresa</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        placeholder="Nombre de la empresa"
-                                        {...field}
-                                    />
+                                    <Input placeholder="Nombre comercial" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -206,6 +204,24 @@ const CreateOrUpdateBillingProfileForm = ({
                                     placeholder="CUIT sin guiones"
                                     type="number"
                                     className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    name="legalName"
+                    control={form.control}
+                    rules={{ required: 'Este campo es requerido' }}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Razón Social</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Razón social como figura en AFIP"
                                     {...field}
                                 />
                             </FormControl>
