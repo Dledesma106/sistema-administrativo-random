@@ -5,6 +5,7 @@ import { PreventivesTableRowActions } from './preventives-table-row-actions';
 
 import { GetPreventivesQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
+import { PreventiveStatusBadge } from '@/components/ui/Badges/PreventiveStatusBadge';
 
 type Preventive = GetPreventivesQuery['preventives'][0];
 
@@ -34,7 +35,7 @@ export const PREVENTIVES_TABLE_COLUMNS = [
         cell: (props) => {
             const preventive = props.row.original;
 
-            return <Badge variant="secondary">{preventive.status}</Badge>;
+            return <PreventiveStatusBadge status={preventive.status} />;
         },
     }),
     columnHelper.accessor('branch.city', {
@@ -111,7 +112,11 @@ export const PREVENTIVES_TABLE_COLUMNS = [
         cell: (props) => {
             const preventive = props.row.original;
 
-            return preventive.frequency ? `Cada ${preventive.frequency} meses` : '';
+            return preventive.frequency
+                ? preventive.frequency > 1
+                    ? `Cada ${preventive.frequency} meses`
+                    : 'Todos los meses'
+                : '';
         },
     }),
     columnHelper.accessor('months', {

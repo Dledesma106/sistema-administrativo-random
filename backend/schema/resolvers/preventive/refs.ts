@@ -27,6 +27,7 @@ export const PreventiveRef = builder.prismaObject('Preventive', {
         business: t.relation('business'),
         branch: t.relation('branch'),
         assigned: t.relation('assigned'),
+        tasks: t.relation('tasks'),
     }),
 });
 

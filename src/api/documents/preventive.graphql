@@ -54,10 +54,21 @@ query GetPreventive($id: String!) {
                 id
                 name
             }
+            city {
+                id
+                name
+            }
         }
         assigned {
             id
             fullName
+        }
+        tasks {
+            id
+            taskNumber
+            createdAt
+            closedAt
+            status
         }
     }
 }
