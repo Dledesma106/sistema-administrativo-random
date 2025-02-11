@@ -18,6 +18,7 @@ export default function EditBillingProfile(): JSX.Element {
         contactEmail: 'juan.perez@empresaa.com',
         billingEmail: 'facturacion@empresaa.com',
         billingAddress: 'Av. Siempre Viva 123',
+        taxCondition: 'RESPONSABLE_INSCRIPTO' as const,
     };
     if (isLoadingBusinesses) {
         return <FormSkeleton />;

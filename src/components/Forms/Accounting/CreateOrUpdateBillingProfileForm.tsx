@@ -30,6 +30,7 @@ type FormValues = {
     contactEmail: string;
     billingEmail: string;
     billingAddress: string;
+    taxCondition: 'RESPONSABLE_INSCRIPTO' | 'MONOTRIBUTO' | 'EXENTO' | 'CONSUMIDOR_FINAL';
 };
 
 interface Props {
@@ -56,6 +57,7 @@ const CreateOrUpdateBillingProfileForm = ({
             contactEmail: '',
             billingEmail: '',
             billingAddress: '',
+            taxCondition: '' as FormValues['taxCondition'],
         },
     });
 
@@ -205,6 +207,44 @@ const CreateOrUpdateBillingProfileForm = ({
                                     type="number"
                                     className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                     {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    name="taxCondition"
+                    control={form.control}
+                    rules={{ required: 'Este campo es requerido' }}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Condición frente al IVA</FormLabel>
+                            <FormControl>
+                                <Combobox
+                                    selectPlaceholder="Seleccione condición IVA"
+                                    searchPlaceholder="Buscar condición"
+                                    value={field.value ?? ''}
+                                    onChange={field.onChange}
+                                    items={[
+                                        {
+                                            label: 'Responsable Inscripto',
+                                            value: 'RESPONSABLE_INSCRIPTO',
+                                        },
+                                        {
+                                            label: 'Monotributo',
+                                            value: 'MONOTRIBUTO',
+                                        },
+                                        {
+                                            label: 'Exento',
+                                            value: 'EXENTO',
+                                        },
+                                        {
+                                            label: 'Consumidor Final',
+                                            value: 'CONSUMIDOR_FINAL',
+                                        },
+                                    ]}
                                 />
                             </FormControl>
                             <FormMessage />
