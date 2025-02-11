@@ -490,6 +490,7 @@ export type Preventive = {
     months: Array<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
     status: PreventiveStatus;
+    tasks: Array<Task>;
 };
 
 export type PreventiveCrudRef = {
@@ -1308,8 +1309,17 @@ export type GetPreventiveQuery = {
             id: string;
             number: number;
             client: { __typename?: 'Client'; id: string; name: string };
+            city: { __typename?: 'City'; id: string; name: string };
         };
         assigned: Array<{ __typename?: 'User'; id: string; fullName: string }>;
+        tasks: Array<{
+            __typename?: 'Task';
+            id: string;
+            taskNumber: number;
+            createdAt: any;
+            closedAt: any | null;
+            status: TaskStatus;
+        }>;
     };
 };
 
@@ -4672,6 +4682,29 @@ export const GetPreventiveDocument = {
                                                     ],
                                                 },
                                             },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'city' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -4688,6 +4721,41 @@ export const GetPreventiveDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tasks' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'taskNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'createdAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'closedAt' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
                                             },
                                         ],
                                     },

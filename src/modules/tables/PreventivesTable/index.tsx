@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useRouter } from 'next/router';
+
 import {
     ColumnFiltersState,
     SortingState,
@@ -31,6 +33,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { routesBuilder } from '@/lib/routes';
 
 interface PreventivesTableProps {
     clients: NonNullable<GetClientsQuery['clients']>;
@@ -49,7 +52,7 @@ export const PreventivesTable = ({
 }: PreventivesTableProps) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
+    const router = useRouter();
     const table = useReactTable({
         data: preventives || [],
         columns: PREVENTIVES_TABLE_COLUMNS,
@@ -108,6 +111,14 @@ export const PreventivesTable = ({
                                     <TableRow
                                         key={row.id}
                                         data-state={row.getIsSelected() && 'selected'}
+                                        className="cursor-pointer hover:bg-muted/50"
+                                        onClick={() =>
+                                            router.push(
+                                                routesBuilder.preventives.details(
+                                                    row.original.id,
+                                                ),
+                                            )
+                                        }
                                     >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
