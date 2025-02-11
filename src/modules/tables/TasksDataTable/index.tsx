@@ -6,7 +6,7 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useTasksTableColumns } from './columns';
@@ -43,6 +43,12 @@ export default function TasksDataTable(props: Props): JSX.Element {
         const saved = localStorage.getItem('tasksTableFilters');
         return saved ? JSON.parse(saved) : [];
     });
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('tasksTableFilters', JSON.stringify(columnFilters));
+        }
+    }, [columnFilters]);
 
     const router = useRouter();
     const [page, setPage] = useState(0);
