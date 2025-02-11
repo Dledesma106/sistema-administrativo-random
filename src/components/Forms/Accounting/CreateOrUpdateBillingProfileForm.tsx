@@ -25,7 +25,9 @@ import { getCleanErrorMessage } from '@/lib/utils';
 type FormValues = {
     business: string;
     businessName?: string;
+    legalName: string;
     cuit: string;
+    taxCondition: 'RESPONSABLE_INSCRIPTO' | 'MONOTRIBUTO' | 'EXENTO' | 'CONSUMIDOR_FINAL';
     contactName: string;
     contactEmail: string;
     billingEmail: string;
@@ -52,10 +54,12 @@ const CreateOrUpdateBillingProfileForm = ({
     const form = useForm<FormValues>({
         defaultValues: defaultValues || {
             cuit: '',
+            legalName: '',
             contactName: '',
             contactEmail: '',
             billingEmail: '',
             billingAddress: '',
+            taxCondition: '' as FormValues['taxCondition'],
         },
     });
 
@@ -165,8 +169,7 @@ const CreateOrUpdateBillingProfileForm = ({
                     />
                 )}
 
-                {(isEmbedded ||
-                    !businesses.some((b) => b.id === form.watch('business'))) && (
+                {(isEmbedded || form.watch('business') === 'other') && (
                     <FormField
                         name="businessName"
                         control={form.control}
@@ -175,10 +178,7 @@ const CreateOrUpdateBillingProfileForm = ({
                             <FormItem>
                                 <FormLabel>Nombre de la Empresa</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        placeholder="Nombre de la empresa"
-                                        {...field}
-                                    />
+                                    <Input placeholder="Nombre comercial" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -205,6 +205,62 @@ const CreateOrUpdateBillingProfileForm = ({
                                     type="number"
                                     className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                     {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    name="legalName"
+                    control={form.control}
+                    rules={{ required: 'Este campo es requerido' }}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Razón Social</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Razón social como figura en AFIP"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    name="taxCondition"
+                    control={form.control}
+                    rules={{ required: 'Este campo es requerido' }}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Condición frente al IVA</FormLabel>
+                            <FormControl>
+                                <Combobox
+                                    selectPlaceholder="Seleccione condición IVA"
+                                    searchPlaceholder="Buscar condición"
+                                    value={field.value ?? ''}
+                                    onChange={field.onChange}
+                                    items={[
+                                        {
+                                            label: 'Responsable Inscripto',
+                                            value: 'RESPONSABLE_INSCRIPTO',
+                                        },
+                                        {
+                                            label: 'Monotributo',
+                                            value: 'MONOTRIBUTO',
+                                        },
+                                        {
+                                            label: 'Exento',
+                                            value: 'EXENTO',
+                                        },
+                                        {
+                                            label: 'Consumidor Final',
+                                            value: 'CONSUMIDOR_FINAL',
+                                        },
+                                    ]}
                                 />
                             </FormControl>
                             <FormMessage />
