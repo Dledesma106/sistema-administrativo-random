@@ -8,6 +8,22 @@ export const config = {
     runtime: 'nodejs',
 };
 
+// Helper para convertir nombres de meses a números
+const monthNameToNumber: { [key: string]: string } = {
+    Enero: '1',
+    Febrero: '2',
+    Marzo: '3',
+    Abril: '4',
+    Mayo: '5',
+    Junio: '6',
+    Julio: '7',
+    Agosto: '8',
+    Septiembre: '9',
+    Octubre: '10',
+    Noviembre: '11',
+    Diciembre: '12',
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         // Verificar que la solicitud viene de Vercel Cron
@@ -21,13 +37,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const currentYear = new Date().getFullYear();
 
         console.log('Cron iniciado:', new Date());
-        console.log('Mes actual:', currentMonth);
+        console.log('Mes actual:', currentMonth.toString());
 
         const preventives = await prisma.preventive.findMany({
             where: { deleted: false },
             include: {
                 business: true,
-                branch: true,
+                branch: {
+                    include: {
+                        client: true,
+                    },
+                },
                 assigned: true,
                 tasks: {
                     where: {
@@ -44,10 +64,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         for (const preventive of preventives) {
+            // Agregamos logs para debug
+            console.log(
+                'Preventivo:',
+                `${preventive.branch.client.name} - ${preventive.business.name} - ${preventive.branch.number}`,
+            );
+            console.log('Meses configurados:', preventive.months);
+            console.log('Frecuencia:', preventive.frequency);
+            console.log('Mes actual:', currentMonth);
+
             const shouldCreateTask =
                 (preventive.months.length > 0 &&
-                    preventive.months.includes(currentMonth.toString())) ||
+                    preventive.months.some(
+                        (month) => monthNameToNumber[month] === currentMonth.toString(),
+                    )) ||
                 (preventive.frequency > 0 && currentMonth % preventive.frequency === 0);
+
+            console.log('¿Debe crear tarea?:', shouldCreateTask);
 
             if (shouldCreateTask) {
                 const existingTask = preventive.tasks[0];
