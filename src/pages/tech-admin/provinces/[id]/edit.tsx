@@ -13,13 +13,13 @@ export default function ProvinceView(): JSX.Element {
         return <FormSkeleton />;
     }
 
-    if (!provinceData?.provinceById) {
+    if (!provinceData?.province) {
         return <div>Provincia no encontrada</div>;
     }
 
     const provinceForm = {
-        id: provinceData.provinceById.id,
-        name: provinceData.provinceById.name,
+        id: provinceData.province.id,
+        name: provinceData.province.name,
     };
 
     return (

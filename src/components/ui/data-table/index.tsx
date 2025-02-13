@@ -3,10 +3,10 @@ import {
     Table as TanstackTable,
     flexRender,
 } from '@tanstack/react-table';
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../table';
-import { DataTablePagination } from '@/components/data-table-pagination';
+import { DataTablePagination } from '@/components/ui/data-table/data-table-pagination';
 import { TypographyH1 } from '../typography';
 import { CustomScrollArea } from "../scroll-area/index";
 
@@ -35,6 +35,21 @@ export function DataTable<TData>({
     headerActions,
     onRowClick,
 }: DataTableProps<TData>) {
+    const dynamicHeight = useMemo(() => {
+        const rows = table.getRowModel().rows;
+        const actualRowCount = Math.min(rows.length, totalCount); // Usar el número real de filas
+        
+        if (actualRowCount === 0) return 'h-[100px]';
+        
+        const ROW_HEIGHT = 53; // Altura ajustada por fila
+        const HEADER_HEIGHT = 45;
+        const MIN_HEIGHT = 200;
+        const MAX_HEIGHT = 600;
+        
+        const contentHeight = (actualRowCount * ROW_HEIGHT) + HEADER_HEIGHT;
+        return `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[600px]`;
+    }, [table.getRowModel().rows.length, totalCount]);
+
     return (
         <div>
             {/* Header */}
@@ -63,7 +78,7 @@ export function DataTable<TData>({
 
             {/* Table con scroll en el body */}
             <div className="rounded-md border border-accent">
-                <CustomScrollArea height="h-[600px]">
+                <CustomScrollArea height={dynamicHeight}>
                     <Table>
                         <TableHeader className="sticky top-0 z-10 bg-primary rounded-t-md">
                             {table.getHeaderGroups().map((headerGroup) => (

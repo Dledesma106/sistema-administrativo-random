@@ -123,13 +123,31 @@ const expenseColumns: Column<Expense>[] = [
                         </div>
                     </a>
                 )}
-                {expense.file?.mimeType.startsWith('application/pdf') && (
-                    <PDFViewer
-                        url={expense.file.url}
-                        filename={expense.file.filename}
-                        showPreviewButton={true}
-                    />
-                )}
+                {expense.file &&
+                    (expense.file.mimeType.startsWith('application/pdf') ? (
+                        <PDFViewer
+                            url={expense.file.url}
+                            filename={expense.file.filename}
+                            showPreviewButton={true}
+                        />
+                    ) : (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <a
+                                href={expense.file.url}
+                                download={expense.file.filename}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <DownloadIcon className="mr-2 h-4 w-4" />
+                                Descargar
+                            </a>
+                        </Button>
+                    ))}
             </div>
         ),
         accessorKey: (expense: Expense) => expense.file?.url || expense.image?.url || '',

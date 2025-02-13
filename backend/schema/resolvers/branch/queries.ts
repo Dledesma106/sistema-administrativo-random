@@ -33,22 +33,65 @@ builder.queryFields((t) => ({
         type: [BranchPothosRef],
         args: {
             clientId: t.arg.string({ required: true }),
-            cityId: t.arg.string({ required: false }),
-            businessId: t.arg.string({ required: false }),
-            provinceId: t.arg.string({ required: false }),
+            cityId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            businessId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            skip: t.arg.int({ required: false }),
+            take: t.arg.int({ required: false }),
         },
-        resolve: async (query, _parent, args, _info) => {
+        resolve: async (query, _parent, { skip, take, ...args }, _ctx) => {
             const where = {
                 clientId: args.clientId,
-                ...(args.cityId && { cityId: args.cityId }),
-                ...(args.businessId && { businessesIDs: { has: args.businessId } }),
-                ...(args.provinceId && { city: { provinceId: args.provinceId } }),
+                ...(args.cityId?.length && { cityId: { in: args.cityId } }),
+                ...(args.businessId?.length && {
+                    businessesIDs: { hasSome: args.businessId },
+                }),
             };
 
             return prisma.branch.findManyUndeleted({
                 ...query,
                 where,
+                skip: skip || 0,
+                take: take || 10,
+                orderBy: { number: 'asc' },
             });
+        },
+    }),
+    clientBranchesCount: t.int({
+        args: {
+            clientId: t.arg.string({ required: true }),
+            cityId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            businessId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            provinceId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+        },
+        resolve: async (_parent, args) => {
+            const where = {
+                clientId: args.clientId,
+                ...(args.cityId?.length && { cityId: { in: args.cityId } }),
+                ...(args.businessId?.length && {
+                    businessesIDs: { hasSome: args.businessId },
+                }),
+                ...(args.provinceId?.length && {
+                    city: { provinceId: { in: args.provinceId } },
+                }),
+                deleted: false,
+            };
+
+            return prisma.branch.count({ where });
         },
     }),
 }));

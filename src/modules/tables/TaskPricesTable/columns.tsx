@@ -1,6 +1,8 @@
 import { TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
+
 export type TaskPrice = {
     id: string;
     businessName: string;
@@ -10,22 +12,13 @@ export type TaskPrice = {
 
 const columnHelper = createColumnHelper<TaskPrice>();
 
-const taskTypeLabels: Record<TaskType, string> = {
-    Preventivo: 'Preventivo',
-    Correctivo: 'Correctivo',
-    Instalacion: 'Instalación',
-    Desmonte: 'Desmonte',
-    Actualizacion: 'Actualización',
-    InspeccionPolicial: 'Inspección Policial',
-};
-
 export const useTaskPricesTableColumns = () => [
     columnHelper.accessor('businessName', {
         header: 'Empresa',
     }),
     columnHelper.accessor('taskType', {
         header: 'Tipo de tarea',
-        cell: (info) => taskTypeLabels[info.getValue()],
+        cell: (info) => <TaskTypeBadge type={info.getValue()} />,
     }),
     columnHelper.accessor('price', {
         header: 'Precio',

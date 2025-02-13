@@ -1,14 +1,22 @@
 mutation CreateBusiness($data: BusinessInput!) {
     createBusiness(data: $data) {
-        id
-        name
+        success
+        message
+        business {
+            id
+            name
+        }
     }
 }
 
 mutation UpdateBusiness($id: String!, $data: BusinessInput!) {
     updateBusiness(id: $id, data: $data) {
-        id
-        name
+        success
+        message
+        business {
+            id
+            name
+        }
     }
 }
 
@@ -30,9 +38,10 @@ query GetBusiness($id: String!) {
     }
 }
 
-query GetBusinesses {
-    businesses {
+query GetBusinesses($search: String = null, $skip: Int = 0, $take: Int = 10) {
+    businesses(search: $search, skip: $skip, take: $take) {
         id
         name
     }
+    businessesCount(search: $search)
 } 

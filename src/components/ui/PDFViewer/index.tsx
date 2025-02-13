@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { DownloadIcon } from '@radix-ui/react-icons';
+import { Button } from '../button';
 
 interface PDFViewerProps {
     url: string;
@@ -19,15 +20,16 @@ export const PDFViewer = ({
             <div onClick={(e) => e.stopPropagation()}>
                 <Dialog>
                     <DialogTrigger asChild>
-                        <button 
-                            className="flex items-center gap-2 rounded-md border border-gray-200 p-2 hover:bg-gray-50"
+                        <Button
+                            variant="secondary"
+                            className="flex items-center gap-2"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <DownloadIcon className="h-4 w-4" />
                             Ver PDF
-                        </button>
+                        </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                    <DialogContent className="max-w-4xl border-accent" onClick={(e) => e.stopPropagation()}>
                         <iframe
                             src={url}
                             className={className}

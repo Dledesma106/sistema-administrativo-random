@@ -27,11 +27,12 @@ query GetClient($id: String!) {
     }
 }
 
-query GetClients {
-    clients {
+query GetClients($search: String = null, $skip: Int = null, $take: Int = null) {
+    clients(search: $search, skip: $skip, take: $take) {
         id
         name
     }
+    clientsCount(search: $search)
 }
 
 query GetClientsWithBranches {

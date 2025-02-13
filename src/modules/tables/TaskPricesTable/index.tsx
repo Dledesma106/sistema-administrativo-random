@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import {
     ColumnFiltersState,
     SortingState,
-    flexRender,
     getCoreRowModel,
     getFacetedRowModel,
     getFilteredRowModel,
@@ -18,17 +17,8 @@ import { BsPlus } from 'react-icons/bs';
 import { TaskPrice, useTaskPricesTableColumns } from './columns';
 import { TaskPricesDataTableToolbar } from './task-prices-table-toolbar';
 
-import { DataTablePagination } from '@/components/data-table-pagination';
 import { Button } from '@/components/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { TypographyH1 } from '@/components/ui/typography';
+import { DataTable } from '@/components/ui/data-table';
 
 type Props = {
     data: {
@@ -43,6 +33,8 @@ export default function TaskPricesDataTable({ data }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
     const columns = useTaskPricesTableColumns();
     const table = useReactTable<TaskPrice>({
@@ -58,76 +50,34 @@ export default function TaskPricesDataTable({ data }: Props) {
         state: {
             sorting,
             columnFilters,
+            pagination: {
+                pageIndex: page,
+                pageSize,
+            },
         },
     });
 
-    return (
-        <div className="space-y-4">
-            <div className="flex justify-between">
-                <TypographyH1>Precios por tarea</TypographyH1>
-                <Button asChild className="flex items-center space-x-2">
-                    <Link href="/accounting/task-prices/new">
-                        <BsPlus size="20" />
-                        <span>Crear precio</span>
-                    </Link>
-                </Button>
-            </div>
+    const headerActions = (
+        <Button asChild className="flex items-center space-x-2">
+            <Link href="/accounting/task-prices/new">
+                <BsPlus size="20" />
+                <span>Crear precio</span>
+            </Link>
+        </Button>
+    );
 
-            <TaskPricesDataTableToolbar table={table} />
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef.header,
-                                                  header.getContext(),
-                                              )}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    onClick={() =>
-                                        router.push(
-                                            `/accounting/task-prices/${row.original.id}/edit`,
-                                        )
-                                    }
-                                    className="cursor-pointer"
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext(),
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
-                                >
-                                    No se encontraron precios.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-            <DataTablePagination />
-        </div>
+    return (
+        <DataTable
+            table={table}
+            title="Precios por tarea"
+            toolbar={<TaskPricesDataTableToolbar table={table} />}
+            totalCount={data.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            headerActions={headerActions}
+            onRowClick={(row) => router.push(`/accounting/task-prices/${row.id}/edit`)}
+        />
     );
 }

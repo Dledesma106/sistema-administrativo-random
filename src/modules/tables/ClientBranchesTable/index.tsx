@@ -1,29 +1,23 @@
+import Link from 'next/link';
+
 import {
     ColumnFiltersState,
     SortingState,
-    flexRender,
     getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { BsPlus } from 'react-icons/bs';
 
 import { getClientBranchesTableColumns } from './client-branches-columns';
 import { ClientBranchesTableToolbar } from './client-branches-table-toolbar';
 
 import { GetBusinessesQuery, GetCitiesQuery, GetClientQuery } from '@/api/graphql';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
+import { TableSkeleton } from '@/components/ui/skeleton';
 import { useGetClientBranches } from '@/hooks/api/branch/useGetClientBranches';
+import { routesBuilder } from '@/lib/routes';
 
 type Props = {
     client: NonNullable<GetClientQuery['client']>;
@@ -34,98 +28,68 @@ type Props = {
 export const ClientBranchesTable = ({ client, cities, businesses }: Props) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+
+    // Extraer los filtros actuales
+    const cityFilter = columnFilters.find((filter) => filter.id === 'city')
+        ?.value as string;
+    const businessFilter = columnFilters.find((filter) => filter.id === 'businesses')
+        ?.value as string;
+
     const { data: branchesData, error: branchesError } = useGetClientBranches({
-        clientId: client.id as string,
+        clientId: client.id,
+        cityId: cityFilter ? [cityFilter] : null,
+        businessId: businessFilter ? [businessFilter] : null,
+        skip: page * pageSize,
+        take: pageSize,
     });
-    const [branches, setBranches] = useState(branchesData?.clientBranches);
 
     const columns = getClientBranchesTableColumns(client);
 
-    useEffect(() => {
-        setBranches(branchesData?.clientBranches);
-    }, [branchesData?.clientBranches]);
-
     const table = useReactTable({
-        data: branches || [],
-        columns: columns,
+        data: branchesData?.clientBranches || [],
+        columns,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
+        manualPagination: true,
         onColumnFiltersChange: setColumnFilters,
-        getFilteredRowModel: getFilteredRowModel(),
         state: {
-            columnVisibility: {
-                branch: false,
-                business: false,
-                client: false,
-            },
             sorting,
             columnFilters,
+            pagination: {
+                pageIndex: page - 1,
+                pageSize,
+            },
         },
     });
 
-    if (branches) {
+    if (branchesData) {
         return (
-            <div className="space-y-4 pb-8">
-                <ClientBranchesTableToolbar
-                    table={table}
-                    cities={cities}
-                    businesses={businesses}
-                />
-
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader className="border-b bg-white">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <TableHead key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext(),
-                                                      )}
-                                            </TableHead>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && 'selected'}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No se encontraron resultados.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
+            <DataTable
+                table={table}
+                title={`Sucursales de ${client.name}`}
+                toolbar={
+                    <ClientBranchesTableToolbar
+                        table={table}
+                        cities={cities}
+                        businesses={businesses}
+                    />
+                }
+                headerActions={
+                    <Button asChild className="flex items-center space-x-2">
+                        <Link href={routesBuilder.branches.create(client.id)}>
+                            <BsPlus size="20" />
+                            <span>Agregar sucursal</span>
+                        </Link>
+                    </Button>
+                }
+                totalCount={branchesData.clientBranchesCount || 0}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+            />
         );
     }
 
@@ -135,13 +99,7 @@ export const ClientBranchesTable = ({ client, cities, businesses }: Props) => {
 
     return (
         <div className="space-y-4 pb-8">
-            <ClientBranchesTableToolbar
-                table={table}
-                cities={cities}
-                businesses={businesses}
-            />
-
-            <Skeleton className="h-96 w-full" />
+            <TableSkeleton />
         </div>
     );
 };

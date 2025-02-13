@@ -28,7 +28,7 @@ export const useBillingProfilesTableColumns = () => [
                 href={`https://mail.google.com/mail/?view=cm&fs=1&to=${info.getValue()}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
             >
                 {info.getValue()}
             </a>
@@ -41,7 +41,7 @@ export const useBillingProfilesTableColumns = () => [
                 href={`https://mail.google.com/mail/?view=cm&fs=1&to=${info.getValue()}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-primary hover:underline"
             >
                 {info.getValue()}
             </a>

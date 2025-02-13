@@ -254,7 +254,7 @@ export type Mutation = {
     __typename?: 'Mutation';
     changePassword: AuthResult;
     createBranch: BranchCrudResult;
-    createBusiness: Business;
+    createBusiness: BusinessResult;
     createCity: CityCrudRef;
     createClient: ClientResult;
     createExpense: ExpenseCrudResult;
@@ -281,7 +281,7 @@ export type Mutation = {
     logout: AuthResult;
     sendNewUserRandomPassword: UserCrudPothosRef;
     updateBranch: BranchCrudResult;
-    updateBusiness: Business;
+    updateBusiness: BusinessResult;
     updateCity: CityCrudRef;
     updateClient: ClientResult;
     updateExpenseStatus: ExpenseCrudResult;
@@ -545,11 +545,15 @@ export type Query = {
     branches: Array<Branch>;
     business: Business;
     businesses: Array<Business>;
+    businessesCount: Scalars['Int'];
     cities: Array<City>;
+    citiesCount: Scalars['Int'];
     city: City;
     client: Client;
     clientBranches: Array<Branch>;
+    clientBranchesCount: Scalars['Int'];
     clients: Array<Client>;
+    clientsCount: Scalars['Int'];
     expenseById: Maybe<Expense>;
     expenses: Array<Expense>;
     expensesCount: Scalars['Int'];
@@ -563,8 +567,9 @@ export type Query = {
     preventive: Preventive;
     preventives: Array<Preventive>;
     preventivesCount: Scalars['Int'];
-    provinceById: Province;
+    province: Province;
     provinces: Array<Province>;
+    provincesCount: Scalars['Int'];
     taskById: Maybe<Task>;
     taskTypes: Array<TaskType>;
     tasks: Array<Task>;
@@ -572,6 +577,7 @@ export type Query = {
     technicians: Array<User>;
     user: User;
     users: Array<User>;
+    usersCount: Scalars['Int'];
 };
 
 export type QueryBranchArgs = {
@@ -586,6 +592,28 @@ export type QueryBusinessArgs = {
     id: Scalars['String'];
 };
 
+export type QueryBusinessesArgs = {
+    search: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryBusinessesCountArgs = {
+    search: InputMaybe<Scalars['String']>;
+};
+
+export type QueryCitiesArgs = {
+    provinceId: InputMaybe<Scalars['String']>;
+    search: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryCitiesCountArgs = {
+    provinceId: InputMaybe<Scalars['String']>;
+    search: InputMaybe<Scalars['String']>;
+};
+
 export type QueryCityArgs = {
     id: Scalars['String'];
 };
@@ -595,10 +623,28 @@ export type QueryClientArgs = {
 };
 
 export type QueryClientBranchesArgs = {
-    businessId: InputMaybe<Scalars['String']>;
-    cityId: InputMaybe<Scalars['String']>;
+    businessId: InputMaybe<Array<Scalars['String']>>;
+    cityId: InputMaybe<Array<Scalars['String']>>;
     clientId: Scalars['String'];
-    provinceId: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryClientBranchesCountArgs = {
+    businessId: InputMaybe<Array<Scalars['String']>>;
+    cityId: InputMaybe<Array<Scalars['String']>>;
+    clientId: Scalars['String'];
+    provinceId: InputMaybe<Array<Scalars['String']>>;
+};
+
+export type QueryClientsArgs = {
+    search: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryClientsCountArgs = {
+    search: InputMaybe<Scalars['String']>;
 };
 
 export type QueryExpenseByIdArgs = {
@@ -651,8 +697,18 @@ export type QueryPreventivesCountArgs = {
     client: InputMaybe<Array<Scalars['String']>>;
 };
 
-export type QueryProvinceByIdArgs = {
+export type QueryProvinceArgs = {
     id: Scalars['String'];
+};
+
+export type QueryProvincesArgs = {
+    search: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryProvincesCountArgs = {
+    search: InputMaybe<Scalars['String']>;
 };
 
 export type QueryTaskByIdArgs = {
@@ -681,6 +737,20 @@ export type QueryTasksCountArgs = {
 
 export type QueryUserArgs = {
     id: Scalars['String'];
+};
+
+export type QueryUsersArgs = {
+    cityId: InputMaybe<Scalars['String']>;
+    roles: InputMaybe<Array<Role>>;
+    search: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryUsersCountArgs = {
+    cityId: InputMaybe<Scalars['String']>;
+    roles: InputMaybe<Array<Role>>;
+    search: InputMaybe<Scalars['String']>;
 };
 
 export const Role = {
@@ -888,15 +958,25 @@ export type DeleteBranchMutation = {
 
 export type GetClientBranchesQueryVariables = Exact<{
     clientId: Scalars['String'];
+    cityId: InputMaybe<Array<Scalars['String']>>;
+    businessId: InputMaybe<Array<Scalars['String']>>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
 }>;
 
 export type GetClientBranchesQuery = {
     __typename?: 'Query';
+    clientBranchesCount: number;
     clientBranches: Array<{
         __typename?: 'Branch';
         id: string;
         number: number;
-        city: { __typename?: 'City'; id: string; name: string };
+        city: {
+            __typename?: 'City';
+            id: string;
+            name: string;
+            province: { __typename?: 'Province'; id: string; name: string };
+        };
         businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
     }>;
 };
@@ -942,7 +1022,12 @@ export type CreateBusinessMutationVariables = Exact<{
 
 export type CreateBusinessMutation = {
     __typename?: 'Mutation';
-    createBusiness: { __typename?: 'Business'; id: string; name: string };
+    createBusiness: {
+        __typename?: 'BusinessResult';
+        success: boolean;
+        message: string | null;
+        business: { __typename?: 'Business'; id: string; name: string } | null;
+    };
 };
 
 export type UpdateBusinessMutationVariables = Exact<{
@@ -952,7 +1037,12 @@ export type UpdateBusinessMutationVariables = Exact<{
 
 export type UpdateBusinessMutation = {
     __typename?: 'Mutation';
-    updateBusiness: { __typename?: 'Business'; id: string; name: string };
+    updateBusiness: {
+        __typename?: 'BusinessResult';
+        success: boolean;
+        message: string | null;
+        business: { __typename?: 'Business'; id: string; name: string } | null;
+    };
 };
 
 export type DeleteBusinessMutationVariables = Exact<{
@@ -978,17 +1068,28 @@ export type GetBusinessQuery = {
     business: { __typename?: 'Business'; id: string; name: string };
 };
 
-export type GetBusinessesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetBusinessesQueryVariables = Exact<{
+    search?: InputMaybe<Scalars['String']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+}>;
 
 export type GetBusinessesQuery = {
     __typename?: 'Query';
+    businessesCount: number;
     businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
 };
 
-export type GetCitiesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetCitiesQueryVariables = Exact<{
+    search?: InputMaybe<Scalars['String']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+    provinceId?: InputMaybe<Scalars['String']>;
+}>;
 
 export type GetCitiesQuery = {
     __typename?: 'Query';
+    citiesCount: number;
     cities: Array<{
         __typename?: 'City';
         id: string;
@@ -1102,10 +1203,15 @@ export type GetClientQuery = {
     client: { __typename?: 'Client'; id: string; name: string };
 };
 
-export type GetClientsQueryVariables = Exact<{ [key: string]: never }>;
+export type GetClientsQueryVariables = Exact<{
+    search?: InputMaybe<Scalars['String']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+}>;
 
 export type GetClientsQuery = {
     __typename?: 'Query';
+    clientsCount: number;
     clients: Array<{ __typename?: 'Client'; id: string; name: string }>;
 };
 
@@ -1391,10 +1497,15 @@ export type DeletePreventiveMutation = {
     };
 };
 
-export type GetProvincesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetProvincesQueryVariables = Exact<{
+    search?: InputMaybe<Scalars['String']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+}>;
 
 export type GetProvincesQuery = {
     __typename?: 'Query';
+    provincesCount: number;
     provinces: Array<{ __typename?: 'Province'; id: string; name: string }>;
 };
 
@@ -1404,7 +1515,7 @@ export type GetProvinceQueryVariables = Exact<{
 
 export type GetProvinceQuery = {
     __typename?: 'Query';
-    provinceById: { __typename?: 'Province'; id: string; name: string };
+    province: { __typename?: 'Province'; id: string; name: string };
 };
 
 export type CreateProvinceMutationVariables = Exact<{
@@ -1638,17 +1749,22 @@ export type GenerateApprovedTasksReportMutation = {
     generateApprovedTasksReport: string;
 };
 
-export type GetUsersQueryVariables = Exact<{ [key: string]: never }>;
+export type GetUsersQueryVariables = Exact<{
+    search?: InputMaybe<Scalars['String']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+    cityId?: InputMaybe<Scalars['String']>;
+    roles?: InputMaybe<Array<Role>>;
+}>;
 
 export type GetUsersQuery = {
     __typename?: 'Query';
+    usersCount: number;
     users: Array<{
         __typename?: 'User';
         id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
         fullName: string;
+        email: string;
         roles: Array<Role>;
         city: { __typename?: 'City'; id: string; name: string } | null;
     }>;
@@ -1683,10 +1799,8 @@ export type CreateUserMutation = {
         user: {
             __typename?: 'User';
             id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
             fullName: string;
+            email: string;
             roles: Array<Role>;
             city: { __typename?: 'City'; id: string; name: string } | null;
         } | null;
@@ -1707,10 +1821,8 @@ export type UpdateUserMutation = {
         user: {
             __typename?: 'User';
             id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
             fullName: string;
+            email: string;
             roles: Array<Role>;
             city: { __typename?: 'City'; id: string; name: string } | null;
         } | null;
@@ -1727,14 +1839,7 @@ export type DeleteUserMutation = {
         __typename?: 'UserCrudPothosRef';
         success: boolean;
         message: string | null;
-        user: {
-            __typename?: 'User';
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            fullName: string;
-        } | null;
+        user: { __typename?: 'User'; id: string; fullName: string; email: string } | null;
     };
 };
 
@@ -1761,10 +1866,10 @@ export type GetUserQuery = {
     user: {
         __typename?: 'User';
         id: string;
-        email: string;
+        fullName: string;
         firstName: string;
         lastName: string;
-        fullName: string;
+        email: string;
         roles: Array<Role>;
         city: { __typename?: 'City'; id: string; name: string } | null;
     };
@@ -2224,6 +2329,50 @@ export const GetClientBranchesDocument = {
                         },
                     },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'cityId' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -2238,6 +2387,38 @@ export const GetClientBranchesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'clientId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'cityId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'cityId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
                                 },
                             },
                         ],
@@ -2263,6 +2444,29 @@ export const GetClientBranchesDocument = {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'name' },
                                             },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'province' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -2285,6 +2489,36 @@ export const GetClientBranchesDocument = {
                                 },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'clientBranchesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'clientId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'clientId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'cityId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'cityId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -2536,8 +2770,31 @@ export const CreateBusinessDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -2604,8 +2861,31 @@ export const UpdateBusinessDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -2742,12 +3022,61 @@ export const GetBusinessesDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'GetBusinesses' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'search' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '0' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '10' },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'businesses' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                        ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
@@ -2755,6 +3084,20 @@ export const GetBusinessesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'businessesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -2768,12 +3111,78 @@ export const GetCitiesDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'GetCities' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'search' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'StringValue', value: '', block: false },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '0' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '10' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'provinceId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'StringValue', value: '', block: false },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cities' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'provinceId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'provinceId' },
+                                },
+                            },
+                        ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
@@ -2798,6 +3207,28 @@ export const GetCitiesDocument = {
                                 },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'citiesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'provinceId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'provinceId' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -3376,12 +3807,61 @@ export const GetClientsDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'GetClients' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'search' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'clients' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                        ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
@@ -3389,6 +3869,20 @@ export const GetClientsDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'clientsCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -5194,12 +5688,61 @@ export const GetProvincesDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'GetProvinces' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'search' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'StringValue', value: '', block: false },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '0' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '10' },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'provinces' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                        ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
@@ -5207,6 +5750,20 @@ export const GetProvincesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'provincesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -5238,7 +5795,7 @@ export const GetProvinceDocument = {
                 selections: [
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'provinceById' },
+                        name: { kind: 'Name', value: 'province' },
                         arguments: [
                             {
                                 kind: 'Argument',
@@ -6777,29 +7334,113 @@ export const GetUsersDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'GetUsers' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'search' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'StringValue', value: '', block: false },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '0' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'IntValue', value: '10' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'cityId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'StringValue', value: '', block: false },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'roles' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'Role' },
+                            },
+                        },
+                    },
+                    defaultValue: { kind: 'ListValue', values: [] },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'users' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'cityId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'cityId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'roles' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'roles' },
+                                },
+                            },
+                        ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'firstName' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'lastName' },
-                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'fullName' },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'roles' } },
                                 {
                                     kind: 'Field',
@@ -6820,6 +7461,36 @@ export const GetUsersDocument = {
                                 },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'usersCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'cityId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'cityId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'roles' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'roles' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },
@@ -6944,22 +7615,11 @@ export const CreateUserDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'email' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'firstName',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'lastName' },
-                                            },
-                                            {
-                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
                                             },
                                             {
                                                 kind: 'Field',
@@ -7080,22 +7740,11 @@ export const UpdateUserDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'email' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'firstName',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'lastName' },
-                                            },
-                                            {
-                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
                                             },
                                             {
                                                 kind: 'Field',
@@ -7194,22 +7843,11 @@ export const DeleteUserDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'email' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'firstName',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'lastName' },
-                                            },
-                                            {
-                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
                                             },
                                         ],
                                     },
@@ -7333,7 +7971,10 @@ export const GetUserDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'fullName' },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'firstName' },
@@ -7342,10 +7983,7 @@ export const GetUserDocument = {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'lastName' },
                                 },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'fullName' },
-                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'roles' } },
                                 {
                                     kind: 'Field',

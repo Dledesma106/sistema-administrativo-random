@@ -1,5 +1,5 @@
-query GetCities {
-    cities {
+query GetCities($search: String = "", $skip: Int = 0, $take: Int = 10, $provinceId: String = "") {
+    cities(search: $search, skip: $skip, take: $take, provinceId: $provinceId) {
         id
         name
         province {
@@ -7,6 +7,7 @@ query GetCities {
             name
         }
     }
+    citiesCount(search: $search, provinceId: $provinceId)
 }
 
 query GetCity($id: String!) {

@@ -1,7 +1,6 @@
-import TitleButton from '@/components/TitleButton';
 import { TableSkeleton } from '@/components/ui/skeleton';
 import { useGetProvinces } from '@/hooks/api/province/useGetProvinces';
-import { CityTable } from '@/modules/tables/city-table';
+import { CitiesDataTable } from '@/modules/tables/CitiesDataTable';
 
 export default function Cities(): JSX.Element {
     const { data: provincesData, isLoading } = useGetProvinces({});
@@ -12,13 +11,7 @@ export default function Cities(): JSX.Element {
 
     return (
         <main>
-            <TitleButton
-                title="Localidades"
-                path="/tech-admin/cities/new"
-                nameButton="Agregar localidad"
-            />
-
-            <CityTable provinces={provincesData?.provinces || []} />
+            <CitiesDataTable provinces={provincesData?.provinces || []} />
         </main>
     );
 }
