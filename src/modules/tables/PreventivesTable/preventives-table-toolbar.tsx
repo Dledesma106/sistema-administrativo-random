@@ -7,8 +7,8 @@ import {
     GetCitiesQuery,
     GetClientsQuery,
 } from '@/api/graphql';
-import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
+import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter';
 import { Label } from '@/components/ui/label';
 
 type DataTableToolbarProps<TData> = {

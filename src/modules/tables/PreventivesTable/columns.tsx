@@ -83,12 +83,12 @@ export const PREVENTIVES_TABLE_COLUMNS = [
             }
 
             return (
-                <div className="-ml-2 -mt-2 flex flex-wrap">
+                <div className="-ml-2 -mt-2 flex max-w-[250px] flex-wrap">
                     {preventive.assigned.map((technician) => (
                         <Badge
                             key={technician.id}
-                            variant="outline"
-                            className="ml-2 mt-2"
+                            variant="default"
+                            className="ml-2 mt-2 whitespace-nowrap"
                         >
                             {technician.fullName}
                         </Badge>

@@ -17,7 +17,7 @@ const ExpenseTypeBadge = ({ type }: Props) => {
         'h-2 w-2 rounded-full bg-purple-500': type === ExpenseType.Otro,
     });
     return (
-        <Badge variant="outline" className="space-x-2">
+        <Badge variant="default" className="gap-2">
             <span className={contentStyle}></span>
             <span>{type}</span>
         </Badge>

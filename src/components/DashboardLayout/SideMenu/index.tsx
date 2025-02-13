@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { IDashboardMenuItem, dashboardMenuItems } from './constants';
 
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -16,7 +17,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import useAlert from '@/context/alertContext/useAlert';
+import { useTheme } from '@/context/themeContext';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useLogout } from '@/hooks/api/auth/useLogout';
 import useLoading from '@/hooks/useLoading';
@@ -28,7 +31,7 @@ export default function SideMenu(): JSX.Element {
     const [pathname, setPathname] = useState(router.pathname);
     const { triggerAlert } = useAlert();
     const logoutMutation = useLogout({});
-
+    const { theme } = useTheme();
     useEffect(() => {
         const onRouteChangeStart = (url: string) => {
             setPathname(url);
@@ -62,13 +65,11 @@ export default function SideMenu(): JSX.Element {
     };
 
     return (
-        <div className="flex h-screen w-80 flex-col border-r border-gray-200">
+        <div className="bg-background-primary flex h-screen w-80 flex-col border-r border-border px-4">
             <div className="space-y-4 pt-7">
-                <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-                    Random SRL
-                </h2>
+                <Logo light={theme !== 'light'} />
 
-                <div className="space-y-2 pr-4">
+                <div className="space-y-2">
                     {dashboardMenuItems
                         .filter(({ roles: sectionRoles }: IDashboardMenuItem) => {
                             if (sectionRoles === null) {
@@ -101,6 +102,7 @@ export default function SideMenu(): JSX.Element {
                                 </Link>
                             );
                         })}
+                    <ThemeToggle />
                 </div>
             </div>
 
@@ -111,14 +113,7 @@ export default function SideMenu(): JSX.Element {
                             className="flex w-full items-center justify-start space-x-4"
                             variant="ghost"
                         >
-                            <svg
-                                className="h-6 w-6"
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 512 512"
-                            >
-                                <path d="M399 384.2C376.9 345.8 335.4 320 288 320H224c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z" />
-                            </svg>
-
+                            <User className="h-6 w-6" />
                             <p className="text-sm">{user.email}</p>
                         </Button>
                     </DropdownMenuTrigger>

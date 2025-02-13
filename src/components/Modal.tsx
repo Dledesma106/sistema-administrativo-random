@@ -39,10 +39,10 @@ export default function Modal({
     return (
         <>
             {openModal && (
-                <div className="fixed left-0 top-0 z-10 flex h-screen w-screen items-center justify-center bg-gray-600/50">
-                    <div className=" flex flex-col items-center gap-4 rounded-md bg-white p-5 text-white">
+                <div className="fixed left-0 top-0 z-10 flex h-screen w-screen items-center justify-center bg-background/50">
+                    <div className=" flex flex-col items-center gap-4 rounded-md border border-border bg-background p-5 text-foreground">
                         <BsExclamationCircle size={40} color={'gray'} />
-                        <h3 className="mb-1 text-lg font-normal text-gray-500 dark:text-gray-400">
+                        <h3 className="mb-1 text-lg font-normal text-foreground">
                             {msg}
                         </h3>
                         <div className="flex justify-center gap-4">

@@ -1,5 +1,19 @@
-query GetPreventives {
-    preventives {
+query GetPreventives(
+    $skip: Int
+    $take: Int
+    $business: [String!]
+    $city: [String!]
+    $assigned: [String!]
+    $client: [String!]
+) {
+    preventives(
+        skip: $skip
+        take: $take
+        business: $business
+        city: $city
+        assigned: $assigned
+        client: $client
+    ) {
         id
         lastDoneAt
         batteryChangedAt
@@ -32,6 +46,12 @@ query GetPreventives {
             fullName
         }
     }
+    preventivesCount(
+        business: $business
+        city: $city
+        assigned: $assigned
+        client: $client
+    )
 }
 
 query GetPreventive($id: String!) {

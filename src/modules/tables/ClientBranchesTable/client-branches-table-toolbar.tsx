@@ -2,7 +2,7 @@ import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
 import { GetBusinessesQuery, GetCitiesQuery } from '@/api/graphql';
-import { DataTableFacetedFilter } from '@/components/data-table-faceted-filter';
+import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 

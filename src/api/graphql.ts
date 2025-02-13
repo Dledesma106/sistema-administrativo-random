@@ -562,6 +562,7 @@ export type Query = {
     myExpenses: Maybe<Array<Expense>>;
     preventive: Preventive;
     preventives: Array<Preventive>;
+    preventivesCount: Scalars['Int'];
     provinceById: Province;
     provinces: Array<Province>;
     taskById: Maybe<Task>;
@@ -632,6 +633,22 @@ export type QueryMyExpenseByIdArgs = {
 
 export type QueryPreventiveArgs = {
     id: Scalars['String'];
+};
+
+export type QueryPreventivesArgs = {
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    business: InputMaybe<Array<Scalars['String']>>;
+    city: InputMaybe<Array<Scalars['String']>>;
+    client: InputMaybe<Array<Scalars['String']>>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryPreventivesCountArgs = {
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    business: InputMaybe<Array<Scalars['String']>>;
+    city: InputMaybe<Array<Scalars['String']>>;
+    client: InputMaybe<Array<Scalars['String']>>;
 };
 
 export type QueryProvinceByIdArgs = {
@@ -1258,10 +1275,18 @@ export type UpdateExpenseStatusMutation = {
     };
 };
 
-export type GetPreventivesQueryVariables = Exact<{ [key: string]: never }>;
+export type GetPreventivesQueryVariables = Exact<{
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+    business: InputMaybe<Array<Scalars['String']>>;
+    city: InputMaybe<Array<Scalars['String']>>;
+    assigned: InputMaybe<Array<Scalars['String']>>;
+    client: InputMaybe<Array<Scalars['String']>>;
+}>;
 
 export type GetPreventivesQuery = {
     __typename?: 'Query';
+    preventivesCount: number;
     preventives: Array<{
         __typename?: 'Preventive';
         id: string;
@@ -4399,12 +4424,139 @@ export const GetPreventivesDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'GetPreventives' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'business' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'city' } },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'assigned' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'client' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'preventives' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'business' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'business' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'city' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'city' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'assigned' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'assigned' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'client' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'client' },
+                                },
+                            },
+                        ],
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
@@ -4558,6 +4710,44 @@ export const GetPreventivesDocument = {
                                 },
                             ],
                         },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'preventivesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'business' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'business' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'city' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'city' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'assigned' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'assigned' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'client' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'client' },
+                                },
+                            },
+                        ],
                     },
                 ],
             },

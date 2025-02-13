@@ -8,6 +8,7 @@ export default function Document(): JSX.Element {
                     href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap"
                     rel="stylesheet"
                 />
+                <link rel="icon" href="/logo.png" />
             </Head>
             <body>
                 <Main />

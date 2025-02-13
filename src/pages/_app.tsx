@@ -9,6 +9,7 @@ import { DashboardLayout } from '@/components/DashboardLayout';
 import { Toaster } from '@/components/ui/toaster';
 import AlertProvider from '@/context/alertContext/AlertProvider';
 import LoadingProvider from '@/context/loadingContext/LoadingProvider';
+import { ThemeProvider } from '@/context/themeContext';
 import UserProvider from '@/context/userContext/UserProvider';
 
 const queryClient = new QueryClient();
@@ -38,9 +39,11 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
                     <LoadingProvider>
                         <AlertProvider>
                             <UserProvider>
-                                <DashboardLayout>
-                                    <Component {...pageProps} />
-                                </DashboardLayout>
+                                <ThemeProvider>
+                                    <DashboardLayout>
+                                        <Component {...pageProps} />
+                                    </DashboardLayout>
+                                </ThemeProvider>
                             </UserProvider>
                         </AlertProvider>
                     </LoadingProvider>

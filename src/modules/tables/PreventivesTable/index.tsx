@@ -3,16 +3,11 @@ import { useRouter } from 'next/router';
 
 import {
     ColumnFiltersState,
-    SortingState,
-    flexRender,
     getCoreRowModel,
-    getFacetedRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { PREVENTIVES_TABLE_COLUMNS } from './columns';
 import { PreventivesTableToolbar } from './preventives-table-toolbar';
@@ -21,18 +16,12 @@ import {
     GetBusinessesQuery,
     GetCitiesQuery,
     GetClientsQuery,
-    GetPreventivesQuery,
     GetTechniciansQuery,
 } from '@/api/graphql';
+import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import { TableSkeleton } from '@/components/ui/skeleton';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { useGetPreventives } from '@/hooks/api/preventive/useGetPreventives';
 import { routesBuilder } from '@/lib/routes';
 
 interface PreventivesTableProps {
@@ -40,7 +29,6 @@ interface PreventivesTableProps {
     cities: NonNullable<GetCitiesQuery['cities']>;
     businesses: NonNullable<GetBusinessesQuery['businesses']>;
     technicians: NonNullable<GetTechniciansQuery['technicians']>;
-    preventives: NonNullable<GetPreventivesQuery['preventives']>;
 }
 
 export const PreventivesTable = ({
@@ -48,34 +36,60 @@ export const PreventivesTable = ({
     cities,
     businesses,
     technicians,
-    preventives,
 }: PreventivesTableProps) => {
-    const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
     const router = useRouter();
+
+    const { data, isFetching, refetch } = useGetPreventives({
+        skip: page * pageSize,
+        take: pageSize,
+        business:
+            (columnFilters.find((f) => f.id === 'business.name')?.value as string[]) ||
+            undefined,
+        city:
+            (columnFilters.find((f) => f.id === 'city')?.value as string[]) || undefined,
+        assigned:
+            (columnFilters.find((f) => f.id === 'assigned')?.value as string[]) ||
+            undefined,
+        client:
+            (columnFilters.find((f) => f.id === 'branch.client.id')?.value as string[]) ||
+            undefined,
+    });
+
+    useEffect(() => {
+        refetch();
+    }, [page, pageSize, columnFilters, refetch]);
+
     const table = useReactTable({
-        data: preventives || [],
+        data: data?.preventives || [],
         columns: PREVENTIVES_TABLE_COLUMNS,
-        onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        onColumnFiltersChange: setColumnFilters,
-        getFilteredRowModel: getFilteredRowModel(),
-        getFacetedRowModel: getFacetedRowModel(),
+        onColumnFiltersChange: (filters) => {
+            setColumnFilters(filters);
+            setPage(0); // Resetear página al filtrar
+        },
         state: {
-            sorting,
             columnFilters,
             columnVisibility: {
                 city: false,
                 'branch.client.id': false,
             },
         },
+        manualPagination: true,
+        pageCount: Math.ceil((data?.preventivesCount || 0) / pageSize),
     });
 
-    if (preventives) {
-        return (
-            <div className="space-y-4 pb-8">
+    if (isFetching) {
+        return <TableSkeleton />;
+    }
+
+    return (
+        <DataTable
+            table={table}
+            title="Preventivos"
+            toolbar={
                 <PreventivesTableToolbar
                     table={table}
                     cities={cities}
@@ -83,73 +97,19 @@ export const PreventivesTable = ({
                     clients={clients}
                     technicians={technicians}
                 />
-
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader className="border-b bg-white">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <TableHead key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext(),
-                                                      )}
-                                            </TableHead>
-                                        );
-                                    })}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && 'selected'}
-                                        className="cursor-pointer hover:bg-muted/50"
-                                        onClick={() =>
-                                            router.push(
-                                                routesBuilder.preventives.details(
-                                                    row.original.id,
-                                                ),
-                                            )
-                                        }
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={PREVENTIVES_TABLE_COLUMNS.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No se encontraron resultados.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-4 pb-8">
-            <TableSkeleton />
-        </div>
+            }
+            headerActions={
+                <Button onClick={() => router.push(routesBuilder.preventives.create())}>
+                    <Plus />
+                    Nuevo Preventivo
+                </Button>
+            }
+            totalCount={data?.preventivesCount || 0}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            onRowClick={(row) => router.push(routesBuilder.preventives.details(row.id))}
+        />
     );
 };

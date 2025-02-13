@@ -64,7 +64,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     function Main(): JSX.Element {
         return (
-            <div className={cn('flex h-screen overflow-hidden pl-4')}>
+            <div className={cn('flex h-screen overflow-hidden')}>
                 {isLoggedIn && <SideMenu />}
 
                 <div className="flex flex-1 flex-col overflow-y-scroll">

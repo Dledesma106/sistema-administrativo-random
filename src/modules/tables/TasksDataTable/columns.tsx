@@ -7,7 +7,7 @@ import { TasksTableRowActions } from './tasks-table-row-actions';
 import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
 import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
-import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
+import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
 
 type Task = TasksQuery['tasks'][number];
 
@@ -104,13 +104,13 @@ export const useTasksTableColumns = () => [
         id: 'assigned',
         cell: (info) => {
             return (
-                <div className="-ml-2 -mt-2 flex max-w-[250px] flex-wrap">
+                <div className="flex max-w-[250px] flex-wrap">
                     {info.getValue().map((tech) => {
                         return (
                             <Badge
                                 className="ml-2 mt-2 whitespace-nowrap"
                                 key={tech.id}
-                                variant="secondary"
+                                variant="default"
                             >
                                 {tech.fullName}
                             </Badge>
@@ -148,7 +148,7 @@ export const useTasksTableColumns = () => [
         },
         cell: (info) => {
             const type = info.getValue();
-            return capitalizeFirstLetter(pascalCaseToSpaces(type));
+            return <TaskTypeBadge type={type} />;
         },
     }),
     columnHelper.accessor((row) => row.status, {

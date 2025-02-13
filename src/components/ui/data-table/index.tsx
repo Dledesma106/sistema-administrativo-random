@@ -8,6 +8,7 @@ import { ReactNode } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../table';
 import { DataTablePagination } from '@/components/data-table-pagination';
 import { TypographyH1 } from '../typography';
+import { CustomScrollArea } from "../scroll-area/index";
 
 interface DataTableProps<TData> {
     table: TanstackTable<TData>;
@@ -39,23 +40,15 @@ export function DataTable<TData>({
             {/* Header */}
             <div className="mb-4">
                 <div className="flex justify-between">
-                    <TypographyH1>
-                        {title}
-                    </TypographyH1>
+                    <TypographyH1>{title}</TypographyH1>
                     {headerActions && (
-                        <div className="flex gap-2">
-                            {headerActions}
-                        </div>
+                        <div className="flex gap-2">{headerActions}</div>
                     )}
                 </div>
             </div>
 
             {/* Toolbar */}
-            {toolbar && (
-                <div className="mb-4">
-                    {toolbar}
-                </div>
-            )}
+            {toolbar && <div className="mb-4">{toolbar}</div>}
 
             {/* Pagination */}
             <div className="mb-4">
@@ -68,15 +61,15 @@ export function DataTable<TData>({
                 />
             </div>
 
-            {/* Table with scroll */}
-            <div className="rounded-md border">
-                <div className="max-h-[500px] overflow-auto">
+            {/* Table con scroll en el body */}
+            <div className="rounded-md border border-accent">
+                <CustomScrollArea height="h-[600px]">
                     <Table>
-                        <TableHeader className="sticky top-0 z-10 bg-white">
+                        <TableHeader className="sticky top-0 z-10 bg-primary rounded-t-md">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="text-primary-foreground">
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -95,7 +88,7 @@ export function DataTable<TData>({
                                         key={row.id}
                                         data-state={row.getIsSelected() && 'selected'}
                                         onClick={() => onRowClick?.(row.original)}
-                                        className={onRowClick ? 'cursor-pointer hover:bg-muted' : ''}
+                                        className={`${onRowClick ? 'cursor-pointer' : ''} bg-background-primary hover:bg-accent`}
                                     >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell key={cell.id}>
@@ -111,7 +104,7 @@ export function DataTable<TData>({
                                 <TableRow>
                                     <TableCell
                                         colSpan={table.getAllColumns().length}
-                                        className="h-24 text-center"
+                                        className="h-24 text-center bg-background-primary"
                                     >
                                         No se encontraron resultados.
                                     </TableCell>
@@ -119,7 +112,7 @@ export function DataTable<TData>({
                             )}
                         </TableBody>
                     </Table>
-                </div>
+                </CustomScrollArea>
             </div>
         </div>
     );

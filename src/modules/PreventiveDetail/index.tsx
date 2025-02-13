@@ -2,25 +2,26 @@ import { useRouter } from 'next/router';
 
 import { format } from 'date-fns';
 
-import { GetPreventiveQuery } from '@/api/graphql';
+import { GetPreventiveQuery, TaskStatus } from '@/api/graphql';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PreventiveStatusBadge } from '@/components/ui/Badges/PreventiveStatusBadge';
 import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
+import { DataList, Column } from '@/components/ui/data-list';
 import { FormSkeleton } from '@/components/ui/skeleton';
-import {
-    Table,
-    TableHead,
-    TableRow,
-    TableHeader,
-    TableCell,
-    TableBody,
-} from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useGetPreventive } from '@/hooks/api/preventive/useGetPreventive';
 import { routesBuilder } from '@/lib/routes';
 
+type Task = {
+    id: string;
+    taskNumber: number;
+    createdAt: Date | string;
+    closedAt: Date | string | null;
+    status: TaskStatus;
+};
+
 const Title = ({ children }: { children: React.ReactNode }) => (
-    <h2 className="mb-2 text-sm font-bold">{children}</h2>
+    <h2 className="mb-2 text-sm font-bold text-primary-foreground">{children}</h2>
 );
 
 type Props = {
@@ -29,6 +30,29 @@ type Props = {
 
 const Content: React.FC<Props> = ({ preventive }) => {
     const router = useRouter();
+
+    const taskColumns: Column<Task>[] = [
+        {
+            header: 'Número',
+            accessorKey: 'taskNumber',
+        },
+        {
+            header: 'Creación',
+            cell: (task) => format(new Date(task.createdAt), 'dd/MM/yyyy'),
+            accessorKey: 'createdAt',
+        },
+        {
+            header: 'Cierre',
+            cell: (task) =>
+                task.closedAt ? format(new Date(task.closedAt), 'dd/MM/yyyy') : 'N/A',
+            accessorKey: 'closedAt',
+        },
+        {
+            header: 'Estado',
+            cell: (task) => <TaskStatusBadge status={task.status} />,
+            accessorKey: 'status',
+        },
+    ];
 
     return (
         <main className="py-3.5">
@@ -122,65 +146,14 @@ const Content: React.FC<Props> = ({ preventive }) => {
 
                 <section>
                     <Title>Últimas tareas</Title>
-                    <div className="overflow-hidden rounded-md border border-gray-200">
-                        <Table>
-                            <TableHeader className="bg-muted">
-                                <TableRow className="hover:bg-muted/50">
-                                    <TableHead className="font-medium">Número</TableHead>
-                                    <TableHead className="font-medium">
-                                        Creación
-                                    </TableHead>
-                                    <TableHead className="font-medium">Cierre</TableHead>
-                                    <TableHead className="font-medium">Estado</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {preventive.tasks.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={4}
-                                            className="h-24 text-center text-muted-foreground"
-                                        >
-                                            No hay tareas
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    preventive.tasks.map((task) => (
-                                        <TableRow
-                                            key={task.id}
-                                            className="cursor-pointer border-b hover:bg-muted/50"
-                                            onClick={() =>
-                                                router.push(
-                                                    routesBuilder.tasks.details(task.id),
-                                                )
-                                            }
-                                        >
-                                            <TableCell className="font-medium">
-                                                {task.taskNumber}
-                                            </TableCell>
-                                            <TableCell>
-                                                {format(
-                                                    new Date(task.createdAt),
-                                                    'dd/MM/yyyy',
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {task.closedAt
-                                                    ? format(
-                                                          new Date(task.closedAt),
-                                                          'dd/MM/yyyy',
-                                                      )
-                                                    : 'N/A'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <TaskStatusBadge status={task.status} />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                    <DataList
+                        data={preventive.tasks}
+                        columns={taskColumns}
+                        onRowClick={(task) =>
+                            router.push(routesBuilder.tasks.details(task.id))
+                        }
+                        emptyMessage="No hay tareas"
+                    />
                 </section>
             </div>
         </main>
