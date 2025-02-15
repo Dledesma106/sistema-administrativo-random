@@ -1,5 +1,7 @@
 import { TaskType } from '@prisma/client';
 
+import { TableSkeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 import TaskPricesDataTable from '@/modules/tables/TaskPricesTable';
 
 // Mock data para la tabla
@@ -31,9 +33,18 @@ const mockTaskPrices = [
 ];
 
 export default function TaskPricesPage() {
+    const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
+
+    if (isLoadingBusinesses) {
+        return <TableSkeleton />;
+    }
+
     return (
         <div className="p-4">
-            <TaskPricesDataTable data={mockTaskPrices} />
+            <TaskPricesDataTable
+                data={mockTaskPrices}
+                businesses={businessesData?.businesses || []}
+            />
         </div>
     );
 }

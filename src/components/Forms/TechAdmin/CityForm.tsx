@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useMutation } from '@tanstack/react-query';
@@ -26,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
+import { routesBuilder } from '@/lib/routes';
 
 export interface CityFormValues {
     name: string;
@@ -167,9 +167,13 @@ export default function CityForm({
                             </FormItem>
                         )}
                     />
-                    <div className="flex flex-row justify-between">
-                        <Button variant="secondary" type="button">
-                            <Link href={'/tech-admin/cities'}>Cancelar</Link>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => router.push(routesBuilder.cities.list())}
+                        >
+                            Cancelar
                         </Button>
                         <Button type="submit">Guardar</Button>
                     </div>

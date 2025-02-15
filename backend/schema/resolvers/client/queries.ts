@@ -49,8 +49,11 @@ export const ClientQueries = builder.queryFields((t) => ({
                 orderBy: {
                     name: 'asc',
                 },
-                skip: skip || 0,
-                take: take || 10,
+                ...(typeof skip === 'number' &&
+                    typeof take === 'number' && {
+                        skip,
+                        take,
+                    }),
             });
         },
     }),

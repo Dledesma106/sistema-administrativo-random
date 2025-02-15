@@ -84,7 +84,7 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
     return (
         <>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
                         className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
@@ -93,18 +93,13 @@ export function TasksTableRowActions({ task }: Props): JSX.Element {
                         <span className="sr-only">Abrir menú</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    align="end"
-                    className="w-[160px]"
-                    onClick={(e) => e.stopPropagation()}
-                >
+                <DropdownMenuContent align="end" className="w-[160px]">
                     {task.status === 'Pendiente' && (
                         <DropdownMenuItem asChild>
                             <div
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(routesBuilder.tasks.edit(task.id));
-                                }}
+                                onClick={() =>
+                                    router.push(routesBuilder.tasks.edit(task.id))
+                                }
                             >
                                 Editar
                             </div>

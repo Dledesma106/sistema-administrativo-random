@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useMutation } from '@tanstack/react-query';
@@ -28,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import useLoading from '@/hooks/useLoading';
+import { routesBuilder } from '@/lib/routes';
 
 export interface BranchFormValues {
     number?: number;
@@ -251,11 +251,15 @@ export default function ClientBranchForm({
                         )}
                     />
 
-                    <div className="flex flex-row justify-between">
-                        <Button variant="secondary" type="button">
-                            <Link href={`/tech-admin/clients/${client.id}/branches`}>
-                                Cancelar
-                            </Link>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() =>
+                                router.push(routesBuilder.branches.list(client.id))
+                            }
+                        >
+                            Cancelar
                         </Button>
                         <Button type="submit">Guardar</Button>
                     </div>

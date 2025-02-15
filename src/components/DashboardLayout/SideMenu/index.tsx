@@ -88,18 +88,18 @@ export default function SideMenu(): JSX.Element {
                         })
                         .map((item: IDashboardMenuItem) => {
                             return (
-                                <Link className="block" href={item.path} key={item.id}>
-                                    <Button
-                                        variant={
-                                            pathname === item.path ? 'default' : 'ghost'
-                                        }
-                                        className="flex w-full items-center justify-start space-x-2"
-                                    >
-                                        {item.icon}
+                                <Button
+                                    variant={pathname === item.path ? 'default' : 'ghost'}
+                                    onClick={() => {
+                                        router.push(item.path);
+                                    }}
+                                    key={item.id}
+                                    className="flex w-full items-center justify-start space-x-2"
+                                >
+                                    {item.icon}
 
-                                        <span>{item.title}</span>
-                                    </Button>
-                                </Link>
+                                    <span>{item.title}</span>
+                                </Button>
                             );
                         })}
                     <ThemeToggle />

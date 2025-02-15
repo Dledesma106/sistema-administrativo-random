@@ -1,4 +1,4 @@
-query GetProvinces($search: String = "", $skip: Int = 0, $take: Int = 10) {
+query GetProvinces($search: String = "", $skip: Int = null, $take: Int = null) {
     provinces(search: $search, skip: $skip, take: $take) {
         id
         name

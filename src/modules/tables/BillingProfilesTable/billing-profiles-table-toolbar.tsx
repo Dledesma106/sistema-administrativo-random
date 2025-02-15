@@ -1,37 +1,43 @@
 import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
+import { GetBusinessesQuery, GetClientsQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter';
 import { Label } from '@/components/ui/label';
 
 interface DataTableToolbarProps<TData> {
     table: Table<TData>;
+    businesses: GetBusinessesQuery['businesses'];
+    clients: GetClientsQuery['clients'];
 }
 
 export function BillingProfilesDataTableToolbar<TData>({
     table,
+    businesses,
+    clients,
 }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0;
 
     return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-                <Label>Buscar empresa</Label>
-                <Input
-                    placeholder="Filtrar por empresa..."
-                    value={
-                        (table.getColumn('businessName')?.getFilterValue() as string) ??
-                        ''
-                    }
-                    onChange={(event) =>
-                        table
-                            .getColumn('businessName')
-                            ?.setFilterValue(event.target.value)
-                    }
-                    className="max-w-sm"
-                />
-            </div>
+        <div className="flex items-center justify-start gap-2">
+            <Label>Filtrar por</Label>
+            <DataTableFacetedFilter
+                column={table.getColumn('businessName')}
+                title="Empresa"
+                options={businesses.map((business) => ({
+                    label: business.name,
+                    value: business.id,
+                }))}
+            />
+            <DataTableFacetedFilter
+                column={table.getColumn('clientName')}
+                title="Cliente"
+                options={clients.map((client) => ({
+                    label: client.name,
+                    value: client.id,
+                }))}
+            />
 
             {isFiltered && (
                 <Button

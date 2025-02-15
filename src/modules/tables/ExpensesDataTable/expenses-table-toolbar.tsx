@@ -2,8 +2,8 @@ import { Cross2Icon } from '@radix-ui/react-icons';
 import { Table } from '@tanstack/react-table';
 
 import { ExpenseStatus, ExpenseType, GetTechniciansQuery } from '@/api/graphql';
-import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter';
 import { Button } from '@/components/ui/button';
+import { DataTableFacetedFilter } from '@/components/ui/data-table/data-table-faceted-filter';
 import { Label } from '@/components/ui/label';
 import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
 

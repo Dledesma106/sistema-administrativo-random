@@ -346,10 +346,12 @@ const CreateOrUpdateBudgetForm = ({
                         )}
                     />
 
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex flex-row justify-end gap-4">
                         <Button
                             variant="outline"
-                            onClick={() => router.push('/accounting/budgets')}
+                            onClick={() =>
+                                router.push(routesBuilder.accounting.budgets.list())
+                            }
                             type="button"
                         >
                             Cancelar

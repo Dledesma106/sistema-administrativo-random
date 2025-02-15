@@ -1,5 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { BillingProfilesTableRowActions } from './billing-profiles-table-row-actions';
+
 export type BillingProfile = {
     id: string;
     businessName: string;
@@ -45,6 +47,14 @@ export const useBillingProfilesTableColumns = () => [
             >
                 {info.getValue()}
             </a>
+        ),
+    }),
+    columnHelper.display({
+        id: 'actions',
+        cell: ({ row }) => (
+            <div className="flex w-full justify-end">
+                <BillingProfilesTableRowActions profile={row.original} />
+            </div>
         ),
     }),
 ];

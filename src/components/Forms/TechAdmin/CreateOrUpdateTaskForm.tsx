@@ -543,16 +543,12 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                         }}
                     />
 
-                    <div className="mt-4 flex flex-row justify-between">
+                    <div className="mt-4 flex flex-row justify-end gap-4">
                         <Button
-                            type="button"
                             variant="outline"
+                            type="button"
                             onClick={() => {
-                                if (window.history?.length) {
-                                    router.back();
-                                } else {
-                                    router.replace(routesBuilder.tasks.list());
-                                }
+                                router.push(routesBuilder.tasks.list());
                             }}
                         >
                             Cancelar

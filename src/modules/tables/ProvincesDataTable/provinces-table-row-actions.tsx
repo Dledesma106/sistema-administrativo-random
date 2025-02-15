@@ -49,7 +49,7 @@ export function ProvincesTableRowActions({ province }: Props) {
     };
 
     return (
-        <>
+        <div className="flex w-full justify-end">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -77,6 +77,6 @@ export function ProvincesTableRowActions({ province }: Props) {
                 action={handleDelete}
                 msg="¿Seguro que quiere eliminar esta provincia?"
             />
-        </>
+        </div>
     );
 }

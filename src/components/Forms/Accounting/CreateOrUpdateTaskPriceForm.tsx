@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
+import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
 
 const taskTypeLabels: Record<TaskType, string> = {
@@ -212,10 +213,12 @@ const CreateOrUpdateTaskPriceForm = ({
                         )}
                     />
 
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex flex-row justify-end gap-4">
                         <Button
                             variant="outline"
-                            onClick={() => router.push('/accounting/task-prices')}
+                            onClick={() =>
+                                router.push(routesBuilder.accounting.taskPrices.list())
+                            }
                             type="button"
                         >
                             Cancelar

@@ -3036,13 +3036,13 @@ export const GetBusinessesDocument = {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    defaultValue: { kind: 'IntValue', value: '0' },
+                    defaultValue: { kind: 'NullValue' },
                 },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    defaultValue: { kind: 'IntValue', value: '10' },
+                    defaultValue: { kind: 'NullValue' },
                 },
             ],
             selectionSet: {
@@ -3125,13 +3125,13 @@ export const GetCitiesDocument = {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    defaultValue: { kind: 'IntValue', value: '0' },
+                    defaultValue: { kind: 'NullValue' },
                 },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    defaultValue: { kind: 'IntValue', value: '10' },
+                    defaultValue: { kind: 'NullValue' },
                 },
                 {
                     kind: 'VariableDefinition',
@@ -5702,13 +5702,13 @@ export const GetProvincesDocument = {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    defaultValue: { kind: 'IntValue', value: '0' },
+                    defaultValue: { kind: 'NullValue' },
                 },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    defaultValue: { kind: 'IntValue', value: '10' },
+                    defaultValue: { kind: 'NullValue' },
                 },
             ],
             selectionSet: {

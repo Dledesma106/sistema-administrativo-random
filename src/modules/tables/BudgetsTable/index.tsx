@@ -14,11 +14,13 @@ import {
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
+import { BudgetsDataTableToolbar } from './budgets-table-toolbar';
 import { useBudgetsTableColumns } from './columns';
 
 import { BudgetStatus } from '@/components/ui/Badges/BudgetStatusBadge';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import { routesBuilder } from '@/lib/routes';
 
 type Props = {
     data: {
@@ -28,9 +30,13 @@ type Props = {
         price: number;
         status: BudgetStatus;
     }[];
+    businesses: {
+        id: string;
+        name: string;
+    }[];
 };
 
-export default function BudgetsDataTable({ data }: Props) {
+export default function BudgetsDataTable({ data, businesses }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -61,7 +67,7 @@ export default function BudgetsDataTable({ data }: Props) {
 
     const headerActions = (
         <Button asChild className="flex items-center space-x-2">
-            <Link href="/accounting/budgets/new">
+            <Link href={routesBuilder.accounting.budgets.create()}>
                 <BsPlus size="20" />
                 <span>Crear Presupuesto</span>
             </Link>
@@ -73,12 +79,15 @@ export default function BudgetsDataTable({ data }: Props) {
             table={table}
             title="Presupuestos"
             totalCount={data.length}
+            toolbar={<BudgetsDataTableToolbar table={table} businesses={businesses} />}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             headerActions={headerActions}
-            onRowClick={(row) => router.push(`/accounting/budgets/${row.id}`)}
+            onRowClick={(row) =>
+                router.push(routesBuilder.accounting.budgets.details(row.id))
+            }
         />
     );
 }

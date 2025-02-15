@@ -1,5 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { BudgetsTableRowActions } from './budgets-table-row-actions';
+
 import BudgetStatusBadge, {
     BudgetStatus,
 } from '@/components/ui/Badges/BudgetStatusBadge';
@@ -45,5 +47,13 @@ export const useBudgetsTableColumns = () => [
                 currency: 'ARS',
             });
         },
+    }),
+    columnHelper.display({
+        id: 'actions',
+        cell: ({ row }) => (
+            <div className="flex w-full justify-end">
+                <BudgetsTableRowActions budget={row.original} />
+            </div>
+        ),
     }),
 ];

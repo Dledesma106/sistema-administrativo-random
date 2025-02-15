@@ -2,7 +2,7 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import { ReactNode, useMemo } from 'react';
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { CustomScrollArea } from '@/components/ui/scroll-area/index';
+import { CustomScrollArea } from '@/components/ui/custom-scroll-area/index';
 import { cn } from '@/lib/utils';
 
 export interface SelectableOption {

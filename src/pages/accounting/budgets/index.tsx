@@ -1,4 +1,6 @@
 import { BudgetStatus } from '@/components/ui/Badges/BudgetStatusBadge';
+import { TableSkeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 import BudgetsDataTable from '@/modules/tables/BudgetsTable';
 
 // Mock data para la tabla
@@ -34,9 +36,18 @@ const mockBudgets = [
 ];
 
 export default function BudgetsPage() {
+    const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
+
+    if (isLoadingBusinesses) {
+        return <TableSkeleton />;
+    }
+
     return (
         <div className="p-4">
-            <BudgetsDataTable data={mockBudgets} />
+            <BudgetsDataTable
+                data={mockBudgets}
+                businesses={businessesData?.businesses || []}
+            />
         </div>
     );
 }

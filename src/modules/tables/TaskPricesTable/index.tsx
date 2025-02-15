@@ -19,6 +19,7 @@ import { TaskPricesDataTableToolbar } from './task-prices-table-toolbar';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import { routesBuilder } from '@/lib/routes';
 
 type Props = {
     data: {
@@ -27,9 +28,13 @@ type Props = {
         taskType: string;
         price: number;
     }[];
+    businesses: {
+        id: string;
+        name: string;
+    }[];
 };
 
-export default function TaskPricesDataTable({ data }: Props) {
+export default function TaskPricesDataTable({ data, businesses }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -59,7 +64,7 @@ export default function TaskPricesDataTable({ data }: Props) {
 
     const headerActions = (
         <Button asChild className="flex items-center space-x-2">
-            <Link href="/accounting/task-prices/new">
+            <Link href={routesBuilder.accounting.taskPrices.create()}>
                 <BsPlus size="20" />
                 <span>Crear precio</span>
             </Link>
@@ -70,7 +75,7 @@ export default function TaskPricesDataTable({ data }: Props) {
         <DataTable
             table={table}
             title="Precios por tarea"
-            toolbar={<TaskPricesDataTableToolbar table={table} />}
+            toolbar={<TaskPricesDataTableToolbar table={table} businesses={businesses} />}
             totalCount={data.length}
             page={page}
             pageSize={pageSize}

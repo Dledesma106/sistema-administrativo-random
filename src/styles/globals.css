@@ -72,6 +72,20 @@
         --skeleton: 215 27.9% 16.9%;  /* color para modo oscuro */
         --skeleton-foreground: 215 27.9% 16.9%;
     }
+
+    html, body {
+        @apply overflow-auto;
+    }
+
+    * {
+        @apply scrollbar-thin 
+        scrollbar-thumb-background hover:scrollbar-thumb-primary
+        scrollbar-track-background
+        [&::-webkit-scrollbar]:w-1.5
+        [&::-webkit-scrollbar-thumb]:rounded-full
+        [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-button]:bg-transparent;
+    }
 }
 
 @layer base {
@@ -82,4 +96,8 @@
     body {
         @apply bg-background font-sans text-foreground;
     }
+}
+
+.hide-scrollbar {
+    @apply overflow-hidden;
 }

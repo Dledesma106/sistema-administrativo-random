@@ -18,15 +18,18 @@ import { BillingProfilesDataTableToolbar } from './billing-profiles-table-toolba
 import { useBillingProfilesTableColumns } from './columns';
 import type { BillingProfile } from './columns';
 
+import { GetBusinessesQuery, GetClientsQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { routesBuilder } from '@/lib/routes';
 
 type Props = {
     data: BillingProfile[];
+    businesses: GetBusinessesQuery['businesses'];
+    clients: GetClientsQuery['clients'];
 };
 
-export default function BillingProfilesDataTable({ data }: Props) {
+export default function BillingProfilesDataTable({ data, businesses, clients }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -57,7 +60,7 @@ export default function BillingProfilesDataTable({ data }: Props) {
 
     const headerActions = (
         <Button asChild className="flex items-center space-x-2">
-            <Link href="/accounting/billing-profiles/new">
+            <Link href={routesBuilder.accounting.billingProfiles.create()}>
                 <BsPlus size="20" />
                 <span>Crear Perfil</span>
             </Link>
@@ -68,7 +71,13 @@ export default function BillingProfilesDataTable({ data }: Props) {
         <DataTable
             table={table}
             title="Perfiles de Facturación"
-            toolbar={<BillingProfilesDataTableToolbar table={table} />}
+            toolbar={
+                <BillingProfilesDataTableToolbar
+                    table={table}
+                    businesses={businesses}
+                    clients={clients}
+                />
+            }
             totalCount={data.length}
             page={page}
             pageSize={pageSize}

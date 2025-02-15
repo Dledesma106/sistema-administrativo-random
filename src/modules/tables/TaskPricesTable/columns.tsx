@@ -1,6 +1,8 @@
 import { TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 
+import { TaskPricesTableRowActions } from './task-prices-table-row-actions';
+
 import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
 
 export type TaskPrice = {
@@ -29,5 +31,9 @@ export const useTaskPricesTableColumns = () => [
                 currency: 'ARS',
             });
         },
+    }),
+    columnHelper.display({
+        id: 'actions',
+        cell: ({ row }) => <TaskPricesTableRowActions taskPrice={row.original} />,
     }),
 ];

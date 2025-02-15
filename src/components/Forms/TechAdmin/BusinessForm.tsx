@@ -93,8 +93,8 @@ export default function BusinessForm({
                         rules={{ required: 'Este campo es requerido' }}
                     />
 
-                    <div className="flex flex-row justify-between">
-                        <Button variant="secondary" type="button" asChild>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button variant="outline" type="button" asChild>
                             <Link href="/tech-admin/businesses">Cancelar</Link>
                         </Button>
                         <Button

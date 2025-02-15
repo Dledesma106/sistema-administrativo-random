@@ -11,14 +11,15 @@ export function CustomScrollArea({ children, className, height = "h-[500px]" }: 
     return (
         <div className={cn(
             "overflow-auto",
-            "rounded-md border border-primary/50",
+            "rounded-md border border-accent",
             height,
-            "scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent",
-            "hover:scrollbar-thumb-primary/80",
+            "scrollbar-thin",
+            "scrollbar-thumb-primary",
+            "scrollbar-track-background",
             "[&::-webkit-scrollbar]:w-1.5",
             "[&::-webkit-scrollbar-thumb]:rounded-full",
             "[&::-webkit-scrollbar-track]:bg-transparent",
-            "[&::-webkit-scrollbar-button]:hidden",
+            "[&::-webkit-scrollbar-button]:bg-transparent",
             className
         )}>
             {children}

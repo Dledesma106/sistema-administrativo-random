@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { CgPassword } from 'react-icons/cg';
 
@@ -78,45 +79,43 @@ export function UsersTableRowActions({ user }: Props) {
     return (
         <>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
                         <DotsHorizontalIcon className="h-4 w-4" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    align="end"
-                    className="w-[160px]"
-                    onClick={(e) => e.stopPropagation()}
-                >
+                <DropdownMenuContent align="end" className="w-[160px]">
                     <DropdownMenuItem asChild>
                         <div
-                            onClick={(e) => {
-                                e.stopPropagation();
+                            onClick={() => {
                                 router.push(routesBuilder.users.edit(user.id));
                             }}
+                            className="flex items-center gap-2"
                         >
+                            <Pencil className="mr-2 h-4 w-4" />
                             Editar
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <div
-                            onClick={(e) => {
-                                e.stopPropagation();
+                            onClick={() => {
                                 setDeleteModal(true);
                             }}
+                            className="flex items-center gap-2"
                         >
+                            <Trash2 className="mr-2 h-4 w-4" />
                             Eliminar
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <div
-                            onClick={(e) => {
-                                e.stopPropagation();
+                            onClick={() => {
                                 setPasswordModal(true);
                             }}
+                            className="flex items-center gap-2"
                         >
-                            <CgPassword className="mr-2" />
+                            <CgPassword className="mr-2 h-4 w-4" />
                             Regenerar contraseña
                         </div>
                     </DropdownMenuItem>

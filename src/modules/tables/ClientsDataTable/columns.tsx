@@ -14,7 +14,6 @@ export const useClientsTableColumns = () => [
     }),
     columnHelper.display({
         id: 'actions',
-        header: 'Acciones',
         cell: (props) => <ClientsTableRowActions client={props.row.original} />,
     }),
 ];

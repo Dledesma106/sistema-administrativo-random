@@ -22,6 +22,7 @@ import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { useCreateUser } from '@/hooks/api/user/useCreateUser';
 import { useUpdateUser } from '@/hooks/api/user/useUpdateUser';
+import { routesBuilder } from '@/lib/routes';
 
 export interface UserFormProps {
     cities: GetCitiesQuery['cities'];
@@ -269,9 +270,9 @@ export default function CreateOrUpdateUserForm({
                         )}
                     />
 
-                    <div className="flex justify-between space-x-8">
-                        <Button asChild type="button" variant="secondary">
-                            <Link href="/tech-admin/users">Cancelar</Link>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button variant="outline" type="button" asChild>
+                            <Link href={routesBuilder.users.list()}>Cancelar</Link>
                         </Button>
 
                         <ButtonWithSpinner
