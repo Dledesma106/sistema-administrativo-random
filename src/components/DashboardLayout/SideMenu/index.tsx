@@ -65,7 +65,7 @@ export default function SideMenu(): JSX.Element {
     };
 
     return (
-        <div className="bg-background-primary flex h-screen w-80 flex-col border-r border-border px-4">
+        <div className="flex h-screen w-80 flex-col border-r border-border bg-background-primary px-4">
             <div className="space-y-4 pt-7">
                 <Logo light={theme !== 'light'} />
 
