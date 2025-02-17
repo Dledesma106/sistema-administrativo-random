@@ -33,7 +33,7 @@ export function DataTablePagination({
         Math.ceil(totalCount / pageSize) === 0 ? 1 : Math.ceil(totalCount / pageSize);
 
     return (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between">
             <div className="flex-1 text-sm text-muted-foreground">
                 {totalCount} resultados totales
             </div>

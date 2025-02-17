@@ -55,7 +55,7 @@ export function DataTable<TData>({
 
     return (
         <div className='flex flex-col gap-1'>
-            <div className="rounded-lg border border-accent bg-background-primary p-4 flex flex-col gap-1">
+            <div className="rounded-lg border border-accent bg-background-primary pb-2 pt-4 px-4 flex flex-col gap-1">
                 {/* Header */}
                     <div className="flex justify-between">
                         <TypographyH1>{title}</TypographyH1>
