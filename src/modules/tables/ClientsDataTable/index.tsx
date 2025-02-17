@@ -30,7 +30,11 @@ export function ClientsDataTable() {
     useEffect(() => {
         setPage(0);
         refetch();
-    }, [searchTerm]);
+    }, [searchTerm, pageSize]);
+
+    useEffect(() => {
+        refetch();
+    }, [page, pageSize]);
 
     const handleSearch = (term: string) => {
         setSearchTerm(term);
@@ -41,6 +45,13 @@ export function ClientsDataTable() {
         columns,
         getCoreRowModel: getCoreRowModel(),
         manualPagination: true,
+        pageCount: Math.ceil((data?.clientsCount || 0) / pageSize),
+        state: {
+            pagination: {
+                pageIndex: page,
+                pageSize,
+            },
+        },
     });
 
     if (error) {

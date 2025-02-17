@@ -18,6 +18,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
@@ -166,7 +167,7 @@ const CreateOrUpdateBudgetForm = ({
                     />
 
                     {isNewBusiness && (
-                        <div className="space-y-4 rounded-lg border border-gray-200 p-4">
+                        <div className="space-y-4 rounded-lg border border-accent p-4">
                             <CreateOrUpdateBillingProfileForm
                                 businesses={businesses}
                                 isEmbedded={true}
@@ -304,10 +305,10 @@ const CreateOrUpdateBudgetForm = ({
                             <FormItem>
                                 <FormLabel>Descripción</FormLabel>
                                 <FormControl>
-                                    <Input
+                                    <Textarea
                                         placeholder="Descripción del presupuesto"
-                                        type="text"
-                                        {...field}
+                                        value={field.value || ''}
+                                        onChange={field.onChange}
                                     />
                                 </FormControl>
                                 <FormMessage />

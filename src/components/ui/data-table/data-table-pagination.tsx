@@ -48,7 +48,7 @@ export function DataTablePagination({
                             onPageChange(0);
                         }}
                     >
-                        <SelectTrigger className="h-8 w-[70px]">
+                        <SelectTrigger className="h-8 w-[70px] border-accent">
                             <SelectValue placeholder={pageSize} />
                         </SelectTrigger>
                         <SelectContent side="top" className="bg-background text-foreground">

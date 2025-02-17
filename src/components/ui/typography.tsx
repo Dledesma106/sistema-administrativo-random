@@ -29,7 +29,7 @@ export function TypographyH2({ children, className, asChild }: Props) {
     return (
         <Comp
             className={cn(
-                'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0',
+                'scroll-m-20 border-b border-accent pb-2 text-3xl font-semibold tracking-tight first:mt-0',
                 className,
             )}
         >

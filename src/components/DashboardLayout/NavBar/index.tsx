@@ -198,7 +198,7 @@ export default function NavBar() {
     return (
         <nav className="w-full bg-background-primary">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-accent px-4 py-2">
+            <div className="flex items-center justify-between px-4 py-2">
                 <Logo light={theme !== 'light'} />
                 <div className="flex items-center gap-4">
                     {userSections.length > 1 && (
