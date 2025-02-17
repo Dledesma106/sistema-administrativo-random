@@ -1,6 +1,11 @@
 import { Expense } from '@prisma/client';
 
-import { ExpenseStatusPothosRef, ExpenseTypePothosRef, ExpensePothosRef } from './refs';
+import {
+    ExpenseStatusPothosRef,
+    ExpenseTypePothosRef,
+    ExpensePothosRef,
+    ExpensePaySourcePothosRef,
+} from './refs';
 
 import { prisma } from 'lib/prisma';
 
@@ -131,6 +136,10 @@ builder.queryFields((t) => ({
                 type: [ExpenseTypePothosRef],
                 required: false,
             }),
+            paySource: t.arg({
+                type: [ExpensePaySourcePothosRef],
+                required: false,
+            }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
         },
@@ -147,6 +156,9 @@ builder.queryFields((t) => ({
                     }),
                     ...(filters.registeredBy?.length && {
                         registeredById: { in: filters.registeredBy },
+                    }),
+                    ...(filters.paySource?.length && {
+                        paySource: { in: filters.paySource },
                     }),
                 },
                 skip: skip || 0,
@@ -169,6 +181,10 @@ builder.queryFields((t) => ({
                 type: [ExpenseTypePothosRef],
                 required: false,
             }),
+            paySource: t.arg({
+                type: [ExpensePaySourcePothosRef],
+                required: false,
+            }),
         },
         resolve: async (_parent, filters) => {
             return prisma.expense.count({
@@ -182,6 +198,9 @@ builder.queryFields((t) => ({
                     }),
                     ...(filters.registeredBy?.length && {
                         registeredById: { in: filters.registeredBy },
+                    }),
+                    ...(filters.paySource?.length && {
+                        paySource: { in: filters.paySource },
                     }),
                 },
             });

@@ -61,6 +61,8 @@ export default function CreateOrUpdateUserForm({
             roles: data.roles?.map((role) => role.value) || [],
         };
 
+        console.log(input);
+
         if (!userIdToUpdate) {
             postUserMutation.mutate(
                 { input },

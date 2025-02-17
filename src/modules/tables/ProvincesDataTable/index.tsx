@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useProvincesTableColumns } from './columns';
-import { ProvincesTableToolbar } from './provinces-table-toolbar';
+import { getProvincesTableToolbarConfig } from './toolbar-config';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -65,13 +65,7 @@ export function ProvincesDataTable() {
         <DataTable
             table={table}
             title="Provincias"
-            toolbar={
-                <ProvincesTableToolbar
-                    table={table}
-                    searchTerm={searchTerm}
-                    onSearch={handleSearch}
-                />
-            }
+            toolbarConfig={getProvincesTableToolbarConfig(searchTerm, handleSearch)}
             totalCount={data?.provincesCount || 0}
             page={page}
             pageSize={pageSize}

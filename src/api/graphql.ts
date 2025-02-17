@@ -653,6 +653,7 @@ export type QueryExpenseByIdArgs = {
 
 export type QueryExpensesArgs = {
     expenseType: InputMaybe<Array<ExpenseType>>;
+    paySource: InputMaybe<Array<ExpensePaySource>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
     skip: InputMaybe<Scalars['Int']>;
     status: InputMaybe<Array<ExpenseStatus>>;
@@ -661,6 +662,7 @@ export type QueryExpensesArgs = {
 
 export type QueryExpensesCountArgs = {
     expenseType: InputMaybe<Array<ExpenseType>>;
+    paySource: InputMaybe<Array<ExpensePaySource>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
     status: InputMaybe<Array<ExpenseStatus>>;
 };
@@ -740,7 +742,7 @@ export type QueryUserArgs = {
 };
 
 export type QueryUsersArgs = {
-    cityId: InputMaybe<Scalars['String']>;
+    cityId: InputMaybe<Array<Scalars['String']>>;
     roles: InputMaybe<Array<Role>>;
     search: InputMaybe<Scalars['String']>;
     skip: InputMaybe<Scalars['Int']>;
@@ -748,7 +750,7 @@ export type QueryUsersArgs = {
 };
 
 export type QueryUsersCountArgs = {
-    cityId: InputMaybe<Scalars['String']>;
+    cityId: InputMaybe<Array<Scalars['String']>>;
     roles: InputMaybe<Array<Role>>;
     search: InputMaybe<Scalars['String']>;
 };
@@ -1286,6 +1288,7 @@ export type GetExpensesQueryVariables = Exact<{
     registeredBy: InputMaybe<Array<Scalars['String']>>;
     status: InputMaybe<Array<ExpenseStatus>>;
     expenseType: InputMaybe<Array<ExpenseType>>;
+    paySource: InputMaybe<Array<ExpensePaySource>>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
 }>;
@@ -1753,8 +1756,8 @@ export type GetUsersQueryVariables = Exact<{
     search?: InputMaybe<Scalars['String']>;
     skip?: InputMaybe<Scalars['Int']>;
     take?: InputMaybe<Scalars['Int']>;
-    cityId?: InputMaybe<Scalars['String']>;
-    roles?: InputMaybe<Array<Role>>;
+    cityId: InputMaybe<Array<Scalars['String']>>;
+    roles: InputMaybe<Array<Role>>;
 }>;
 
 export type GetUsersQuery = {
@@ -1865,8 +1868,6 @@ export type GetUserQuery = {
     __typename?: 'Query';
     user: {
         __typename?: 'User';
-        id: string;
-        fullName: string;
         firstName: string;
         lastName: string;
         email: string;
@@ -4309,6 +4310,23 @@ export const GetExpensesDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'paySource' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'ExpensePaySource' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
@@ -4347,6 +4365,14 @@ export const GetExpensesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'expenseType' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'paySource' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'paySource' },
                                 },
                             },
                             {
@@ -4556,6 +4582,14 @@ export const GetExpensesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'expenseType' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'paySource' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'paySource' },
                                 },
                             },
                         ],
@@ -7362,8 +7396,16 @@ export const GetUsersDocument = {
                         kind: 'Variable',
                         name: { kind: 'Name', value: 'cityId' },
                     },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
-                    defaultValue: { kind: 'StringValue', value: '', block: false },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
                 },
                 {
                     kind: 'VariableDefinition',
@@ -7381,7 +7423,6 @@ export const GetUsersDocument = {
                             },
                         },
                     },
-                    defaultValue: { kind: 'ListValue', values: [] },
                 },
             ],
             selectionSet: {
@@ -7970,11 +8011,6 @@ export const GetUserDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'fullName' },
-                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'firstName' },

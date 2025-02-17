@@ -8,9 +8,10 @@ import {
 import { useEffect, useState } from 'react';
 
 import { useExpensesTableColumns } from './columns';
-import { ExpensesDataTableToolbar } from './expenses-table-toolbar';
+import { getExpensesTableToolbarConfig } from './toolbar-config';
 
 import {
+    ExpensePaySource,
     ExpenseStatus,
     ExpenseType,
     GetExpensesQuery,
@@ -53,6 +54,9 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         expenseType:
             (columnFilters.find((f) => f.id === 'expenseType')?.value as ExpenseType[]) ||
             null,
+        paySource:
+            (columnFilters.find((f) => f.id === 'paySource')
+                ?.value as ExpensePaySource[]) || null,
     });
     const { user } = useUserContext();
     const columns = useExpensesTableColumns();
@@ -96,7 +100,7 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         <DataTable
             table={table}
             title="Gastos"
-            toolbar={<ExpensesDataTableToolbar table={table} {...props} />}
+            toolbarConfig={getExpensesTableToolbarConfig(props.techs)}
             totalCount={data?.expensesCount || 0}
             page={page}
             pageSize={pageSize}

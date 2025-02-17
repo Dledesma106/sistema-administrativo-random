@@ -15,8 +15,6 @@ export const CityQueries = builder.queryFields((t) => ({
             rules: ['IsAuthenticated'],
         },
         resolve: async (query, _parent, { search, skip, take, provinceId }) => {
-            console.log('skip', skip);
-            console.log('take', take);
             return prisma.city.findMany({
                 ...query,
                 where: {

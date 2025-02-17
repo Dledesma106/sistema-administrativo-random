@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useUsersTableColumns } from './columns';
-import { UsersTableToolbar } from './users-table-toolbar';
+import { getUsersTableToolbarConfig } from './toolbar-config';
 
 import { GetCitiesQuery, Role } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,9 @@ export function UsersDataTable({ cities }: Props) {
         skip: page * pageSize,
         take: pageSize,
         search: searchTerm || undefined,
-        cityId: (columnFilters.find((f) => f.id === 'cityId')?.value as string[])?.[0],
+        cityId: (columnFilters.find((f) => f.id === 'cityId')?.value as string[])?.map(
+            (city) => city as string,
+        ),
         roles: (columnFilters.find((f) => f.id === 'roleFilter')?.value as string[])?.map(
             (role) => role as Role,
         ),
@@ -88,14 +90,7 @@ export function UsersDataTable({ cities }: Props) {
         <DataTable
             table={table}
             title="Usuarios"
-            toolbar={
-                <UsersTableToolbar
-                    table={table}
-                    searchTerm={searchTerm}
-                    onSearch={handleSearch}
-                    cities={cities}
-                />
-            }
+            toolbarConfig={getUsersTableToolbarConfig(cities, searchTerm, handleSearch)}
             totalCount={data?.usersCount || 0}
             page={page}
             pageSize={pageSize}

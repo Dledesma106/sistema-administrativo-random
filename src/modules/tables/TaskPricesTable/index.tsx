@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { TaskPrice, useTaskPricesTableColumns } from './columns';
-import { TaskPricesDataTableToolbar } from './task-prices-table-toolbar';
+import { getTaskPricesTableToolbarConfig } from './toolbar-config';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -75,14 +75,16 @@ export default function TaskPricesDataTable({ data, businesses }: Props) {
         <DataTable
             table={table}
             title="Precios por tarea"
-            toolbar={<TaskPricesDataTableToolbar table={table} businesses={businesses} />}
+            toolbarConfig={getTaskPricesTableToolbarConfig(businesses)}
             totalCount={data.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             headerActions={headerActions}
-            onRowClick={(row) => router.push(`/accounting/task-prices/${row.id}/edit`)}
+            onRowClick={(row) =>
+                router.push(routesBuilder.accounting.taskPrices.edit(row.id))
+            }
         />
     );
 }

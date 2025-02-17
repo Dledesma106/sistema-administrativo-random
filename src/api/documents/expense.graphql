@@ -42,6 +42,7 @@ query GetExpenses(
     $registeredBy: [String!], 
     $status: [ExpenseStatus!], 
     $expenseType: [ExpenseType!],
+    $paySource: [ExpensePaySource!],
     $skip: Int,
     $take: Int
 ) {
@@ -49,6 +50,7 @@ query GetExpenses(
         registeredBy: $registeredBy, 
         status: $status, 
         expenseType: $expenseType,
+        paySource: $paySource,
         skip: $skip,
         take: $take
     ) {
@@ -88,7 +90,8 @@ query GetExpenses(
     expensesCount(
         registeredBy: $registeredBy, 
         status: $status, 
-        expenseType: $expenseType
+        expenseType: $expenseType,
+        paySource: $paySource
     )
 }
 

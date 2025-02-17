@@ -14,9 +14,9 @@ import {
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { BillingProfilesDataTableToolbar } from './billing-profiles-table-toolbar';
 import { useBillingProfilesTableColumns } from './columns';
 import type { BillingProfile } from './columns';
+import { getBillingProfilesTableToolbarConfig } from './toolbar-config';
 
 import { GetBusinessesQuery, GetClientsQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
@@ -71,13 +71,7 @@ export default function BillingProfilesDataTable({ data, businesses, clients }: 
         <DataTable
             table={table}
             title="Perfiles de Facturación"
-            toolbar={
-                <BillingProfilesDataTableToolbar
-                    table={table}
-                    businesses={businesses}
-                    clients={clients}
-                />
-            }
+            toolbarConfig={getBillingProfilesTableToolbarConfig(businesses, clients)}
             totalCount={data.length}
             page={page}
             pageSize={pageSize}

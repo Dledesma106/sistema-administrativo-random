@@ -14,8 +14,8 @@ import {
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { BudgetsDataTableToolbar } from './budgets-table-toolbar';
 import { useBudgetsTableColumns } from './columns';
+import { getBudgetsTableToolbarConfig } from './toolbar-config';
 
 import { BudgetStatus } from '@/components/ui/Badges/BudgetStatusBadge';
 import { Button } from '@/components/ui/button';
@@ -65,26 +65,24 @@ export default function BudgetsDataTable({ data, businesses }: Props) {
         },
     });
 
-    const headerActions = (
-        <Button asChild className="flex items-center space-x-2">
-            <Link href={routesBuilder.accounting.budgets.create()}>
-                <BsPlus size="20" />
-                <span>Crear Presupuesto</span>
-            </Link>
-        </Button>
-    );
-
     return (
         <DataTable
             table={table}
             title="Presupuestos"
+            toolbarConfig={getBudgetsTableToolbarConfig(businesses)}
             totalCount={data.length}
-            toolbar={<BudgetsDataTableToolbar table={table} businesses={businesses} />}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
-            headerActions={headerActions}
+            headerActions={
+                <Button asChild className="flex items-center space-x-2">
+                    <Link href={routesBuilder.accounting.budgets.create()}>
+                        <BsPlus size="20" />
+                        <span>Crear Presupuesto</span>
+                    </Link>
+                </Button>
+            }
             onRowClick={(row) =>
                 router.push(routesBuilder.accounting.budgets.details(row.id))
             }

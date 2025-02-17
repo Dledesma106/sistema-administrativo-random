@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { getClientBranchesTableColumns } from './client-branches-columns';
-import { ClientBranchesTableToolbar } from './client-branches-table-toolbar';
+import { getClientBranchesTableToolbarConfig } from './toolbar-config';
 
 import { GetBusinessesQuery, GetCitiesQuery, GetClientQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
@@ -31,16 +31,17 @@ export const ClientBranchesTable = ({ client, cities, businesses }: Props) => {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
 
-    // Extraer los filtros actuales
-    const cityFilter = columnFilters.find((filter) => filter.id === 'city')
-        ?.value as string;
-    const businessFilter = columnFilters.find((filter) => filter.id === 'businesses')
-        ?.value as string;
+    // Extraer los filtros actuales como arrays
+    const cityFilter =
+        (columnFilters.find((filter) => filter.id === 'city')?.value as string[]) || null;
+    const businessFilter =
+        (columnFilters.find((filter) => filter.id === 'businesses')?.value as string[]) ||
+        null;
 
     const { data: branchesData, error: branchesError } = useGetClientBranches({
         clientId: client.id,
-        cityId: cityFilter ? [cityFilter] : null,
-        businessId: businessFilter ? [businessFilter] : null,
+        cityId: cityFilter,
+        businessId: businessFilter,
         skip: page * pageSize,
         take: pageSize,
     });
@@ -69,13 +70,16 @@ export const ClientBranchesTable = ({ client, cities, businesses }: Props) => {
             <DataTable
                 table={table}
                 title={`Sucursales de ${client.name}`}
-                toolbar={
-                    <ClientBranchesTableToolbar
-                        table={table}
-                        cities={cities}
-                        businesses={businesses}
-                    />
-                }
+                toolbarConfig={getClientBranchesTableToolbarConfig(
+                    cities,
+                    businesses,
+                    table,
+                )}
+                totalCount={branchesData.clientBranchesCount || 0}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
                 headerActions={
                     <Button asChild className="flex items-center space-x-2">
                         <Link href={routesBuilder.branches.create(client.id)}>
@@ -84,11 +88,6 @@ export const ClientBranchesTable = ({ client, cities, businesses }: Props) => {
                         </Link>
                     </Button>
                 }
-                totalCount={branchesData.clientBranchesCount || 0}
-                page={page}
-                pageSize={pageSize}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
             />
         );
     }

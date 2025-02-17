@@ -1,4 +1,4 @@
-query GetUsers($search: String = "", $skip: Int = 0, $take: Int = 10, $cityId: String = "", $roles: [Role!] = []) {
+query GetUsers($search: String = "", $skip: Int = 0, $take: Int = 10, $cityId: [String!], $roles: [Role!]) {
     users(search: $search, skip: $skip, take: $take, cityId: $cityId, roles: $roles) {
         id
         fullName
@@ -85,8 +85,6 @@ mutation sendNewUserRandomPassword($id: String!) {
 
 query GetUser($id: String!) {
     user(id: $id) {
-        id
-        fullName
         firstName
         lastName
         email

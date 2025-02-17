@@ -4,8 +4,8 @@ import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { BusinessesTableToolbar } from './businesses-table-toolbar';
 import { useBusinessesTableColumns } from './columns';
+import { getBusinessesTableToolbarConfig } from './toolbar-config';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -67,13 +67,7 @@ export function BusinessesDataTable() {
         <DataTable
             table={table}
             title="Empresas"
-            toolbar={
-                <BusinessesTableToolbar
-                    table={table}
-                    searchTerm={searchTerm}
-                    onSearch={handleSearch}
-                />
-            }
+            toolbarConfig={getBusinessesTableToolbarConfig(searchTerm, handleSearch)}
             totalCount={data?.businessesCount || 0}
             page={page}
             pageSize={pageSize}

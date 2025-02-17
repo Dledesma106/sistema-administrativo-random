@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useTasksTableColumns } from './columns';
-import { TasksDataTableToolbar } from './tasks-table-toolbar';
+import { getTasksTableToolbarConfig } from './toolbar-config';
 
 import {
     GetCitiesQuery,
@@ -101,7 +101,12 @@ export default function TasksDataTable(props: Props): JSX.Element {
         <DataTable
             table={table}
             title="Tareas"
-            toolbar={<TasksDataTableToolbar table={table} {...props} />}
+            toolbarConfig={getTasksTableToolbarConfig(
+                props.cities,
+                props.clients,
+                props.businesses,
+                props.techs,
+            )}
             totalCount={data?.tasksCount || 0}
             page={page}
             pageSize={pageSize}

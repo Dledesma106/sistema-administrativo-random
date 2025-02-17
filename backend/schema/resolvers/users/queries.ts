@@ -11,7 +11,10 @@ export const UserQueries = builder.queryFields((t) => ({
             search: t.arg.string({ required: false }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
-            cityId: t.arg.string({ required: false }),
+            cityId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
             roles: t.arg({
                 type: [RolePothosRef],
                 required: false,
@@ -41,7 +44,9 @@ export const UserQueries = builder.queryFields((t) => ({
                         ],
                     }),
                     ...(cityId && {
-                        cityId,
+                        cityId: {
+                            in: cityId,
+                        },
                     }),
                     ...(roles &&
                         roles.length > 0 && {
@@ -62,7 +67,10 @@ export const UserQueries = builder.queryFields((t) => ({
     usersCount: t.int({
         args: {
             search: t.arg.string({ required: false }),
-            cityId: t.arg.string({ required: false }),
+            cityId: t.arg({
+                type: ['String'],
+                required: false,
+            }),
             roles: t.arg({
                 type: [RolePothosRef],
                 required: false,
@@ -92,7 +100,9 @@ export const UserQueries = builder.queryFields((t) => ({
                         ],
                     }),
                     ...(cityId && {
-                        cityId,
+                        cityId: {
+                            in: cityId,
+                        },
                     }),
                     ...(roles &&
                         roles.length > 0 && {

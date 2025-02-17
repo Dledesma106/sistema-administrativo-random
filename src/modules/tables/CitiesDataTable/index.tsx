@@ -8,8 +8,8 @@ import {
 import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { CitiesTableToolbar } from './cities-table-toolbar';
 import { useCitiesTableColumns } from './columns';
+import { getCitiesTableToolbarConfig } from './toolbar-config';
 
 import { GetProvincesQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
@@ -86,14 +86,11 @@ export function CitiesDataTable({ provinces }: CitiesDataTableProps) {
         <DataTable
             table={table}
             title="Localidades"
-            toolbar={
-                <CitiesTableToolbar
-                    table={table}
-                    searchTerm={searchTerm}
-                    onSearch={handleSearch}
-                    provinces={provinces}
-                />
-            }
+            toolbarConfig={getCitiesTableToolbarConfig(
+                searchTerm,
+                handleSearch,
+                provinces,
+            )}
             totalCount={data?.citiesCount || 0}
             page={page}
             pageSize={pageSize}

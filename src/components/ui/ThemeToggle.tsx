@@ -12,7 +12,7 @@ export function ThemeToggle() {
     <Button
       onClick={toggleTheme}
       variant="ghost"
-      className="w-full relative h-10 bg-primary transition-colors duration-300 rounded-full"
+      className="w-20 relative h-10 bg-accent transition-colors duration-300 rounded-full"
       aria-label={isLight ? 'Activar modo oscuro' : 'Activar modo claro'}
     >
       <div className="absolute inset-0 flex items-center px-1">
@@ -30,9 +30,9 @@ export function ThemeToggle() {
             ${isLight ? 'left-1 bg-accent' : 'left-[calc(100%-1.75rem)] bg-accent'}
           `}>
             {isLight ? (
-              <Moon className="h-4 w-4 text-foreground" />
-            ) : (
               <Sun className="h-4 w-4 text-foreground" />
+            ) : (
+              <Moon className="h-4 w-4 text-foreground" />
             )}
           </div>
         </div>

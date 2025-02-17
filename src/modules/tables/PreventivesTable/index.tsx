@@ -10,7 +10,7 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { PREVENTIVES_TABLE_COLUMNS } from './columns';
-import { PreventivesTableToolbar } from './preventives-table-toolbar';
+import { getPreventivesTableToolbarConfig } from './toolbar-config';
 
 import {
     GetBusinessesQuery,
@@ -89,27 +89,24 @@ export const PreventivesTable = ({
         <DataTable
             table={table}
             title="Preventivos"
-            toolbar={
-                <PreventivesTableToolbar
-                    table={table}
-                    cities={cities}
-                    businesses={businesses}
-                    clients={clients}
-                    technicians={technicians}
-                />
-            }
-            headerActions={
-                <Button onClick={() => router.push(routesBuilder.preventives.create())}>
-                    <Plus />
-                    Nuevo Preventivo
-                </Button>
-            }
+            toolbarConfig={getPreventivesTableToolbarConfig(
+                businesses,
+                cities,
+                technicians,
+                clients,
+            )}
             totalCount={data?.preventivesCount || 0}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             onRowClick={(row) => router.push(routesBuilder.preventives.details(row.id))}
+            headerActions={
+                <Button onClick={() => router.push(routesBuilder.preventives.create())}>
+                    <Plus />
+                    Nuevo Preventivo
+                </Button>
+            }
         />
     );
 };

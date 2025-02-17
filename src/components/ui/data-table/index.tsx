@@ -6,14 +6,15 @@ import {
 import { ReactNode, useMemo } from 'react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../table';
-import { DataTablePagination } from '@/components/ui/data-table/data-table-pagination';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar, ToolbarConfig } from './data-table-toolbar';
 import { TypographyH1 } from '../typography';
 import { CustomScrollArea } from "../custom-scroll-area/index";
 
 interface DataTableProps<TData> {
     table: TanstackTable<TData>;
     title: string;
-    toolbar?: ReactNode;
+    toolbarConfig?: ToolbarConfig<TData>;
     totalCount: number;
     page: number;
     pageSize: number;
@@ -26,7 +27,7 @@ interface DataTableProps<TData> {
 export function DataTable<TData>({
     table,
     title,
-    toolbar,
+    toolbarConfig,
     totalCount,
     page,
     pageSize,
@@ -44,10 +45,10 @@ export function DataTable<TData>({
         const ROW_HEIGHT = 53; // Altura ajustada por fila
         const HEADER_HEIGHT = 45;
         const MIN_HEIGHT = 200;
-        const MAX_HEIGHT = 550;
+        const MAX_HEIGHT = 450;
         
         const contentHeight = (actualRowCount * ROW_HEIGHT) + HEADER_HEIGHT;
-        const height = `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[550px]`;
+        const height = `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[450px]`;
         console.log(height);
         return height;
     }, [table.getRowModel().rows.length, totalCount]);
@@ -65,7 +66,11 @@ export function DataTable<TData>({
             </div>
 
             {/* Toolbar */}
-            {toolbar && <div className="mb-4">{toolbar}</div>}
+            {toolbarConfig && (
+                <div className="mb-4">
+                    <DataTableToolbar table={table} config={toolbarConfig} />
+                </div>
+            )}
 
             {/* Pagination */}
             <div className="mb-4">

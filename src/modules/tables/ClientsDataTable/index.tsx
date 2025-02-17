@@ -4,8 +4,8 @@ import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { ClientsTableToolbar } from './clients-table-toolbar';
 import { useClientsTableColumns } from './columns';
+import { getClientsTableToolbarConfig } from './toolbar-config';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -55,13 +55,7 @@ export function ClientsDataTable() {
         <DataTable
             table={table}
             title="Clientes"
-            toolbar={
-                <ClientsTableToolbar
-                    table={table}
-                    searchTerm={searchTerm}
-                    onSearch={handleSearch}
-                />
-            }
+            toolbarConfig={getClientsTableToolbarConfig(searchTerm, handleSearch)}
             totalCount={data?.clientsCount || 0}
             page={page}
             pageSize={pageSize}

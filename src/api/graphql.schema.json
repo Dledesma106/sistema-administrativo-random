@@ -5222,6 +5222,26 @@
                                 "deprecationReason": null
                             },
                             {
+                                "name": "paySource",
+                                "description": null,
+                                "type": {
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "ENUM",
+                                            "name": "ExpensePaySource",
+                                            "ofType": null
+                                        }
+                                    }
+                                },
+                                "defaultValue": null,
+                                "isDeprecated": false,
+                                "deprecationReason": null
+                            },
+                            {
                                 "name": "registeredBy",
                                 "description": null,
                                 "type": {
@@ -5322,6 +5342,26 @@
                                         "ofType": {
                                             "kind": "ENUM",
                                             "name": "ExpenseType",
+                                            "ofType": null
+                                        }
+                                    }
+                                },
+                                "defaultValue": null,
+                                "isDeprecated": false,
+                                "deprecationReason": null
+                            },
+                            {
+                                "name": "paySource",
+                                "description": null,
+                                "type": {
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "ENUM",
+                                            "name": "ExpensePaySource",
                                             "ofType": null
                                         }
                                     }
@@ -6372,9 +6412,17 @@
                                 "name": "cityId",
                                 "description": null,
                                 "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String",
-                                    "ofType": null
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "SCALAR",
+                                            "name": "String",
+                                            "ofType": null
+                                        }
+                                    }
                                 },
                                 "defaultValue": null,
                                 "isDeprecated": false,
@@ -6465,9 +6513,17 @@
                                 "name": "cityId",
                                 "description": null,
                                 "type": {
-                                    "kind": "SCALAR",
-                                    "name": "String",
-                                    "ofType": null
+                                    "kind": "LIST",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "NON_NULL",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "SCALAR",
+                                            "name": "String",
+                                            "ofType": null
+                                        }
+                                    }
                                 },
                                 "defaultValue": null,
                                 "isDeprecated": false,
