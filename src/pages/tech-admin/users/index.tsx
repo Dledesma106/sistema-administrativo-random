@@ -1,10 +1,9 @@
-import TitleButton from '@/components/TitleButton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGetUsers } from '@/hooks/api/user/useGetUsers';
-import UserTable from '@/modules/tables/UserTable';
+import { useGetCities } from '@/hooks/api/city/useGetCities';
+import { UsersDataTable } from '@/modules/tables/UsersDataTable';
 
 export default function Users(): JSX.Element {
-    const { data: users, isLoading } = useGetUsers({});
+    const { data: citiesData, isLoading } = useGetCities({});
 
     if (isLoading) {
         return <Skeleton className="h-96 w-full" />;
@@ -12,13 +11,7 @@ export default function Users(): JSX.Element {
 
     return (
         <>
-            <TitleButton
-                title="Usuarios"
-                path="/tech-admin/users/new"
-                nameButton="Agregar usuario"
-            />
-
-            <UserTable users={users?.users || []} />
+            <UsersDataTable cities={citiesData?.cities || []} />
         </>
     );
 }

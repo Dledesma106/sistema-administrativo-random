@@ -4,8 +4,8 @@ import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
 export const BusinessMutations = builder.mutationFields((t) => ({
-    createBusiness: t.prismaField({
-        type: 'Business',
+    createBusiness: t.field({
+        type: BusinessResultRef,
         args: {
             data: t.arg({
                 type: BusinessInputType,
@@ -15,18 +15,22 @@ export const BusinessMutations = builder.mutationFields((t) => ({
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (query, _parent, { data }) => {
-            return prisma.business.create({
-                ...query,
+        resolve: async (_parent, { data }) => {
+            const business = await prisma.business.create({
                 data: {
                     name: data.name,
                 },
             });
+            return {
+                success: true,
+                message: 'Empresa creada exitosamente',
+                business,
+            };
         },
     }),
 
-    updateBusiness: t.prismaField({
-        type: 'Business',
+    updateBusiness: t.field({
+        type: BusinessResultRef,
         args: {
             id: t.arg.string({ required: true }),
             data: t.arg({
@@ -37,14 +41,18 @@ export const BusinessMutations = builder.mutationFields((t) => ({
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (query, _parent, { id, data }) => {
-            return prisma.business.update({
-                ...query,
+        resolve: async (_parent, { id, data }) => {
+            const business = await prisma.business.update({
                 where: { id },
                 data: {
                     name: data.name,
                 },
             });
+            return {
+                success: true,
+                message: 'Empresa actualizada exitosamente',
+                business,
+            };
         },
     }),
 

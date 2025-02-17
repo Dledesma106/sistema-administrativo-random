@@ -27,6 +27,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
@@ -530,10 +531,10 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                                 <FormItem>
                                     <FormLabel>Descripcion</FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="text"
-                                            placeholder="Descripcion"
-                                            {...field}
+                                        <Textarea
+                                            placeholder="Ingrese la descripcion"
+                                            value={field.value || ''}
+                                            onChange={field.onChange}
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -542,16 +543,12 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                         }}
                     />
 
-                    <div className="mt-4 flex flex-row justify-between">
+                    <div className="mt-4 flex flex-row justify-end gap-4">
                         <Button
+                            variant="outline"
                             type="button"
-                            variant="secondary"
                             onClick={() => {
-                                if (window.history?.length) {
-                                    router.back();
-                                } else {
-                                    router.replace(routesBuilder.tasks.list());
-                                }
+                                router.push(routesBuilder.tasks.list());
                             }}
                         >
                             Cancelar

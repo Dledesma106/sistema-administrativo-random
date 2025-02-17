@@ -352,11 +352,15 @@ const CreateOrUpdateBillingProfileForm = ({
                 />
 
                 {!isEmbedded && (
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex flex-row justify-end gap-4">
                         <Button
                             variant="outline"
-                            onClick={() => router.push('/accounting/billing-profiles')}
                             type="button"
+                            onClick={() =>
+                                router.push(
+                                    routesBuilder.accounting.billingProfiles.list(),
+                                )
+                            }
                         >
                             Cancelar
                         </Button>

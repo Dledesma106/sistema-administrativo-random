@@ -22,7 +22,7 @@ const BudgetStatusBadge = ({ status }: Props) => {
     });
 
     return (
-        <Badge variant="outline" className="space-x-2">
+        <Badge variant="default" className="gap-2">
             <span className={contentStyle}></span>
             <span>{status}</span>
         </Badge>

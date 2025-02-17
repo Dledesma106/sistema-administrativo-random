@@ -14,7 +14,7 @@ const ExpenseStatusBadge = ({ status }: Props) => {
         'h-2 w-2 rounded-full bg-red-500': status === ExpenseStatus.Rechazado,
     });
     return (
-        <Badge variant="outline" className="space-x-2">
+        <Badge variant="default" className="gap-2">
             <span className={contentStyle}></span>
             <span>{status}</span>
         </Badge>

@@ -1,12 +1,13 @@
-query GetProvinces {
-    provinces {
+query GetProvinces($search: String = "", $skip: Int = null, $take: Int = null) {
+    provinces(search: $search, skip: $skip, take: $take) {
         id
         name
     }
+    provincesCount(search: $search)
 }
 
 query GetProvince($id: String!) {
-    provinceById(id: $id) {
+    province(id: $id) {
         id
         name
     }

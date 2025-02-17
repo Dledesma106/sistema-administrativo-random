@@ -111,7 +111,7 @@ export function PreventivesTableRowActions({ preventive }: Props): JSX.Element {
                 openModal={modal}
                 handleToggleModal={closeModal}
                 action={() => deleteMutation.mutate({ id: preventive.id })}
-                msg="¿Seguro que quiere eliminar esta tarea?"
+                msg="¿Seguro que quiere eliminar este preventivo?"
             />
         </>
     );

@@ -5,11 +5,60 @@ import { builder } from '../../builder';
 export const PreventiveQueries = builder.queryFields((t) => ({
     preventives: t.prismaField({
         type: ['Preventive'],
+        args: {
+            skip: t.arg.int({ defaultValue: 0 }),
+            take: t.arg.int({ defaultValue: 10 }),
+            business: t.arg.stringList(),
+            city: t.arg.stringList(),
+            assigned: t.arg.stringList(),
+            client: t.arg.stringList(),
+        },
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (query) => {
-            return prisma.preventive.findManyUndeleted(query);
+        resolve: async (
+            query,
+            _parent,
+            { skip, take, business, city, assigned, client },
+        ) => {
+            return prisma.preventive.findManyUndeleted({
+                ...query,
+                skip: skip || 0,
+                take: take || 10,
+                where: {
+                    AND: [
+                        business ? { businessId: { in: business } } : {},
+                        city ? { branch: { cityId: { in: city } } } : {},
+                        assigned ? { assignedIDs: { hasSome: assigned } } : {},
+                        client ? { branch: { clientId: { in: client } } } : {},
+                    ],
+                },
+            });
+        },
+    }),
+
+    preventivesCount: t.int({
+        args: {
+            business: t.arg.stringList(),
+            city: t.arg.stringList(),
+            assigned: t.arg.stringList(),
+            client: t.arg.stringList(),
+        },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
+        resolve: async (_parent, { business, city, assigned, client }) => {
+            return prisma.preventive.count({
+                where: {
+                    AND: [
+                        business ? { businessId: { in: business } } : {},
+                        city ? { branch: { cityId: { in: city } } } : {},
+                        assigned ? { assignedIDs: { hasSome: assigned } } : {},
+                        client ? { branch: { clientId: { in: client } } } : {},
+                    ],
+                    deleted: false,
+                },
+            });
         },
     }),
 

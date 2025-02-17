@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -17,6 +16,7 @@ import { TypographyH1 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { useCreateClient } from '@/hooks/api/client/useCreateClient';
 import { useUpdateClient } from '@/hooks/api/client/useUpdateClient';
+import { routesBuilder } from '@/lib/routes';
 
 export interface IClientForm {
     id: string;
@@ -105,9 +105,13 @@ export default function ClientForm({ clientForm, newClient = true }: Props): JSX
                         rules={{ required: 'Este campo es requerido' }}
                     />
 
-                    <div className="flex flex-row justify-between">
-                        <Button variant="secondary" type="button" asChild>
-                            <Link href="/tech-admin/clients">Cancelar</Link>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => router.push(routesBuilder.clients.list())}
+                        >
+                            Cancelar
                         </Button>
                         <Button
                             type="submit"

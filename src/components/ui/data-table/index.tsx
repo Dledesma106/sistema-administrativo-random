@@ -3,16 +3,18 @@ import {
     Table as TanstackTable,
     flexRender,
 } from '@tanstack/react-table';
-import { ReactNode } from 'react';
+import { ReactNode, useMemo } from 'react';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../table';
-import { DataTablePagination } from '@/components/data-table-pagination';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar, ToolbarConfig } from './data-table-toolbar';
 import { TypographyH1 } from '../typography';
+import { CustomScrollArea } from "../custom-scroll-area/index";
 
 interface DataTableProps<TData> {
     table: TanstackTable<TData>;
     title: string;
-    toolbar?: ReactNode;
+    toolbarConfig?: ToolbarConfig<TData>;
     totalCount: number;
     page: number;
     pageSize: number;
@@ -25,7 +27,7 @@ interface DataTableProps<TData> {
 export function DataTable<TData>({
     table,
     title,
-    toolbar,
+    toolbarConfig,
     totalCount,
     page,
     pageSize,
@@ -34,26 +36,39 @@ export function DataTable<TData>({
     headerActions,
     onRowClick,
 }: DataTableProps<TData>) {
+    const dynamicHeight = useMemo(() => {
+        const rows = table.getRowModel().rows;
+        const actualRowCount = Math.min(rows.length, totalCount); // Usar el número real de filas
+        
+        if (actualRowCount === 0) return 'h-[145px]';
+        
+        const ROW_HEIGHT = 53; // Altura ajustada por fila
+        const HEADER_HEIGHT = 45;
+        const MIN_HEIGHT = 200;
+        const MAX_HEIGHT = 450;
+        
+        const contentHeight = (actualRowCount * ROW_HEIGHT) + HEADER_HEIGHT;
+        const height = `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[450px]`;
+        console.log(height);
+        return height;
+    }, [table.getRowModel().rows.length, totalCount]);
+
     return (
         <div>
             {/* Header */}
             <div className="mb-4">
                 <div className="flex justify-between">
-                    <TypographyH1>
-                        {title}
-                    </TypographyH1>
+                    <TypographyH1>{title}</TypographyH1>
                     {headerActions && (
-                        <div className="flex gap-2">
-                            {headerActions}
-                        </div>
+                        <div className="flex gap-2">{headerActions}</div>
                     )}
                 </div>
             </div>
 
             {/* Toolbar */}
-            {toolbar && (
+            {toolbarConfig && (
                 <div className="mb-4">
-                    {toolbar}
+                    <DataTableToolbar table={table} config={toolbarConfig} />
                 </div>
             )}
 
@@ -68,59 +83,58 @@ export function DataTable<TData>({
                 />
             </div>
 
-            {/* Table with scroll */}
-            <div className="rounded-md border">
-                <div className="max-h-[500px] overflow-auto">
-                    <Table>
-                        <TableHeader className="sticky top-0 z-10 bg-white">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id}>
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef.header,
-                                                      header.getContext(),
-                                                  )}
-                                        </TableHead>
+            {/* Table con scroll en el body */}
+
+            <CustomScrollArea height={dynamicHeight}>
+                <Table>
+                    <TableHeader className="sticky top-0 z-10 bg-primary hover:bg-primary border-accent">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow key={headerGroup.id} className="border-accent hover:bg-primary">
+                                {headerGroup.headers.map((header) => (
+                                    <TableHead key={header.id} className="text-primary-foreground">
+                                        {header.isPlaceholder
+                                            ? null
+                                            : flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext(),
+                                                )}
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                                <TableRow
+                                    key={row.id}
+                                    data-state={row.getIsSelected() && 'selected'}
+                                    onClick={() => onRowClick?.(row.original)}
+                                    className={`${onRowClick ? 'cursor-pointer' : ''} bg-background-primary hover:bg-accent border-b border-accent`}
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext(),
+                                            )}
+                                        </TableCell>
                                     ))}
                                 </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && 'selected'}
-                                        onClick={() => onRowClick?.(row.original)}
-                                        className={onRowClick ? 'cursor-pointer hover:bg-muted' : ''}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={table.getAllColumns().length}
-                                        className="h-24 text-center"
-                                    >
-                                        No se encontraron resultados.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </div>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={table.getAllColumns().length}
+                                    className="h-24 text-center bg-background-primary"
+                                >
+                                    No se encontraron resultados.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </CustomScrollArea>
         </div>
     );
 } 

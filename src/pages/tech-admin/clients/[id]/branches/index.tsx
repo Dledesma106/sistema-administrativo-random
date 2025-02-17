@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router';
 
-import TitleButton from '@/components/TitleButton';
 import { TableSkeleton } from '@/components/ui/skeleton';
 import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
 import { useGetCities } from '@/hooks/api/city/useGetCities';
@@ -27,16 +26,8 @@ export default function ClientBranchesView(): JSX.Element {
             </div>
         );
     }
-
-    const name = `Cliente: ${clientData.client.name}`;
     return (
         <main>
-            <TitleButton
-                title={name}
-                path={`/tech-admin/clients/${clientId}/branches/new`}
-                nameButton="Agregar sucursal"
-            />
-
             <ClientBranchesTable
                 client={clientData.client}
                 cities={citiesData?.cities || []}

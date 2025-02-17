@@ -5,11 +5,65 @@ import { builder } from '../../builder';
 export const CityQueries = builder.queryFields((t) => ({
     cities: t.prismaField({
         type: ['City'],
+        args: {
+            search: t.arg.string({ required: false }),
+            skip: t.arg.int({ required: false }),
+            take: t.arg.int({ required: false }),
+            provinceId: t.arg.string({ required: false }),
+        },
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (query) => {
-            return prisma.city.findManyUndeleted(query);
+        resolve: async (query, _parent, { search, skip, take, provinceId }) => {
+            return prisma.city.findMany({
+                ...query,
+                where: {
+                    deleted: false,
+                    ...(search && {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    }),
+                    ...(provinceId && {
+                        provinceId,
+                    }),
+                },
+                orderBy: {
+                    name: 'asc',
+                },
+                ...(typeof skip === 'number' &&
+                    typeof take === 'number' && {
+                        skip,
+                        take,
+                    }),
+            });
+        },
+    }),
+
+    citiesCount: t.int({
+        args: {
+            search: t.arg.string({ required: false }),
+            provinceId: t.arg.string({ required: false }),
+        },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
+        resolve: async (_parent, { search, provinceId }) => {
+            return prisma.city.count({
+                where: {
+                    deleted: false,
+                    ...(search && {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    }),
+                    ...(provinceId && {
+                        provinceId,
+                    }),
+                },
+            });
         },
     }),
 
@@ -26,9 +80,11 @@ export const CityQueries = builder.queryFields((t) => ({
                 ...query,
                 where: { id },
             });
+
             if (!city) {
-                throw new Error('Ciudad no encontrada');
+                throw new Error('Localidad no encontrada');
             }
+
             return city;
         },
     }),

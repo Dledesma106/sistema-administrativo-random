@@ -1,3 +1,6 @@
+import { TableSkeleton } from '@/components/ui/skeleton';
+import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
+import { useGetClients } from '@/hooks/api/client/useGetClients';
 import BillingProfilesDataTable from '@/modules/tables/BillingProfilesTable';
 
 const mockData = [
@@ -28,5 +31,17 @@ const mockData = [
 ];
 
 export default function BillingProfilesPage() {
-    return <BillingProfilesDataTable data={mockData} />;
+    const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
+    const { data: clientsData, isLoading: isLoadingClients } = useGetClients({});
+    if (isLoadingBusinesses || isLoadingClients) {
+        return <TableSkeleton />;
+    }
+
+    return (
+        <BillingProfilesDataTable
+            data={mockData}
+            businesses={businessesData?.businesses || []}
+            clients={clientsData?.clients || []}
+        />
+    );
 }

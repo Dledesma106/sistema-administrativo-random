@@ -20,12 +20,6 @@
         "tsconfigRootDir": "./"
     },
     "rules": {
-        "tailwindcss/no-custom-classname": [
-            "error",
-            {
-                "whitelist": ["no-scrollbar", "pl-container$", "pr-container$"]
-            }
-        ],
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": [
             "error",
@@ -87,5 +81,11 @@
             }
         ],
         "import/no-named-as-default-member": "off"
-    }
+    },
+    "overrides": [
+        {
+            "files": ["*.js"],
+            "extends": ["plugin:@typescript-eslint/disable-type-checked"]
+        }
+    ]
 }

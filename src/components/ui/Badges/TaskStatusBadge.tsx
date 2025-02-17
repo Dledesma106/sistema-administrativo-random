@@ -18,8 +18,8 @@ export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
 
     return (
         <Badge
-            className="inline-flex space-x-2 whitespace-nowrap"
-            variant="outline"
+            className="gap-2"
+            variant="default"
         >
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(status))}</span>

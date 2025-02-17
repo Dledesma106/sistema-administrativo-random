@@ -555,16 +555,13 @@ const CreateOrUpdatePreventiveForm = ({
                         )}
                     />
 
-                    <div className="mt-4 flex flex-row justify-between">
+                    <div className="mt-4 flex flex-row justify-end gap-4">
                         <Button
+                            variant="outline"
                             type="button"
-                            variant="secondary"
+                            asChild
                             onClick={() => {
-                                if (window.history?.length) {
-                                    router.back();
-                                } else {
-                                    router.replace(routesBuilder.preventives.list());
-                                }
+                                router.push(routesBuilder.preventives.list());
                             }}
                         >
                             Cancelar

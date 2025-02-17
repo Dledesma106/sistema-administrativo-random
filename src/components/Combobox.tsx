@@ -2,14 +2,8 @@ import { Check, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SelectableList, SelectableOption } from '@/components/ui/SelectableList';
 
 type Props = {
     value: string;
@@ -28,6 +22,37 @@ const Combobox = (props: Props) => {
     const [open, setOpen] = useState(false);
     const label = value ? items.find((item) => item.value === value)?.label : null;
 
+    const handleOptionSelect = (selectedValue: string) => {
+        const nextValue = selectedValue === value ? '' : selectedValue;
+        if (onChange) {
+            onChange(nextValue);
+        }
+        setOpen(false);
+    };
+
+    // Renderizado personalizado para opciones con descripción
+    const renderOption = (option: SelectableOption, isSelected: boolean) => {
+        const item = items.find((i) => i.value === option.value);
+        if (!item?.description) {
+            return (
+                <p className="flex w-full justify-between space-x-1">
+                    <span>{option.label}</span>
+                    {isSelected && <Check className="h-4 w-4" />}
+                </p>
+            );
+        }
+
+        return (
+            <div className="flex flex-col items-start space-y-1">
+                <p className="flex w-full justify-between space-x-1">
+                    <span>{option.label}</span>
+                    {isSelected && <Check className="h-4 w-4" />}
+                </p>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+            </div>
+        );
+    };
+
     return (
         <div>
             <Popover open={open} onOpenChange={setOpen}>
@@ -44,69 +69,15 @@ const Combobox = (props: Props) => {
                 </PopoverTrigger>
 
                 <PopoverContent className="w-[200px] p-0">
-                    <Command
-                        filter={(value, search) => {
-                            const item = items.find(
-                                (item) => item.value.toLowerCase() === value,
-                            );
-
-                            if (item === undefined) {
-                                return 0;
-                            }
-                            const matches = item.label
-                                .toLowerCase()
-                                .includes(search?.toLowerCase());
-
-                            return matches ? 1 : 0;
-                        }}
-                    >
-                        <CommandInput placeholder={searchPlaceholder} />
-                        <CommandEmpty>No hay resultados</CommandEmpty>
-                        <CommandGroup className="max-h-[400px] overflow-auto">
-                            {items.map((item) => (
-                                <CommandItem
-                                    className={
-                                        item.description
-                                            ? 'flex flex-col items-start space-y-1 px-4 py-2'
-                                            : ''
-                                    }
-                                    key={item.value}
-                                    value={item.value}
-                                    onSelect={(_lowercasedValue) => {
-                                        const nextValue =
-                                            item.value === value ? '' : item.value;
-
-                                        if (onChange) {
-                                            onChange(nextValue);
-                                        }
-
-                                        setOpen(false);
-                                    }}
-                                >
-                                    {item.description ? (
-                                        <>
-                                            <p className="flex w-full justify-between space-x-1">
-                                                <span>{item.label}</span>
-                                                {item.value === value ? (
-                                                    <Check className="h-4 w-4" />
-                                                ) : null}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {item.description}
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p className="flex w-full justify-between space-x-1">
-                                            <span>{item.label}</span>
-                                            {item.value === value ? (
-                                                <Check className="h-4 w-4" />
-                                            ) : null}
-                                        </p>
-                                    )}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </Command>
+                    <SelectableList
+                        options={items}
+                        selectedValues={new Set(value ? [value] : [])}
+                        onOptionSelect={handleOptionSelect}
+                        searchPlaceholder={searchPlaceholder}
+                        emptyMessage="No hay resultados"
+                        maxHeight="h-[400px]"
+                        renderOption={renderOption}
+                    />
                 </PopoverContent>
             </Popover>
         </div>

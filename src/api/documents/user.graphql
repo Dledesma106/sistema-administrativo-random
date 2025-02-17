@@ -1,16 +1,15 @@
-query GetUsers {
-    users {
+query GetUsers($search: String = "", $skip: Int = 0, $take: Int = 10, $cityId: [String!], $roles: [Role!]) {
+    users(search: $search, skip: $skip, take: $take, cityId: $cityId, roles: $roles) {
         id
-        email
-        firstName
-        lastName
         fullName
+        email
         roles
         city {
             id
             name
         }
     }
+    usersCount(search: $search, cityId: $cityId, roles: $roles)
 }
 
 query GetTechnicians {
@@ -34,10 +33,8 @@ mutation CreateUser($input: UserInput!) {
         message
         user {
             id
-            email
-            firstName
-            lastName
             fullName
+            email
             roles
             city {
                 id
@@ -53,10 +50,8 @@ mutation UpdateUser($id: String!, $input: UserInput!) {
         message
         user {
             id
-            email
-            firstName
-            lastName
             fullName
+            email
             roles
             city {
                 id
@@ -72,10 +67,8 @@ mutation DeleteUser($id: String!) {
         message
         user {
             id
-            email
-            firstName
-            lastName
             fullName
+            email
         }
     }
 }
@@ -92,11 +85,9 @@ mutation sendNewUserRandomPassword($id: String!) {
 
 query GetUser($id: String!) {
     user(id: $id) {
-        id
-        email
         firstName
         lastName
-        fullName
+        email
         roles
         city {
             id

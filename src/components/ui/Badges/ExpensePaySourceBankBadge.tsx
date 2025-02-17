@@ -19,7 +19,7 @@ const ExpensePaySourceBankBadge = ({ paySourceBank }: Props) => {
             paySourceBank === ExpensePaySourceBank.Chubut,
     });
     return (
-        <Badge variant="outline" className="space-x-2">
+        <Badge variant="default" className="gap-2">
             <span className={contentStyle}></span>
             <span>{paySourceBank}</span>
         </Badge>

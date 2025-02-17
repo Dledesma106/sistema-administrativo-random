@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import {
     ColumnFiltersState,
     SortingState,
-    flexRender,
     getCoreRowModel,
     getFacetedRowModel,
     getFilteredRowModel,
@@ -15,21 +14,13 @@ import {
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { BudgetsDataTableToolbar } from './budgets-table-toolbar';
 import { useBudgetsTableColumns } from './columns';
+import { getBudgetsTableToolbarConfig } from './toolbar-config';
 
-import { DataTablePagination } from '@/components/data-table-pagination';
 import { BudgetStatus } from '@/components/ui/Badges/BudgetStatusBadge';
 import { Button } from '@/components/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { TypographyH1 } from '@/components/ui/typography';
+import { DataTable } from '@/components/ui/data-table';
+import { routesBuilder } from '@/lib/routes';
 
 type Props = {
     data: {
@@ -39,12 +30,18 @@ type Props = {
         price: number;
         status: BudgetStatus;
     }[];
+    businesses: {
+        id: string;
+        name: string;
+    }[];
 };
 
-export default function BudgetsDataTable({ data }: Props) {
+export default function BudgetsDataTable({ data, businesses }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
     const columns = useBudgetsTableColumns();
 
@@ -61,76 +58,34 @@ export default function BudgetsDataTable({ data }: Props) {
         state: {
             sorting,
             columnFilters,
+            pagination: {
+                pageIndex: page,
+                pageSize,
+            },
         },
     });
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between">
-                <TypographyH1>Presupuestos</TypographyH1>
+        <DataTable
+            table={table}
+            title="Presupuestos"
+            toolbarConfig={getBudgetsTableToolbarConfig(businesses)}
+            totalCount={data.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            headerActions={
                 <Button asChild className="flex items-center space-x-2">
-                    <Link href="/accounting/budgets/new">
+                    <Link href={routesBuilder.accounting.budgets.create()}>
                         <BsPlus size="20" />
                         <span>Crear Presupuesto</span>
                     </Link>
                 </Button>
-            </div>
-
-            <BudgetsDataTableToolbar table={table} />
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef.header,
-                                                  header.getContext(),
-                                              )}
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    onClick={() =>
-                                        router.push(
-                                            `/accounting/budgets/${row.original.id}`,
-                                        )
-                                    }
-                                    className="cursor-pointer"
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext(),
-                                            )}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center"
-                                >
-                                    No se encontraron presupuestos.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-            <DataTablePagination />
-        </div>
+            }
+            onRowClick={(row) =>
+                router.push(routesBuilder.accounting.budgets.details(row.id))
+            }
+        />
     );
 }

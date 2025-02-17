@@ -46,7 +46,7 @@ export const getClientBranchesTableColumns = (client: GetClientQuery['client']) 
                     {businesses.map((business) => {
                         return (
                             <Badge
-                                variant="outline"
+                                variant="default"
                                 key={business.id}
                                 className="ml-2 mt-2"
                             >

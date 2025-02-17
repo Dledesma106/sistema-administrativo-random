@@ -135,11 +135,11 @@ export default function EditProfileForm() {
                     )}
                 />
 
-                <div className="flex justify-between">
+                <div className="flex flex-row justify-end gap-4">
                     <Button
                         type="button"
                         onClick={() => router.push('/')}
-                        variant="secondary"
+                        variant="outline"
                     >
                         Cancelar
                     </Button>

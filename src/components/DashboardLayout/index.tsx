@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 
 import { PropsWithChildren, useEffect, useMemo } from 'react';
 
-import SideMenu from './SideMenu';
+import NavBar from './NavBar';
 
 import { useUserContext } from '@/context/userContext/UserProvider';
 import useLoading from '@/hooks/useLoading';
@@ -64,10 +64,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     function Main(): JSX.Element {
         return (
-            <div className={cn('flex h-screen overflow-hidden pl-4')}>
-                {isLoggedIn && <SideMenu />}
+            <div className={cn('flex h-screen flex-col overflow-hidden')}>
+                {isLoggedIn && <NavBar />}
 
-                <div className="flex flex-1 flex-col overflow-y-scroll">
+                <div className="flex flex-1 flex-col overflow-y-scroll px-20">
                     <main className={cn('flex-1 px-4 py-3.5', className)}>
                         <LoadingWrapper isLoading={isLoading}>{children}</LoadingWrapper>
                     </main>

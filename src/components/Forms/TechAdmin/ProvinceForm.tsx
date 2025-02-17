@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -18,6 +17,7 @@ import useAlert from '@/context/alertContext/useAlert';
 import { useCreateProvince } from '@/hooks/api/province/useCreateProvince';
 import { useUpdateProvince } from '@/hooks/api/province/useUpdateProvince';
 import useLoading from '@/hooks/useLoading';
+import { routesBuilder } from '@/lib/routes';
 
 interface IProvinceForm {
     id: string;
@@ -49,7 +49,7 @@ export default function ProvinceForm({
                     data: { name: data.name },
                 });
                 if (result.createProvince.success) {
-                    router.push('/tech-admin/provinces');
+                    router.push(routesBuilder.provinces.list());
                     triggerAlert({
                         type: 'Success',
                         message: 'Se creó la provincia correctamente',
@@ -119,9 +119,13 @@ export default function ProvinceForm({
                         rules={{ required: 'Este campo es requerido' }}
                     />
 
-                    <div className="flex flex-row justify-between">
-                        <Button variant="secondary" type="button">
-                            <Link href={'/tech-admin/provinces'}>Cancelar</Link>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => router.push(routesBuilder.provinces.list())}
+                        >
+                            Cancelar
                         </Button>
                         <Button
                             type="submit"

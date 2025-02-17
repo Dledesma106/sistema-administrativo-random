@@ -5,27 +5,27 @@ import { useRouter } from 'next/router';
 import { DownloadIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
 
-import { GetTaskQuery, TaskStatus } from '@/api/graphql';
+import {
+    ExpensePaySourceBank,
+    ExpensePaySource,
+    ExpenseType,
+    GetTaskQuery,
+    TaskStatus,
+} from '@/api/graphql';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
+import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
+import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
 import { Button } from '@/components/ui/button';
+import { DataList, Column } from '@/components/ui/data-list';
 import { PDFViewer } from '@/components/ui/PDFViewer';
 import { FormSkeleton } from '@/components/ui/skeleton';
-import {
-    Table,
-    TableHead,
-    TableRow,
-    TableBody,
-    TableHeader,
-    TableCell,
-} from '@/components/ui/table';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetTask } from '@/hooks/api/tasks/useGetTask';
 import { useUpdateTaskStatus } from '@/hooks/api/tasks/useUpdateTaskStatus';
 import { routesBuilder } from '@/lib/routes';
-import { pascalCaseToSpaces } from '@/lib/utils';
 
 const Title = ({ children }: { children: React.ReactNode }) => (
     <h2 className="mb-2 text-sm font-bold">{children}</h2>
@@ -34,6 +34,125 @@ const Title = ({ children }: { children: React.ReactNode }) => (
 type Props = {
     task: NonNullable<GetTaskQuery['taskById']>;
 };
+
+type Expense = {
+    id: string;
+    amount: number;
+    createdAt: string;
+    expenseDate: string;
+    expenseType: ExpenseType;
+    paySource: ExpensePaySource;
+    installments: number | null;
+    paySourceBank: ExpensePaySourceBank | null;
+    registeredBy: { fullName: string };
+    doneBy?: string;
+    observations: string | null;
+    image: { id: string; url: string } | null;
+    file: { url: string; filename: string; mimeType: string } | null;
+};
+
+const expenseColumns: Column<Expense>[] = [
+    {
+        header: 'Monto',
+        cell: (expense) => `$${expense.amount.toLocaleString('es-AR')}`,
+        accessorKey: 'amount',
+    },
+    {
+        header: 'Fecha de Registro',
+        cell: (expense) => format(expense.createdAt, 'dd/MM/yyyy'),
+        accessorKey: 'createdAt',
+    },
+    {
+        header: 'Fecha de Pago',
+        cell: (expense) => format(expense.expenseDate, 'dd/MM/yyyy'),
+        accessorKey: 'expenseDate',
+    },
+    {
+        header: 'Razón',
+        cell: (expense) => <ExpenseTypeBadge type={expense.expenseType} />,
+        accessorKey: 'expenseType',
+    },
+    {
+        header: 'Fuente de pago',
+        cell: (expense) => (
+            <ExpensePaySourceBadge
+                paySource={expense.paySource}
+                installments={expense.installments}
+                paySourceBank={expense.paySourceBank}
+            />
+        ),
+        accessorKey: 'paySource',
+    },
+    {
+        header: 'Registrado por',
+        cell: (expense) => expense.registeredBy.fullName || '-',
+        accessorKey: 'registeredBy',
+    },
+    {
+        header: 'Pagado por',
+        cell: (expense) => expense.doneBy || '-',
+        accessorKey: 'doneBy',
+    },
+    {
+        header: 'Observaciones',
+        cell: (expense) => expense.observations || '-',
+        accessorKey: 'observations',
+    },
+    {
+        header: 'Comprobante',
+        cell: (expense) => (
+            <div className="w-32">
+                {expense.image && (
+                    <a
+                        className="group relative inline-block overflow-hidden rounded-md border border-border"
+                        download={expense.image.id}
+                        href={expense.image.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <Image
+                            src={expense.image.url}
+                            width={640}
+                            height={1252}
+                            alt=""
+                            className="z-0 w-20"
+                        />
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/50 dark:group-hover:bg-black/30">
+                            <DownloadIcon />
+                        </div>
+                    </a>
+                )}
+                {expense.file &&
+                    (expense.file.mimeType.startsWith('application/pdf') ? (
+                        <PDFViewer
+                            url={expense.file.url}
+                            filename={expense.file.filename}
+                            showPreviewButton={true}
+                        />
+                    ) : (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <a
+                                href={expense.file.url}
+                                download={expense.file.filename}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <DownloadIcon className="mr-2 h-4 w-4" />
+                                Descargar
+                            </a>
+                        </Button>
+                    ))}
+            </div>
+        ),
+        accessorKey: (expense: Expense) => expense.file?.url || expense.image?.url || '',
+    },
+];
 
 const Content: React.FC<Props> = ({ task }) => {
     const { user } = useUserContext();
@@ -88,12 +207,12 @@ const Content: React.FC<Props> = ({ task }) => {
 
                 <div>
                     <Title>Estado</Title>
-                    {task.status}
+                    <TaskStatusBadge status={task.status} />
                 </div>
 
                 <div>
                     <Title>Tipo de tarea</Title>
-                    {pascalCaseToSpaces(task.taskType)}
+                    <TaskTypeBadge type={task.taskType} />
                 </div>
 
                 {task.branch ? (
@@ -102,14 +221,15 @@ const Content: React.FC<Props> = ({ task }) => {
 
                         <p className="mb-1">
                             #{task.branch.number} - {task.branch.client.name} -{' '}
-                            {task.business?.name || 'N/A'}
+                            {task.branch.city.name} - {task.business?.name || ''}
                         </p>
                     </div>
                 ) : (
                     <div>
                         <Title>Cliente y Empresa</Title>
                         <p className="mb-1">
-                            {task.clientName} - {task.businessName || 'N/A'}
+                            {task.clientName}
+                            {task.businessName && ` - ${task.businessName}`}
                         </p>
                     </div>
                 )}
@@ -169,7 +289,7 @@ const Content: React.FC<Props> = ({ task }) => {
                             {task.images.map((image) => (
                                 <div key={image.id}>
                                     <a
-                                        className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
+                                        className="group relative inline-block overflow-hidden rounded-md border border-border"
                                         download={image.id}
                                         href={image.url}
                                         target="_blank"
@@ -207,123 +327,18 @@ const Content: React.FC<Props> = ({ task }) => {
                                         .reduce((acc, curr) => acc + curr.amount, 0)
                                         .toLocaleString('es-AR')}
                                 </Title>
-
-                                <div className="overflow-hidden rounded-md border border-gray-200">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Monto</TableHead>
-                                                <TableHead>Fecha de Registro</TableHead>
-                                                <TableHead>Fecha de Pago</TableHead>
-                                                <TableHead>Razón</TableHead>
-                                                <TableHead>Fuente de pago</TableHead>
-                                                <TableHead>Registrado por</TableHead>
-                                                <TableHead>Pagado por</TableHead>
-                                                <TableHead>Observaciones</TableHead>
-                                                <TableHead>Comprobante</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {task.expenses.map((expense) => (
-                                                <TableRow
-                                                    key={expense.id}
-                                                    onClick={() =>
-                                                        router.push(
-                                                            routesBuilder.accounting.expenses.details(
-                                                                expense.id,
-                                                            ),
-                                                        )
-                                                    }
-                                                >
-                                                    <TableCell>
-                                                        $
-                                                        {expense.amount.toLocaleString(
-                                                            'es-AR',
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {format(
-                                                            expense.createdAt,
-                                                            'dd/MM/yyyy',
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {format(
-                                                            expense.expenseDate,
-                                                            'dd/MM/yyyy',
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <ExpenseTypeBadge
-                                                            type={expense.expenseType}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <ExpensePaySourceBadge
-                                                            paySource={expense.paySource}
-                                                            installments={
-                                                                expense.installments
-                                                            }
-                                                            paySourceBank={
-                                                                expense.paySourceBank
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {expense.registeredBy.fullName ||
-                                                            '-'}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {expense.doneBy || '-'}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {expense.observations || '-'}
-                                                    </TableCell>
-                                                    <TableCell className="w-32">
-                                                        {expense.image && (
-                                                            <a
-                                                                className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
-                                                                download={
-                                                                    expense.image.id
-                                                                }
-                                                                href={expense.image.url}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                onClick={(e) =>
-                                                                    e.stopPropagation()
-                                                                }
-                                                            >
-                                                                <Image
-                                                                    src={
-                                                                        expense.image.url
-                                                                    }
-                                                                    width={640}
-                                                                    height={1252}
-                                                                    alt=""
-                                                                    className="z-0 w-20"
-                                                                />
-                                                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
-                                                                    <DownloadIcon />
-                                                                </div>
-                                                            </a>
-                                                        )}
-                                                        {expense.file?.mimeType.startsWith(
-                                                            'application/pdf',
-                                                        ) && (
-                                                            <PDFViewer
-                                                                url={expense.file.url}
-                                                                filename={
-                                                                    expense.file.filename
-                                                                }
-                                                                showPreviewButton={true}
-                                                            />
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
+                                <DataList
+                                    data={task.expenses}
+                                    columns={expenseColumns}
+                                    onRowClick={(expense) =>
+                                        router.push(
+                                            routesBuilder.accounting.expenses.details(
+                                                expense.id,
+                                            ),
+                                        )
+                                    }
+                                    emptyMessage="No hay gastos"
+                                />
                             </>
                         )}
                     </section>

@@ -48,13 +48,13 @@ export const routesBuilder = {
     accounting: {
         budgets: {
             list: () => '/accounting/budgets',
-            new: () => '/accounting/budgets/new',
+            create: () => '/accounting/budgets/new',
             details: (id: string) => `/accounting/budgets/${id}`,
             edit: (id: string) => `/accounting/budgets/${id}/edit`,
         },
         billingProfiles: {
             list: () => '/accounting/billing-profiles',
-            new: () => '/accounting/billing-profiles/new',
+            create: () => '/accounting/billing-profiles/new',
             edit: (id: string) => `/accounting/billing-profiles/${id}/edit`,
         },
         expenses: {
@@ -63,7 +63,7 @@ export const routesBuilder = {
         },
         taskPrices: {
             list: () => '/accounting/task-prices',
-            new: () => '/accounting/task-prices/new',
+            create: () => '/accounting/task-prices/new',
             edit: (id: string) => `/accounting/task-prices/${id}/edit`,
         },
     },
