@@ -64,16 +64,15 @@ export function FancyMultiSelect({
 
     return (
         <Command onKeyDown={handleKeyDown} className="overflow-visible bg-transparent">
-            <div className="group rounded-md border border-accent px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+            <div className="group rounded-md border border-accent bg-background px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-ring">
                 <div className="flex flex-wrap gap-1">
                     {selected?.map((option) => {
                         return (
                             <Badge key={option.value} variant="default">
                                 {option.label}
-
                                 <button
                                     type="button"
-                                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    className="ml-1 rounded-full outline-none focus:ring-2 focus:ring-ring"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             handleUnselect(option);
@@ -91,7 +90,6 @@ export function FancyMultiSelect({
                         );
                     })}
 
-                    {/* Avoid having the "Search" Icon */}
                     <CommandPrimitive.Input
                         ref={inputRef}
                         value={inputValue}

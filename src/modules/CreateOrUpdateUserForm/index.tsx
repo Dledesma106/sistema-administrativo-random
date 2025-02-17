@@ -158,7 +158,7 @@ export default function CreateOrUpdateUserForm({
     };
 
     return (
-        <main>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 className="mb-4" asChild>
                 <h1>{!userIdToUpdate ? 'Crear usuario' : 'Editar usuario'}</h1>
             </TypographyH2>

@@ -55,7 +55,7 @@ const Content: React.FC<Props> = ({ preventive }) => {
     ];
 
     return (
-        <main className="py-3.5">
+        <main className="rounded-lg border border-accent bg-background-primary p-4">
             <TypographyH1 className="mb-2">Preventivo #{preventive.id}</TypographyH1>
 
             <div className="space-y-4 pt-4">

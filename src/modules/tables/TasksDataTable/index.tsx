@@ -120,9 +120,12 @@ export default function TasksDataTable(props: Props): JSX.Element {
                         <TaskReportButton table={table} />
                     )}
                     {user.roles.includes(Role.AdministrativoTecnico) && (
-                        <Button onClick={() => router.push(routesBuilder.tasks.create())}>
-                            <BsPlus size={32} />
-                            Delegar tarea
+                        <Button
+                            className="flex items-center gap-1 pr-6"
+                            onClick={() => router.push(routesBuilder.tasks.create())}
+                        >
+                            <BsPlus size="20" />
+                            <span>Crear tarea</span>
                         </Button>
                     )}
                 </>

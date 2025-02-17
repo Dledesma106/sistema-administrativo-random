@@ -133,7 +133,7 @@ export default function ClientBranchForm({
     };
 
     return (
-        <main>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <div className="mb-8 space-y-2">
                 <TypographyH1>
                     {!idToUpdate ? 'Agregar Sucursal' : 'Editar Sucursal'}

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -76,11 +75,12 @@ export default function BudgetsDataTable({ data, businesses }: Props) {
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
             headerActions={
-                <Button asChild className="flex items-center space-x-2">
-                    <Link href={routesBuilder.accounting.budgets.create()}>
-                        <BsPlus size="20" />
-                        <span>Crear Presupuesto</span>
-                    </Link>
+                <Button
+                    className="flex items-center gap-1 pr-6"
+                    onClick={() => router.push(routesBuilder.accounting.budgets.create())}
+                >
+                    <BsPlus size="20" />
+                    <span>Crear Presupuesto</span>
                 </Button>
             }
             onRowClick={(row) =>

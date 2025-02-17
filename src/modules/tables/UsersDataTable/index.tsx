@@ -98,9 +98,12 @@ export function UsersDataTable({ cities }: Props) {
             onPageSizeChange={setPageSize}
             onRowClick={(row) => router.push(routesBuilder.users.edit(row.id))}
             headerActions={
-                <Button onClick={() => router.push(routesBuilder.users.create())}>
-                    <BsPlus size={32} />
-                    Agregar usuario
+                <Button
+                    className="flex items-center gap-1 pr-6"
+                    onClick={() => router.push(routesBuilder.users.create())}
+                >
+                    <BsPlus size="20" />
+                    <span>Agregar usuario</span>
                 </Button>
             }
         />

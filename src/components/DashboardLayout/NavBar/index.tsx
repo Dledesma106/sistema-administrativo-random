@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import { LogOut, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 import { commonItems, NavItem, navSections } from './constants';
 
@@ -126,28 +126,46 @@ function NavTabs({
     );
 }
 
+function SimpleNavBar() {
+    const { theme } = useTheme();
+
+    return (
+        <nav className="absolute inset-x-0 top-0 w-full border-b border-accent bg-background-primary">
+            <div className="flex items-center justify-between px-4 py-2">
+                <Logo light={theme !== 'light'} />
+                <ThemeToggle />
+            </div>
+        </nav>
+    );
+}
+
 export default function NavBar() {
-    const { user } = useUserContext();
+    const { user, isLoggedIn } = useUserContext();
     const router = useRouter();
     const { theme } = useTheme();
     const [activeSection, setActiveSection] = useState<string | null>(null);
     const [selectedItems, setSelectedItems] = useState<Record<string, string>>({});
 
-    const userSections = navSections.filter((section) =>
-        user.roles.includes(section.role),
+    const userSections = useMemo(
+        () =>
+            isLoggedIn
+                ? navSections.filter((section) => user.roles.includes(section.role))
+                : [],
+        [isLoggedIn, user?.roles],
     );
 
-    // Establecer la primera sección como activa al iniciar
     useEffect(() => {
         if (userSections.length > 0 && !activeSection) {
             setActiveSection(userSections[0].title);
         }
     }, [userSections, activeSection]);
 
-    // Determinar la sección activa cuando cambia la ruta
     useEffect(() => {
-        const currentPath = router.pathname;
+        if (!isLoggedIn) {
+            return;
+        }
 
+        const currentPath = router.pathname;
         for (const section of userSections) {
             const matchingItem = section.items.find((item) => item.path === currentPath);
             if (matchingItem) {
@@ -161,7 +179,11 @@ export default function NavBar() {
                 break;
             }
         }
-    }, [router.pathname, userSections]);
+    }, [router.pathname, userSections, activeSection, isLoggedIn]);
+
+    if (!isLoggedIn) {
+        return <SimpleNavBar />;
+    }
 
     const isCommonRoute = (path: string) => {
         return commonItems.some((item) => item.path === path);

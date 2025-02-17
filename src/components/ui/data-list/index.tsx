@@ -29,7 +29,7 @@ export function DataList<T>({
     emptyMessage = "No hay datos"
 }: DataListProps<T>) {
     return (
-        <div className="overflow-hidden rounded-md border border-border">
+        <div className="overflow-hidden rounded-md border border-accent">
             <Table>
                 <TableHeader className="bg-primary ">
                     <TableRow>

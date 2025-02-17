@@ -27,7 +27,7 @@ export const BudgetDetail = ({ id }: { id: string }) => {
     const router = useRouter();
 
     return (
-        <main className="py-3.5">
+        <main className="rounded-lg border border-accent bg-background-primary p-4">
             <div className="flex justify-between">
                 <TypographyH1 className="mb-2">Presupuesto #{id}</TypographyH1>
                 <div className="flex space-x-2">

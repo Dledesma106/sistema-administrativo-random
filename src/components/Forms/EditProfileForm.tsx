@@ -67,87 +67,89 @@ export default function EditProfileForm() {
     };
 
     return (
-        <Form {...formMethods}>
-            <TypographyH2 asChild className="mb-4">
-                <h1>Ajustes</h1>
-            </TypographyH2>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
+            <Form {...formMethods}>
+                <TypographyH2 asChild className="mb-4">
+                    <h1>Ajustes</h1>
+                </TypographyH2>
 
-            <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-8">
-                <FormField
-                    control={formMethods.control}
-                    name="currentPassword"
-                    rules={{ required: 'Este campo es requerido' }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Introduzca su contraseña actual</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type="password"
-                                    placeholder="********"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                <form onSubmit={formMethods.handleSubmit(onSubmit)} className="space-y-8">
+                    <FormField
+                        control={formMethods.control}
+                        name="currentPassword"
+                        rules={{ required: 'Este campo es requerido' }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Introduzca su contraseña actual</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="password"
+                                        placeholder="********"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    control={formMethods.control}
-                    name="newPassword"
-                    rules={{ required: 'Este campo es requerido' }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Nueva contraseña</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type="password"
-                                    placeholder="********"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={formMethods.control}
+                        name="newPassword"
+                        rules={{ required: 'Este campo es requerido' }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nueva contraseña</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="password"
+                                        placeholder="********"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    control={formMethods.control}
-                    name="confirmNewPassword"
-                    rules={{
-                        validate: (value) =>
-                            value === formMethods.getValues('newPassword') ||
-                            'Las contraseñas no coinciden',
-                        required: 'Este campo es requerido',
-                    }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Confirmar nueva contraseña</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type="password"
-                                    placeholder="********"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        control={formMethods.control}
+                        name="confirmNewPassword"
+                        rules={{
+                            validate: (value) =>
+                                value === formMethods.getValues('newPassword') ||
+                                'Las contraseñas no coinciden',
+                            required: 'Este campo es requerido',
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Confirmar nueva contraseña</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="password"
+                                        placeholder="********"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <div className="flex flex-row justify-end gap-4">
-                    <Button
-                        type="button"
-                        onClick={() => router.push('/')}
-                        variant="outline"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button type="submit" disabled={changePasswordMutation.isPending}>
-                        Guardar
-                    </Button>
-                </div>
-            </form>
-        </Form>
+                    <div className="flex flex-row justify-end gap-4">
+                        <Button
+                            type="button"
+                            onClick={() => router.push('/')}
+                            variant="outline"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={changePasswordMutation.isPending}>
+                            Guardar
+                        </Button>
+                    </div>
+                </form>
+            </Form>
+        </main>
     );
 }
