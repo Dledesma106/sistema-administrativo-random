@@ -45,44 +45,41 @@ export function DataTable<TData>({
         const ROW_HEIGHT = 53; // Altura ajustada por fila
         const HEADER_HEIGHT = 45;
         const MIN_HEIGHT = 200;
-        const MAX_HEIGHT = 450;
+        const MAX_HEIGHT = 470;
         
         const contentHeight = (actualRowCount * ROW_HEIGHT) + HEADER_HEIGHT;
-        const height = `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[450px]`;
+        const height = `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[470px]`;
         console.log(height);
         return height;
     }, [table.getRowModel().rows.length, totalCount]);
 
     return (
-        <div>
-            {/* Header */}
-            <div className="mb-4">
-                <div className="flex justify-between">
-                    <TypographyH1>{title}</TypographyH1>
-                    {headerActions && (
-                        <div className="flex gap-2">{headerActions}</div>
-                    )}
-                </div>
-            </div>
+        <div className='flex flex-col gap-1'>
+            <div className="rounded-lg border border-accent bg-background-primary p-4 flex flex-col gap-1">
+                {/* Header */}
+                    <div className="flex justify-between">
+                        <TypographyH1>{title}</TypographyH1>
+                        {headerActions && (
+                            <div className="flex gap-2">{headerActions}</div>
+                        )}
+                    </div>
 
-            {/* Toolbar */}
-            {toolbarConfig && (
-                <div className="mb-4">
+                {/* Toolbar */}
+                {toolbarConfig && (
                     <DataTableToolbar table={table} config={toolbarConfig} />
-                </div>
-            )}
+                )}
 
-            {/* Pagination */}
-            <div className="mb-4">
-                <DataTablePagination
-                    totalCount={totalCount}
-                    page={page}
-                    pageSize={pageSize}
-                    onPageChange={onPageChange}
-                    onPageSizeChange={onPageSizeChange}
-                />
+                {/* Pagination */}
+
+                    <DataTablePagination
+                        totalCount={totalCount}
+                        page={page}
+                        pageSize={pageSize}
+                        onPageChange={onPageChange}
+                        onPageSizeChange={onPageSizeChange}
+                    />
+
             </div>
-
             {/* Table con scroll en el body */}
 
             <CustomScrollArea height={dynamicHeight}>
