@@ -260,7 +260,7 @@ const CreateOrUpdatePreventiveForm = ({
             })) || [];
 
     return (
-        <main>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 asChild className="mb-4">
                 <h1>{preventiveIdToUpdate ? 'Editar Preventivo' : 'Crear Preventivo'}</h1>
             </TypographyH2>
@@ -559,7 +559,6 @@ const CreateOrUpdatePreventiveForm = ({
                         <Button
                             variant="outline"
                             type="button"
-                            asChild
                             onClick={() => {
                                 router.push(routesBuilder.preventives.list());
                             }}

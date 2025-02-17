@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -62,15 +61,6 @@ export default function TaskPricesDataTable({ data, businesses }: Props) {
         },
     });
 
-    const headerActions = (
-        <Button asChild className="flex items-center space-x-2">
-            <Link href={routesBuilder.accounting.taskPrices.create()}>
-                <BsPlus size="20" />
-                <span>Crear precio</span>
-            </Link>
-        </Button>
-    );
-
     return (
         <DataTable
             table={table}
@@ -81,7 +71,17 @@ export default function TaskPricesDataTable({ data, businesses }: Props) {
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
-            headerActions={headerActions}
+            headerActions={
+                <Button
+                    className="flex items-center gap-1 pr-6"
+                    onClick={() =>
+                        router.push(routesBuilder.accounting.taskPrices.create())
+                    }
+                >
+                    <BsPlus size="20" />
+                    <span>Crear precio</span>
+                </Button>
+            }
             onRowClick={(row) =>
                 router.push(routesBuilder.accounting.taskPrices.edit(row.id))
             }

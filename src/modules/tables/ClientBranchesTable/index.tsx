@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import router from 'next/router';
 
 import {
     ColumnFiltersState,
@@ -81,11 +81,14 @@ export const ClientBranchesTable = ({ client, cities, businesses }: Props) => {
                 onPageChange={setPage}
                 onPageSizeChange={setPageSize}
                 headerActions={
-                    <Button asChild className="flex items-center space-x-2">
-                        <Link href={routesBuilder.branches.create(client.id)}>
-                            <BsPlus size="20" />
-                            <span>Agregar sucursal</span>
-                        </Link>
+                    <Button
+                        className="flex items-center gap-1 pr-6"
+                        onClick={() =>
+                            router.push(routesBuilder.branches.create(client.id))
+                        }
+                    >
+                        <BsPlus size="20" />
+                        <span>Agregar sucursal</span>
                     </Button>
                 }
             />

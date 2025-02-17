@@ -64,7 +64,7 @@ const Content: React.FC<Props> = ({ expense }) => {
     };
 
     return (
-        <main className="py-3.5">
+        <main className="rounded-lg border border-accent bg-background-primary p-4">
             <div className="flex justify-between">
                 <TypographyH1 className="mb-2">
                     Gasto #{expense.expenseNumber}
@@ -160,7 +160,7 @@ const Content: React.FC<Props> = ({ expense }) => {
                         <>
                             <Title>Imágen</Title>
                             <a
-                                className="group relative inline-block overflow-hidden rounded-md border border-gray-200"
+                                className="group relative inline-block overflow-hidden rounded-md border border-accent"
                                 download={expense.image.id}
                                 href={expense.image.url}
                                 target="_blank"
@@ -174,7 +174,7 @@ const Content: React.FC<Props> = ({ expense }) => {
                                     className="z-0"
                                 />
 
-                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
+                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 transition-colors duration-200 group-hover:bg-background/90">
                                     <DownloadIcon />
                                 </div>
                             </a>

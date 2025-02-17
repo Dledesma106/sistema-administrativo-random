@@ -268,7 +268,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
     };
 
     return (
-        <main>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 asChild className="mb-4">
                 <h1>{taskIdToUpdate ? 'Editar Tarea' : 'Agregar Tarea'}</h1>
             </TypographyH2>

@@ -117,7 +117,7 @@ const CreateOrUpdateTaskPriceForm = ({
     };
 
     return (
-        <main className="p-4">
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 asChild className="mb-4">
                 <h1>
                     {priceIdToUpdate

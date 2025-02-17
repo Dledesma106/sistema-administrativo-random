@@ -65,7 +65,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     function Main(): JSX.Element {
         return (
             <div className={cn('flex h-screen flex-col overflow-hidden')}>
-                {isLoggedIn && <NavBar />}
+                <NavBar />
 
                 <div className="flex flex-1 flex-col overflow-y-scroll px-20">
                     <main className={cn('flex-1 px-4 py-3.5', className)}>
@@ -76,5 +76,5 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         );
     }
 
-    return useMemo(Main, [children, className, isLoading, isLoggedIn]);
+    return useMemo(Main, [children, className, isLoading]);
 };

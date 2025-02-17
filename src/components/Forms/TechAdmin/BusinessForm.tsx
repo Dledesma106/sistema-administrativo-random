@@ -69,7 +69,7 @@ export default function BusinessForm({
     };
 
     return (
-        <main>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH1 className="mb-8">
                 {newBusiness ? 'Agregar Empresa' : 'Editar Empresa'}
             </TypographyH1>

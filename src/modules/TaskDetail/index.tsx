@@ -160,7 +160,7 @@ const Content: React.FC<Props> = ({ task }) => {
     const router = useRouter();
 
     return (
-        <main className="py-3.5">
+        <main className="rounded-lg border border-accent bg-background-primary p-4">
             <div className="flex justify-between">
                 <TypographyH1 className="mb-2">Tarea #{task.taskNumber}</TypographyH1>
                 {user.roles.includes('AdministrativoTecnico') && (

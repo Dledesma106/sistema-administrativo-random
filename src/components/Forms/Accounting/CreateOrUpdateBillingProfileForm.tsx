@@ -274,12 +274,9 @@ const CreateOrUpdateBillingProfileForm = ({
                     rules={{ required: 'Este campo es requerido' }}
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Dirección de Facturación</FormLabel>
+                            <FormLabel>Domicilio comercial</FormLabel>
                             <FormControl>
-                                <Input
-                                    placeholder="Dirección de facturación"
-                                    {...field}
-                                />
+                                <Input placeholder="Domicilio comercial" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -380,7 +377,7 @@ const CreateOrUpdateBillingProfileForm = ({
     }
 
     return (
-        <main className="p-4">
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 asChild className="mb-4">
                 <h1>
                     {profileIdToUpdate

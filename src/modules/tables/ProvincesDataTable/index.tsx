@@ -73,9 +73,12 @@ export function ProvincesDataTable() {
             onPageSizeChange={setPageSize}
             onRowClick={(row) => router.push(routesBuilder.provinces.edit(row.id))}
             headerActions={
-                <Button onClick={() => router.push(routesBuilder.provinces.create())}>
-                    <BsPlus size={32} />
-                    Agregar provincia
+                <Button
+                    className="flex items-center gap-1 pr-6"
+                    onClick={() => router.push(routesBuilder.provinces.create())}
+                >
+                    <BsPlus size="20" />
+                    <span>Agregar provincia</span>
                 </Button>
             }
         />

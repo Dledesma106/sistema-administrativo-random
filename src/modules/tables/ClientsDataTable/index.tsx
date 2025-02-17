@@ -74,9 +74,12 @@ export function ClientsDataTable() {
             onPageSizeChange={setPageSize}
             onRowClick={(row) => router.push(routesBuilder.branches.list(row.id))}
             headerActions={
-                <Button onClick={() => router.push(routesBuilder.clients.create())}>
-                    <BsPlus size={32} />
-                    Agregar cliente
+                <Button
+                    className="flex items-center gap-1 pr-6"
+                    onClick={() => router.push(routesBuilder.clients.create())}
+                >
+                    <BsPlus size="20" />
+                    <span>Agregar cliente</span>
                 </Button>
             }
         />

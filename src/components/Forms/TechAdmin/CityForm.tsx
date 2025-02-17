@@ -116,7 +116,7 @@ export default function CityForm({
     };
 
     return (
-        <main>
+        <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH1 className="mb-8">
                 {!idToUpdate ? 'Agregar Ciudad' : 'Editar Ciudad'}
             </TypographyH1>

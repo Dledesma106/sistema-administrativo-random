@@ -102,9 +102,12 @@ export const PreventivesTable = ({
             onPageSizeChange={setPageSize}
             onRowClick={(row) => router.push(routesBuilder.preventives.details(row.id))}
             headerActions={
-                <Button onClick={() => router.push(routesBuilder.preventives.create())}>
-                    <Plus />
-                    Nuevo Preventivo
+                <Button
+                    className="flex items-center gap-1 pr-6"
+                    onClick={() => router.push(routesBuilder.preventives.create())}
+                >
+                    <Plus size="20" />
+                    <span>Crear Preventivo</span>
                 </Button>
             }
         />
