@@ -54,7 +54,7 @@ export function DataList<T>({
                         data.map((item, index) => (
                             <TableRow
                                 key={index}
-                                className={`border-b bg-background-primary ${onRowClick ? 'cursor-pointer hover:bg-accent' : ''}`}
+                                className={`border-b border-accent bg-background-primary ${onRowClick ? 'cursor-pointer hover:bg-accent' : ''}`}
                                 onClick={() => onRowClick?.(item)}
                             >
                                 {columns.map((column, colIndex) => (

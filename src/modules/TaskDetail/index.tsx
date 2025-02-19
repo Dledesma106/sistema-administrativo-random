@@ -289,7 +289,7 @@ const Content: React.FC<Props> = ({ task }) => {
                             {task.images.map((image) => (
                                 <div key={image.id}>
                                     <a
-                                        className="group relative inline-block overflow-hidden rounded-md border border-border"
+                                        className="group relative inline-block overflow-hidden rounded-md border border-accent"
                                         download={image.id}
                                         href={image.url}
                                         target="_blank"
@@ -303,7 +303,7 @@ const Content: React.FC<Props> = ({ task }) => {
                                             className="z-0"
                                         />
 
-                                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/30 transition-colors duration-200 group-hover:bg-white/90">
+                                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 transition-colors duration-200 group-hover:bg-background/90">
                                             <DownloadIcon />
                                         </div>
                                     </a>
