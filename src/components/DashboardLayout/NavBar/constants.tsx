@@ -12,6 +12,7 @@ import {
     RiFileListLine,
     RiFileUserLine,
     RiPriceTag3Line,
+    RiFileTextLine,
 } from 'react-icons/ri';
 
 import { routesBuilder } from '@/lib/routes';
@@ -110,6 +111,12 @@ export const commonItems: NavItem[] = [
         title: 'Dashboard',
         path: '/',
         icon: <RiDashboardFill />,
+    },
+    {
+        id: 2,
+        title: 'Órdenes de Servicio',
+        path: routesBuilder.serviceOrders.list(),
+        icon: <RiFileTextLine />,
     },
     {
         id: 3,
