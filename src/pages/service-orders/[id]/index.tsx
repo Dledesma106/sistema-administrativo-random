@@ -10,5 +10,5 @@ export default function ServiceOrderDetailPage() {
         return null;
     }
 
-    return <ServiceOrderDetail id={id} />;
+    return <ServiceOrderDetail />;
 }
