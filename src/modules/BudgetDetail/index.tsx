@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 
+import Combobox from '@/components/Combobox';
 import BudgetStatusBadge, {
     BudgetStatus,
 } from '@/components/ui/Badges/BudgetStatusBadge';
@@ -25,6 +26,16 @@ const mockBudget = {
 
 export const BudgetDetail = ({ id }: { id: string }) => {
     const router = useRouter();
+
+    const handleStatusChange = (newStatus: string) => {
+        // TODO: Implementar la mutación para actualizar el estado
+        console.log('Cambiar estado a:', newStatus);
+
+        // Si el estado cambia a aprobado, crear orden de servicio
+        if (newStatus === BudgetStatus.Aprobado) {
+            console.log('Crear orden de servicio para el presupuesto:', id);
+        }
+    };
 
     return (
         <main className="rounded-lg border border-accent bg-background-primary p-4">
@@ -53,7 +64,19 @@ export const BudgetDetail = ({ id }: { id: string }) => {
             <div className="space-y-4 pt-4">
                 <div>
                     <Title>Estado</Title>
-                    <BudgetStatusBadge status={mockBudget.status} />
+                    <div className="flex items-center gap-2">
+                        <BudgetStatusBadge status={mockBudget.status} />
+                        <Combobox
+                            selectPlaceholder="Cambiar estado"
+                            searchPlaceholder="Buscar estado"
+                            value={mockBudget.status}
+                            onChange={handleStatusChange}
+                            items={Object.entries(BudgetStatus).map(([key, value]) => ({
+                                label: key,
+                                value: value,
+                            }))}
+                        />
+                    </div>
                 </div>
 
                 <div>
