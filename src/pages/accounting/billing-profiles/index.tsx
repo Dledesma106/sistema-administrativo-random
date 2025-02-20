@@ -7,6 +7,9 @@ const mockData = [
     {
         id: '1',
         businessName: 'Empresa A S.A.',
+        legalName: 'Empresa A S.A.',
+        businessAddress: 'Av. Corrientes 123',
+        ivaCondition: 'Responsable Inscripto',
         cuit: '30-12345678-9',
         contactName: 'Juan Pérez',
         contactEmail: 'juan.perez@empresaa.com',
@@ -15,6 +18,9 @@ const mockData = [
     {
         id: '2',
         businessName: 'Constructora B S.R.L.',
+        legalName: 'Constructora B S.R.L.',
+        businessAddress: 'Av. Rivadavia 456',
+        ivaCondition: 'Responsable Inscripto',
         cuit: '30-98765432-1',
         contactName: 'María González',
         contactEmail: 'maria.gonzalez@constructorab.com',
@@ -23,6 +29,9 @@ const mockData = [
     {
         id: '3',
         businessName: 'Servicios C S.A.',
+        legalName: 'Servicios C S.A.',
+        businessAddress: 'Av. Libertador 789',
+        ivaCondition: 'Responsable Inscripto',
         cuit: '30-45678901-2',
         contactName: 'Carlos Rodríguez',
         contactEmail: 'carlos.rodriguez@serviciosc.com',

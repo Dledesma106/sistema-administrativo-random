@@ -7,6 +7,7 @@ import BudgetStatusBadge, {
 import { Button } from '@/components/ui/button';
 import { TypographyH1 } from '@/components/ui/typography';
 import { routesBuilder } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 const Title = ({ children }: { children: React.ReactNode }) => (
     <h2 className="mb-2 text-sm font-bold">{children}</h2>
@@ -18,10 +19,71 @@ const mockBudget = {
     company: 'Empresa A',
     description: 'Descripción detallada del presupuesto A',
     price: 150000,
-    status: BudgetStatus.Enviado,
+    status: BudgetStatus.Recibido,
     client: 'Cliente A',
     branch: 'Sucursal #123 - Buenos Aires',
     createdAt: '2024-03-20',
+    contactName: 'Juan Pérez',
+    contactEmail: 'juan.perez@empresaa.com',
+};
+
+type EmailThread = {
+    id: string;
+    subject: string;
+    messages: {
+        id: string;
+        from: string;
+        to: string[];
+        cc?: string[];
+        timestamp: string;
+        content: string;
+        type: 'SENT' | 'RECEIVED' | 'FORWARDED';
+    }[];
+};
+
+const mockEmailThread: EmailThread = {
+    id: 'thread-1',
+    subject: 'Re: Presupuesto #1 - Empresa A',
+    messages: [
+        {
+            id: 'email-1',
+            from: 'juan.perez@empresaa.com',
+            to: ['ventas@miempresa.com'],
+            timestamp: '2024-03-20T10:30:00Z',
+            content:
+                'Buenos días,\n\nNecesitaría un presupuesto para los servicios mencionados anteriormente.\n\nSaludos cordiales,\nJuan Pérez',
+            type: 'RECEIVED',
+        },
+        {
+            id: 'email-2',
+            from: 'ventas@miempresa.com',
+            to: ['juan.perez@empresaa.com'],
+            cc: ['gerencia@miempresa.com'],
+            timestamp: '2024-03-20T14:15:00Z',
+            content:
+                'Estimado Juan,\n\nAdjunto el presupuesto solicitado.\nQuedo a disposición por cualquier consulta.\n\nSaludos,\nDepartamento de Ventas',
+            type: 'SENT',
+        },
+        {
+            id: 'email-3',
+            from: 'juan.perez@empresaa.com',
+            to: ['ventas@miempresa.com'],
+            timestamp: '2024-03-21T09:45:00Z',
+            content:
+                'Recibido, gracias.\nLo estaré revisando con el equipo.\n\nSaludos,\nJuan',
+            type: 'RECEIVED',
+        },
+        {
+            id: 'email-4',
+            from: 'gerencia@empresaa.com',
+            to: ['ventas@miempresa.com'],
+            cc: ['juan.perez@empresaa.com'],
+            timestamp: '2024-03-22T11:20:00Z',
+            content:
+                '---------- Forwarded message ---------\nFrom: Gerencia\n\nHola,\nRevisamos el presupuesto y necesitaríamos una reunión para discutir algunos puntos.\n¿Tienen disponibilidad esta semana?\n\nSaludos cordiales,\nGerencia',
+            type: 'FORWARDED',
+        },
+    ],
 };
 
 export const BudgetDetail = ({ id }: { id: string }) => {
@@ -95,6 +157,14 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                 </div>
 
                 <div>
+                    <Title>Contacto</Title>
+                    <p className="mb-1">{mockBudget.contactName}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {mockBudget.contactEmail}
+                    </p>
+                </div>
+
+                <div>
                     <Title>Precio</Title>
                     <p className="mb-1">
                         {mockBudget.price.toLocaleString('es-AR', {
@@ -107,6 +177,41 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                 <div>
                     <Title>Fecha de creación</Title>
                     <p className="mb-1">{mockBudget.createdAt}</p>
+                </div>
+            </div>
+
+            <div className="mt-8">
+                <Title>Comunicaciones</Title>
+                <div className="space-y-4">
+                    {mockEmailThread.messages.map((email) => (
+                        <div
+                            key={email.id}
+                            className={cn(
+                                'rounded-lg border border-accent p-4',
+                                email.type === 'SENT' && 'bg-muted',
+                            )}
+                        >
+                            <div className="mb-2 flex items-start justify-between">
+                                <div>
+                                    <p className="font-semibold">{email.from}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Para: {email.to.join(', ')}
+                                    </p>
+                                    {email.cc && (
+                                        <p className="text-sm text-muted-foreground">
+                                            CC: {email.cc.join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {new Date(email.timestamp).toLocaleString('es-AR')}
+                                </p>
+                            </div>
+                            <div className="whitespace-pre-wrap text-sm">
+                                {email.content}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </main>
