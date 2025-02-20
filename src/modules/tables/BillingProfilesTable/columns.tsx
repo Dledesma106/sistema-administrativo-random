@@ -6,6 +6,9 @@ export type BillingProfile = {
     id: string;
     businessName: string;
     cuit: string;
+    legalName: string;
+    businessAddress: string;
+    ivaCondition: string;
     contactName: string;
     contactEmail: string;
     billingEmail: string;

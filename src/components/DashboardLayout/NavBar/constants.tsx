@@ -13,6 +13,7 @@ import {
     RiFileUserLine,
     RiPriceTag3Line,
     RiFileTextLine,
+    RiFileList3Line,
 } from 'react-icons/ri';
 
 import { routesBuilder } from '@/lib/routes';
@@ -100,6 +101,12 @@ export const navSections: NavSection[] = [
                 title: 'Precios por tarea',
                 path: routesBuilder.accounting.taskPrices.list(),
                 icon: <RiPriceTag3Line />,
+            },
+            {
+                id: 14,
+                title: 'Facturación',
+                path: routesBuilder.accounting.billing.list(),
+                icon: <RiFileList3Line />,
             },
         ],
     },
