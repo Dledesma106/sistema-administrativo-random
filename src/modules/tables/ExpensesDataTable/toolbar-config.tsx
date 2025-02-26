@@ -49,4 +49,10 @@ export const getExpensesTableToolbarConfig = (
             })),
         },
     ],
+    dateRanges: [
+        {
+            columnId: 'expenseDate',
+            title: 'Fecha de gasto',
+        },
+    ],
 });

@@ -134,6 +134,11 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         observations: t.exposeString('observations', {
             nullable: true,
         }),
+        participants: t.field({
+            type: ['String'],
+            nullable: false,
+            resolve: (task) => task.participants || [],
+        }),
     }),
 });
 
@@ -182,6 +187,7 @@ export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
         branch: t.string({ required: false }),
         business: t.string({ required: false }),
         assigned: t.stringList({ required: false }),
+        participants: t.stringList({ required: false }),
         actNumber: t.string({ required: false }),
         imageKeys: t.stringList({ required: false }),
         observations: t.string({ required: false }),
@@ -222,6 +228,7 @@ export const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
             type: [ExpenseInputType],
             required: false,
         }),
+        participants: t.stringList({ required: false }),
     }),
 });
 

@@ -3,16 +3,18 @@ import { useRouter } from 'next/router';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
-import { GetExpensesQuery } from '@/api/graphql';
+import { ExpenseStatus, GetExpensesQuery } from '@/api/graphql';
 import Modal from '@/components/Modal';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDeleteExpense } from '@/hooks/api/expenses/useDeleteExpense';
+import { useUpdateExpenseStatus } from '@/hooks/api/expenses/useUpdateExpenseStatus';
 import { routesBuilder } from '@/lib/routes';
 
 interface Props {
@@ -20,18 +22,38 @@ interface Props {
 }
 
 export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
-    const [modal, setModal] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [statusModal, setStatusModal] = useState<{
+        open: boolean;
+        status?: ExpenseStatus;
+    }>({ open: false });
     const router = useRouter();
     const deleteMutation = useDeleteExpense(expense.id);
+    const updateStatusMutation = useUpdateExpenseStatus();
 
-    const openModal = (e: React.MouseEvent): void => {
+    const openDeleteModal = (e: React.MouseEvent): void => {
         e.stopPropagation();
-        setModal(true);
+        setDeleteModal(true);
     };
 
-    const closeModal = (e?: React.MouseEvent): void => {
+    const closeDeleteModal = (e?: React.MouseEvent): void => {
         e?.stopPropagation();
-        setModal(false);
+        setDeleteModal(false);
+    };
+
+    const openStatusModal =
+        (status: ExpenseStatus) =>
+        (e: React.MouseEvent): void => {
+            e.stopPropagation();
+            setStatusModal({
+                open: true,
+                status: status,
+            });
+        };
+
+    const closeStatusModal = (e?: React.MouseEvent): void => {
+        e?.stopPropagation();
+        setStatusModal({ open: false });
     };
 
     return (
@@ -64,8 +86,32 @@ export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
                             Detalles
                         </button>
                     </DropdownMenuItem>
+
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <button
+                                className="w-full cursor-default"
+                                onClick={openStatusModal(ExpenseStatus.Aprobado)}
+                            >
+                                Aprobar
+                            </button>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <button
+                                className="w-full cursor-default"
+                                onClick={openStatusModal(ExpenseStatus.Rechazado)}
+                            >
+                                Rechazar
+                            </button>
+                        </DropdownMenuItem>
+                    </>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                        <button className="w-full cursor-default" onClick={openModal}>
+                        <button
+                            className="w-full cursor-default"
+                            onClick={openDeleteModal}
+                        >
                             Eliminar
                         </button>
                     </DropdownMenuItem>
@@ -74,8 +120,8 @@ export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
 
             <div onClick={(e) => e.stopPropagation()}>
                 <Modal
-                    openModal={modal}
-                    handleToggleModal={closeModal}
+                    openModal={deleteModal}
+                    handleToggleModal={closeDeleteModal}
                     action={(e) => {
                         e?.stopPropagation();
                         deleteMutation.mutate({
@@ -84,6 +130,25 @@ export function ExpensesTableRowActions({ expense }: Props): JSX.Element {
                         });
                     }}
                     msg="¿Seguro que quiere eliminar este gasto?"
+                />
+                <Modal
+                    openModal={statusModal.open}
+                    handleToggleModal={closeStatusModal}
+                    action={(e) => {
+                        e?.stopPropagation();
+                        if (statusModal.status) {
+                            updateStatusMutation.mutate({
+                                expenseId: expense.id,
+                                status: statusModal.status,
+                            });
+                        }
+                        closeStatusModal();
+                    }}
+                    msg={`¿Seguro que quiere ${
+                        statusModal.status === ExpenseStatus.Aprobado
+                            ? 'aprobar'
+                            : 'rechazar'
+                    } este gasto?`}
                 />
             </div>
         </>

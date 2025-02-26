@@ -140,6 +140,14 @@ builder.queryFields((t) => ({
                 type: [ExpensePaySourcePothosRef],
                 required: false,
             }),
+            expenseDateFrom: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
+            expenseDateTo: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
         },
@@ -159,6 +167,14 @@ builder.queryFields((t) => ({
                     }),
                     ...(filters.paySource?.length && {
                         paySource: { in: filters.paySource },
+                    }),
+                    ...((filters.expenseDateFrom || filters.expenseDateTo) && {
+                        expenseDate: {
+                            ...(filters.expenseDateFrom && {
+                                gte: filters.expenseDateFrom,
+                            }),
+                            ...(filters.expenseDateTo && { lte: filters.expenseDateTo }),
+                        },
                     }),
                 },
                 skip: skip || 0,
@@ -185,6 +201,14 @@ builder.queryFields((t) => ({
                 type: [ExpensePaySourcePothosRef],
                 required: false,
             }),
+            expenseDateFrom: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
+            expenseDateTo: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
         },
         resolve: async (_parent, filters) => {
             return prisma.expense.count({
@@ -201,6 +225,14 @@ builder.queryFields((t) => ({
                     }),
                     ...(filters.paySource?.length && {
                         paySource: { in: filters.paySource },
+                    }),
+                    ...((filters.expenseDateFrom || filters.expenseDateTo) && {
+                        expenseDate: {
+                            ...(filters.expenseDateFrom && {
+                                gte: filters.expenseDateFrom,
+                            }),
+                            ...(filters.expenseDateTo && { lte: filters.expenseDateTo }),
+                        },
                     }),
                 },
             });

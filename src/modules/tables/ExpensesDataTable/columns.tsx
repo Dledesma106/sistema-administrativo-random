@@ -17,6 +17,14 @@ type Expense = NonNullable<GetExpensesQuery['expenses']>[number];
 const columnHelper = createColumnHelper<Expense>();
 
 export const useExpensesTableColumns = () => [
+    columnHelper.accessor((row) => row.expenseNumber, {
+        id: 'expenseNumber',
+        header: 'Número',
+        cell: (info) => {
+            const expenseNumber = info.getValue();
+            return <span className="font-medium">#{expenseNumber}</span>;
+        },
+    }),
     columnHelper.accessor((row) => row, {
         id: 'task',
         cell: (info) => {

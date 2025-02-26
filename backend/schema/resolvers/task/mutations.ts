@@ -14,7 +14,7 @@ import {
 
 import { createImageSignedUrlAsync, getFileSignedUrl } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
-import { removeDeleted, calculateMaxRowHeight } from 'backend/schema/utils';
+import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 function buildWhereClause(filters: any): any {
@@ -58,6 +58,151 @@ const TaskReportFilterInput = builder.inputType('TaskReportFilterInput', {
     }),
 });
 
+/**
+ * Genera un nuevo número de tarea basado en el último número existente
+ * @returns Número de tarea generado
+ */
+async function generateTaskNumber(): Promise<number> {
+    const maxTaskNumber = await prisma.task.findFirst({
+        orderBy: { taskNumber: 'desc' },
+        select: { taskNumber: true },
+    });
+    return (maxTaskNumber?.taskNumber ?? 0) + 1;
+}
+
+/**
+ * Procesa los participantes y asignados de una tarea y los devuelve en dos arreglos, uno con los IDs de los usuarios asignados y otro con los nombres de los participantes
+ * @param participants - Array de participantes (IDs o nombres)
+ * @param assignedIDs - Array de IDs de usuarios asignados
+ * @param currentUserId - ID del usuario actual (opcional)
+ * @returns Objeto con los arrays actualizados de asignados y nombres de participantes
+ */
+async function processParticipantsAndAssigned(
+    participants: string[] | undefined,
+    assignedIDs: string[],
+    currentUserId?: string,
+): Promise<{ updatedAssignedIDs: string[]; participantNames: string[] }> {
+    let updatedAssignedIDs = [...assignedIDs];
+    let participantNames: string[] = [];
+    const validUserIds = new Set<string>();
+    const idToNameMap = new Map<string, string>();
+
+    // Asegurarse de que el usuario actual esté en assignedIDs
+    if (currentUserId && !updatedAssignedIDs.includes(currentUserId)) {
+        updatedAssignedIDs.push(currentUserId);
+    }
+
+    // Obtener el nombre del usuario actual si está disponible
+    let currentUserName = '';
+    if (currentUserId) {
+        const currentUser = await prisma.user.findUnique({
+            where: { id: currentUserId },
+            select: { fullName: true },
+        });
+        if (currentUser) {
+            currentUserName = currentUser.fullName;
+            idToNameMap.set(currentUserId, currentUserName);
+        }
+    }
+
+    if (participants && participants.length > 0) {
+        // Identificar IDs válidos de usuarios
+        const potentialUserIds = participants.filter(
+            (p) => /^[0-9a-fA-F]{24}$/.test(p), // Verificar si parece un ObjectId de MongoDB
+        );
+
+        if (potentialUserIds.length > 0) {
+            const existingUsers = await prisma.user.findMany({
+                where: {
+                    id: {
+                        in: potentialUserIds,
+                    },
+                    deleted: false,
+                },
+                select: {
+                    id: true,
+                    fullName: true,
+                },
+            });
+
+            // Crear mapeo de ID a nombre
+            existingUsers.forEach((user) => {
+                validUserIds.add(user.id);
+                idToNameMap.set(user.id, user.fullName);
+                if (!updatedAssignedIDs.includes(user.id)) {
+                    updatedAssignedIDs.push(user.id);
+                }
+            });
+        }
+
+        // Procesar el arreglo de participantes manteniendo el orden
+        participantNames = participants.map((participant) => {
+            // Si es un ID válido, usar el nombre correspondiente
+            if (/^[0-9a-fA-F]{24}$/.test(participant) && idToNameMap.has(participant)) {
+                return idToNameMap.get(participant)!;
+            }
+            // Si no es un ID o no se encontró el usuario, mantener el valor original
+            return participant;
+        });
+    }
+
+    // Filtrar los asignados para mantener solo los que están en validUserIds o son el usuario actual
+    if (participants && participants.length > 0) {
+        updatedAssignedIDs = updatedAssignedIDs.filter(
+            (id) => validUserIds.has(id) || (currentUserId && id === currentUserId),
+        );
+    }
+
+    // Asegurarse de que el nombre del usuario actual esté en participantNames
+    if (currentUserName && !participantNames.includes(currentUserName)) {
+        participantNames.push(currentUserName);
+    }
+
+    return {
+        updatedAssignedIDs,
+        participantNames,
+    };
+}
+
+function calculateMaxRowHeight(row: ExcelJS.Row, worksheet: ExcelJS.Worksheet): number {
+    let maxHeight = 20; // Aumentamos la altura mínima a 20
+
+    row.eachCell({ includeEmpty: false }, (cell) => {
+        // Configurar el ajuste de texto para campos largos
+        cell.alignment = {
+            wrapText: true,
+            vertical: 'top',
+        };
+
+        const value = cell.text || '';
+        // Obtener el ancho de la columna actual
+        const columnWidth = worksheet.getColumn(cell.col).width || 10;
+        const charsPerLine = Math.floor(columnWidth * 1.2); // Aproximación de caracteres por línea
+        // Dividir por saltos de línea explícitos
+        const textLines = value.toString().split('\n');
+        let lines = 1;
+
+        // Para la columna de participantes, tratamos cada nombre como una línea separada
+        if (worksheet.getColumn(cell.col).key === 'participants') {
+            // Si hay muchos participantes, aseguramos que tengan suficiente espacio
+            lines = Math.max(textLines.length, value.split(',').length);
+        } else {
+            // Para otras columnas, calculamos basado en la longitud del texto
+            lines = textLines.reduce((count, line) => {
+                // Calculamos líneas adicionales por longitud
+                return count + Math.max(1, Math.ceil(line.length / charsPerLine));
+            }, 0);
+        }
+
+        // Multiplicamos por un factor mayor para dar más espacio
+        const estimatedHeight = Math.max(lines * 18, 20);
+        maxHeight = Math.max(maxHeight, estimatedHeight);
+    });
+
+    // Añadimos un pequeño margen adicional
+    return maxHeight + 5;
+}
+
 builder.mutationFields((t) => ({
     createTask: t.field({
         type: TaskCrudResultPothosRef,
@@ -80,13 +225,29 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { input } = args;
-                const maxTaskNumber = await prisma.task.findFirst({
-                    orderBy: { taskNumber: 'desc' },
-                    select: { taskNumber: true },
-                });
+                const taskNumber = await generateTaskNumber();
+
+                // Obtener nombres completos de los técnicos asignados para inicializar participantes
+                let participantNames: string[] = [];
+                if (input.assigned && input.assigned.length > 0) {
+                    const assignedUsers = await prisma.user.findMany({
+                        where: {
+                            id: {
+                                in: input.assigned,
+                            },
+                            deleted: false,
+                        },
+                        select: {
+                            fullName: true,
+                        },
+                    });
+
+                    participantNames = assignedUsers.map((user) => user.fullName);
+                }
+
                 const task: Task = await prisma.task.create({
                     data: {
-                        taskNumber: (maxTaskNumber?.taskNumber ?? 0) + 1,
+                        taskNumber,
                         actNumber: input.actNumber,
                         auditorId: input.auditor,
                         branchId: input.branch ?? undefined,
@@ -98,6 +259,9 @@ builder.mutationFields((t) => ({
                         taskType: input.taskType,
                         assignedIDs: {
                             set: input.assigned,
+                        },
+                        participants: {
+                            set: participantNames, // Inicializar con nombres de asignados
                         },
                         movitecTicket: input.movitecTicket,
                     },
@@ -131,15 +295,28 @@ builder.mutationFields((t) => ({
                 },
             ],
         },
-        resolve: async (root, args, _context, _info) => {
+        resolve: async (root, args, { user }) => {
             try {
-                const { user } = _context;
                 const { input } = args;
-                const maxTaskNumber = await prisma.task.findFirst({
-                    orderBy: { taskNumber: 'desc' },
-                    select: { taskNumber: true },
-                });
-                const taskNumber = (maxTaskNumber?.taskNumber ?? 0) + 1;
+
+                // Generar número de tarea
+                const taskNumber = await generateTaskNumber();
+
+                // Procesar participantes
+                const initialAssignedIDs = input.assigned ? [...input.assigned] : [];
+                if (!initialAssignedIDs.includes(user.id)) {
+                    initialAssignedIDs.push(user.id);
+                }
+
+                // Usar processParticipantsAndAssigned para manejar participantes
+                const { updatedAssignedIDs, participantNames } =
+                    await processParticipantsAndAssigned(
+                        input.participants || [],
+                        initialAssignedIDs,
+                        user.id,
+                    );
+
+                // Crear la tarea
                 const task: Task = await prisma.task.create({
                     data: {
                         taskNumber,
@@ -150,13 +327,14 @@ builder.mutationFields((t) => ({
                         businessName: input.businessName ?? undefined,
                         description: `Tarea creada por ${user.fullName} desde APK`,
                         observations: input.observations,
-                        status: TaskStatus.Finalizada,
+                        status: TaskStatus.Pendiente,
                         taskType: input.taskType,
-                        ...(input.assigned && {
-                            assignedIDs: {
-                                set: input.assigned,
-                            },
-                        }),
+                        assignedIDs: {
+                            set: updatedAssignedIDs,
+                        },
+                        participants: {
+                            set: participantNames,
+                        },
                         closedAt: input.closedAt,
                         startedAt: input.startedAt,
                         images: {
@@ -175,6 +353,56 @@ builder.mutationFields((t) => ({
                             create: input.expenses
                                 ? await Promise.all(
                                       input.expenses.map(async (expenseData, index) => {
+                                          // Procesar imágenes del gasto
+                                          const imageCreations = expenseData.imageKeys
+                                              ? await Promise.all(
+                                                    expenseData.imageKeys.map(
+                                                        async (imageKey) => {
+                                                            return {
+                                                                ...(await createImageSignedUrlAsync(
+                                                                    imageKey,
+                                                                )),
+                                                                key: imageKey,
+                                                            };
+                                                        },
+                                                    ),
+                                                )
+                                              : [];
+
+                                          // Procesar archivos del gasto
+                                          const fileCreations = [];
+                                          if (
+                                              expenseData.fileKeys &&
+                                              expenseData.fileKeys.length > 0
+                                          ) {
+                                              for (
+                                                  let i = 0;
+                                                  i < expenseData.fileKeys.length;
+                                                  i++
+                                              ) {
+                                                  const fileKey = expenseData.fileKeys[i];
+                                                  const mimeType =
+                                                      expenseData.mimeTypes?.[i] ||
+                                                      'application/octet-stream';
+                                                  const filename =
+                                                      expenseData.filenames?.[i] ||
+                                                      'file';
+                                                  const size =
+                                                      expenseData.sizes?.[i] || 0;
+
+                                                  fileCreations.push({
+                                                      ...(await getFileSignedUrl(
+                                                          fileKey,
+                                                          mimeType,
+                                                      )),
+                                                      key: fileKey,
+                                                      filename,
+                                                      mimeType,
+                                                      size,
+                                                  });
+                                              }
+                                          }
+
                                           return {
                                               expenseNumber: `${taskNumber}-${index + 1}`,
                                               amount: expenseData.amount,
@@ -187,32 +415,14 @@ builder.mutationFields((t) => ({
                                               status: ExpenseStatus.Enviado,
                                               cityName: expenseData.cityName,
                                               registeredBy: {
-                                                  connect: { id: _context.user.id },
+                                                  connect: { id: user.id },
                                               },
-                                              ...(expenseData.imageKey && {
-                                                  image: {
-                                                      create: {
-                                                          ...(await createImageSignedUrlAsync(
-                                                              expenseData.imageKey,
-                                                          )),
-                                                          key: expenseData.imageKey,
-                                                      },
-                                                  },
-                                              }),
-                                              ...(expenseData.fileKey && {
-                                                  file: {
-                                                      create: {
-                                                          ...(await getFileSignedUrl(
-                                                              expenseData.fileKey,
-                                                              expenseData.mimeType!,
-                                                          )),
-                                                          key: expenseData.fileKey,
-                                                          filename: expenseData.filename!,
-                                                          mimeType: expenseData.mimeType!,
-                                                          size: expenseData.size!,
-                                                      },
-                                                  },
-                                              }),
+                                              images: {
+                                                  create: imageCreations,
+                                              },
+                                              files: {
+                                                  create: fileCreations,
+                                              },
                                           };
                                       }),
                                   )
@@ -220,6 +430,7 @@ builder.mutationFields((t) => ({
                         },
                     },
                 });
+
                 return {
                     success: true,
                     task,
@@ -254,10 +465,10 @@ builder.mutationFields((t) => ({
                 },
             ],
         },
-        resolve: async (root, args, _info) => {
+        resolve: async (root, args, _context, _info) => {
             try {
                 const { id, input } = args;
-
+                const { user } = _context;
                 const foundTask = await prisma.task.findUniqueUndeleted({
                     where: {
                         id,
@@ -265,6 +476,7 @@ builder.mutationFields((t) => ({
                     select: {
                         status: true,
                         auditorId: true,
+                        participants: true,
                         expenses: {
                             select: {
                                 status: true,
@@ -278,7 +490,38 @@ builder.mutationFields((t) => ({
                         success: false,
                     };
                 }
+
+                const initialAssignedIDs = input.assigned ? [...input.assigned] : [];
+                if (!initialAssignedIDs.includes(user.id)) {
+                    initialAssignedIDs.push(user.id);
+                }
+
+                let participantNames: string[] = [];
+                if (input.assigned && input.assigned.length > 0) {
+                    const assignedUsers = await prisma.user.findMany({
+                        where: {
+                            id: {
+                                in: input.assigned,
+                            },
+                            deleted: false,
+                        },
+                        select: {
+                            fullName: true,
+                        },
+                    });
+
+                    participantNames = Array.from(
+                        new Set([
+                            ...assignedUsers.map((user) => user.fullName),
+                            ...foundTask.participants,
+                        ]),
+                    );
+                }
+
                 const data = {
+                    participants: {
+                        set: participantNames,
+                    },
                     actNumber: input.actNumber ?? undefined,
                     auditorId: input.auditor ?? undefined,
                     branchId: input.branch ?? undefined,
@@ -395,8 +638,19 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { id } = args;
-                const task = await prisma.task.softDeleteOne({
-                    id,
+
+                // Buscar la tarea con sus imágenes
+                const task = await prisma.task.findUniqueUndeleted({
+                    where: { id },
+                    include: {
+                        images: true,
+                        expenses: {
+                            include: {
+                                images: true,
+                                files: true,
+                            },
+                        },
+                    },
                 });
 
                 if (!task) {
@@ -406,35 +660,48 @@ builder.mutationFields((t) => ({
                     };
                 }
 
-                const expensesToDelete = await prisma.expense.findManyUndeleted({
-                    where: {
-                        taskId: id,
-                    },
-                });
+                // Eliminar todos los gastos y sus adjuntos
+                for (const expense of task.expenses) {
+                    // Eliminar imágenes de gastos
+                    if (expense.images && expense.images.length > 0) {
+                        await Promise.all(
+                            expense.images.map((image) =>
+                                prisma.image.softDeleteOne({ id: image.id }),
+                            ),
+                        );
+                    }
 
-                for (const expense of expensesToDelete) {
-                    const expenseToDelete = await prisma.expense.softDeleteOne({
-                        id: expense.id,
-                    });
-                    if (expenseToDelete.imageId) {
-                        await prisma.image.softDeleteOne({ id: expenseToDelete.imageId });
+                    // Eliminar archivos de gastos
+                    if (expense.files && expense.files.length > 0) {
+                        await Promise.all(
+                            expense.files.map((file) =>
+                                prisma.file.softDeleteOne({ id: file.id }),
+                            ),
+                        );
                     }
-                    if (expenseToDelete.fileId) {
-                        await prisma.file.softDeleteOne({ id: expenseToDelete.fileId });
-                    }
+
+                    // Eliminar el gasto
+                    await prisma.expense.softDeleteOne({ id: expense.id });
                 }
 
-                const imagesToDelete = task.imagesIDs;
-
-                for (const imageId of imagesToDelete) {
-                    await prisma.image.softDeleteOne({ id: imageId });
+                // Eliminar imágenes de la tarea
+                if (task.images && task.images.length > 0) {
+                    await Promise.all(
+                        task.images.map((image) =>
+                            prisma.image.softDeleteOne({ id: image.id }),
+                        ),
+                    );
                 }
+
+                // Finalmente eliminar la tarea
+                const deletedTask = await prisma.task.softDeleteOne({ id });
 
                 return {
                     success: true,
-                    task,
+                    task: deletedTask,
                 };
             } catch (error) {
+                console.error('Error al eliminar la tarea:', error);
                 return {
                     message: 'Error al eliminar la tarea',
                     success: false,
@@ -473,6 +740,7 @@ builder.mutationFields((t) => ({
                         expenses,
                         expenseIdsToDelete,
                         imageIdsToDelete,
+                        participants,
                     },
                 } = args;
 
@@ -489,6 +757,9 @@ builder.mutationFields((t) => ({
                         imagesIDs: true,
                         observations: true,
                         images: true,
+                        taskNumber: true,
+                        participants: true,
+                        assignedIDs: true,
                     },
                 });
                 if (!foundTask) {
@@ -505,26 +776,42 @@ builder.mutationFields((t) => ({
                     };
                 }
                 if (expenseIdsToDelete) {
-                    for (const id of expenseIdsToDelete) {
-                        const expense = await prisma.expense.softDeleteOne({
-                            id,
+                    for (const expenseId of expenseIdsToDelete) {
+                        const expense = await prisma.expense.findUnique({
+                            where: { id: expenseId },
+                            include: {
+                                images: true,
+                                files: true,
+                            },
                         });
+
                         if (!expense) {
                             return {
                                 message: 'El gasto no existe',
                                 success: false,
                             };
                         }
-                        if (expense.imageId) {
-                            await prisma.image.softDeleteOne({
-                                id: expense.imageId,
-                            });
+
+                        // Eliminar imágenes asociadas
+                        if (expense.images && expense.images.length > 0) {
+                            await Promise.all(
+                                expense.images.map((image) =>
+                                    prisma.image.softDeleteOne({ id: image.id }),
+                                ),
+                            );
                         }
-                        if (expense.fileId) {
-                            await prisma.file.softDeleteOne({
-                                id: expense.fileId,
-                            });
+
+                        // Eliminar archivos asociados
+                        if (expense.files && expense.files.length > 0) {
+                            await Promise.all(
+                                expense.files.map((file) =>
+                                    prisma.file.softDeleteOne({ id: file.id }),
+                                ),
+                            );
                         }
+
+                        // Eliminar el gasto
+                        await prisma.expense.softDeleteOne({ id: expenseId });
                     }
                 }
                 const filteredImages = removeDeleted(foundTask.images);
@@ -538,109 +825,108 @@ builder.mutationFields((t) => ({
                         await prisma.image.softDeleteOne({ id });
                     }
                 }
+                const { updatedAssignedIDs, participantNames } =
+                    await processParticipantsAndAssigned(
+                        participants ?? [],
+                        foundTask.assignedIDs,
+                        user.id,
+                    );
+                const newImages = imageKeys
+                    ? await Promise.all(
+                          imageKeys.map(async (key) => {
+                              return {
+                                  ...(await createImageSignedUrlAsync(key)),
+                                  key,
+                              };
+                          }),
+                      )
+                    : [];
+                const newExpenses = expenses
+                    ? await Promise.all(
+                          expenses.map(async (expenseData, index) => {
+                              // Procesar imágenes del gasto
+                              const imageCreations = expenseData.imageKeys
+                                  ? await Promise.all(
+                                        expenseData.imageKeys.map(async (imageKey) => {
+                                            return {
+                                                ...(await createImageSignedUrlAsync(
+                                                    imageKey,
+                                                )),
+                                                key: imageKey,
+                                            };
+                                        }),
+                                    )
+                                  : [];
+
+                              // Procesar archivos del gasto
+                              const fileCreations = [];
+                              if (
+                                  expenseData.fileKeys &&
+                                  expenseData.fileKeys.length > 0
+                              ) {
+                                  for (let i = 0; i < expenseData.fileKeys.length; i++) {
+                                      const fileKey = expenseData.fileKeys[i];
+                                      const mimeType =
+                                          expenseData.mimeTypes?.[i] ||
+                                          'application/octet-stream';
+                                      const filename =
+                                          expenseData.filenames?.[i] || 'file';
+                                      const size = expenseData.sizes?.[i] || 0;
+
+                                      fileCreations.push({
+                                          ...(await getFileSignedUrl(fileKey, mimeType)),
+                                          key: fileKey,
+                                          filename,
+                                          mimeType,
+                                          size,
+                                      });
+                                  }
+                              }
+
+                              return {
+                                  expenseNumber: `${foundTask.taskNumber}-${index + 1}`,
+                                  amount: expenseData.amount,
+                                  expenseType: expenseData.expenseType,
+                                  paySource: expenseData.paySource,
+                                  paySourceBank: expenseData.paySourceBank,
+                                  installments: expenseData.installments,
+                                  expenseDate: expenseData.expenseDate,
+                                  doneBy: expenseData.doneBy,
+                                  status: ExpenseStatus.Enviado,
+                                  cityName: expenseData.cityName,
+                                  registeredBy: {
+                                      connect: { id: user.id },
+                                  },
+                                  images: {
+                                      create: imageCreations,
+                                  },
+                                  files: {
+                                      create: fileCreations,
+                                  },
+                              };
+                          }),
+                      )
+                    : [];
                 const task = await prisma.task.update({
                     where: {
                         id,
                     },
                     data: {
-                        actNumber: actNumber
-                            ? parseInt(actNumber, 10)
-                            : foundTask.actNumber,
-                        status: TaskStatus.Finalizada,
-                        observations: observations ?? foundTask.observations,
-                        closedAt: closedAt,
-                        startedAt: startedAt,
+                        actNumber: actNumber ? Number(actNumber) : undefined,
+                        observations,
+                        closedAt,
+                        startedAt,
+                        assignedIDs: {
+                            set: updatedAssignedIDs,
+                        },
+                        participants: {
+                            set: participantNames,
+                        },
                         images: {
-                            create: imageKeys
-                                ? await Promise.all(
-                                      imageKeys.map(async (key) => {
-                                          return {
-                                              ...(await createImageSignedUrlAsync(key)),
-                                              key,
-                                          };
-                                      }),
-                                  )
-                                : [],
+                            create: newImages,
                         },
                         expenses: {
-                            create: expenses
-                                ? await Promise.all(
-                                      expenses.map(async (expenseData, index) => {
-                                          // Encontrar el último número de secuencia para esta tarea
-                                          const task = await prisma.task.findUnique({
-                                              where: { id },
-                                              select: { taskNumber: true },
-                                          });
-
-                                          if (!task) {
-                                              throw new Error('Task not found');
-                                          }
-
-                                          const lastExpense =
-                                              await prisma.expense.findFirst({
-                                                  where: {
-                                                      task: { id },
-                                                      expenseNumber: {
-                                                          contains:
-                                                              task.taskNumber.toString(),
-                                                      },
-                                                  },
-                                                  orderBy: {
-                                                      expenseNumber: 'desc',
-                                                  },
-                                              });
-
-                                          const sequence = lastExpense
-                                              ? parseInt(
-                                                    lastExpense.expenseNumber.split(
-                                                        '-',
-                                                    )[1],
-                                                ) + 1
-                                              : 1;
-
-                                          return {
-                                              expenseNumber: `${task.taskNumber}-${
-                                                  sequence + index
-                                              }`,
-                                              amount: expenseData.amount,
-                                              expenseType: expenseData.expenseType,
-                                              paySource: expenseData.paySource,
-                                              status: ExpenseStatus.Enviado,
-                                              doneBy: expenseData.doneBy,
-                                              cityName: expenseData.cityName,
-                                              installments: expenseData.installments,
-                                              expenseDate: expenseData.expenseDate,
-                                              paySourceBank: expenseData.paySourceBank,
-                                              observations: expenseData.observations,
-                                              registeredBy: { connect: { id: user.id } },
-                                              ...(expenseData.imageKey && {
-                                                  image: {
-                                                      create: {
-                                                          ...(await createImageSignedUrlAsync(
-                                                              expenseData.imageKey,
-                                                          )),
-                                                          key: expenseData.imageKey,
-                                                      },
-                                                  },
-                                              }),
-                                              ...(expenseData.fileKey && {
-                                                  file: {
-                                                      create: {
-                                                          ...(await getFileSignedUrl(
-                                                              expenseData.fileKey,
-                                                              expenseData.mimeType!,
-                                                          )),
-                                                          key: expenseData.fileKey,
-                                                          filename: expenseData.filename!,
-                                                          mimeType: expenseData.mimeType!,
-                                                          size: expenseData.size!,
-                                                      },
-                                                  },
-                                              }),
-                                          };
-                                      }),
-                                  )
-                                : [],
+                            create: newExpenses,
                         },
                     },
                 });
@@ -652,6 +938,9 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 console.error(error);
                 return {
+                    message: `Error al actualizar la tarea: ${
+                        error instanceof Error ? error.message : 'Unknown error'
+                    }`,
                     success: false,
                 };
             }
@@ -706,69 +995,117 @@ builder.mutationFields((t) => ({
     generateApprovedTasksReport: t.field({
         type: 'String',
         args: {
-            startDate: t.arg.string({ required: true }),
-            endDate: t.arg.string({ required: true }),
             filters: t.arg({
                 type: [TaskReportFilterInput],
                 required: false,
             }),
+            startDate: t.arg.string({ required: false }),
+            endDate: t.arg.string({ required: false }),
         },
         authz: {
             compositeRules: [
                 { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
+                { or: ['IsAdministrativoTecnico'] },
             ],
         },
-        resolve: async (root, { startDate, endDate, filters }) => {
+        resolve: async (root, args, _context, _info) => {
             try {
-                const whereClause = {
-                    status: TaskStatus.Aprobada,
+                const { filters, startDate, endDate } = args;
+
+                // Construir la cláusula where
+                let whereClause: any = {
                     deleted: false,
-                    closedAt: {
-                        gte: new Date(startDate),
-                        lte: new Date(endDate),
-                    },
-                    ...(filters && buildWhereClause(filters)),
+                    status: TaskStatus.Aprobada, // Solo tareas aprobadas
                 };
 
+                // Agregar filtros de fecha si se proporcionan
+                if (startDate || endDate) {
+                    whereClause.closedAt = {};
+                    if (startDate) {
+                        whereClause.closedAt.gte = new Date(startDate);
+                    }
+                    if (endDate) {
+                        whereClause.closedAt.lte = new Date(endDate);
+                    }
+                }
+
+                // Agregar filtros adicionales si se proporcionan
+                if (filters && filters.length > 0) {
+                    const additionalFilters = buildWhereClause(filters);
+                    whereClause = {
+                        ...whereClause,
+                        ...additionalFilters,
+                    };
+                }
+
+                // Obtener las tareas con sus relaciones
                 const tasks = await prisma.task.findMany({
                     where: whereClause,
                     include: {
-                        assigned: true,
-                        business: true,
                         branch: {
                             include: {
                                 client: true,
                                 city: true,
                             },
                         },
-                        expenses: true,
+                        business: true,
+                        expenses: {
+                            where: {
+                                deleted: false,
+                            },
+                        },
                     },
                     orderBy: {
-                        closedAt: 'desc',
+                        taskNumber: 'asc',
                     },
                 });
 
-                // 2. Crear el archivo Excel
-                const workbook = new ExcelJS.Workbook();
-                const worksheet = workbook.addWorksheet('Tareas Aprobadas');
+                if (tasks.length === 0) {
+                    throw new Error(
+                        'No se encontraron tareas con los filtros proporcionados',
+                    );
+                }
 
-                // 3. Definir encabezados
+                // Crear el libro de Excel
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('Reporte de Tareas');
+
+                // Definir las columnas en el orden especificado
                 worksheet.columns = [
                     {
-                        header: 'Número de tarea',
+                        header: 'Número de Tarea',
                         key: 'taskNumber',
                         width: 15,
-                    },
-                    {
-                        header: 'Técnicos',
-                        key: 'technicians',
-                        width: 20,
                     },
                     {
                         header: 'Empresa',
                         key: 'business',
                         width: 20,
+                    },
+                    {
+                        header: 'Fecha de Inicio',
+                        key: 'startDate',
+                        width: 15,
+                    },
+                    {
+                        header: 'Hora de Inicio',
+                        key: 'startTime',
+                        width: 15,
+                    },
+                    {
+                        header: 'Fecha de Cierre',
+                        key: 'closeDate',
+                        width: 15,
+                    },
+                    {
+                        header: 'Hora de Cierre',
+                        key: 'closeTime',
+                        width: 15,
+                    },
+                    {
+                        header: 'Número de Acta',
+                        key: 'actNumber',
+                        width: 15,
                     },
                     {
                         header: 'Cliente',
@@ -778,144 +1115,234 @@ builder.mutationFields((t) => ({
                     {
                         header: 'Sucursal',
                         key: 'branch',
-                        width: 25,
+                        width: 20,
+                    },
+                    {
+                        header: 'Localidad',
+                        key: 'city',
+                        width: 20,
+                    },
+                    {
+                        header: 'Tipo',
+                        key: 'taskType',
+                        width: 15,
                     },
                     {
                         header: 'Descripción',
                         key: 'description',
                         width: 40,
-                        style: { alignment: { wrapText: true } },
                     },
                     {
-                        header: 'Fecha de Inicio',
-                        key: 'startedAt',
-                        width: 20,
-                    },
-                    {
-                        header: 'Fecha de Cierre',
-                        key: 'closedAt',
-                        width: 20,
-                    },
-                    {
-                        header: 'Número de Acta',
-                        key: 'actNumber',
-                        width: 16,
+                        header: 'Técnicos Participantes',
+                        key: 'participants',
+                        width: 35,
                     },
                     {
                         header: 'Gastos Totales',
-                        key: 'expenses',
+                        key: 'totalExpenses',
+                        width: 15,
+                    },
+                    {
+                        header: 'Cantidad de Gastos',
+                        key: 'expenseCount',
                         width: 15,
                     },
                     {
                         header: 'Observaciones',
                         key: 'observations',
                         width: 40,
-                        style: { alignment: { wrapText: true } },
                     },
                 ];
 
-                // 4. Agregar datos
-                tasks.forEach((task, index) => {
-                    const filteredExpenses = removeDeleted(task.expenses);
-                    const totalExpenses = filteredExpenses.reduce((acc, expense) => {
-                        return acc + expense.amount;
-                    }, 0);
-
-                    worksheet.addRow({
-                        taskNumber: `#${task.taskNumber}`,
-                        technicians: task.assigned
-                            .map((tech) => tech.fullName)
-                            .join(', '),
-                        business: task.business?.name ?? task.businessName,
-                        client: task.branch?.client.name ?? task.clientName,
-                        branch: task.branch
-                            ? `#${task.branch?.number}, ${task.branch?.city.name}`
-                            : 'N/A',
-                        description: task.description,
-                        startedAt: task.startedAt
-                            ? format(task.startedAt, 'dd/MM/yyyy HH:mm')
-                            : 'N/A',
-                        closedAt: task.closedAt
-                            ? format(task.closedAt, 'dd/MM/yyyy HH:mm')
-                            : 'N/A',
-                        actNumber: task.actNumber,
-                        expenses: `${totalExpenses.toLocaleString('es-AR', {
-                            style: 'currency',
-                            currency: 'ARS',
-                        })} en ${filteredExpenses.length} gastos distintos`,
-                        observations: task.observations,
-                    });
-
-                    const row = worksheet.getRow(index + 2);
-                    const rowHeight = calculateMaxRowHeight({
-                        description: {
-                            text: task.description || '',
-                            width: 40,
-                        },
-                        observations: {
-                            text: task.observations || '',
-                            width: 40,
-                        },
-                        technicians: {
-                            text: task.assigned.map((tech) => tech.fullName).join(', '),
-                            width: 20,
-                        },
-                    });
-
-                    row.height = rowHeight;
-                    row.alignment = { wrapText: true };
-                });
-
-                // 5. Dar formato a la tabla
+                // Estilo para el encabezado
                 worksheet.getRow(1).font = { bold: true };
                 worksheet.getRow(1).alignment = {
                     vertical: 'middle',
                     horizontal: 'center',
                 };
 
-                // 6. Generar el buffer del archivo
+                // Agregar los datos de las tareas
+                tasks.forEach((task) => {
+                    // Calcular gastos totales
+                    const totalExpenses = task.expenses.reduce(
+                        (sum, expense) => sum + (expense.amount || 0),
+                        0,
+                    );
+
+                    // Formatear fechas y horas
+                    const startDate = task.startedAt
+                        ? format(task.startedAt, 'dd/MM/yyyy')
+                        : '';
+                    const startTime = task.startedAt
+                        ? format(task.startedAt, 'HH:mm')
+                        : '';
+                    const closeDate = task.closedAt
+                        ? format(task.closedAt, 'dd/MM/yyyy')
+                        : '';
+                    const closeTime = task.closedAt ? format(task.closedAt, 'HH:mm') : '';
+
+                    // Obtener nombre de empresa
+                    const businessName = task.business?.name || task.businessName || '';
+
+                    // Obtener nombre de cliente y sucursal
+                    const clientName = task.branch?.client?.name || task.clientName || '';
+                    const branchName = task.branch ? `#${task.branch.number}}` : '';
+
+                    // Agregar fila con los datos
+                    worksheet.addRow({
+                        taskNumber: `#${task.taskNumber}`,
+                        business: businessName,
+                        startDate,
+                        startTime,
+                        closeDate,
+                        closeTime,
+                        actNumber: task.actNumber || '',
+                        client: clientName,
+                        branch: branchName,
+                        city: task.branch?.city?.name || '',
+                        taskType: task.taskType,
+                        description: task.description,
+                        participants: (task.participants || []).join('\n'),
+                        totalExpenses: totalExpenses.toLocaleString('es-AR', {
+                            style: 'currency',
+                            currency: 'ARS',
+                        }),
+                        expenseCount: task.expenses.length,
+                        observations: task.observations || '',
+                    });
+                });
+
+                // Ajustar altura de filas para contenido multilínea
+                worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+                    if (rowNumber > 1) {
+                        // Omitir la fila de encabezado
+                        // Configurar ajuste de texto para toda la fila
+                        row.eachCell((cell) => {
+                            cell.alignment = {
+                                wrapText: true,
+                                vertical: 'top',
+                            };
+                        });
+
+                        const maxHeight = calculateMaxRowHeight(row, worksheet);
+                        row.height = maxHeight;
+                    }
+                });
+
+                // Generar el archivo Excel
                 const buffer = await workbook.xlsx.writeBuffer();
 
-                // 7. Configurar el cliente S3
+                // Subir a S3
                 const s3Client = new S3Client({
-                    region: process.env.AWS_REGION,
+                    region: process.env.AWS_REGION || 'us-east-1',
                     credentials: {
-                        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
                     },
                 });
 
-                // 8. Generar nombre único para el archivo
-                const fileName = `tareas-aprobadas-${format(
+                const fileName = `reporte-tareas-${format(
                     new Date(),
                     'yyyy-MM-dd-HH-mm-ss',
                 )}.xlsx`;
+                const key = `reports/${fileName}`;
 
-                // 9. Subir a S3
                 await s3Client.send(
                     new PutObjectCommand({
                         Bucket: process.env.AWS_S3_BUCKET_NAME,
-                        Key: `reports/${fileName}`,
+                        Key: key,
                         Body: new Uint8Array(buffer),
                         ContentType:
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     }),
                 );
 
-                // 10. Generar URL firmada para descarga
-                const getCommand = new GetObjectCommand({
+                // Generar URL firmada para descargar el archivo
+                const command = new GetObjectCommand({
                     Bucket: process.env.AWS_S3_BUCKET_NAME,
-                    Key: `reports/${fileName}`,
+                    Key: key,
                 });
 
-                const downloadUrl = await getSignedUrl(s3Client, getCommand, {
+                const signedUrl = await getSignedUrl(s3Client, command, {
                     expiresIn: 3600,
                 });
 
-                return downloadUrl;
+                return signedUrl;
             } catch (error) {
-                console.error('Error generating report:', error);
-                throw new Error('Error al generar el reporte');
+                console.error('Error generando reporte de tareas:', error);
+                throw new Error(
+                    `Error al generar el reporte: ${
+                        error instanceof Error ? error.message : 'Error desconocido'
+                    }`,
+                );
+            }
+        },
+    }),
+    finishTask: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            id: t.arg.string({
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [{ and: ['IsAuthenticated'] }, { or: ['IsTecnico'] }],
+        },
+        resolve: async (root, args, { user }) => {
+            try {
+                const { id } = args;
+
+                // Verificar que la tarea existe y que el usuario está asignado a ella
+                const task = await prisma.task.findUniqueUndeleted({
+                    where: {
+                        id,
+                        assignedIDs: {
+                            has: user.id,
+                        },
+                    },
+                });
+
+                if (!task) {
+                    return {
+                        message: 'La tarea no existe o no estás asignado a ella',
+                        success: false,
+                    };
+                }
+                //Verificar que la tarea tenga fecha de inicio
+                if (!task.startedAt) {
+                    return {
+                        message: 'La tarea no tiene fecha de inicio',
+                        success: false,
+                    };
+                }
+                // Verificar que la tarea tiene fecha de cierre
+                if (!task.closedAt) {
+                    return {
+                        message: 'La tarea no tiene fecha de cierre',
+                        success: false,
+                    };
+                }
+                // Actualizar la tarea
+                const updatedTask = await prisma.task.update({
+                    where: { id },
+                    data: {
+                        status: TaskStatus.Finalizada,
+                        // No modificamos assignedIDs ni participants
+                    },
+                });
+
+                return {
+                    success: true,
+                    task: updatedTask,
+                };
+            } catch (error) {
+                console.error('Error al finalizar la tarea:', error);
+                return {
+                    message: `Error al finalizar la tarea: ${
+                        error instanceof Error ? error.message : 'Error desconocido'
+                    }`,
+                    success: false,
+                };
             }
         },
     }),

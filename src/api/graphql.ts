@@ -122,13 +122,14 @@ export type Expense = {
     auditor: Maybe<User>;
     cityName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
+    discountAmount: Maybe<Scalars['Float']>;
     doneBy: Scalars['String'];
     expenseDate: Maybe<Scalars['DateTime']>;
     expenseNumber: Scalars['String'];
     expenseType: ExpenseType;
-    file: Maybe<File>;
+    files: Array<File>;
     id: Scalars['ID'];
-    image: Maybe<Image>;
+    images: Array<Image>;
     installments: Maybe<Scalars['Int']>;
     observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
@@ -151,15 +152,15 @@ export type ExpenseInput = {
     doneBy: Scalars['String'];
     expenseDate: InputMaybe<Scalars['DateTime']>;
     expenseType: ExpenseType;
-    fileKey: InputMaybe<Scalars['String']>;
-    filename: InputMaybe<Scalars['String']>;
-    imageKey: InputMaybe<Scalars['String']>;
+    fileKeys: InputMaybe<Array<Scalars['String']>>;
+    filenames: InputMaybe<Array<Scalars['String']>>;
+    imageKeys: InputMaybe<Array<Scalars['String']>>;
     installments: Scalars['Int'];
-    mimeType: InputMaybe<Scalars['String']>;
+    mimeTypes: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
     paySourceBank: InputMaybe<ExpensePaySourceBank>;
-    size: InputMaybe<Scalars['Int']>;
+    sizes: InputMaybe<Array<Scalars['Int']>>;
 };
 
 export const ExpensePaySource = {
@@ -195,6 +196,7 @@ export const ExpenseType = {
     Hospedaje: 'Hospedaje',
     Insumos: 'Insumos',
     Otro: 'Otro',
+    Viatico: 'Viatico',
 } as const;
 
 export type ExpenseType = (typeof ExpenseType)[keyof typeof ExpenseType];
@@ -275,6 +277,7 @@ export type Mutation = {
     deleteProvince: ProvinceCrudResult;
     deleteTask: TaskCrudResult;
     deleteUser: UserCrudPothosRef;
+    finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
     login: LoginUserResult;
@@ -284,6 +287,7 @@ export type Mutation = {
     updateBusiness: BusinessResult;
     updateCity: CityCrudRef;
     updateClient: ClientResult;
+    updateExpenseDiscountAmount: ExpenseCrudResult;
     updateExpenseStatus: ExpenseCrudResult;
     updateMyAssignedTask: TaskCrudResult;
     updatePreventive: PreventiveCrudRef;
@@ -388,6 +392,10 @@ export type MutationDeleteUserArgs = {
     id: Scalars['String'];
 };
 
+export type MutationFinishTaskArgs = {
+    id: Scalars['String'];
+};
+
 export type MutationGenerateApprovedExpensesReportArgs = {
     endDate: Scalars['String'];
     filters: InputMaybe<Scalars['JSON']>;
@@ -395,9 +403,9 @@ export type MutationGenerateApprovedExpensesReportArgs = {
 };
 
 export type MutationGenerateApprovedTasksReportArgs = {
-    endDate: Scalars['String'];
+    endDate: InputMaybe<Scalars['String']>;
     filters: InputMaybe<Array<TaskReportFilterInput>>;
-    startDate: Scalars['String'];
+    startDate: InputMaybe<Scalars['String']>;
 };
 
 export type MutationLoginArgs = {
@@ -427,6 +435,11 @@ export type MutationUpdateCityArgs = {
 export type MutationUpdateClientArgs = {
     data: ClientInput;
     id: Scalars['String'];
+};
+
+export type MutationUpdateExpenseDiscountAmountArgs = {
+    discountAmount: InputMaybe<Scalars['Float']>;
+    expenseId: Scalars['String'];
 };
 
 export type MutationUpdateExpenseStatusArgs = {
@@ -474,6 +487,7 @@ export type MyTaskInput = {
     expenses: InputMaybe<Array<ExpenseInput>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
+    participants: InputMaybe<Array<Scalars['String']>>;
     startedAt: InputMaybe<Scalars['DateTime']>;
     taskType: TaskType;
 };
@@ -652,6 +666,8 @@ export type QueryExpenseByIdArgs = {
 };
 
 export type QueryExpensesArgs = {
+    expenseDateFrom: InputMaybe<Scalars['DateTime']>;
+    expenseDateTo: InputMaybe<Scalars['DateTime']>;
     expenseType: InputMaybe<Array<ExpenseType>>;
     paySource: InputMaybe<Array<ExpensePaySource>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
@@ -661,6 +677,8 @@ export type QueryExpensesArgs = {
 };
 
 export type QueryExpensesCountArgs = {
+    expenseDateFrom: InputMaybe<Scalars['DateTime']>;
+    expenseDateTo: InputMaybe<Scalars['DateTime']>;
     expenseType: InputMaybe<Array<ExpenseType>>;
     paySource: InputMaybe<Array<ExpensePaySource>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
@@ -784,6 +802,7 @@ export type Task = {
     movitecTicket: Maybe<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
     openedAt: Scalars['DateTime'];
+    participants: Array<Scalars['String']>;
     startedAt: Maybe<Scalars['DateTime']>;
     status: TaskStatus;
     taskNumber: Scalars['Int'];
@@ -843,6 +862,7 @@ export type UpdateMyTaskInput = {
     imageIdsToDelete: InputMaybe<Array<Scalars['String']>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
+    participants: InputMaybe<Array<Scalars['String']>>;
     startedAt: InputMaybe<Scalars['DateTime']>;
 };
 
@@ -1259,6 +1279,7 @@ export type GetExpenseQuery = {
         __typename?: 'Expense';
         id: string;
         amount: number;
+        discountAmount: number | null;
         expenseType: ExpenseType;
         expenseNumber: string;
         cityName: string | null;
@@ -1272,14 +1293,14 @@ export type GetExpenseQuery = {
         createdAt: any;
         task: { __typename?: 'Task'; id: string; taskNumber: number } | null;
         registeredBy: { __typename?: 'User'; id: string; fullName: string };
-        image: { __typename?: 'Image'; id: string; url: string } | null;
-        file: {
+        images: Array<{ __typename?: 'Image'; id: string; url: string }>;
+        files: Array<{
             __typename?: 'File';
             id: string;
             url: string;
             mimeType: string;
             filename: string;
-        } | null;
+        }>;
         auditor: { __typename?: 'User'; id: string; fullName: string } | null;
     } | null;
 };
@@ -1289,6 +1310,8 @@ export type GetExpensesQueryVariables = Exact<{
     status: InputMaybe<Array<ExpenseStatus>>;
     expenseType: InputMaybe<Array<ExpenseType>>;
     paySource: InputMaybe<Array<ExpensePaySource>>;
+    expenseDateFrom: InputMaybe<Scalars['DateTime']>;
+    expenseDateTo: InputMaybe<Scalars['DateTime']>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
 }>;
@@ -1299,7 +1322,9 @@ export type GetExpensesQuery = {
     expenses: Array<{
         __typename?: 'Expense';
         id: string;
+        expenseNumber: string;
         amount: number;
+        discountAmount: number | null;
         expenseType: ExpenseType;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
@@ -1380,6 +1405,26 @@ export type UpdateExpenseStatusMutation = {
                     status: ExpenseStatus;
                 }>;
             } | null;
+        } | null;
+    };
+};
+
+export type UpdateExpenseDiscountAmountMutationVariables = Exact<{
+    expenseId: Scalars['String'];
+    discountAmount: InputMaybe<Scalars['Float']>;
+}>;
+
+export type UpdateExpenseDiscountAmountMutation = {
+    __typename?: 'Mutation';
+    updateExpenseDiscountAmount: {
+        __typename?: 'ExpenseCrudResult';
+        success: boolean;
+        message: string | null;
+        expense: {
+            __typename?: 'Expense';
+            id: string;
+            amount: number;
+            discountAmount: number | null;
         } | null;
     };
 };
@@ -1581,10 +1626,12 @@ export type TasksQuery = {
     tasks: Array<{
         __typename?: 'Task';
         id: string;
+        taskNumber: number;
         createdAt: any;
         startedAt: any | null;
         closedAt: any | null;
         description: string;
+        participants: Array<string>;
         businessName: string | null;
         clientName: string | null;
         taskType: TaskType;
@@ -1625,6 +1672,7 @@ export type GetTaskQuery = {
         observations: string | null;
         clientName: string | null;
         businessName: string | null;
+        participants: Array<string>;
         taskType: TaskType;
         status: TaskStatus;
         movitecTicket: string | null;
@@ -1653,6 +1701,7 @@ export type GetTaskQuery = {
         expenses: Array<{
             __typename?: 'Expense';
             id: string;
+            expenseNumber: string;
             amount: number;
             paySource: ExpensePaySource;
             paySourceBank: ExpensePaySourceBank | null;
@@ -1663,21 +1712,21 @@ export type GetTaskQuery = {
             expenseDate: any | null;
             status: ExpenseStatus;
             doneBy: string;
-            image: {
+            images: Array<{
                 __typename?: 'Image';
                 id: string;
                 url: string;
                 urlExpire: any | null;
                 key: string;
-            } | null;
-            file: {
+            }>;
+            files: Array<{
                 __typename?: 'File';
                 id: string;
                 url: string;
                 key: string;
                 mimeType: string;
                 filename: string;
-            } | null;
+            }>;
             registeredBy: { __typename?: 'User'; fullName: string };
         }>;
     } | null;
@@ -4103,6 +4152,10 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'discountAmount' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'expenseType' },
                                 },
                                 {
@@ -4172,7 +4225,7 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'image' },
+                                    name: { kind: 'Name', value: 'images' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
@@ -4189,7 +4242,7 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'file' },
+                                    name: { kind: 'Name', value: 'files' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
@@ -4327,6 +4380,28 @@ export const GetExpensesDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'expenseDateFrom' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'DateTime' },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'expenseDateTo' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'DateTime' },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
@@ -4377,6 +4452,22 @@ export const GetExpensesDocument = {
                             },
                             {
                                 kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseDateFrom' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseDateFrom' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseDateTo' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseDateTo' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
                                 name: { kind: 'Name', value: 'skip' },
                                 value: {
                                     kind: 'Variable',
@@ -4398,7 +4489,15 @@ export const GetExpensesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'expenseNumber' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'amount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'discountAmount' },
                                 },
                                 {
                                     kind: 'Field',
@@ -4590,6 +4689,22 @@ export const GetExpensesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'paySource' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseDateFrom' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseDateFrom' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseDateTo' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseDateTo' },
                                 },
                             },
                         ],
@@ -4944,6 +5059,107 @@ export const UpdateExpenseStatusDocument = {
 } as unknown as DocumentNode<
     UpdateExpenseStatusMutation,
     UpdateExpenseStatusMutationVariables
+>;
+export const UpdateExpenseDiscountAmountDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateExpenseDiscountAmount' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'expenseId' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'discountAmount' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Float' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateExpenseDiscountAmount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'discountAmount' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'discountAmount' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expense' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'discountAmount',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    UpdateExpenseDiscountAmountMutation,
+    UpdateExpenseDiscountAmountMutationVariables
 >;
 export const GetPreventivesDocument = {
     kind: 'Document',
@@ -6284,6 +6500,10 @@ export const TasksDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'taskNumber' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'createdAt' },
                                 },
                                 {
@@ -6297,6 +6517,10 @@ export const TasksDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'participants' },
                                 },
                                 {
                                     kind: 'Field',
@@ -6713,6 +6937,10 @@ export const GetTaskDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'participants' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'assigned' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -6755,6 +6983,13 @@ export const GetTaskDocument = {
                                             },
                                             {
                                                 kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'amount' },
                                             },
                                             {
@@ -6794,7 +7029,7 @@ export const GetTaskDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'image' },
+                                                name: { kind: 'Name', value: 'images' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
@@ -6831,7 +7066,7 @@ export const GetTaskDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'file' },
+                                                name: { kind: 'Name', value: 'files' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [

@@ -39,9 +39,23 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         return saved ? JSON.parse(saved) : [];
     });
 
+    const [page, setPage] = useState(() => {
+        if (typeof window === 'undefined') {
+            return 0;
+        }
+        const saved = localStorage.getItem('expensesTablePage');
+        return saved ? parseInt(saved) : 0;
+    });
+
+    const [pageSize, setPageSize] = useState(() => {
+        if (typeof window === 'undefined') {
+            return 10;
+        }
+        const saved = localStorage.getItem('expensesTablePageSize');
+        return saved ? parseInt(saved) : 10;
+    });
+
     const router = useRouter();
-    const [page, setPage] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
     const { data, error } = useGetExpenses({
         skip: page * pageSize,
         take: pageSize,
@@ -57,14 +71,27 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         paySource:
             (columnFilters.find((f) => f.id === 'paySource')
                 ?.value as ExpensePaySource[]) || null,
+        expenseDateFrom:
+            (columnFilters.find((f) => f.id === 'expenseDate')?.value as { from?: Date })
+                ?.from || null,
+        expenseDateTo:
+            (columnFilters.find((f) => f.id === 'expenseDate')?.value as { to?: Date })
+                ?.to || null,
     });
     const { user } = useUserContext();
     const columns = useExpensesTableColumns();
 
-    // Guardar filtros en localStorage cuando cambien
     useEffect(() => {
         localStorage.setItem('expensesTableFilters', JSON.stringify(columnFilters));
     }, [columnFilters]);
+
+    useEffect(() => {
+        localStorage.setItem('expensesTablePage', page.toString());
+    }, [page]);
+
+    useEffect(() => {
+        localStorage.setItem('expensesTablePageSize', pageSize.toString());
+    }, [pageSize]);
 
     const table = useReactTable<TableItem>({
         data: data?.expenses || [],
