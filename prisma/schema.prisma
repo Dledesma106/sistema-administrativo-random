@@ -114,6 +114,7 @@ enum ExpenseType {
   Herramienta
   Hospedaje
   Insumos
+  Viatico
   Otro
 }
 
@@ -154,17 +155,21 @@ model File {
   url       String    @unique(map: "url_1")
   urlExpire DateTime?
 
-  expenses Expense[]
+  expenseIDs String[]  @db.ObjectId
+  expenses   Expense[] @relation(fields: [expenseIDs], references: [id])
 
   @@map("files")
 }
 
 model Expense {
-  id            String                @id @default(auto()) @map("_id") @db.ObjectId
-  expenseNumber String                @db.String
-  createdAt     DateTime              @default(now()) @db.Date
-  updatedAt     DateTime              @updatedAt
-  amount        Float
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  expenseNumber String   @db.String
+  createdAt     DateTime @default(now()) @db.Date
+  updatedAt     DateTime @updatedAt
+
+  amount         Float
+  discountAmount Float?
+
   installments  Int?
   observations  String?
   cityName      String?
@@ -184,11 +189,11 @@ model Expense {
   registeredById String @map("registeredBy") @db.ObjectId
   registeredBy   User   @relation("registeredExpenses", fields: [registeredById], references: [id])
 
-  imageId String? @map("image") @db.ObjectId
-  image   Image?  @relation(fields: [imageId], references: [id])
+  imageIDs String[] @db.ObjectId
+  images   Image[]  @relation(fields: [imageIDs], references: [id])
 
-  fileId String? @map("file") @db.ObjectId
-  file   File?   @relation(fields: [fileId], references: [id])
+  fileIDs String[] @db.ObjectId
+  files   File[]   @relation(fields: [fileIDs], references: [id])
 
   auditorId String? @map("auditor") @db.ObjectId
   auditor   User?   @relation("expensesAudited", fields: [auditorId], references: [id])
@@ -207,7 +212,8 @@ model Image {
   url       String    @unique(map: "url_1")
   urlExpire DateTime?
 
-  expense Expense[]
+  expenseIDs String[]  @db.ObjectId
+  expenses   Expense[] @relation(fields: [expenseIDs], references: [id])
 
   taskIDs String[] @db.ObjectId
   task    Task[]   @relation(name: "TaskImages", fields: [taskIDs], references: [id])
@@ -248,6 +254,8 @@ model Task {
   movitecTicket String?
   clientName    String?
   businessName  String?
+
+  participants String[]
 
   branchId String? @map("branch") @db.ObjectId
   branch   Branch? @relation(fields: [branchId], references: [id])

@@ -64,8 +64,13 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             try {
                 const { id } = args;
 
-                const expense = await prisma.expense.softDeleteOne({
-                    id,
+                // Primero obtenemos el gasto con sus relaciones
+                const expense = await prisma.expense.findUnique({
+                    where: { id },
+                    include: {
+                        images: true,
+                        files: true,
+                    },
                 });
 
                 if (!expense) {
@@ -74,26 +79,44 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         success: false,
                     };
                 }
-                const image = expense.imageId
-                    ? await prisma.image.softDeleteOne({
-                          id: expense.imageId,
-                      })
-                    : null;
 
-                if (!image) {
-                    return {
-                        message: 'El gasto no poseia una foto',
-                        success: false,
-                    };
+                // Eliminamos las imágenes asociadas
+                if (expense.images && expense.images.length > 0) {
+                    await Promise.all(
+                        expense.images.map((image) =>
+                            prisma.image.softDeleteOne({
+                                id: image.id,
+                            }),
+                        ),
+                    );
                 }
+
+                // Eliminamos los archivos asociados
+                if (expense.files && expense.files.length > 0) {
+                    await Promise.all(
+                        expense.files.map((file) =>
+                            prisma.file.softDeleteOne({
+                                id: file.id,
+                            }),
+                        ),
+                    );
+                }
+
+                // Finalmente eliminamos el gasto
+                const deletedExpense = await prisma.expense.softDeleteOne({
+                    id,
+                });
 
                 return {
                     success: true,
-                    expense,
+                    expense: deletedExpense,
                 };
             } catch (error) {
+                console.error('Error al eliminar el gasto:', error);
                 return {
-                    message: 'Error al eliminar el gasto',
+                    message: `Error al eliminar el gasto: ${
+                        error instanceof Error ? error.message : 'Error desconocido'
+                    }`,
                     success: false,
                 };
             }
@@ -118,7 +141,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         },
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
-                let expenseNumber;
+                let expenseNumber = '';
 
                 if (taskId) {
                     // Primero obtener la tarea para conseguir el taskNumber
@@ -131,47 +154,149 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         throw new Error('Tarea no encontrada');
                     }
 
-                    // Ahora usar el taskNumber para la búsqueda de gastos
+                    // Mejorar la búsqueda del último gasto
                     const lastExpense = await prisma.expense.findFirst({
                         where: {
+                            deleted: false,
                             task: { id: taskId },
-                            expenseNumber: { contains: task.taskNumber.toString() },
+                            expenseNumber: { startsWith: `${task.taskNumber}-` },
                         },
-                        orderBy: {
-                            expenseNumber: 'desc',
-                        },
+                        orderBy: [
+                            {
+                                expenseNumber: 'desc',
+                            },
+                        ],
                     });
 
-                    const sequence = lastExpense
-                        ? parseInt(lastExpense.expenseNumber.split('-')[1]) + 1
+                    // Extraer y validar el último número de secuencia
+                    let sequence = 1;
+                    if (lastExpense) {
+                        const [, sequenceStr] = lastExpense.expenseNumber.split('-');
+                        const lastSequence = parseInt(sequenceStr);
+                        if (!isNaN(lastSequence)) {
+                            sequence = lastSequence + 1;
+                        }
+                    }
+
+                    // Buscar un número disponible incrementando la secuencia hasta encontrar uno libre
+                    let expenseNumberAvailable = false;
+                    while (!expenseNumberAvailable) {
+                        expenseNumber = `${task.taskNumber}-${sequence}`;
+                        const existingExpense = await prisma.expense.findFirst({
+                            where: {
+                                deleted: false,
+                                expenseNumber,
+                            },
+                        });
+
+                        if (!existingExpense) {
+                            expenseNumberAvailable = true;
+                        } else {
+                            sequence++;
+                        }
+                    }
+                } else {
+                    // Mejorar la lógica para gastos sin tarea
+                    const lastExpense = await prisma.expense.findFirst({
+                        where: {
+                            deleted: false,
+                            task: null,
+                            expenseNumber: {
+                                not: { contains: '-' }, // Solo gastos individuales
+                            },
+                        },
+                        orderBy: {
+                            createdAt: 'desc', // Ordenar por fecha de creación
+                        },
+                        take: 1,
+                    });
+
+                    // Convertir el último número a entero y sumar 1
+                    const nextNumber = lastExpense
+                        ? parseInt(lastExpense.expenseNumber) + 1
                         : 1;
 
-                    expenseNumber = `${task.taskNumber}-${sequence}`;
-                } else {
-                    // Si el gasto no pertenece a una tarea, buscar el último ID numérico
-                    const lastExpense = await prisma.expense.findFirst({
-                        where: {
-                            task: null,
-                            expenseNumber: { not: { contains: '-' } },
-                        },
-                        orderBy: {
-                            expenseNumber: 'desc',
-                        },
-                    });
+                    // Verificar que el número no exista
+                    let numberAvailable = false;
+                    let currentNumber = nextNumber;
 
-                    expenseNumber = lastExpense
-                        ? (parseInt(lastExpense.expenseNumber) + 1).toString()
-                        : '1';
+                    while (!numberAvailable) {
+                        const existingExpense = await prisma.expense.findFirst({
+                            where: {
+                                deleted: false,
+                                task: null,
+                                expenseNumber: currentNumber.toString(),
+                            },
+                        });
+
+                        if (!existingExpense) {
+                            numberAvailable = true;
+                            expenseNumber = currentNumber.toString();
+                        } else {
+                            currentNumber++;
+                        }
+                    }
                 }
 
-                // Validar que se proporcione imagen o archivo
-                if (!expenseData.imageKey && !expenseData.fileKey) {
+                // Validar que se proporcione al menos una imagen o archivo
+                if (
+                    (!expenseData.imageKeys || expenseData.imageKeys.length === 0) &&
+                    (!expenseData.fileKeys || expenseData.fileKeys.length === 0)
+                ) {
                     return {
                         success: false,
-                        message: 'Se debe proporcionar una imagen o un archivo',
+                        message: 'Se debe proporcionar al menos una imagen o un archivo',
                     };
                 }
 
+                // Limitar a 5 adjuntos en total
+                const totalAttachments =
+                    (expenseData.imageKeys?.length || 0) +
+                    (expenseData.fileKeys?.length || 0);
+
+                if (totalAttachments > 5) {
+                    return {
+                        success: false,
+                        message: 'No se pueden adjuntar más de 5 archivos en total',
+                    };
+                }
+
+                // Crear arrays para las conexiones de imágenes y archivos
+                const imageConnections = [];
+                const fileConnections = [];
+
+                // Procesar imágenes si existen
+                if (expenseData.imageKeys && expenseData.imageKeys.length > 0) {
+                    for (const imageKey of expenseData.imageKeys) {
+                        const imageData = await createImageSignedUrlAsync(imageKey);
+                        imageConnections.push({
+                            ...imageData,
+                            key: imageKey,
+                        });
+                    }
+                }
+
+                // Procesar archivos si existen
+                if (expenseData.fileKeys && expenseData.fileKeys.length > 0) {
+                    for (let i = 0; i < expenseData.fileKeys.length; i++) {
+                        const fileKey = expenseData.fileKeys[i];
+                        const mimeType =
+                            expenseData.mimeTypes?.[i] || 'application/octet-stream';
+                        const filename = expenseData.filenames?.[i] || 'file';
+                        const size = expenseData.sizes?.[i] || 0;
+
+                        const fileData = await getFileSignedUrl(fileKey, mimeType);
+                        fileConnections.push({
+                            ...fileData,
+                            key: fileKey,
+                            filename,
+                            mimeType,
+                            size,
+                        });
+                    }
+                }
+
+                // Crear el gasto con las conexiones de imágenes y archivos
                 const newExpense = await prisma.expense.create({
                     data: {
                         expenseNumber,
@@ -187,32 +312,19 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         status: ExpenseStatus.Enviado,
                         registeredBy: { connect: { id: _context.user.id } },
                         ...(taskId && { task: { connect: { id: taskId } } }),
-                        ...(expenseData.imageKey && {
-                            image: {
-                                create: {
-                                    ...(await createImageSignedUrlAsync(
-                                        expenseData.imageKey,
-                                    )),
-                                    key: expenseData.imageKey,
-                                },
+                        ...(imageConnections.length > 0 && {
+                            images: {
+                                create: imageConnections,
                             },
                         }),
-                        ...(expenseData.fileKey && {
-                            file: {
-                                create: {
-                                    ...(await getFileSignedUrl(
-                                        expenseData.fileKey,
-                                        expenseData.mimeType!,
-                                    )),
-                                    key: expenseData.fileKey,
-                                    filename: expenseData.filename!,
-                                    mimeType: expenseData.mimeType!,
-                                    size: expenseData.size!,
-                                },
+                        ...(fileConnections.length > 0 && {
+                            files: {
+                                create: fileConnections,
                             },
                         }),
                     },
                 });
+
                 return {
                     success: true,
                     expense: newExpense,
@@ -221,6 +333,9 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 console.error(error);
                 return {
                     success: false,
+                    message: `Error al crear el gasto: ${
+                        error instanceof Error ? error.message : 'Error desconocido'
+                    }`,
                 };
             }
         },
@@ -305,7 +420,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         resolve: async (root, { startDate, endDate, filters }) => {
             try {
                 const whereClause = {
-                    status: ExpenseStatus.Aprobado,
                     deleted: false,
                     expenseDate: {
                         gte: new Date(startDate),
@@ -326,7 +440,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 });
 
                 const workbook = new ExcelJS.Workbook();
-                const worksheet = workbook.addWorksheet('Gastos Aprobados');
+                const worksheet = workbook.addWorksheet('Reporte de Gastos');
 
                 worksheet.properties.defaultRowHeight = 20;
 
@@ -337,22 +451,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 15,
                     },
                     {
-                        header: 'Monto',
-                        key: 'amount',
-                        width: 15,
-                    },
-                    {
-                        header: 'Tipo',
-                        key: 'expenseType',
-                        width: 20,
-                    },
-                    {
-                        header: 'Fuente de pago',
-                        key: 'paySource',
-                        width: 30,
-                    },
-                    {
-                        header: 'Ciudad',
+                        header: 'Localidad',
                         key: 'cityName',
                         width: 15,
                     },
@@ -362,14 +461,9 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 15,
                     },
                     {
-                        header: 'Registrado por',
-                        key: 'registeredBy',
-                        width: 25,
-                    },
-                    {
-                        header: 'Pagado por',
-                        key: 'doneBy',
-                        width: 25,
+                        header: 'Tipo',
+                        key: 'expenseType',
+                        width: 20,
                     },
                     {
                         header: 'Observaciones',
@@ -377,33 +471,94 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 40,
                         style: { alignment: { wrapText: true } },
                     },
+                    {
+                        header: 'Monto',
+                        key: 'amount',
+                        width: 15,
+                    },
+                    {
+                        header: 'Realizado por',
+                        key: 'doneBy',
+                        width: 25,
+                    },
+                    {
+                        header: 'Fuente de pago',
+                        key: 'paySource',
+                        width: 20,
+                    },
+                    {
+                        header: 'Cantidad de cuotas',
+                        key: 'installments',
+                        width: 15,
+                    },
+                    {
+                        header: 'Valor de cuota',
+                        key: 'installmentValue',
+                        width: 15,
+                    },
+                    {
+                        header: 'Factura recibida',
+                        key: 'status',
+                        width: 15,
+                    },
                 ];
 
                 expenses.forEach((expense, index) => {
-                    let paySourceText = expense.paySource;
-                    if (['Credito', 'Debito'].includes(expense.paySource)) {
-                        paySourceText += ` - ${expense.paySourceBank}`;
-                        if (expense.paySource === 'Credito') {
-                            paySourceText += ` (${expense.installments} cuotas)`;
-                        }
+                    // Calcular el valor de la cuota si corresponde
+                    let installmentValue = null;
+                    // Usar discountAmount si existe, de lo contrario usar amount
+                    const finalAmount =
+                        expense.discountAmount !== null
+                            ? expense.discountAmount
+                            : expense.amount;
+
+                    if (
+                        expense.paySource === 'Credito' &&
+                        expense.installments &&
+                        expense.installments > 0
+                    ) {
+                        installmentValue = finalAmount / expense.installments;
+                    }
+
+                    // Mapear el estado según las especificaciones
+                    let statusText;
+                    switch (expense.status) {
+                        case ExpenseStatus.Enviado:
+                            statusText = 'Pendiente';
+                            break;
+                        case ExpenseStatus.Aprobado:
+                            statusText = 'OK';
+                            break;
+                        case ExpenseStatus.Rechazado:
+                            statusText = 'Rechazado';
+                            break;
+                        default:
+                            statusText = expense.status;
                     }
 
                     worksheet.addRow({
                         expenseNumber: `#${expense.expenseNumber}`,
-                        amount: expense.amount.toLocaleString('es-AR', {
-                            style: 'currency',
-                            currency: 'ARS',
-                        }),
-                        expenseType: expense.expenseType,
-                        paySource: paySourceText,
+                        cityName: expense.cityName ?? '-',
                         expenseDate: format(
                             new Date(expense.expenseDate ?? ''),
                             'dd/MM/yyyy',
                         ),
-                        cityName: expense.cityName ?? '-',
-                        registeredBy: expense.registeredBy.fullName,
-                        doneBy: expense.doneBy,
+                        expenseType: expense.expenseType,
                         observations: expense.observations || '-',
+                        amount: finalAmount.toLocaleString('es-AR', {
+                            style: 'currency',
+                            currency: 'ARS',
+                        }),
+                        doneBy: expense.doneBy,
+                        paySource: expense.paySource,
+                        installments: expense.installments || '-',
+                        installmentValue: installmentValue
+                            ? installmentValue.toLocaleString('es-AR', {
+                                  style: 'currency',
+                                  currency: 'ARS',
+                              })
+                            : '-',
+                        status: statusText,
                     });
 
                     const row = worksheet.getRow(index + 2);
@@ -433,7 +588,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     },
                 });
 
-                const fileName = `gastos-aprobados-${format(
+                const fileName = `reporte-gastos-${format(
                     new Date(),
                     'yyyy-MM-dd-HH-mm-ss',
                 )}.xlsx`;
@@ -457,6 +612,63 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             } catch (error) {
                 console.error('Error generating expenses report:', error);
                 throw new Error('Error al generar el reporte de gastos');
+            }
+        },
+    }),
+    updateExpenseDiscountAmount: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            expenseId: t.arg.string({
+                required: true,
+            }),
+            discountAmount: t.arg.float({
+                required: false,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsAdministrativoContable'],
+                },
+            ],
+        },
+        resolve: async (root, args) => {
+            try {
+                const { expenseId, discountAmount } = args;
+                const foundExpense = await prisma.expense.findUniqueUndeleted({
+                    where: {
+                        id: expenseId,
+                    },
+                });
+
+                if (!foundExpense) {
+                    return {
+                        message: 'El gasto no existe',
+                        success: false,
+                    };
+                }
+
+                const updatedExpense = await prisma.expense.update({
+                    where: {
+                        id: expenseId,
+                    },
+                    data: {
+                        discountAmount,
+                    },
+                });
+
+                return {
+                    success: true,
+                    expense: updatedExpense,
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Error al actualizar el monto con descuento: ${error}`,
+                };
             }
         },
     }),

@@ -19,10 +19,12 @@ query tasks(
         take: $take
     ) {
         id
+        taskNumber
         createdAt
         startedAt
         closedAt
         description
+        participants
         business {
             id
             name
@@ -103,6 +105,7 @@ query GetTask($id: String!) {
                 name
             }
         }
+        participants
         assigned {
             id
             firstName
@@ -112,19 +115,20 @@ query GetTask($id: String!) {
         }
         expenses {
             id
+            expenseNumber
             amount
             paySource
             paySourceBank
             expenseType
             observations
             createdAt
-            image {
+            images {
                 id
                 url
                 urlExpire
                 key
             }
-            file {
+            files {
                 id
                 url
                 key

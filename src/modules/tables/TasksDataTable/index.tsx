@@ -44,15 +44,41 @@ export default function TasksDataTable(props: Props): JSX.Element {
         return saved ? JSON.parse(saved) : [];
     });
 
+    const [page, setPage] = useState(() => {
+        if (typeof window === 'undefined') {
+            return 0;
+        }
+        const saved = localStorage.getItem('tasksTablePage');
+        return saved ? parseInt(saved) : 0;
+    });
+
+    const [pageSize, setPageSize] = useState(() => {
+        if (typeof window === 'undefined') {
+            return 10;
+        }
+        const saved = localStorage.getItem('tasksTablePageSize');
+        return saved ? parseInt(saved) : 10;
+    });
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             localStorage.setItem('tasksTableFilters', JSON.stringify(columnFilters));
         }
     }, [columnFilters]);
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('tasksTablePage', page.toString());
+        }
+    }, [page]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('tasksTablePageSize', pageSize.toString());
+        }
+    }, [pageSize]);
+
     const router = useRouter();
-    const [page, setPage] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
     const { user } = useUserContext();
     const columns = useTasksTableColumns();
 

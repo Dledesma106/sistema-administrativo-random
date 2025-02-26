@@ -38,7 +38,7 @@ export function TaskReportModal({ isOpen, onClose, filters }: Props) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="border-accent">
+            <DialogContent className="translate-y-[-200px] border-accent">
                 <DialogHeader>
                     <DialogTitle>Generar Reporte de Tareas</DialogTitle>
                 </DialogHeader>

@@ -6,11 +6,11 @@ import {
     ExpensePaySourceBank,
 } from '@prisma/client';
 
-import { createFileSignedUrlAsync } from 'backend/s3Client';
-import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
+import { FileRef } from '../file/refs';
+import { ImagePothosRef } from '../image';
 
 export const ExpenseTypePothosRef = builder.enumType('ExpenseType', {
     values: Object.fromEntries(
@@ -58,11 +58,11 @@ export const ExpenseInputType = builder.inputType('ExpenseInput', {
         }),
         observations: t.string(),
         doneBy: t.string({ required: true }),
-        imageKey: t.string({ required: false }),
-        fileKey: t.string({ required: false }),
-        filename: t.string({ required: false }),
-        mimeType: t.string({ required: false }),
-        size: t.int({ required: false }),
+        imageKeys: t.stringList({ required: false }),
+        fileKeys: t.stringList({ required: false }),
+        filenames: t.stringList({ required: false }),
+        mimeTypes: t.stringList({ required: false }),
+        sizes: t.intList({ required: false }),
         cityName: t.string({ required: true }),
     }),
 });
@@ -82,6 +82,9 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             resolve: (root) => root.expenseDate,
         }),
         amount: t.exposeFloat('amount'),
+        discountAmount: t.exposeFloat('discountAmount', {
+            nullable: true,
+        }),
         expenseType: t.field({
             type: ExpenseTypePothosRef,
             resolve: (root) => root.expenseType as ExpenseType,
@@ -106,56 +109,28 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             nullable: true,
         }),
         cityName: t.exposeString('cityName', { nullable: true }),
-        image: t.prismaField({
-            type: 'Image',
-            nullable: true,
-            resolve: async (root, parent) => {
-                if (!parent.imageId) {
-                    return null;
-                }
-
-                const image = await prisma.image.findUniqueUndeleted({
-                    where: { id: parent.imageId },
+        images: t.field({
+            type: [ImagePothosRef],
+            resolve: async (expense) => {
+                const images = await prisma.image.findMany({
+                    where: {
+                        expenseIDs: { has: expense.id },
+                        deleted: false,
+                    },
                 });
-
-                if (!image) {
-                    return null;
-                }
-
-                await updateImageSignedUrlAsync(image);
-                return image;
+                return images;
             },
         }),
-        file: t.prismaField({
-            type: 'File',
-            nullable: true,
-            resolve: async (root, parent) => {
-                if (!parent.fileId) {
-                    return null;
-                }
-
-                const file = await prisma.file.findUniqueUndeleted({
-                    where: { id: parent.fileId },
+        files: t.field({
+            type: [FileRef],
+            resolve: async (expense) => {
+                const files = await prisma.file.findMany({
+                    where: {
+                        expenseIDs: { has: expense.id },
+                        deleted: false,
+                    },
                 });
-
-                if (!file) {
-                    return null;
-                }
-
-                if (!file.urlExpire || new Date(file.urlExpire) <= new Date()) {
-                    const { url, urlExpire } = await createFileSignedUrlAsync(file.key);
-                    await prisma.file.update({
-                        where: { id: file.id },
-                        data: {
-                            url,
-                            urlExpire,
-                        },
-                    });
-                }
-
-                return prisma.file.findUniqueUndeleted({
-                    where: { id: parent.fileId },
-                });
+                return files;
             },
         }),
         registeredBy: t.relation('registeredBy'),

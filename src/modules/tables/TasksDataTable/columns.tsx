@@ -14,6 +14,14 @@ type Task = TasksQuery['tasks'][number];
 const columnHelper = createColumnHelper<TasksQuery['tasks'][number]>();
 
 export const useTasksTableColumns = () => [
+    columnHelper.accessor((row) => row.taskNumber, {
+        id: 'taskNumber',
+        header: 'Número',
+        cell: (info) => {
+            const taskNumber = info.getValue();
+            return <span className="font-medium">#{taskNumber}</span>;
+        },
+    }),
     columnHelper.accessor((row) => row, {
         id: 'city',
         cell: (info) => {
@@ -100,37 +108,40 @@ export const useTasksTableColumns = () => [
     //         return cityIDs.includes(task.branch?.city?.id ?? '');
     //     },
     // }),
-    columnHelper.accessor((row) => row.assigned, {
-        id: 'assigned',
+    columnHelper.accessor((row) => row.participants, {
+        id: 'participants',
         cell: (info) => {
+            const participants = info.getValue();
+
+            if (!participants || participants.length === 0) {
+                return <span className="text-muted-foreground">-</span>;
+            }
+
             return (
                 <div className="flex max-w-[250px] flex-wrap">
-                    {info.getValue().map((tech) => {
+                    {participants.map((participant, index) => {
                         return (
                             <Badge
                                 className="ml-2 mt-2 whitespace-nowrap"
-                                key={tech.id}
+                                key={`${participant}-${index}`}
                                 variant="default"
                             >
-                                {tech.fullName}
+                                {participant}
                             </Badge>
                         );
                     })}
                 </div>
             );
         },
-        header: 'Tecnicos',
+        header: 'Participantes',
         filterFn: (row, id, userId: string[]) => {
             if (!userId) {
                 return true;
             }
 
-            const assigned = row.getValue<Task['assigned']>(id);
-            const assignedIsInFilteredList = assigned.some((user) => {
-                return userId.includes(user.id);
-            });
-
-            return assignedIsInFilteredList;
+            // Como participants es un array de strings (nombres), no podemos filtrar por ID
+            // Si se necesita filtrar, habría que adaptar esta lógica
+            return true;
         },
     }),
     columnHelper.accessor((row) => row.taskType, {

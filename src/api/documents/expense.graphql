@@ -2,6 +2,7 @@ query GetExpense($id: String!) {
     expenseById(id: $id) {
         id
         amount
+        discountAmount
         expenseType
         expenseNumber
         cityName
@@ -18,11 +19,11 @@ query GetExpense($id: String!) {
             fullName
         }
         observations
-        image {
+        images {
             id
             url
         }
-        file {
+        files {
             id
             url
             mimeType
@@ -43,6 +44,8 @@ query GetExpenses(
     $status: [ExpenseStatus!], 
     $expenseType: [ExpenseType!],
     $paySource: [ExpensePaySource!],
+    $expenseDateFrom: DateTime,
+    $expenseDateTo: DateTime,
     $skip: Int,
     $take: Int
 ) {
@@ -51,11 +54,15 @@ query GetExpenses(
         status: $status, 
         expenseType: $expenseType,
         paySource: $paySource,
+        expenseDateFrom: $expenseDateFrom,
+        expenseDateTo: $expenseDateTo,
         skip: $skip,
         take: $take
     ) {
         id
+        expenseNumber
         amount
+        discountAmount
         expenseType
         paySource
         paySourceBank
@@ -91,7 +98,9 @@ query GetExpenses(
         registeredBy: $registeredBy, 
         status: $status, 
         expenseType: $expenseType,
-        paySource: $paySource
+        paySource: $paySource,
+        expenseDateFrom: $expenseDateFrom,
+        expenseDateTo: $expenseDateTo
     )
 }
 
@@ -126,6 +135,18 @@ mutation UpdateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
                     status
                 }
             }
+        }
+        success
+        message
+    }
+}
+
+mutation UpdateExpenseDiscountAmount($expenseId: String!, $discountAmount: Float) {
+    updateExpenseDiscountAmount(expenseId: $expenseId, discountAmount: $discountAmount) {
+        expense {
+            id
+            amount
+            discountAmount
         }
         success
         message
