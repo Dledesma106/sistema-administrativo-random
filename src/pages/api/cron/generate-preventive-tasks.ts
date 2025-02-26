@@ -91,6 +91,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         data: { status: PreventiveStatus.Pendiente },
                     });
 
+                    // Obtener nombres completos de los técnicos asignados para inicializar participantes
+                    let participantNames: string[] = [];
+                    if (preventive.assigned && preventive.assigned.length > 0) {
+                        const assignedUsers = await prisma.user.findMany({
+                            where: {
+                                id: {
+                                    in: preventive.assigned.map(
+                                        (assigned) => assigned.id,
+                                    ),
+                                },
+                                deleted: false,
+                            },
+                            select: {
+                                fullName: true,
+                            },
+                        });
+
+                        participantNames = assignedUsers.map((user) => user.fullName);
+                    }
+
                     const maxTaskNumber = await prisma.task.findFirst({
                         orderBy: { taskNumber: 'desc' },
                         select: { taskNumber: true },
@@ -99,6 +119,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     await prisma.task.create({
                         data: {
                             taskNumber: (maxTaskNumber?.taskNumber ?? 0) + 1,
+                            participants: participantNames,
                             taskType: TaskType.Preventivo,
                             status: TaskStatus.Pendiente,
                             description: `Tarea preventiva generada automáticamente - ${currentMonth}/${currentYear}`,
