@@ -210,6 +210,19 @@ export const useTasksTableColumns = () => [
             return `$${amount.toLocaleString('es-AR')}`;
         },
     }),
+    columnHelper.accessor((row) => row.assigned, {
+        id: 'assigned',
+        header: 'Técnicos Asignados',
+        enableHiding: true,
+        filterFn: (row, id, assignedIds: string[]) => {
+            if (!assignedIds?.length) {
+                return true;
+            }
+
+            const task = row.original;
+            return task.assigned.some((user) => assignedIds.includes(user.id));
+        },
+    }),
     columnHelper.display({
         id: 'actions',
         cell: (props) => {
