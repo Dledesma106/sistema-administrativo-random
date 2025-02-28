@@ -15,6 +15,8 @@ export default createYoga<{
     graphqlEndpoint: '/api/graphql',
     // eslint-disable-next-line react-hooks/rules-of-hooks
     plugins: [useCookies(), authZEnvelopPlugin({ rules: authzRules })],
+    // Desactivar el explorador en producción
+    graphiql: process.env.NODE_ENV !== 'production',
 });
 
 export const config = {
