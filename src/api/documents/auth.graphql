@@ -1,0 +1,28 @@
+mutation login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+        success
+        message
+        user {
+            id
+            email
+            firstName
+            lastName
+            fullName
+            roles
+        }
+    }
+}
+
+mutation logout {
+    logout {
+        success
+        message
+    }
+}
+
+mutation changePassword($data: ChangePasswordInput!) {
+    changePassword(data: $data) {
+        success
+        message
+    }
+}

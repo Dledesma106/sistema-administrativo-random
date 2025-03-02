@@ -1,0 +1,107 @@
+mutation createBranch($input: BranchInput!) {
+    createBranch(input: $input) {
+        branch {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateBranch($id: String!, $input: BranchInput!) {
+    updateBranch(id: $id, input: $input) {
+        branch {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation deleteBranch($id: String!) {
+    deleteBranch(id: $id) {
+        branch {
+            id
+        }
+        success
+        message
+    }
+}
+
+query GetClientBranches(
+    $clientId: String!
+    $cityId: [String!]
+    $businessId: [String!]
+    $skip: Int
+    $take: Int
+) {
+    clientBranches(
+        clientId: $clientId
+        cityId: $cityId
+        businessId: $businessId
+        skip: $skip
+        take: $take
+    ) {
+        id
+        number
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+        businesses {
+            id
+            name
+        }
+    }
+    clientBranchesCount(
+        clientId: $clientId
+        cityId: $cityId
+        businessId: $businessId
+    )
+}
+
+query GetBranches {
+    branches {
+        id
+        number
+        city {
+            id
+            name
+        }
+        businesses {
+            id
+            name
+        }
+        client {
+            id
+            name
+        }
+    }
+}
+
+query GetBranch($id: String!) {
+    branch(id: $id) {
+        id
+        number
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+        client {
+            id
+            name
+        }
+        businesses {
+            id
+            name
+        }
+    }
+} 

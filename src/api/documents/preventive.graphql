@@ -1,0 +1,124 @@
+query GetPreventives(
+    $skip: Int
+    $take: Int
+    $business: [String!]
+    $city: [String!]
+    $assigned: [String!]
+    $client: [String!]
+) {
+    preventives(
+        skip: $skip
+        take: $take
+        business: $business
+        city: $city
+        assigned: $assigned
+        client: $client
+    ) {
+        id
+        lastDoneAt
+        batteryChangedAt
+        frequency
+        months
+        observations
+        status
+        business {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            client {
+                id
+                name
+            }
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+        }
+        assigned {
+            id
+            fullName
+        }
+    }
+    preventivesCount(
+        business: $business
+        city: $city
+        assigned: $assigned
+        client: $client
+    )
+}
+
+query GetPreventive($id: String!) {
+    preventive(id: $id) {
+        id
+        lastDoneAt
+        batteryChangedAt
+        frequency
+        months
+        observations
+        status
+        business {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            client {
+                id
+                name
+            }
+            city {
+                id
+                name
+            }
+        }
+        assigned {
+            id
+            fullName
+        }
+        tasks {
+            id
+            taskNumber
+            createdAt
+            closedAt
+            status
+        }
+    }
+}
+
+mutation CreatePreventive($input: PreventiveInput!) {
+    createPreventive(input: $input) {
+        success
+        message
+        preventive {
+            id
+        }
+    }
+}
+
+mutation UpdatePreventive($id: String!, $input: PreventiveInput!) {
+    updatePreventive(id: $id, input: $input) {
+        success
+        message
+        preventive {
+            id
+        }
+    }
+}
+
+mutation DeletePreventive($id: String!) {
+    deletePreventive(id: $id) {
+        success
+        message
+        preventive {
+            id
+        }
+    }
+}

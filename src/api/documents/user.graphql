@@ -1,0 +1,97 @@
+query GetUsers($search: String = "", $skip: Int = 0, $take: Int = 10, $cityId: [String!], $roles: [Role!]) {
+    users(search: $search, skip: $skip, take: $take, cityId: $cityId, roles: $roles) {
+        id
+        fullName
+        email
+        roles
+        city {
+            id
+            name
+        }
+    }
+    usersCount(search: $search, cityId: $cityId, roles: $roles)
+}
+
+query GetTechnicians {
+    technicians {
+        id
+        email
+        firstName
+        lastName
+        fullName
+        roles
+        city {
+            id
+            name
+        }
+    }
+}
+
+mutation CreateUser($input: UserInput!) {
+    createUser(input: $input) {
+        success
+        message
+        user {
+            id
+            fullName
+            email
+            roles
+            city {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation UpdateUser($id: String!, $input: UserInput!) {
+    updateUser(id: $id, input: $input) {
+        success
+        message
+        user {
+            id
+            fullName
+            email
+            roles
+            city {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation DeleteUser($id: String!) {
+    deleteUser(id: $id) {
+        success
+        message
+        user {
+            id
+            fullName
+            email
+        }
+    }
+}
+
+mutation sendNewUserRandomPassword($id: String!) {
+    sendNewUserRandomPassword(id: $id) {
+        user {
+            id
+        }
+        success
+        message
+    }
+}
+
+query GetUser($id: String!) {
+    user(id: $id) {
+        firstName
+        lastName
+        email
+        roles
+        city {
+            id
+            name
+        }
+    }
+}

@@ -1,66 +1,98 @@
-import { type ICity } from 'backend/models/interfaces'
-import { type Role } from 'backend/models/types'
-import nodemailer, { type Transporter } from 'nodemailer'
-import { renderToString } from 'react-dom/server'
-import NewUserPassword from 'frontend/components/Emails/NewUserPassword'
-import ResetPassword from 'frontend/components/Emails/ResetPassword'
+import { User } from '@prisma/client';
+import nodemailer, { SentMessageInfo } from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { NodemailerMockTransporter } from 'nodemailer-mock';
+import { renderToString } from 'react-dom/server';
 
-class TransporterProvider /* extends nodemailer.Transporter */ {
-	private static instance: TransporterProvider
-	private readonly transporter: Transporter
+import NewUserEmail, { NewUserEmailProps } from '@/components/Emails/NewUserPassword';
+import ResetPassword from '@/components/Emails/ResetPassword';
 
-	constructor() {
-		if (TransporterProvider.instance !== undefined) {
-			return TransporterProvider.instance
-		}
-		this.transporter = nodemailer.createTransport({
-			host: 'smtp.gmail.com',
-			port: 465,
-			secure: true, // true for 465, false for other ports
-			auth: {
-				user: process.env.EMAIL_ACCOUNT, // generated ethereal user
-				pass: process.env.EMAIL_PASSWORD // generated ethereal password
-			}
-		})
-		TransporterProvider.instance = this
-	}
+class TransporterProvider {
+    private static instance: TransporterProvider;
+    private transporter:
+        | NodemailerMockTransporter
+        | nodemailer.Transporter<SMTPTransport.SentMessageInfo>;
 
-	getInstance(): Transporter {
-		return this.transporter
-	}
+    private constructor(
+        transporter:
+            | NodemailerMockTransporter
+            | nodemailer.Transporter<SMTPTransport.SentMessageInfo>,
+    ) {
+        this.transporter = transporter;
+    }
+
+    private static async createTransporter() {
+        if (process.env.NODE_ENV === 'development') {
+            const nodemailerMock = await import('nodemailer-mock');
+            return nodemailerMock.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL_ACCOUNT,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+            });
+        } else {
+            return nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL_ACCOUNT,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
+            });
+        }
+    }
+
+    public static async getInstance() {
+        if (!this.instance) {
+            const transporter = await this.createTransporter();
+            this.instance = new this(transporter);
+        }
+
+        return this.instance.transporter;
+    }
 }
 
-export interface NewUser {
-	firstName: string
-	lastName: string
-	fullName: string
-	city?: ICity
-	roles?: Role[]
-	email: string
-	password: string
-}
+const logInfoInDev = (info: SentMessageInfo, html: string) => {
+    if (process.env.NODE_ENV === 'development') {
+        console.log('Message sent: %s', info.messageId);
+        // Preview only available when sending through an Ethereal account
+        console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+        console.log('html', html);
+    }
+};
 
 const Mailer = {
-	sendNewUserPassword: async (user: NewUser) => {
-		const info = await new TransporterProvider().getInstance().sendMail({
-			from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`, // sender address
-			to: user.email, // list of receivers
-			subject: 'Creacion de usuario en el Sistema de Administracion Tecnica', // Subject line
-			html: renderToString(NewUserPassword({ user }))
-		})
-		return info
-	},
-	sendResetPassword: async (user: NewUser) => {
-		const info = await new TransporterProvider().getInstance().sendMail({
-			from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`, // sender address
-			to: user.email, // list of receivers
-			subject: 'Creacion de nueva contraseña para tu usuario en el Sistema de Administracion Tecnica', // Subject line
-			// text: "Hello world?", // plain text body
-			html: renderToString(ResetPassword({ user }))
-		})
+    sendNewUserPassword: async (props: NewUserEmailProps) => {
+        const html = renderToString(NewUserEmail(props));
+        const info = (await TransporterProvider.getInstance()).sendMail({
+            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
+            to: props.email,
+            subject: 'Creacion de usuario en el Sistema de Administracion Tecnica',
+            html,
+        });
 
-		return info
-	}
-}
+        logInfoInDev(info, html);
 
-export default Mailer
+        return info;
+    },
+    sendResetPassword: async (user: User) => {
+        const html = renderToString(ResetPassword({ user }));
+        const info = (await TransporterProvider.getInstance()).sendMail({
+            from: `"Administracion Tecnica Random" <${process.env.EMAIL_ACCOUNT ?? ''}>`,
+            to: user.email,
+            subject:
+                'Creacion de nueva contraseña para tu usuario en el Sistema de Administracion Tecnica',
+            html,
+        });
+
+        logInfoInDev(info, html);
+
+        return info;
+    },
+} as const;
+
+export default Mailer;

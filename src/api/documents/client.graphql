@@ -1,0 +1,66 @@
+mutation CreateClient($data: ClientInput!) {
+    createClient(data: $data) {
+        success
+        message
+        client {
+            id
+            name
+        }
+    }
+}
+
+mutation UpdateClient($id: String!, $data: ClientInput!) {
+    updateClient(id: $id, data: $data) {
+        success
+        message
+        client {
+            id
+            name
+        }
+    }
+}
+
+query GetClient($id: String!) {
+    client(id: $id) {
+        id
+        name
+    }
+}
+
+query GetClients($search: String = null, $skip: Int = null, $take: Int = null) {
+    clients(search: $search, skip: $skip, take: $take) {
+        id
+        name
+    }
+    clientsCount(search: $search)
+}
+
+query GetClientsWithBranches {
+    clients {
+        id
+        name
+        branches {
+            id
+            number
+            businesses {
+                id
+                name
+            }
+            city {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation DeleteClient($id: String!) {
+    deleteClient(id: $id) {
+        success
+        message
+        client {
+            id
+            name
+        }
+    }
+} 

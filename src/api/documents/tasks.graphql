@@ -1,0 +1,203 @@
+query tasks(
+    $assigned: [String!]
+    $business: [String!]
+    $city: [String!]
+    $status: [TaskStatus!]
+    $client: [String!]
+    $taskType: [TaskType!]
+    $skip: Int
+    $take: Int
+) {
+    tasks(
+        assigned: $assigned
+        business: $business
+        status: $status
+        city: $city
+        client: $client
+        taskType: $taskType
+        skip: $skip
+        take: $take
+    ) {
+        id
+        taskNumber
+        createdAt
+        startedAt
+        closedAt
+        description
+        participants
+        business {
+            id
+            name
+        }
+        businessName
+        clientName
+        branch {
+            id
+            number
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+            client {
+                id
+                name
+            }
+        }
+        assigned {
+            id
+            fullName
+        }
+        expenses {
+            amount
+        }
+        taskType
+        status
+    }
+    tasksCount(
+        assigned: $assigned
+        business: $business
+        city: $city
+        status: $status
+        client: $client
+        taskType: $taskType
+
+    )
+}
+
+
+query GetTask($id: String!) {
+    taskById(id: $id) {
+        id
+        taskNumber
+        startedAt
+        createdAt
+        closedAt
+        description
+        actNumber
+        observations
+        clientName
+        businessName
+        business {
+            id
+            name
+        }
+        images {
+            id
+            url
+        }
+        branch {
+            id
+            number
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+            client {
+                id
+                name
+            }
+        }
+        participants
+        assigned {
+            id
+            firstName
+            lastName
+            fullName
+            email
+        }
+        expenses {
+            id
+            expenseNumber
+            amount
+            paySource
+            paySourceBank
+            expenseType
+            observations
+            createdAt
+            images {
+                id
+                url
+                urlExpire
+                key
+            }
+            files {
+                id
+                url
+                key
+                mimeType
+                filename
+            }
+            installments
+            expenseDate
+            status
+            registeredBy {
+                fullName
+            }
+            doneBy
+        }
+        taskType
+        status
+        movitecTicket
+    }
+}
+
+mutation createTask($input: TaskInput!) {
+    createTask(input: $input) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateTask($id: String!, $input: TaskInput!) {
+    updateTask(id: $id, input: $input) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation deleteTask($id: String!) {
+    deleteTask(id: $id) {
+        task {
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
+    updateTaskStatus(id: $id, status: $status) {
+        task {
+            id
+            status
+        }
+        success
+        message
+    }
+}
+
+mutation GenerateApprovedTasksReport(
+    $startDate: String!,
+    $endDate: String!,
+    $filters: [TaskReportFilterInput!]!
+) {
+    generateApprovedTasksReport(
+        startDate: $startDate,
+        endDate: $endDate,
+        filters: $filters
+    )
+}

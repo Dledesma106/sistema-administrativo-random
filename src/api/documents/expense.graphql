@@ -1,0 +1,154 @@
+query GetExpense($id: String!) {
+    expenseById(id: $id) {
+        id
+        amount
+        discountAmount
+        expenseType
+        expenseNumber
+        cityName
+        paySource
+        paySourceBank
+        status
+        doneBy
+        task {
+            id
+            taskNumber
+        }
+        registeredBy {
+            id
+            fullName
+        }
+        observations
+        images {
+            id
+            url
+        }
+        files {
+            id
+            url
+            mimeType
+            filename
+        }
+        auditor {
+            id
+            fullName
+        }
+        installments
+        expenseDate
+        createdAt
+    }
+}
+
+query GetExpenses(
+    $registeredBy: [String!], 
+    $status: [ExpenseStatus!], 
+    $expenseType: [ExpenseType!],
+    $paySource: [ExpensePaySource!],
+    $expenseDateFrom: DateTime,
+    $expenseDateTo: DateTime,
+    $skip: Int,
+    $take: Int
+) {
+    expenses(
+        registeredBy: $registeredBy, 
+        status: $status, 
+        expenseType: $expenseType,
+        paySource: $paySource,
+        expenseDateFrom: $expenseDateFrom,
+        expenseDateTo: $expenseDateTo,
+        skip: $skip,
+        take: $take
+    ) {
+        id
+        expenseNumber
+        amount
+        discountAmount
+        expenseType
+        paySource
+        paySourceBank
+        installments
+        expenseDate
+        observations
+        task {
+            id
+            taskNumber
+            businessName
+            clientName
+            business {
+                name
+            }
+            branch {
+                number
+                client {
+                    name
+                }
+                city {
+                    name
+                }
+            }
+        }
+        registeredBy {
+            id
+            fullName
+        }
+        doneBy
+        status
+    }
+    expensesCount(
+        registeredBy: $registeredBy, 
+        status: $status, 
+        expenseType: $expenseType,
+        paySource: $paySource,
+        expenseDateFrom: $expenseDateFrom,
+        expenseDateTo: $expenseDateTo
+    )
+}
+
+mutation DeleteExpense ($id: String!, $taskId: String!) {
+    deleteExpense (id: $id, taskId: $taskId) {
+        expense{
+            id
+        }
+        success
+        message
+    }
+}
+
+mutation GenerateApprovedExpensesReport($startDate: String!, $endDate: String!, $filters: JSON) {
+    generateApprovedExpensesReport(startDate: $startDate, endDate: $endDate, filters: $filters)
+}
+
+
+mutation UpdateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
+    updateExpenseStatus(expenseId: $expenseId, status: $status) {
+        expense {
+            id
+            amount
+            expenseType
+            paySource
+            paySourceBank
+            installments
+            task {
+                id
+                expenses {
+                    id
+                    status
+                }
+            }
+        }
+        success
+        message
+    }
+}
+
+mutation UpdateExpenseDiscountAmount($expenseId: String!, $discountAmount: Float) {
+    updateExpenseDiscountAmount(expenseId: $expenseId, discountAmount: $discountAmount) {
+        expense {
+            id
+            amount
+            discountAmount
+        }
+        success
+        message
+    }
+}

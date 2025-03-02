@@ -1,7 +1,7 @@
 name: Monthly Preventive Tasks
 on:
   schedule:
-    - cron: '0 0 2 * *'  # Primer día de cada mes
+    - cron: '0 0 1 * *'  # Primer día de cada mes
   workflow_dispatch:  # Permite ejecución manual
 
 jobs:

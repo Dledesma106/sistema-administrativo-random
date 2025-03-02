@@ -1,0 +1,63 @@
+query GetCities($search: String = "", $skip: Int = null, $take: Int = null, $provinceId: String = "") {
+    cities(search: $search, skip: $skip, take: $take, provinceId: $provinceId) {
+        id
+        name
+        province {
+            id
+            name
+        }
+    }
+    citiesCount(search: $search, provinceId: $provinceId)
+}
+
+query GetCity($id: String!) {
+    city(id: $id) {
+        id
+        name
+        province {
+            id
+            name
+        }
+    }
+}
+
+mutation CreateCity($input: CityInput!) {
+    createCity(input: $input) {
+        success
+        message
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation UpdateCity($id: String!, $input: CityInput!) {
+    updateCity(id: $id, input: $input) {
+        success
+        message
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+    }
+}
+
+mutation DeleteCity($id: String!) {
+    deleteCity(id: $id) {
+        success
+        message
+        city {
+            id
+            name
+        }
+    }
+}
