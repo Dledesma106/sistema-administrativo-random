@@ -36,11 +36,11 @@ export const PreventiveRef = builder.prismaObject('Preventive', {
 export const PreventiveInputRef = builder.inputType('PreventiveInput', {
     fields: (t) => ({
         lastDoneAt: t.field({
-            type: 'Date',
+            type: 'DateTime',
             required: false,
         }),
         batteryChangedAt: t.field({
-            type: 'Date',
+            type: 'DateTime',
             required: false,
         }),
         frequency: t.int({ required: true }),

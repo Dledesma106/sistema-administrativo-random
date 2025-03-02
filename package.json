@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "build": "next build",
+        "build": "prisma generate && next build",
         "start": "next start",
         "lint": "(next lint || true) && tsc --noEmit",
         "lint:fix": "eslint --fix {src,backend}",
@@ -13,8 +13,7 @@
         "lint-format:fix": "yarn lint:fix && yarn format:fix",
         "seed": "ts-node ./prisma/seed.ts",
         "gen": "graphql-codegen --config codegen.ts",
-        "postinstall": "prisma generate",
-        "migrate": "npx ts-node backend/migrations/index.js"
+        "postinstall": "prisma generate"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.470.0",
