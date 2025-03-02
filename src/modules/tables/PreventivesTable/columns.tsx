@@ -132,16 +132,18 @@ export const PREVENTIVES_TABLE_COLUMNS = [
     columnHelper.accessor('observations', {
         header: 'Observaciones',
     }),
-    columnHelper.accessor('lastDoneAt', {
-        header: 'Última vez',
-        cell: (props) => {
-            const preventive = props.row.original;
-
-            return preventive.lastDoneAt
-                ? format(new Date(preventive.lastDoneAt), 'dd/MM/yyyy')
+    columnHelper.accessor(
+        (row) => {
+            console.log(format(new Date(row.lastDoneAt), 'dd/MM/yyyy'));
+            return row.lastDoneAt !== null
+                ? format(new Date(row.lastDoneAt), 'dd/MM/yyyy')
                 : '';
         },
-    }),
+        {
+            id: 'lastDoneAt',
+            header: 'Última vez',
+        },
+    ),
     columnHelper.accessor('branch.client.id', {
         id: 'branch.client.id',
         header: 'Cliente',
@@ -155,7 +157,8 @@ export const PREVENTIVES_TABLE_COLUMNS = [
             return ids.includes(clientId);
         },
     }),
-    columnHelper.accessor('batteryChangedAt', {
+    columnHelper.accessor((row) => format(new Date(row.batteryChangedAt), 'dd/MM/yyyy'), {
+        id: 'batteryChangedAt',
         header: 'Fecha batería',
         cell: (props) => {
             const preventive = props.row.original;

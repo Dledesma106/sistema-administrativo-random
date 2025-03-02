@@ -11,7 +11,7 @@ export const PREVENTIVE_QUERY_KEY = 'preventive';
 
 export const useGetPreventive = (variables: GetPreventiveQueryVariables) => {
     return useQuery<GetPreventiveQuery>({
-        queryKey: [PREVENTIVE_QUERY_KEY, variables],
+        queryKey: [PREVENTIVE_QUERY_KEY, variables.id],
         queryFn: () => fetchClient(GetPreventiveDocument, variables),
     });
 };

@@ -110,6 +110,7 @@ export default function TasksDataTable(props: Props): JSX.Element {
                 branch: false,
                 business: false,
                 client: false,
+                assigned: false,
             },
             columnFilters,
         },

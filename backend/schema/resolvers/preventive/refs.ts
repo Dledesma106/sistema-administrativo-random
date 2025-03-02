@@ -12,13 +12,15 @@ export const PreventiveStatusRef = builder.enumType('PreventiveStatus', {
 export const PreventiveRef = builder.prismaObject('Preventive', {
     fields: (t) => ({
         id: t.exposeID('id'),
-        lastDoneAt: t.expose('lastDoneAt', {
-            type: 'Date',
+        lastDoneAt: t.field({
+            type: 'DateTime',
             nullable: true,
+            resolve: (root) => root.lastDoneAt,
         }),
-        batteryChangedAt: t.expose('batteryChangedAt', {
-            type: 'Date',
+        batteryChangedAt: t.field({
+            type: 'DateTime',
             nullable: true,
+            resolve: (root) => root.batteryChangedAt,
         }),
         frequency: t.exposeInt('frequency'),
         months: t.exposeStringList('months'),
@@ -34,11 +36,11 @@ export const PreventiveRef = builder.prismaObject('Preventive', {
 export const PreventiveInputRef = builder.inputType('PreventiveInput', {
     fields: (t) => ({
         lastDoneAt: t.field({
-            type: 'Date',
+            type: 'DateTime',
             required: false,
         }),
         batteryChangedAt: t.field({
-            type: 'Date',
+            type: 'DateTime',
             required: false,
         }),
         frequency: t.int({ required: true }),

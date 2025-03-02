@@ -20,6 +20,19 @@ export const PreventiveMutations = builder.mutationFields((t) => ({
             try {
                 const { businessId, branchId, assignedIds, ...rest } = input;
 
+                const lastDoneAt = input.lastDoneAt
+                    ? new Date(
+                          input.lastDoneAt.toISOString().split('T')[0] +
+                              'T12:00:00.000-03:00',
+                      )
+                    : null;
+                const batteryChangedAt = input.batteryChangedAt
+                    ? new Date(
+                          input.batteryChangedAt.toISOString().split('T')[0] +
+                              'T12:00:00.000-03:00',
+                      )
+                    : null;
+
                 const preventive = await prisma.preventive.create({
                     data: {
                         ...rest,
@@ -28,6 +41,8 @@ export const PreventiveMutations = builder.mutationFields((t) => ({
                         assigned: {
                             connect: assignedIds.map((id) => ({ id })),
                         },
+                        lastDoneAt,
+                        batteryChangedAt,
                     },
                 });
                 return {
@@ -59,6 +74,19 @@ export const PreventiveMutations = builder.mutationFields((t) => ({
             try {
                 const { businessId, branchId, assignedIds, ...rest } = input;
 
+                const lastDoneAt = input.lastDoneAt
+                    ? new Date(
+                          input.lastDoneAt.toISOString().split('T')[0] +
+                              'T12:00:00.000-03:00',
+                      )
+                    : null;
+                const batteryChangedAt = input.batteryChangedAt
+                    ? new Date(
+                          input.batteryChangedAt.toISOString().split('T')[0] +
+                              'T12:00:00.000-03:00',
+                      )
+                    : null;
+
                 const preventive = await prisma.preventive.update({
                     where: { id },
                     data: {
@@ -68,6 +96,8 @@ export const PreventiveMutations = builder.mutationFields((t) => ({
                         assigned: {
                             set: assignedIds.map((id) => ({ id })),
                         },
+                        lastDoneAt,
+                        batteryChangedAt,
                     },
                 });
                 return {

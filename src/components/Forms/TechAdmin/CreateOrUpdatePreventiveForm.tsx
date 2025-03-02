@@ -1,15 +1,12 @@
 import { useRouter } from 'next/navigation';
 
 import { PreventiveStatus } from '@prisma/client';
-import { useMutation } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { fetchClient } from '@/api/fetch-client';
-import { CreatePreventiveDocument, UpdatePreventiveDocument } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -28,6 +25,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { useGetClientsWithBranches } from '@/hooks/api/client/useGetClientsWithBranches';
+import { useCreatePreventive } from '@/hooks/api/preventive/useCreatePreventive';
+import { useUpdatePreventive } from '@/hooks/api/preventive/useUpdatePreventive';
 import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
 import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage, cn } from '@/lib/utils';
@@ -131,6 +130,11 @@ const CreateOrUpdatePreventiveForm = ({
     });
     const { watch, setValue } = form;
     const { triggerAlert } = useAlert();
+    console.log(watch('lastDoneAt'));
+    console.log(new Date(watch('lastDoneAt') ?? ''));
+    // Reemplazar las mutaciones existentes con los hooks personalizados
+    const createPreventive = useCreatePreventive();
+    const updatePreventive = useUpdatePreventive();
 
     useEffect(() => {
         const subscription = watch((value, { name, type }) => {
@@ -151,94 +155,85 @@ const CreateOrUpdatePreventiveForm = ({
         };
     }, [watch, setValue]);
 
-    const postMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            if (!form.branch || !form.business) {
-                throw new Error('Branch and business are required');
-            }
-
-            return fetchClient(CreatePreventiveDocument, {
-                input: {
-                    assignedIds: form.assigned.map((technician) => technician.value),
-                    branchId: form.branch,
-                    businessId: form.business,
-                    lastDoneAt: form.lastDoneAt
-                        ? new Date(form.lastDoneAt).toISOString()
-                        : null,
-                    batteryChangedAt: form.batteryChangedAt
-                        ? new Date(form.batteryChangedAt).toISOString()
-                        : null,
-                    frequency: form.frequency ?? 0,
-                    months: form.months.map((month) => month.value),
-                    observations: form.observations,
-                    status: PreventiveStatus.Pendiente,
-                },
-            });
-        },
-        onSuccess: () => {
-            triggerAlert({
-                type: 'Success',
-                message: `El preventivo fue creado correctamente`,
-            });
-            router.push(routesBuilder.preventives.list());
-        },
-        onError: (error) => {
-            triggerAlert({
-                type: 'Failure',
-                message: getCleanErrorMessage(error),
-            });
-        },
-    });
-
-    const putMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            if (!preventiveIdToUpdate) {
-                return;
-            }
-
-            if (!form.branch || !form.business) {
-                throw new Error('Branch and business are required');
-            }
-
-            return fetchClient(UpdatePreventiveDocument, {
-                id: preventiveIdToUpdate,
-                input: {
-                    assignedIds: form.assigned.map((technician) => technician.value),
-                    branchId: form.branch,
-                    businessId: form.business,
-                    frequency: form.frequency ?? 0,
-                    lastDoneAt: form.lastDoneAt
-                        ? new Date(form.lastDoneAt).toISOString()
-                        : null,
-                    batteryChangedAt: form.batteryChangedAt
-                        ? new Date(form.batteryChangedAt).toISOString()
-                        : null,
-                    months: form.months.map((month) => month.value),
-                    observations: form.observations,
-                    status: form.status,
-                },
-            });
-        },
-        onSuccess: () => {
-            triggerAlert({
-                type: 'Success',
-                message: `El preventivo fue actualizado correctamente`,
-            });
-            router.push(routesBuilder.preventives.list());
-        },
-        onError: (error) => {
-            triggerAlert({
-                type: 'Failure',
-                message: getCleanErrorMessage(error),
-            });
-        },
-    });
-
     const onSubmit = (form: FormValues): void => {
+        // Validar que las fechas no sean futuras
+        const now = new Date();
+        if (form.lastDoneAt && new Date(form.lastDoneAt) > now) {
+            triggerAlert({
+                type: 'Failure',
+                message: 'La fecha de último mantenimiento no puede ser futura',
+            });
+            return;
+        }
+
+        if (form.batteryChangedAt && new Date(form.batteryChangedAt) > now) {
+            triggerAlert({
+                type: 'Failure',
+                message: 'La fecha de cambio de batería no puede ser futura',
+            });
+            return;
+        }
+
+        const input = {
+            assignedIds: form.assigned.map((technician) => technician.value),
+            branchId: form.branch ?? '',
+            businessId: form.business ?? '',
+            frequency: form.frequency ?? 0,
+            lastDoneAt: form.lastDoneAt ? format(form.lastDoneAt, 'yyyy-MM-dd') : null,
+            batteryChangedAt: form.batteryChangedAt
+                ? format(form.batteryChangedAt, 'yyyy-MM-dd')
+                : null,
+            months: form.months.map((month) => month.value),
+            observations: form.observations,
+            status: preventiveIdToUpdate ? form.status : PreventiveStatus.Pendiente,
+        };
+
         if (preventiveIdToUpdate) {
-            putMutation.mutateAsync(form);
+            updatePreventive.mutate(
+                {
+                    id: preventiveIdToUpdate,
+                    input,
+                },
+                {
+                    onSuccess: () => {
+                        triggerAlert({
+                            type: 'Success',
+                            message: 'El preventivo fue actualizado correctamente',
+                        });
+                        router.push(routesBuilder.preventives.list());
+                    },
+                    onError: (error) => {
+                        triggerAlert({
+                            type: 'Failure',
+                            message: getCleanErrorMessage(error),
+                        });
+                    },
+                },
+            );
         } else {
-            postMutation.mutateAsync(form);
+            createPreventive.mutate(
+                {
+                    input: {
+                        ...input,
+                        status: PreventiveStatus.Pendiente,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        triggerAlert({
+                            type: 'Success',
+                            message: 'El preventivo fue creado correctamente',
+                        });
+                        router.push(routesBuilder.preventives.list());
+                    },
+                    onError: (error) => {
+                        triggerAlert({
+                            type: 'Failure',
+                            message: getCleanErrorMessage(error),
+                        });
+                    },
+                },
+            );
         }
     };
 
@@ -568,7 +563,9 @@ const CreateOrUpdatePreventiveForm = ({
 
                         <ButtonWithSpinner
                             type="submit"
-                            showSpinner={postMutation.isPending || putMutation.isPending}
+                            showSpinner={
+                                createPreventive.isPending || updatePreventive.isPending
+                            }
                         >
                             Guardar
                         </ButtonWithSpinner>
