@@ -21,11 +21,3 @@ jobs:
         run: npx prisma db push
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
-          vercel-args: '--prod' 
