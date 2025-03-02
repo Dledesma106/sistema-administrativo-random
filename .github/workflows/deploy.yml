@@ -15,7 +15,7 @@ jobs:
           node-version: '18'
           
       - name: Install Dependencies
-        run: npm install
+        run: yarn
           
       - name: Push Schema Changes
         run: npx prisma db push
