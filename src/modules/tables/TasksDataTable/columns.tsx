@@ -223,6 +223,23 @@ export const useTasksTableColumns = () => [
             return task.assigned.some((user) => assignedIds.includes(user.id));
         },
     }),
+    columnHelper.accessor((row) => row.useMaterials, {
+        id: 'useMaterials',
+        header: 'Materiales',
+        cell: (info) => {
+            const materials = info.getValue();
+
+            return (
+                <Badge className="ml-2 mt-2 whitespace-nowrap" variant="default">
+                    {materials ? (
+                        <span className="text-foreground">Si</span>
+                    ) : (
+                        <span className="text-foreground">No</span>
+                    )}
+                </Badge>
+            );
+        },
+    }),
     columnHelper.display({
         id: 'actions',
         cell: (props) => {

@@ -19,7 +19,7 @@ export default function AuthenticationPage() {
                 logoutUser();
             });
         }
-    }, [query, logoutUser, logoutMutation]);
+    }, [query]);
 
     return (
         <main className="container relative flex min-h-screen items-center justify-center">

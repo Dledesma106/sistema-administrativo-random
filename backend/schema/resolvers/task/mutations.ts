@@ -326,6 +326,7 @@ builder.mutationFields((t) => ({
                         clientName: input.clientName ?? undefined,
                         businessName: input.businessName ?? undefined,
                         description: `Tarea creada por ${user.fullName} desde APK`,
+                        useMaterials: input.useMaterials,
                         observations: input.observations,
                         status: TaskStatus.Pendiente,
                         taskType: input.taskType,
@@ -741,6 +742,7 @@ builder.mutationFields((t) => ({
                         expenseIdsToDelete,
                         imageIdsToDelete,
                         participants,
+                        useMaterials,
                     },
                 } = args;
 
@@ -928,6 +930,7 @@ builder.mutationFields((t) => ({
                         expenses: {
                             create: newExpenses,
                         },
+                        useMaterials,
                     },
                 });
 

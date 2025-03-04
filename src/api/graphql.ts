@@ -490,17 +490,18 @@ export type MyTaskInput = {
     participants: InputMaybe<Array<Scalars['String']>>;
     startedAt: InputMaybe<Scalars['DateTime']>;
     taskType: TaskType;
+    useMaterials: Scalars['Boolean'];
 };
 
 export type Preventive = {
     __typename?: 'Preventive';
     assigned: Array<User>;
-    batteryChangedAt: Maybe<Scalars['Date']>;
+    batteryChangedAt: Maybe<Scalars['DateTime']>;
     branch: Branch;
     business: Business;
     frequency: Scalars['Int'];
     id: Scalars['ID'];
-    lastDoneAt: Maybe<Scalars['Date']>;
+    lastDoneAt: Maybe<Scalars['DateTime']>;
     months: Array<Scalars['String']>;
     observations: Maybe<Scalars['String']>;
     status: PreventiveStatus;
@@ -516,11 +517,11 @@ export type PreventiveCrudRef = {
 
 export type PreventiveInput = {
     assignedIds: Array<Scalars['String']>;
-    batteryChangedAt: InputMaybe<Scalars['Date']>;
+    batteryChangedAt: InputMaybe<Scalars['DateTime']>;
     branchId: Scalars['String'];
     businessId: Scalars['String'];
     frequency: Scalars['Int'];
-    lastDoneAt: InputMaybe<Scalars['Date']>;
+    lastDoneAt: InputMaybe<Scalars['DateTime']>;
     months: Array<Scalars['String']>;
     observations: InputMaybe<Scalars['String']>;
     status: PreventiveStatus;
@@ -808,6 +809,7 @@ export type Task = {
     taskNumber: Scalars['Int'];
     taskType: TaskType;
     updatedAt: Scalars['DateTime'];
+    useMaterials: Scalars['Boolean'];
 };
 
 export type TaskCrudResult = {
@@ -864,6 +866,7 @@ export type UpdateMyTaskInput = {
     observations: InputMaybe<Scalars['String']>;
     participants: InputMaybe<Array<Scalars['String']>>;
     startedAt: InputMaybe<Scalars['DateTime']>;
+    useMaterials: Scalars['Boolean'];
 };
 
 export type User = {
@@ -1626,6 +1629,7 @@ export type TasksQuery = {
     tasks: Array<{
         __typename?: 'Task';
         id: string;
+        useMaterials: boolean;
         taskNumber: number;
         createdAt: any;
         startedAt: any | null;
@@ -1663,6 +1667,7 @@ export type GetTaskQuery = {
     taskById: {
         __typename?: 'Task';
         id: string;
+        useMaterials: boolean;
         taskNumber: number;
         startedAt: any | null;
         createdAt: any;
@@ -6500,6 +6505,10 @@ export const TasksDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'useMaterials' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'taskNumber' },
                                 },
                                 {
@@ -6776,6 +6785,10 @@ export const GetTaskDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'useMaterials' },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'taskNumber' },

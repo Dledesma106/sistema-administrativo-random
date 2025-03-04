@@ -254,6 +254,7 @@ model Task {
   movitecTicket String?
   clientName    String?
   businessName  String?
+  useMaterials  Boolean?   @default(false)
 
   participants String[]
 
