@@ -139,6 +139,13 @@ const Content: React.FC<Props> = ({ task }) => {
                     <p className="mb-1">{task.actNumber}</p>
                 </div>
 
+                {task.status === TaskStatus.Finalizada && (
+                    <div>
+                        <Title>Se usaron materiales?</Title>
+                        <p className="mb-1">{task.useMaterials ? 'Si' : 'No'}</p>
+                    </div>
+                )}
+
                 <div>
                     <Title>Observaciones</Title>
                     <p className="mb-1">{task.observations}</p>
