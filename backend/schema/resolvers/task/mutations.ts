@@ -87,36 +87,43 @@ async function processParticipantsAndAssigned(
     const validUserIds = new Set<string>();
     const idToNameMap = new Map<string, string>();
 
-    // Asegurarse de que el usuario actual esté en assignedIDs
-    if (currentUserId && !updatedAssignedIDs.includes(currentUserId)) {
-        updatedAssignedIDs.push(currentUserId);
-    }
+    // Obtener nombres de todos los asignados
+    const assignedUsers = await prisma.user.findMany({
+        where: {
+            id: { in: updatedAssignedIDs },
+            deleted: false,
+        },
+        select: {
+            id: true,
+            fullName: true,
+        },
+    });
 
-    // Obtener el nombre del usuario actual si está disponible
-    let currentUserName = '';
+    // Mapear IDs a nombres de todos los asignados
+    assignedUsers.forEach((user) => {
+        idToNameMap.set(user.id, user.fullName);
+    });
+
     if (currentUserId) {
+        if (!updatedAssignedIDs.includes(currentUserId)) {
+            updatedAssignedIDs.push(currentUserId);
+        }
         const currentUser = await prisma.user.findUnique({
             where: { id: currentUserId },
             select: { fullName: true },
         });
         if (currentUser) {
-            currentUserName = currentUser.fullName;
-            idToNameMap.set(currentUserId, currentUserName);
+            idToNameMap.set(currentUserId, currentUser.fullName);
         }
     }
 
     if (participants && participants.length > 0) {
-        // Identificar IDs válidos de usuarios
-        const potentialUserIds = participants.filter(
-            (p) => /^[0-9a-fA-F]{24}$/.test(p), // Verificar si parece un ObjectId de MongoDB
-        );
+        const potentialUserIds = participants.filter((p) => /^[0-9a-fA-F]{24}$/.test(p));
 
         if (potentialUserIds.length > 0) {
             const existingUsers = await prisma.user.findMany({
                 where: {
-                    id: {
-                        in: potentialUserIds,
-                    },
+                    id: { in: potentialUserIds },
                     deleted: false,
                 },
                 select: {
@@ -125,7 +132,6 @@ async function processParticipantsAndAssigned(
                 },
             });
 
-            // Crear mapeo de ID a nombre
             existingUsers.forEach((user) => {
                 validUserIds.add(user.id);
                 idToNameMap.set(user.id, user.fullName);
@@ -135,27 +141,29 @@ async function processParticipantsAndAssigned(
             });
         }
 
-        // Procesar el arreglo de participantes manteniendo el orden
         participantNames = participants.map((participant) => {
-            // Si es un ID válido, usar el nombre correspondiente
             if (/^[0-9a-fA-F]{24}$/.test(participant) && idToNameMap.has(participant)) {
                 return idToNameMap.get(participant)!;
             }
-            // Si no es un ID o no se encontró el usuario, mantener el valor original
             return participant;
+        });
+
+        // Solo filtrar asignados si no están ni por ID ni por nombre en participantes
+        updatedAssignedIDs = updatedAssignedIDs.filter((id) => {
+            const userName = idToNameMap.get(id);
+            return (
+                validUserIds.has(id) ||
+                participantNames.includes(userName!) ||
+                (currentUserId && id === currentUserId)
+            );
         });
     }
 
-    // Filtrar los asignados para mantener solo los que están en validUserIds o son el usuario actual
-    if (participants && participants.length > 0) {
-        updatedAssignedIDs = updatedAssignedIDs.filter(
-            (id) => validUserIds.has(id) || (currentUserId && id === currentUserId),
-        );
-    }
-
-    // Asegurarse de que el nombre del usuario actual esté en participantNames
-    if (currentUserName && !participantNames.includes(currentUserName)) {
-        participantNames.push(currentUserName);
+    if (currentUserId && idToNameMap.has(currentUserId)) {
+        const currentUserName = idToNameMap.get(currentUserId)!;
+        if (!participantNames.includes(currentUserName)) {
+            participantNames.push(currentUserName);
+        }
     }
 
     return {
@@ -469,7 +477,6 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { id, input } = args;
-                const { user } = _context;
                 const foundTask = await prisma.task.findUniqueUndeleted({
                     where: {
                         id,
@@ -490,11 +497,6 @@ builder.mutationFields((t) => ({
                         message: 'La tarea no existe',
                         success: false,
                     };
-                }
-
-                const initialAssignedIDs = input.assigned ? [...input.assigned] : [];
-                if (!initialAssignedIDs.includes(user.id)) {
-                    initialAssignedIDs.push(user.id);
                 }
 
                 let participantNames: string[] = [];
