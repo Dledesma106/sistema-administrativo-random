@@ -24,6 +24,7 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         id: t.exposeID('id'),
         taskNumber: t.exposeInt('taskNumber', { nullable: false }),
         description: t.exposeString('description'),
+        useMaterials: t.exposeBoolean('useMaterials', { nullable: true }),
         clientName: t.field({
             type: 'String',
             nullable: true,
@@ -184,6 +185,7 @@ export const MyTaskInputPothosRef = builder.inputType('MyTaskInput', {
             type: TaskTypePothosRef,
             required: true,
         }),
+        useMaterials: t.boolean({ required: true }),
         branch: t.string({ required: false }),
         business: t.string({ required: false }),
         assigned: t.stringList({ required: false }),
@@ -216,6 +218,7 @@ export const UpdateMyTaskInput = builder.inputType('UpdateMyTaskInput', {
         expenseIdsToDelete: t.stringList({ required: false }),
         imageIdsToDelete: t.stringList({ required: false }),
         observations: t.string({ required: false }),
+        useMaterials: t.boolean({ required: true }),
         startedAt: t.field({
             type: 'DateTime',
             required: false,

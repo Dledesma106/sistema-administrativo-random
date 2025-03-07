@@ -10,7 +10,7 @@
     "editor.formatOnSave": true, // Tell VSCode to format files on save
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[typescriptreact]": {
-        "editor.defaultFormatter": "ms-vsliveshare.vsliveshare"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "tailwindCSS.experimental.classRegex": [
         ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],

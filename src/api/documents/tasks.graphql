@@ -19,6 +19,7 @@ query tasks(
         take: $take
     ) {
         id
+        useMaterials
         taskNumber
         createdAt
         startedAt
@@ -64,14 +65,13 @@ query tasks(
         status: $status
         client: $client
         taskType: $taskType
-
     )
 }
-
 
 query GetTask($id: String!) {
     taskById(id: $id) {
         id
+        useMaterials
         taskNumber
         startedAt
         createdAt
@@ -191,13 +191,13 @@ mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
 }
 
 mutation GenerateApprovedTasksReport(
-    $startDate: String!,
-    $endDate: String!,
+    $startDate: String!
+    $endDate: String!
     $filters: [TaskReportFilterInput!]!
 ) {
     generateApprovedTasksReport(
-        startDate: $startDate,
-        endDate: $endDate,
+        startDate: $startDate
+        endDate: $endDate
         filters: $filters
     )
 }
