@@ -142,7 +142,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
                 let expenseNumber = '';
-
                 if (taskId) {
                     // Primero obtener la tarea para conseguir el taskNumber
                     const task = await prisma.task.findUnique({
@@ -295,7 +294,8 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         });
                     }
                 }
-
+                const expenseDate = new Date(expenseData.expenseDate ?? '');
+                expenseDate.setHours(0, 0, 0, 0);
                 // Crear el gasto con las conexiones de imágenes y archivos
                 const newExpense = await prisma.expense.create({
                     data: {
@@ -307,7 +307,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         doneBy: expenseData.doneBy,
                         paySourceBank: expenseData.paySourceBank,
                         installments: expenseData.installments,
-                        expenseDate: expenseData.expenseDate,
+                        expenseDate: expenseDate,
                         observations: expenseData.observations,
                         status: ExpenseStatus.Enviado,
                         registeredBy: { connect: { id: _context.user.id } },
