@@ -9,8 +9,8 @@ import {
 import useAlert from '@/context/alertContext/useAlert';
 
 type GenerateReportParams = {
-    startDate: string;
-    endDate: string;
+    startDate: Date;
+    endDate: Date;
     filters?: ColumnFiltersState;
 };
 
