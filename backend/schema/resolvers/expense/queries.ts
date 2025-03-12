@@ -152,6 +152,14 @@ builder.queryFields((t) => ({
             take: t.arg.int({ required: false }),
         },
         resolve: async (query, _parent, { skip, take, ...filters }) => {
+            const startDate = filters.expenseDateFrom;
+            const endDate = filters.expenseDateTo;
+            if (startDate) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
             return prisma.expense.findManyUndeleted({
                 ...query,
                 where: {
@@ -170,10 +178,10 @@ builder.queryFields((t) => ({
                     }),
                     ...((filters.expenseDateFrom || filters.expenseDateTo) && {
                         expenseDate: {
-                            ...(filters.expenseDateFrom && {
-                                gte: filters.expenseDateFrom,
+                            ...(startDate && {
+                                gte: startDate,
                             }),
-                            ...(filters.expenseDateTo && { lte: filters.expenseDateTo }),
+                            ...(endDate && { lte: endDate }),
                         },
                     }),
                 },
