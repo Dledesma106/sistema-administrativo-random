@@ -97,8 +97,9 @@ export const useExpensesTableColumns = () => [
         id: 'expenseDate',
         header: 'Fecha de pago',
         cell: (info) => {
-            const expense = info.row.original;
-            return format(new Date(expense.expenseDate), 'dd/MM/yyyy');
+            const expenseDate = new Date(info.row.original.expenseDate);
+            expenseDate.setHours(0, 0, 0, 0);
+            return format(expenseDate, 'dd/MM/yyyy');
         },
     }),
     columnHelper.accessor((row) => row.expenseType, {
