@@ -397,15 +397,15 @@ export type MutationFinishTaskArgs = {
 };
 
 export type MutationGenerateApprovedExpensesReportArgs = {
-    endDate: Scalars['String'];
+    endDate: Scalars['DateTime'];
     filters: InputMaybe<Scalars['JSON']>;
-    startDate: Scalars['String'];
+    startDate: Scalars['DateTime'];
 };
 
 export type MutationGenerateApprovedTasksReportArgs = {
-    endDate: InputMaybe<Scalars['String']>;
+    endDate: InputMaybe<Scalars['DateTime']>;
     filters: InputMaybe<Array<TaskReportFilterInput>>;
-    startDate: InputMaybe<Scalars['String']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
 };
 
 export type MutationLoginArgs = {
@@ -809,7 +809,7 @@ export type Task = {
     taskNumber: Scalars['Int'];
     taskType: TaskType;
     updatedAt: Scalars['DateTime'];
-    useMaterials: Scalars['Boolean'];
+    useMaterials: Maybe<Scalars['Boolean']>;
 };
 
 export type TaskCrudResult = {
@@ -1370,8 +1370,8 @@ export type DeleteExpenseMutation = {
 };
 
 export type GenerateApprovedExpensesReportMutationVariables = Exact<{
-    startDate: Scalars['String'];
-    endDate: Scalars['String'];
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     filters: InputMaybe<Scalars['JSON']>;
 }>;
 
@@ -1629,7 +1629,7 @@ export type TasksQuery = {
     tasks: Array<{
         __typename?: 'Task';
         id: string;
-        useMaterials: boolean;
+        useMaterials: boolean | null;
         taskNumber: number;
         createdAt: any;
         startedAt: any | null;
@@ -1667,7 +1667,7 @@ export type GetTaskQuery = {
     taskById: {
         __typename?: 'Task';
         id: string;
-        useMaterials: boolean;
+        useMaterials: boolean | null;
         taskNumber: number;
         startedAt: any | null;
         createdAt: any;
@@ -1796,8 +1796,8 @@ export type UpdateTaskStatusMutation = {
 };
 
 export type GenerateApprovedTasksReportMutationVariables = Exact<{
-    startDate: Scalars['String'];
-    endDate: Scalars['String'];
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     filters: Array<TaskReportFilterInput>;
 }>;
 
@@ -4827,7 +4827,7 @@ export const GenerateApprovedExpensesReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -4841,7 +4841,7 @@ export const GenerateApprovedExpensesReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -7526,7 +7526,7 @@ export const GenerateApprovedTasksReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -7540,7 +7540,7 @@ export const GenerateApprovedTasksReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },

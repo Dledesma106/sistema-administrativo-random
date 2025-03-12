@@ -28,8 +28,8 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
         }
 
         await generateReport({
-            startDate: format(startDate, 'yyyy-MM-dd'),
-            endDate: format(endDate, 'yyyy-MM-dd'),
+            startDate: startDate,
+            endDate: endDate,
             filters,
         });
 

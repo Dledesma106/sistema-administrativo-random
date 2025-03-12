@@ -14,8 +14,8 @@ export const useGenerateApprovedTasksReport = () => {
         GenerateApprovedTasksReportMutation,
         Error,
         {
-            startDate: string;
-            endDate: string;
+            startDate: Date;
+            endDate: Date;
             filters?: ColumnFiltersState;
         }
     >({
