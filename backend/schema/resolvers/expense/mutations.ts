@@ -487,6 +487,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 20,
                     },
                     {
+                        header: 'Banco emisor',
+                        key: 'paySourceBank',
+                        width: 20,
+                    },
+                    {
                         header: 'Cantidad de cuotas',
                         key: 'installments',
                         width: 15,
@@ -551,6 +556,9 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         }),
                         doneBy: expense.doneBy,
                         paySource: expense.paySource,
+                        paySourceBank: ['Credito', 'Debito'].includes(expense.paySource)
+                            ? expense.paySourceBank || '-'
+                            : '-',
                         installments: expense.installments || '-',
                         installmentValue: installmentValue
                             ? installmentValue.toLocaleString('es-AR', {
