@@ -670,6 +670,8 @@ export type QueryExpensesArgs = {
     expenseDateFrom: InputMaybe<Scalars['DateTime']>;
     expenseDateTo: InputMaybe<Scalars['DateTime']>;
     expenseType: InputMaybe<Array<ExpenseType>>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
     paySource: InputMaybe<Array<ExpensePaySource>>;
     registeredBy: InputMaybe<Array<Scalars['String']>>;
     skip: InputMaybe<Scalars['Int']>;
@@ -809,7 +811,7 @@ export type Task = {
     taskNumber: Scalars['Int'];
     taskType: TaskType;
     updatedAt: Scalars['DateTime'];
-    useMaterials: Scalars['Boolean'];
+    useMaterials: Maybe<Scalars['Boolean']>;
 };
 
 export type TaskCrudResult = {
@@ -1317,6 +1319,8 @@ export type GetExpensesQueryVariables = Exact<{
     expenseDateTo: InputMaybe<Scalars['DateTime']>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
 }>;
 
 export type GetExpensesQuery = {
@@ -1629,7 +1633,7 @@ export type TasksQuery = {
     tasks: Array<{
         __typename?: 'Task';
         id: string;
-        useMaterials: boolean;
+        useMaterials: boolean | null;
         taskNumber: number;
         createdAt: any;
         startedAt: any | null;
@@ -1667,7 +1671,7 @@ export type GetTaskQuery = {
     taskById: {
         __typename?: 'Task';
         id: string;
-        useMaterials: boolean;
+        useMaterials: boolean | null;
         taskNumber: number;
         startedAt: any | null;
         createdAt: any;
@@ -4415,6 +4419,22 @@ export const GetExpensesDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderBy' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderDirection' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -4485,6 +4505,22 @@ export const GetExpensesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderDirection' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderDirection' },
                                 },
                             },
                         ],
