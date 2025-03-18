@@ -4,6 +4,8 @@ import {
     ColumnFiltersState,
     getCoreRowModel,
     useReactTable,
+    SortingState,
+    getSortedRowModel,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
@@ -37,6 +39,21 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         }
         const saved = localStorage.getItem('expensesTableFilters');
         return saved ? JSON.parse(saved) : [];
+    });
+
+    const [sorting, setSorting] = useState<SortingState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('expensesTableSorting');
+        return saved
+            ? JSON.parse(saved)
+            : [
+                  {
+                      id: 'expenseDate',
+                      desc: true,
+                  },
+              ];
     });
 
     const [page, setPage] = useState(() => {
@@ -77,6 +94,8 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         expenseDateTo:
             (columnFilters.find((f) => f.id === 'expenseDate')?.value as { to?: Date })
                 ?.to || null,
+        orderBy: sorting.length > 0 ? sorting[0].id : null,
+        orderDirection: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : null,
     });
     const { user } = useUserContext();
     const columns = useExpensesTableColumns();
@@ -84,6 +103,10 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
     useEffect(() => {
         localStorage.setItem('expensesTableFilters', JSON.stringify(columnFilters));
     }, [columnFilters]);
+
+    useEffect(() => {
+        localStorage.setItem('expensesTableSorting', JSON.stringify(sorting));
+    }, [sorting]);
 
     useEffect(() => {
         localStorage.setItem('expensesTablePage', page.toString());
@@ -97,10 +120,12 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         data: data?.expenses || [],
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: (filters) => {
             setColumnFilters(filters);
             setPage(0);
         },
+        onSortingChange: setSorting,
         state: {
             columnVisibility: {
                 branch: false,
@@ -108,6 +133,7 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
                 client: false,
             },
             columnFilters,
+            sorting,
         },
     });
 

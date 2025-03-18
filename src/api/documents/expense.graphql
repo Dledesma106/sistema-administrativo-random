@@ -40,24 +40,28 @@ query GetExpense($id: String!) {
 }
 
 query GetExpenses(
-    $registeredBy: [String!], 
-    $status: [ExpenseStatus!], 
-    $expenseType: [ExpenseType!],
-    $paySource: [ExpensePaySource!],
-    $expenseDateFrom: DateTime,
-    $expenseDateTo: DateTime,
-    $skip: Int,
+    $registeredBy: [String!]
+    $status: [ExpenseStatus!]
+    $expenseType: [ExpenseType!]
+    $paySource: [ExpensePaySource!]
+    $expenseDateFrom: DateTime
+    $expenseDateTo: DateTime
+    $skip: Int
     $take: Int
+    $orderBy: String
+    $orderDirection: String
 ) {
     expenses(
-        registeredBy: $registeredBy, 
-        status: $status, 
-        expenseType: $expenseType,
-        paySource: $paySource,
-        expenseDateFrom: $expenseDateFrom,
-        expenseDateTo: $expenseDateTo,
-        skip: $skip,
+        registeredBy: $registeredBy
+        status: $status
+        expenseType: $expenseType
+        paySource: $paySource
+        expenseDateFrom: $expenseDateFrom
+        expenseDateTo: $expenseDateTo
+        skip: $skip
         take: $take
+        orderBy: $orderBy
+        orderDirection: $orderDirection
     ) {
         id
         expenseNumber
@@ -95,18 +99,18 @@ query GetExpenses(
         status
     }
     expensesCount(
-        registeredBy: $registeredBy, 
-        status: $status, 
-        expenseType: $expenseType,
-        paySource: $paySource,
-        expenseDateFrom: $expenseDateFrom,
+        registeredBy: $registeredBy
+        status: $status
+        expenseType: $expenseType
+        paySource: $paySource
+        expenseDateFrom: $expenseDateFrom
         expenseDateTo: $expenseDateTo
     )
 }
 
-mutation DeleteExpense ($id: String!, $taskId: String!) {
-    deleteExpense (id: $id, taskId: $taskId) {
-        expense{
+mutation DeleteExpense($id: String!, $taskId: String!) {
+    deleteExpense(id: $id, taskId: $taskId) {
+        expense {
             id
         }
         success
@@ -114,10 +118,17 @@ mutation DeleteExpense ($id: String!, $taskId: String!) {
     }
 }
 
-mutation GenerateApprovedExpensesReport($startDate: DateTime!, $endDate: DateTime!, $filters: JSON) {
-    generateApprovedExpensesReport(startDate: $startDate, endDate: $endDate, filters: $filters)
+mutation GenerateApprovedExpensesReport(
+    $startDate: String!
+    $endDate: String!
+    $filters: JSON
+) {
+    generateApprovedExpensesReport(
+        startDate: $startDate
+        endDate: $endDate
+        filters: $filters
+    )
 }
-
 
 mutation UpdateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {
     updateExpenseStatus(expenseId: $expenseId, status: $status) {
