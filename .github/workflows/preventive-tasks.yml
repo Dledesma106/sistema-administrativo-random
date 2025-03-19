@@ -1,7 +1,7 @@
 name: Monthly Preventive Tasks
 on:
   schedule:
-    - cron: '0 0 2 * *'  # Primer día de cada mes
+    - cron: '0 0 1 * *'  # Primer día de cada mes
   workflow_dispatch:  # Permite ejecución manual
 
 jobs:
@@ -10,5 +10,5 @@ jobs:
     steps:
       - name: Call API endpoint
         run: |
-          curl -X POST https://ransys-test.vercel.app/api/cron/generate-preventive-tasks \
+          curl -X POST https://ransys.vercel.app/api/cron/generate-preventive-tasks \
           -H "Authorization: ${{ secrets.CRON_SECRET }}"
