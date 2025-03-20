@@ -1,4 +1,9 @@
-import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+    DeleteObjectCommand,
+    GetObjectCommand,
+    PutObjectCommand,
+    S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import dayjs from 'dayjs';
 
@@ -77,4 +82,33 @@ export const deletePhoto = async (key: string) => {
     } catch (error) {
         console.error('Error deleting file:', error);
     }
+};
+
+/**
+ * Genera una URL pre-firmada para subir un archivo directamente a S3
+ * @param key - La clave (path) donde se almacenará el archivo en S3
+ * @param contentType - El tipo de contenido MIME del archivo
+ * @returns Objeto con la URL pre-firmada y su fecha de expiración
+ */
+export const createUploadPresignedUrl = async (key: string, contentType: string) => {
+    const command = new PutObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME as string,
+        Key: key,
+        ContentType: contentType,
+    });
+
+    // Generar URL con duración de 1 hora
+    const url = await getSignedUrl(s3Client, command, {
+        expiresIn: EXPIRE_1_HOUR,
+    });
+
+    console.log(`URL prefirmada generada para ${key}:`, url.substring(0, 100) + '...');
+
+    return {
+        url,
+        key,
+        urlExpire: dayjs()
+            .add(EXPIRE_1_HOUR - 120, 'second')
+            .toISOString(),
+    };
 };

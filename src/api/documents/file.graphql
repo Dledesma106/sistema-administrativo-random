@@ -1,0 +1,11 @@
+mutation GenerateUploadUrls($fileCount: Int!, $prefix: String!, $mimeTypes: [String!]!) {
+    generateUploadUrls(fileCount: $fileCount, prefix: $prefix, mimeTypes: $mimeTypes) {
+        success
+        message
+        uploadUrls {
+            url
+            key
+            urlExpire
+        }
+    }
+}

@@ -4,8 +4,11 @@ import {
     ColumnFiltersState,
     getCoreRowModel,
     useReactTable,
+    SortingState,
+    getSortedRowModel,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
+import { BsPlus } from 'react-icons/bs';
 
 import { useExpensesTableColumns } from './columns';
 import { getExpensesTableToolbarConfig } from './toolbar-config';
@@ -17,6 +20,7 @@ import {
     GetExpensesQuery,
     GetTechniciansQuery,
 } from '@/api/graphql';
+import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { ExpenseReportButton } from '@/components/ui/ExpenseReportButton';
 import { TableSkeleton } from '@/components/ui/skeleton';
@@ -37,6 +41,21 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         }
         const saved = localStorage.getItem('expensesTableFilters');
         return saved ? JSON.parse(saved) : [];
+    });
+
+    const [sorting, setSorting] = useState<SortingState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('expensesTableSorting');
+        return saved
+            ? JSON.parse(saved)
+            : [
+                  {
+                      id: 'expenseDate',
+                      desc: true,
+                  },
+              ];
     });
 
     const [page, setPage] = useState(() => {
@@ -77,6 +96,8 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         expenseDateTo:
             (columnFilters.find((f) => f.id === 'expenseDate')?.value as { to?: Date })
                 ?.to || null,
+        orderBy: sorting.length > 0 ? sorting[0].id : null,
+        orderDirection: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : null,
     });
     const { user } = useUserContext();
     const columns = useExpensesTableColumns();
@@ -84,6 +105,10 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
     useEffect(() => {
         localStorage.setItem('expensesTableFilters', JSON.stringify(columnFilters));
     }, [columnFilters]);
+
+    useEffect(() => {
+        localStorage.setItem('expensesTableSorting', JSON.stringify(sorting));
+    }, [sorting]);
 
     useEffect(() => {
         localStorage.setItem('expensesTablePage', page.toString());
@@ -97,10 +122,12 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
         data: data?.expenses || [],
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: (filters) => {
             setColumnFilters(filters);
             setPage(0);
         },
+        onSortingChange: setSorting,
         state: {
             columnVisibility: {
                 branch: false,
@@ -108,6 +135,7 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
                 client: false,
             },
             columnFilters,
+            sorting,
         },
     });
 
@@ -137,9 +165,21 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
                 router.push(routesBuilder.accounting.expenses.details(row.id))
             }
             headerActions={
-                user.roles.includes('AdministrativoContable') && (
-                    <ExpenseReportButton table={table} />
-                )
+                <>
+                    {user.roles.includes('Auditor') && (
+                        <ExpenseReportButton table={table} />
+                    )}
+                    {(user.roles.includes('AdministrativoContable') ||
+                        user.roles.includes('AdministrativoTecnico')) && (
+                        <Button
+                            className="flex items-center gap-1 pr-6"
+                            onClick={() => router.push('/accounting/expenses/create')}
+                        >
+                            <BsPlus size="20" />
+                            <span>Crear gasto</span>
+                        </Button>
+                    )}
+                </>
             }
         />
     );

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 
 import { DownloadIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
+import { BsPlus } from 'react-icons/bs';
 
 import { expenseColumns } from './columns';
 
@@ -184,37 +185,44 @@ const Content: React.FC<Props> = ({ task }) => {
                         </div>
                     )}
                 </section>
-                {user.roles.includes('AdministrativoContable') && (
-                    <section>
-                        {task.expenses.length === 0 ? (
-                            <>
-                                <Title>Gastos</Title>
-                                <p className="text-muted-foreground">No hay gastos</p>
-                            </>
-                        ) : (
-                            <>
-                                <Title>
-                                    Gastos: $
-                                    {task.expenses
-                                        .reduce((acc, curr) => acc + curr.amount, 0)
-                                        .toLocaleString('es-AR')}
-                                </Title>
-                                <DataList
-                                    data={task.expenses}
-                                    columns={expenseColumns}
-                                    onRowClick={(expense) =>
-                                        router.push(
-                                            routesBuilder.accounting.expenses.details(
-                                                expense.id,
-                                            ),
-                                        )
-                                    }
-                                    emptyMessage="No hay gastos"
-                                />
-                            </>
+                <section className="flex flex-col gap-2">
+                    <div className="flex flex-col items-start justify-between">
+                        <Title>
+                            {task.expenses.length === 0
+                                ? 'Gastos'
+                                : `Gastos: $${task.expenses
+                                      .reduce((acc, curr) => acc + curr.amount, 0)
+                                      .toLocaleString('es-AR')}`}
+                        </Title>
+                        {(user.roles.includes('AdministrativoContable') ||
+                            user.roles.includes('AdministrativoTecnico')) && (
+                            <Button
+                                className="flex items-center gap-1"
+                                onClick={() =>
+                                    router.push(`/tasks/${task.id}/expenses/create`)
+                                }
+                            >
+                                <BsPlus size="20" />
+                                <span>Crear nuevo gasto</span>
+                            </Button>
                         )}
-                    </section>
-                )}
+                    </div>
+
+                    {task.expenses.length === 0 ? (
+                        <p className="text-muted-foreground">No hay gastos</p>
+                    ) : (
+                        <DataList
+                            data={task.expenses}
+                            columns={expenseColumns}
+                            onRowClick={(expense) =>
+                                router.push(
+                                    routesBuilder.accounting.expenses.details(expense.id),
+                                )
+                            }
+                            emptyMessage="No hay gastos"
+                        />
+                    )}
+                </section>
             </div>
         </main>
     );

@@ -15,7 +15,8 @@ export default function Expenses(): JSX.Element {
 
     return (
         <main>
-            {user.roles?.includes(Role.AdministrativoContable) ? (
+            {user.roles?.includes(Role.AdministrativoContable) ||
+            user.roles?.includes(Role.AdministrativoTecnico) ? (
                 <ExpensesDataTable techs={techniciansData?.technicians || []} />
             ) : (
                 <div>No tienes permisos para ver esta página</div>
