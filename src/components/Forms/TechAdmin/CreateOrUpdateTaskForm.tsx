@@ -103,7 +103,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 setValue('business', 'Otro');
             }
         }
-    }, [taskIdToUpdate]);
+    }, [taskIdToUpdate, defaultValues, setValue]);
 
     const watchedBusiness = watch('business');
     const watchedBranch = watch('branch');
@@ -160,7 +160,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 input: {
                     auditor: null,
                     branch: form.branch ?? null,
-                    business: form.business === 'Otro' ? null : form.business ?? null,
+                    business: form.business === 'Otro' ? null : (form.business ?? null),
                     clientName: form.clientName ?? null,
                     businessName: form.businessName ?? null,
                     description: form.description,
@@ -225,7 +225,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 input: {
                     auditor: null,
                     branch: form.branch ?? null,
-                    business: form.business === 'Otro' ? null : form.business ?? null,
+                    business: form.business === 'Otro' ? null : (form.business ?? null),
                     clientName: form.clientName ?? null,
                     businessName: form.businessName ?? null,
                     description: form.description,

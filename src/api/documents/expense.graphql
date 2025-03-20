@@ -119,8 +119,8 @@ mutation DeleteExpense($id: String!, $taskId: String!) {
 }
 
 mutation GenerateApprovedExpensesReport(
-    $startDate: String!
-    $endDate: String!
+    $startDate: DateTime!
+    $endDate: DateTime!
     $filters: JSON
 ) {
     generateApprovedExpensesReport(
@@ -161,5 +161,26 @@ mutation UpdateExpenseDiscountAmount($expenseId: String!, $discountAmount: Float
         }
         success
         message
+    }
+}
+
+mutation CreateExpense($taskId: String, $expenseData: ExpenseInput!) {
+    createExpense(taskId: $taskId, expenseData: $expenseData) {
+        success
+        message
+        expense {
+            id
+            amount
+            expenseType
+            paySource
+            paySourceBank
+            installments
+            expenseDate
+            doneBy
+            cityName
+            observations
+            expenseNumber
+            status
+        }
     }
 }
