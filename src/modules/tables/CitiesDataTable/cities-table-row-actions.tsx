@@ -52,8 +52,8 @@ export function CitiesTableRowActions({ city }: Props) {
         <div className="flex w-full justify-end">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                        <DotsHorizontalIcon className="h-4 w-4" />
+                    <Button variant="ghost" className="size-8 p-0">
+                        <DotsHorizontalIcon className="size-4" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>
                 </DropdownMenuTrigger>

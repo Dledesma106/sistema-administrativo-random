@@ -17,12 +17,9 @@ export function UserRoleBadge({ role }: UserRoleBadgeProps) {
     });
 
     return (
-        <Badge
-            className="gap-2"
-            variant="default"
-        >
+        <Badge className="gap-2" variant="default">
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(role))}</span>
         </Badge>
     );
-} 
+}

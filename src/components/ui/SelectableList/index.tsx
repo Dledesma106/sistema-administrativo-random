@@ -1,7 +1,13 @@
 import { CheckIcon } from '@radix-ui/react-icons';
 import { ReactNode, useMemo } from 'react';
 
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+} from '@/components/ui/command';
 import { CustomScrollArea } from '@/components/ui/custom-scroll-area/index';
 import { cn } from '@/lib/utils';
 
@@ -39,10 +45,11 @@ export function SelectableList({
         const PADDING = 32;
         const INPUT_HEIGHT = 40;
         const CLEAR_BUTTON_HEIGHT = selectedValues.size > 0 ? 36 : 0;
-        
-        const contentHeight = (options.length * ITEM_HEIGHT) + PADDING + INPUT_HEIGHT + CLEAR_BUTTON_HEIGHT;
+
+        const contentHeight =
+            options.length * ITEM_HEIGHT + PADDING + INPUT_HEIGHT + CLEAR_BUTTON_HEIGHT;
         const maxHeightValue = parseInt(maxHeight.match(/\d+/)?.[0] || '300');
-        
+
         return `h-[${Math.min(contentHeight, maxHeightValue)}px]`;
     }, [options.length, maxHeight, selectedValues.size]);
 
@@ -66,7 +73,9 @@ export function SelectableList({
     );
 
     return (
-        <Command className={cn("overflow-hidden bg-background text-foreground", className)}>
+        <Command
+            className={cn('overflow-hidden bg-background text-foreground', className)}
+        >
             <CommandInput placeholder={searchPlaceholder} />
             <CustomScrollArea height={dynamicHeight} className="border-0">
                 <div className="py-2">
@@ -79,10 +88,9 @@ export function SelectableList({
                                     key={option.value}
                                     onSelect={() => onOptionSelect(option.value)}
                                 >
-                                    {renderOption 
+                                    {renderOption
                                         ? renderOption(option, isSelected)
-                                        : defaultRenderOption(option, isSelected)
-                                    }
+                                        : defaultRenderOption(option, isSelected)}
                                 </CommandItem>
                             );
                         })}
@@ -103,4 +111,4 @@ export function SelectableList({
             </CustomScrollArea>
         </Command>
     );
-} 
+}

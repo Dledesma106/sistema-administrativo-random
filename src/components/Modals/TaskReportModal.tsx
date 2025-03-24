@@ -56,7 +56,7 @@ export function TaskReportModal({ isOpen, onClose, filters }: Props) {
                                         variant="outline"
                                         className="justify-start text-left font-normal"
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="size-4 mr-2" />
                                         {startDate ? (
                                             format(startDate, 'PP', { locale: es })
                                         ) : (
@@ -89,7 +89,7 @@ export function TaskReportModal({ isOpen, onClose, filters }: Props) {
                                         variant="outline"
                                         className="justify-start text-left font-normal"
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="size-4 mr-2" />
                                         {endDate ? (
                                             format(endDate, 'PP', { locale: es })
                                         ) : (

@@ -17,7 +17,7 @@ export function ExpenseReportButton({ table }: Props) {
                 Generar Reporte de Gastos
             </Button>
 
-            <ExpenseReportModal 
+            <ExpenseReportModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 filters={table.getState().columnFilters}

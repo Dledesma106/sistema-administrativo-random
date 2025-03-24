@@ -15,7 +15,7 @@ const TableSkeleton = () => {
                     <div className="h-9 w-32 animate-pulse rounded-md bg-skeleton" />
                 </div>
             </div>
-            
+
             {/* Toolbar skeleton */}
             <div className="flex items-center space-x-2">
                 <div className="h-8 w-24 animate-pulse rounded-md bg-skeleton" />
