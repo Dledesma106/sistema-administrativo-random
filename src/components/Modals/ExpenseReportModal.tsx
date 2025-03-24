@@ -56,7 +56,7 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
                                         variant="outline"
                                         className="justify-start text-left font-normal"
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="mr-2 size-4" />
                                         {startDate ? (
                                             format(startDate, 'PP', { locale: es })
                                         ) : (
@@ -89,7 +89,7 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
                                         variant="outline"
                                         className="justify-start text-left font-normal"
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="mr-2 size-4" />
                                         {endDate ? (
                                             format(endDate, 'PP', { locale: es })
                                         ) : (

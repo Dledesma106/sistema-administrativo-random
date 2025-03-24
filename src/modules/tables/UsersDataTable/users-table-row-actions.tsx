@@ -80,8 +80,8 @@ export function UsersTableRowActions({ user }: Props) {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                        <DotsHorizontalIcon className="h-4 w-4" />
+                    <Button variant="ghost" className="size-8 p-0">
+                        <DotsHorizontalIcon className="size-4" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>
                 </DropdownMenuTrigger>
@@ -93,7 +93,7 @@ export function UsersTableRowActions({ user }: Props) {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <Pencil className="mr-2 h-4 w-4" />
+                            <Pencil className="size-4" />
                             Editar
                         </div>
                     </DropdownMenuItem>
@@ -104,7 +104,7 @@ export function UsersTableRowActions({ user }: Props) {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="size-4" />
                             Eliminar
                         </div>
                     </DropdownMenuItem>
@@ -115,7 +115,7 @@ export function UsersTableRowActions({ user }: Props) {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <CgPassword className="mr-2 h-4 w-4" />
+                            <CgPassword className="size-4" />
                             Regenerar contraseña
                         </div>
                     </DropdownMenuItem>

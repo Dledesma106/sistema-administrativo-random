@@ -37,7 +37,7 @@ const Combobox = (props: Props) => {
             return (
                 <p className="flex w-full justify-between space-x-1">
                     <span>{option.label}</span>
-                    {isSelected && <Check className="h-4 w-4" />}
+                    {isSelected && <Check className="size-4" />}
                 </p>
             );
         }
@@ -46,7 +46,7 @@ const Combobox = (props: Props) => {
             <div className="flex flex-col items-start space-y-1">
                 <p className="flex w-full justify-between space-x-1">
                     <span>{option.label}</span>
-                    {isSelected && <Check className="h-4 w-4" />}
+                    {isSelected && <Check className="size-4" />}
                 </p>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
             </div>
@@ -64,7 +64,7 @@ const Combobox = (props: Props) => {
                         className="min-w-[200px] justify-between"
                     >
                         {label || selectPlaceholder}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
 
