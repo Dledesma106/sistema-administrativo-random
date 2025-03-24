@@ -9,10 +9,10 @@ interface DataTableSearchProps {
     placeholder?: string;
 }
 
-export function DataTableSearch({ 
-    searchTerm, 
-    onSearch, 
-    placeholder = "Buscar..." 
+export function DataTableSearch({
+    searchTerm,
+    onSearch,
+    placeholder = 'Buscar...',
 }: DataTableSearchProps) {
     const [inputValue, setInputValue] = useState(searchTerm);
 
@@ -38,7 +38,7 @@ export function DataTableSearch({
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="h-8 w-[150px] lg:w-[250px] pr-8"
+                    className="h-8 w-[150px] pr-8 lg:w-[250px]"
                 />
                 <Button
                     variant="ghost"
@@ -51,4 +51,4 @@ export function DataTableSearch({
             </div>
         </div>
     );
-} 
+}

@@ -38,17 +38,14 @@ interface DataTableToolbarProps<TData> {
     config: ToolbarConfig<TData>;
 }
 
-export function DataTableToolbar<TData>({
-    table,
-    config,
-}: DataTableToolbarProps<TData>) {
+export function DataTableToolbar<TData>({ table, config }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0;
     const hasSearch = !!config.search;
     const hasFilters = !!config.filters?.length;
     const hasDateRanges = !!config.dateRanges?.length;
 
     return (
-        <div className="flex items-center justify-between w-full">
+        <div className="flex w-full items-center justify-between">
             {(hasFilters || hasDateRanges) && (
                 <div className="flex flex-row items-center gap-2">
                     <Label>Filtrar por</Label>
@@ -62,8 +59,10 @@ export function DataTableToolbar<TData>({
                     ))}
                     {config.dateRanges?.map((dateRange) => {
                         const column = table.getColumn(dateRange.columnId);
-                        const value = column?.getFilterValue() as { from?: Date; to?: Date } || {};
-                        
+                        const value =
+                            (column?.getFilterValue() as { from?: Date; to?: Date }) ||
+                            {};
+
                         return (
                             <DataTableDateRange
                                 key={dateRange.columnId}
@@ -96,4 +95,4 @@ export function DataTableToolbar<TData>({
             )}
         </div>
     );
-} 
+}

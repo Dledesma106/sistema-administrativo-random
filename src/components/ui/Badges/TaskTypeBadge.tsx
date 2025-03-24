@@ -19,12 +19,9 @@ export function TaskTypeBadge({ type }: TaskTypeBadgeProps) {
     });
 
     return (
-        <Badge
-            className="gap-2 whitespace-nowrap"
-            variant="default"
-        >
+        <Badge className="gap-2 whitespace-nowrap" variant="default">
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(type))}</span>
         </Badge>
     );
-} 
+}

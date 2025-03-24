@@ -29,4 +29,4 @@ const BudgetStatusBadge = ({ status }: Props) => {
     );
 };
 
-export default BudgetStatusBadge; 
+export default BudgetStatusBadge;
