@@ -177,10 +177,8 @@ const CreateOrUpdatePreventiveForm = ({
             branchId: form.branch ?? '',
             businessId: form.business ?? '',
             frequency: form.frequency ?? 0,
-            lastDoneAt: form.lastDoneAt ? format(form.lastDoneAt, 'yyyy-MM-dd') : null,
-            batteryChangedAt: form.batteryChangedAt
-                ? format(form.batteryChangedAt, 'yyyy-MM-dd')
-                : null,
+            lastDoneAt: form.lastDoneAt ? form.lastDoneAt : null,
+            batteryChangedAt: form.batteryChangedAt ? form.batteryChangedAt : null,
             months: form.months.map((month) => month.value),
             observations: form.observations,
             status: preventiveIdToUpdate ? form.status : PreventiveStatus.Pendiente,
@@ -468,7 +466,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="ml-auto size-4 opacity-50" />
+                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -511,7 +509,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="ml-auto size-4 opacity-50" />
+                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>

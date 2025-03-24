@@ -135,14 +135,13 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             compositeRules: [
                 { and: ['IsAuthenticated'] },
                 {
-                    or: ['IsTecnico'],
+                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
                 },
             ],
         },
         resolve: async (_parent, { taskId, expenseData }, _context) => {
             try {
                 let expenseNumber = '';
-
                 if (taskId) {
                     // Primero obtener la tarea para conseguir el taskNumber
                     const task = await prisma.task.findUnique({
@@ -295,7 +294,8 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         });
                     }
                 }
-
+                const expenseDate = new Date(expenseData.expenseDate ?? '');
+                expenseDate.setHours(0, 0, 0, 0);
                 // Crear el gasto con las conexiones de imágenes y archivos
                 const newExpense = await prisma.expense.create({
                     data: {
@@ -307,7 +307,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         doneBy: expenseData.doneBy,
                         paySourceBank: expenseData.paySourceBank,
                         installments: expenseData.installments,
-                        expenseDate: expenseData.expenseDate,
+                        expenseDate: expenseDate,
                         observations: expenseData.observations,
                         status: ExpenseStatus.Enviado,
                         registeredBy: { connect: { id: _context.user.id } },
@@ -357,7 +357,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoContable'],
+                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
                 },
             ],
         },
@@ -404,8 +404,14 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
     generateApprovedExpensesReport: t.field({
         type: 'String',
         args: {
-            startDate: t.arg.string({ required: true }),
-            endDate: t.arg.string({ required: true }),
+            startDate: t.arg({
+                type: 'DateTime',
+                required: true,
+            }),
+            endDate: t.arg({
+                type: 'DateTime',
+                required: true,
+            }),
             filters: t.arg({
                 type: 'JSON',
                 required: false,
@@ -414,16 +420,23 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         authz: {
             compositeRules: [
                 { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
+                { or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'] },
             ],
         },
         resolve: async (root, { startDate, endDate, filters }) => {
+            console.log(startDate, endDate);
+            if (startDate) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
             try {
                 const whereClause = {
                     deleted: false,
                     expenseDate: {
-                        gte: new Date(startDate),
-                        lte: new Date(endDate),
+                        gte: startDate,
+                        lte: endDate,
                     },
                     ...(filters && buildWhereClause(filters)),
                 };
@@ -484,6 +497,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     {
                         header: 'Fuente de pago',
                         key: 'paySource',
+                        width: 20,
+                    },
+                    {
+                        header: 'Banco emisor',
+                        key: 'paySourceBank',
                         width: 20,
                     },
                     {
@@ -551,6 +569,9 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         }),
                         doneBy: expense.doneBy,
                         paySource: expense.paySource,
+                        paySourceBank: ['Credito', 'Debito'].includes(expense.paySource)
+                            ? expense.paySourceBank || '-'
+                            : '-',
                         installments: expense.installments || '-',
                         installmentValue: installmentValue
                             ? installmentValue.toLocaleString('es-AR', {
@@ -588,10 +609,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     },
                 });
 
-                const fileName = `reporte-gastos-${format(
-                    new Date(),
-                    'yyyy-MM-dd-HH-mm-ss',
-                )}.xlsx`;
+                // Formatear las fechas para el nombre del archivo
+                const formattedStartDate = format(new Date(startDate), 'yyyy-MM-dd');
+                const formattedEndDate = format(new Date(endDate), 'yyyy-MM-dd');
+
+                const fileName = `reporte-gastos-${formattedStartDate}_a_${formattedEndDate}.xlsx`;
 
                 await s3Client.send(
                     new PutObjectCommand({
@@ -631,7 +653,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoContable'],
+                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
                 },
             ],
         },

@@ -1006,8 +1006,14 @@ builder.mutationFields((t) => ({
                 type: [TaskReportFilterInput],
                 required: false,
             }),
-            startDate: t.arg.string({ required: false }),
-            endDate: t.arg.string({ required: false }),
+            startDate: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
+            endDate: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
         },
         authz: {
             compositeRules: [
@@ -1019,6 +1025,14 @@ builder.mutationFields((t) => ({
             try {
                 const { filters, startDate, endDate } = args;
 
+                console.log(startDate, endDate);
+                if (startDate) {
+                    startDate.setHours(0, 0, 0, 0);
+                }
+                if (endDate) {
+                    endDate.setHours(23, 59, 59, 999);
+                }
+
                 // Construir la cláusula where
                 let whereClause: any = {
                     deleted: false,
@@ -1029,10 +1043,10 @@ builder.mutationFields((t) => ({
                 if (startDate || endDate) {
                     whereClause.closedAt = {};
                     if (startDate) {
-                        whereClause.closedAt.gte = new Date(startDate);
+                        whereClause.closedAt.gte = startDate;
                     }
                     if (endDate) {
-                        whereClause.closedAt.lte = new Date(endDate);
+                        whereClause.closedAt.lte = endDate;
                     }
                 }
 

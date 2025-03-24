@@ -111,7 +111,7 @@ export const expenseColumns: Column<Expense>[] = [
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    <DownloadIcon className="mr-2 size-4" />
+                                    <DownloadIcon className="size-4 mr-2" />
                                     {file.filename}
                                 </a>
                             </Button>

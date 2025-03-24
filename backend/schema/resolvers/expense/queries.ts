@@ -158,6 +158,15 @@ builder.queryFields((t) => ({
             _parent,
             { skip, take, orderBy, orderDirection, ...filters },
         ) => {
+            const startDate = filters.expenseDateFrom;
+            const endDate = filters.expenseDateTo;
+            if (startDate) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
+
             const sortDirection =
                 orderDirection?.toLowerCase() === 'asc'
                     ? Prisma.SortOrder.asc
@@ -203,10 +212,10 @@ builder.queryFields((t) => ({
                     }),
                     ...((filters.expenseDateFrom || filters.expenseDateTo) && {
                         expenseDate: {
-                            ...(filters.expenseDateFrom && {
-                                gte: filters.expenseDateFrom,
+                            ...(startDate && {
+                                gte: startDate,
                             }),
-                            ...(filters.expenseDateTo && { lte: filters.expenseDateTo }),
+                            ...(endDate && { lte: endDate }),
                         },
                     }),
                 },

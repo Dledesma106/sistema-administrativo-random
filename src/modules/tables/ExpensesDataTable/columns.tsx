@@ -30,9 +30,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}
@@ -87,9 +87,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}
@@ -125,9 +125,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}
@@ -158,9 +158,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}
@@ -185,9 +185,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}
@@ -196,9 +196,11 @@ export const useExpensesTableColumns = () => [
         },
         cell: (info) => {
             const expense = info.row.original;
+            const expenseDate = new Date(expense.expenseDate);
+            expenseDate.setHours(0, 0, 0, 0);
             return (
                 <span className="block text-left">
-                    {format(new Date(expense.expenseDate), 'dd/MM/yyyy')}
+                    {format(expenseDate, 'dd/MM/yyyy')}
                 </span>
             );
         },
@@ -216,9 +218,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}
@@ -265,9 +267,9 @@ export const useExpensesTableColumns = () => [
                         {column.getIsSorted() && (
                             <span>
                                 {column.getIsSorted() === 'asc' ? (
-                                    <ArrowUp className="ml-1 size-4" />
+                                    <ArrowUp className="size-4 ml-1" />
                                 ) : (
-                                    <ArrowDown className="ml-1 size-4" />
+                                    <ArrowDown className="size-4 ml-1" />
                                 )}
                             </span>
                         )}
@@ -313,9 +315,9 @@ export const useExpensesTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 size-4" />
+                                <ArrowUp className="size-4 ml-1" />
                             ) : (
-                                <ArrowDown className="ml-1 size-4" />
+                                <ArrowDown className="size-4 ml-1" />
                             )}
                         </span>
                     )}

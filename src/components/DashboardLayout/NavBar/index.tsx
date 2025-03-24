@@ -58,7 +58,7 @@ function UserMenu({ user }: NavBarProps) {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                    <User className="size-4" />
                     <span className="text-sm">{user.email}</span>
                 </Button>
             </DropdownMenuTrigger>
@@ -69,7 +69,7 @@ function UserMenu({ user }: NavBarProps) {
                 <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
                         <Link href="/edit-profile" className="flex w-full cursor-pointer">
-                            <User className="mr-2 h-4 w-4" />
+                            <User className="size-4 mr-2" />
                             <span>Perfil</span>
                         </Link>
                     </DropdownMenuItem>
@@ -81,7 +81,7 @@ function UserMenu({ user }: NavBarProps) {
                         variant="ghost"
                         disabled={logoutMutation.isPending}
                     >
-                        <LogOut className="mr-2 h-4 w-4" />
+                        <LogOut className="size-4 mr-2" />
                         <span>Cerrar sesión</span>
                     </Button>
                 </DropdownMenuItem>

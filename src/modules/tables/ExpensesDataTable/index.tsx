@@ -8,6 +8,7 @@ import {
     getSortedRowModel,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
+import { BsPlus } from 'react-icons/bs';
 
 import { useExpensesTableColumns } from './columns';
 import { getExpensesTableToolbarConfig } from './toolbar-config';
@@ -19,6 +20,7 @@ import {
     GetExpensesQuery,
     GetTechniciansQuery,
 } from '@/api/graphql';
+import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { ExpenseReportButton } from '@/components/ui/ExpenseReportButton';
 import { TableSkeleton } from '@/components/ui/skeleton';
@@ -163,9 +165,21 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
                 router.push(routesBuilder.accounting.expenses.details(row.id))
             }
             headerActions={
-                user.roles.includes('AdministrativoContable') && (
-                    <ExpenseReportButton table={table} />
-                )
+                <>
+                    {user.roles.includes('Auditor') && (
+                        <ExpenseReportButton table={table} />
+                    )}
+                    {(user.roles.includes('AdministrativoContable') ||
+                        user.roles.includes('AdministrativoTecnico')) && (
+                        <Button
+                            className="flex items-center gap-1 pr-6"
+                            onClick={() => router.push('/accounting/expenses/create')}
+                        >
+                            <BsPlus size="20" />
+                            <span>Crear gasto</span>
+                        </Button>
+                    )}
+                </>
             }
         />
     );

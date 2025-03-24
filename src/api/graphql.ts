@@ -280,6 +280,7 @@ export type Mutation = {
     finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
+    generateUploadUrls: PresignedUrlResponse;
     login: LoginUserResult;
     logout: AuthResult;
     sendNewUserRandomPassword: UserCrudPothosRef;
@@ -397,15 +398,21 @@ export type MutationFinishTaskArgs = {
 };
 
 export type MutationGenerateApprovedExpensesReportArgs = {
-    endDate: Scalars['String'];
+    endDate: Scalars['DateTime'];
     filters: InputMaybe<Scalars['JSON']>;
-    startDate: Scalars['String'];
+    startDate: Scalars['DateTime'];
 };
 
 export type MutationGenerateApprovedTasksReportArgs = {
-    endDate: InputMaybe<Scalars['String']>;
+    endDate: InputMaybe<Scalars['DateTime']>;
     filters: InputMaybe<Array<TaskReportFilterInput>>;
-    startDate: InputMaybe<Scalars['String']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
+};
+
+export type MutationGenerateUploadUrlsArgs = {
+    fileCount: Scalars['Int'];
+    mimeTypes: Array<Scalars['String']>;
+    prefix: Scalars['String'];
 };
 
 export type MutationLoginArgs = {
@@ -491,6 +498,13 @@ export type MyTaskInput = {
     startedAt: InputMaybe<Scalars['DateTime']>;
     taskType: TaskType;
     useMaterials: Scalars['Boolean'];
+};
+
+export type PresignedUrlResponse = {
+    __typename?: 'PresignedUrlResponse';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    uploadUrls: Array<UploadUrlInfo>;
 };
 
 export type Preventive = {
@@ -869,6 +883,13 @@ export type UpdateMyTaskInput = {
     participants: InputMaybe<Array<Scalars['String']>>;
     startedAt: InputMaybe<Scalars['DateTime']>;
     useMaterials: Scalars['Boolean'];
+};
+
+export type UploadUrlInfo = {
+    __typename?: 'UploadUrlInfo';
+    key: Scalars['String'];
+    url: Scalars['String'];
+    urlExpire: Scalars['String'];
 };
 
 export type User = {
@@ -1374,8 +1395,8 @@ export type DeleteExpenseMutation = {
 };
 
 export type GenerateApprovedExpensesReportMutationVariables = Exact<{
-    startDate: Scalars['String'];
-    endDate: Scalars['String'];
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     filters: InputMaybe<Scalars['JSON']>;
 }>;
 
@@ -1433,6 +1454,56 @@ export type UpdateExpenseDiscountAmountMutation = {
             amount: number;
             discountAmount: number | null;
         } | null;
+    };
+};
+
+export type CreateExpenseMutationVariables = Exact<{
+    taskId: InputMaybe<Scalars['String']>;
+    expenseData: ExpenseInput;
+}>;
+
+export type CreateExpenseMutation = {
+    __typename?: 'Mutation';
+    createExpense: {
+        __typename?: 'ExpenseCrudResult';
+        success: boolean;
+        message: string | null;
+        expense: {
+            __typename?: 'Expense';
+            id: string;
+            amount: number;
+            expenseType: ExpenseType;
+            paySource: ExpensePaySource;
+            paySourceBank: ExpensePaySourceBank | null;
+            installments: number | null;
+            expenseDate: any | null;
+            doneBy: string;
+            cityName: string | null;
+            observations: string | null;
+            expenseNumber: string;
+            status: ExpenseStatus;
+        } | null;
+    };
+};
+
+export type GenerateUploadUrlsMutationVariables = Exact<{
+    fileCount: Scalars['Int'];
+    prefix: Scalars['String'];
+    mimeTypes: Array<Scalars['String']>;
+}>;
+
+export type GenerateUploadUrlsMutation = {
+    __typename?: 'Mutation';
+    generateUploadUrls: {
+        __typename?: 'PresignedUrlResponse';
+        success: boolean;
+        message: string | null;
+        uploadUrls: Array<{
+            __typename?: 'UploadUrlInfo';
+            url: string;
+            key: string;
+            urlExpire: string;
+        }>;
     };
 };
 
@@ -1800,8 +1871,8 @@ export type UpdateTaskStatusMutation = {
 };
 
 export type GenerateApprovedTasksReportMutationVariables = Exact<{
-    startDate: Scalars['String'];
-    endDate: Scalars['String'];
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     filters: Array<TaskReportFilterInput>;
 }>;
 
@@ -4863,7 +4934,7 @@ export const GenerateApprovedExpensesReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -4877,7 +4948,7 @@ export const GenerateApprovedExpensesReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -5201,6 +5272,290 @@ export const UpdateExpenseDiscountAmountDocument = {
 } as unknown as DocumentNode<
     UpdateExpenseDiscountAmountMutation,
     UpdateExpenseDiscountAmountMutationVariables
+>;
+export const CreateExpenseDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'CreateExpense' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'taskId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'expenseData' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'ExpenseInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createExpense' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'taskId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'taskId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'expenseData' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'expenseData' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expense' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseType',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'paySource',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'paySourceBank',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'installments',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseDate',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'doneBy' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cityName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'observations',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expenseNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CreateExpenseMutation, CreateExpenseMutationVariables>;
+export const GenerateUploadUrlsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GenerateUploadUrls' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'fileCount' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'prefix' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'mimeTypes' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'ListType',
+                            type: {
+                                kind: 'NonNullType',
+                                type: {
+                                    kind: 'NamedType',
+                                    name: { kind: 'Name', value: 'String' },
+                                },
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'generateUploadUrls' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fileCount' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fileCount' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'prefix' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'prefix' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'mimeTypes' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'mimeTypes' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'uploadUrls' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'urlExpire',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GenerateUploadUrlsMutation,
+    GenerateUploadUrlsMutationVariables
 >;
 export const GetPreventivesDocument = {
     kind: 'Document',
@@ -7562,7 +7917,7 @@ export const GenerateApprovedTasksReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -7576,7 +7931,7 @@ export const GenerateApprovedTasksReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
