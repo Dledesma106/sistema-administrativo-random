@@ -399,11 +399,14 @@ export type MutationFinishTaskArgs = {
 
 export type MutationGenerateApprovedExpensesReportArgs = {
     endDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     filters: InputMaybe<Scalars['JSON']>;
+    startDate: Scalars['DateTime'];
     startDate: Scalars['DateTime'];
 };
 
 export type MutationGenerateApprovedTasksReportArgs = {
+    endDate: InputMaybe<Scalars['DateTime']>;
     endDate: InputMaybe<Scalars['DateTime']>;
     filters: InputMaybe<Array<TaskReportFilterInput>>;
     startDate: InputMaybe<Scalars['DateTime']>;
@@ -1397,6 +1400,8 @@ export type DeleteExpenseMutation = {
 export type GenerateApprovedExpensesReportMutationVariables = Exact<{
     startDate: Scalars['DateTime'];
     endDate: Scalars['DateTime'];
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     filters: InputMaybe<Scalars['JSON']>;
 }>;
 
@@ -1871,6 +1876,8 @@ export type UpdateTaskStatusMutation = {
 };
 
 export type GenerateApprovedTasksReportMutationVariables = Exact<{
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
     startDate: Scalars['DateTime'];
     endDate: Scalars['DateTime'];
     filters: Array<TaskReportFilterInput>;
@@ -4935,6 +4942,7 @@ export const GenerateApprovedExpensesReportDocument = {
                         type: {
                             kind: 'NamedType',
                             name: { kind: 'Name', value: 'DateTime' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -4948,6 +4956,7 @@ export const GenerateApprovedExpensesReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
                             name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
@@ -7918,6 +7927,7 @@ export const GenerateApprovedTasksReportDocument = {
                         type: {
                             kind: 'NamedType',
                             name: { kind: 'Name', value: 'DateTime' },
+                            name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
                 },
@@ -7931,6 +7941,7 @@ export const GenerateApprovedTasksReportDocument = {
                         kind: 'NonNullType',
                         type: {
                             kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
                             name: { kind: 'Name', value: 'DateTime' },
                         },
                     },
