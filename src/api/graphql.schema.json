@@ -4134,7 +4134,6 @@
                 "kind": "OBJECT",
                 "name": "PresignedUrlResponse",
                 "description": null,
-                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -7963,7 +7962,6 @@
                 "kind": "OBJECT",
                 "name": "UploadUrlInfo",
                 "description": null,
-                "isOneOf": null,
                 "fields": [
                     {
                         "name": "key",
