@@ -2,8 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { DownloadIcon } from '@radix-ui/react-icons';
 import dayjs from 'dayjs';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
@@ -200,10 +200,9 @@ const Content: React.FC<Props> = ({ expense }) => {
                                     <a
                                         key={image.id}
                                         className="group relative block overflow-hidden rounded-md border border-accent"
-                                        download={image.id}
                                         href={image.url}
                                         target="_blank"
-                                        rel="noreferrer"
+                                        rel="noopener noreferrer"
                                     >
                                         <Image
                                             src={image.url}
@@ -213,7 +212,7 @@ const Content: React.FC<Props> = ({ expense }) => {
                                             className="aspect-[5/7] w-full object-cover"
                                         />
                                         <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 opacity-0 transition-colors duration-200 group-hover:bg-background/90 group-hover:opacity-100">
-                                            <DownloadIcon className="h-6 w-6" />
+                                            <Eye className="size-6" />
                                         </div>
                                     </a>
                                 ))}
@@ -245,9 +244,9 @@ const Content: React.FC<Props> = ({ expense }) => {
                                                     className="inline-flex items-center gap-2"
                                                     href={file.url}
                                                     target="_blank"
-                                                    rel="noreferrer"
+                                                    rel="noopener noreferrer"
                                                 >
-                                                    <DownloadIcon />
+                                                    <Eye className="size-5" />
                                                     {file.filename}
                                                 </a>
                                             </Button>
