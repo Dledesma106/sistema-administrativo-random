@@ -15,11 +15,10 @@ export default function AuthenticationPage() {
     useEffect(() => {
         const logOut = query.logout;
         if (logOut) {
-            logoutMutation.mutateAsync().then(() => {
-                logoutUser();
-            });
+            logoutMutation.mutateAsync();
+            logoutUser();
         }
-    }, [query, logoutMutation, logoutUser]);
+    }, [query]);
 
     return (
         <main className="container relative flex min-h-screen items-center justify-center">

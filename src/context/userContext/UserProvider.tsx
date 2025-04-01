@@ -29,6 +29,7 @@ const UserProvider = ({ children }: ProviderProps): JSX.Element => {
         setUser({} as unknown as LocalUser);
         setIsLoggedIn(false);
         localStorage.removeItem('user');
+        console.log('removed user from local storage');
     }, []);
 
     useEffect(() => {

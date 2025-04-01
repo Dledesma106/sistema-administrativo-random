@@ -14,10 +14,7 @@ export default function CreateExpense(): JSX.Element {
     }
 
     // Verificar que el usuario tenga el rol necesario
-    if (
-        !user.roles?.includes(Role.AdministrativoContable) &&
-        !user.roles?.includes(Role.AdministrativoTecnico)
-    ) {
+    if (!user.roles?.includes(Role.AdministrativoContable)) {
         return (
             <main className="flex h-[calc(100vh-4rem)] items-center justify-center">
                 <div className="text-center">

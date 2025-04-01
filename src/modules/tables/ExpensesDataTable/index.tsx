@@ -166,11 +166,10 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
             }
             headerActions={
                 <>
-                    {user.roles.includes('Auditor') && (
+                    {user.roles.includes('AdministrativoContable') && (
                         <ExpenseReportButton table={table} />
                     )}
-                    {(user.roles.includes('AdministrativoContable') ||
-                        user.roles.includes('AdministrativoTecnico')) && (
+                    {user.roles.includes('AdministrativoContable') && (
                         <Button
                             className="flex items-center gap-1 pr-6"
                             onClick={() => router.push('/accounting/expenses/create')}
