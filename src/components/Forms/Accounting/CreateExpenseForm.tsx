@@ -241,7 +241,9 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                 if (!uploadResponse.ok) {
                     const errorData = await uploadResponse.json();
                     throw new Error(
-                        `Error al subir el archivo ${file.name}: ${errorData.error || uploadResponse.statusText}`,
+                        `Error al subir el archivo ${file.name}: ${
+                            errorData.error || uploadResponse.statusText
+                        }`,
                     );
                 }
 
@@ -282,14 +284,18 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
 
             // Notificar éxito
             toast({
-                description: `${newFiles.length} ${newFiles.length === 1 ? 'archivo subido' : 'archivos subidos'} exitosamente.`,
+                description: `${newFiles.length} ${
+                    newFiles.length === 1 ? 'archivo subido' : 'archivos subidos'
+                } exitosamente.`,
                 variant: 'success',
                 duration: 3000,
             });
         } catch (error) {
             console.error('Error al subir archivos:', error);
             toast({
-                description: `Error al subir los archivos: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                description: `Error al subir los archivos: ${
+                    error instanceof Error ? error.message : 'Error desconocido'
+                }`,
                 variant: 'destructive',
                 duration: 5000,
             });
@@ -407,7 +413,9 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                     if (!uploadResponse.ok) {
                         const errorData = await uploadResponse.json();
                         throw new Error(
-                            `Error al subir el archivo ${file.name}: ${errorData.error || uploadResponse.statusText}`,
+                            `Error al subir el archivo ${file.name}: ${
+                                errorData.error || uploadResponse.statusText
+                            }`,
                         );
                     }
 
@@ -908,9 +916,21 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                     key={index}
                                     className="flex items-center rounded-md border border-accent bg-background p-2"
                                 >
-                                    <span className="max-w-32 mr-2 truncate">
-                                        {file.name}
-                                    </span>
+                                    <div className="flex items-center">
+                                        {file.type.startsWith('image/') ? (
+                                            <Image
+                                                src={URL.createObjectURL(file)}
+                                                alt={file.name}
+                                                className="mr-2 h-64 w-48 rounded object-cover"
+                                                width={32}
+                                                height={32}
+                                            />
+                                        ) : (
+                                            <span className="max-w-32 mr-2 truncate">
+                                                {file.name}
+                                            </span>
+                                        )}
+                                    </div>
                                     <Button
                                         type="button"
                                         variant="ghost"
