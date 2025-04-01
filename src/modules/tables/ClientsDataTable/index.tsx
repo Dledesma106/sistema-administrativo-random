@@ -30,11 +30,11 @@ export function ClientsDataTable() {
     useEffect(() => {
         setPage(0);
         refetch();
-    }, [searchTerm, pageSize]);
+    }, [searchTerm, pageSize, refetch]);
 
     useEffect(() => {
         refetch();
-    }, [page, pageSize]);
+    }, [page, pageSize, refetch]);
 
     const handleSearch = (term: string) => {
         setSearchTerm(term);

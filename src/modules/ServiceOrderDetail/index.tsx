@@ -144,7 +144,7 @@ const Content = ({ serviceOrder = mockServiceOrder }) => {
             cell: (task) => (
                 <div className="flex -space-x-2">
                     {task.assigned.map((tech) => (
-                        <Avatar key={tech.id} className="h-8 w-8">
+                        <Avatar key={tech.id} className="size-8">
                             <AvatarFallback className="text-xs">
                                 {tech.fullName[0].toUpperCase()}
                             </AvatarFallback>

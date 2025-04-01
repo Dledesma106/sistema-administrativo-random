@@ -26,7 +26,7 @@ export function DataList<T>({
     data,
     columns,
     onRowClick,
-    emptyMessage = "No hay datos"
+    emptyMessage = 'No hay datos',
 }: DataListProps<T>) {
     return (
         <div className="overflow-hidden rounded-md border border-accent">
@@ -34,7 +34,10 @@ export function DataList<T>({
                 <TableHeader className="bg-primary ">
                     <TableRow>
                         {columns.map((column, index) => (
-                            <TableHead key={index} className="font-medium text-primary-foreground">
+                            <TableHead
+                                key={index}
+                                className="font-medium text-primary-foreground"
+                            >
                                 {column.header}
                             </TableHead>
                         ))}
@@ -45,7 +48,7 @@ export function DataList<T>({
                         <TableRow>
                             <TableCell
                                 colSpan={columns.length}
-                                className="h-24 text-center bg-background-primary text-primary-foreground"
+                                className="h-24 bg-background-primary text-center text-primary-foreground"
                             >
                                 {emptyMessage}
                             </TableCell>
@@ -59,11 +62,11 @@ export function DataList<T>({
                             >
                                 {columns.map((column, colIndex) => (
                                     <TableCell key={colIndex}>
-                                        {column.cell 
+                                        {column.cell
                                             ? column.cell(item)
                                             : typeof column.accessorKey === 'function'
-                                                ? column.accessorKey(item)
-                                                : String(item[column.accessorKey])}
+                                              ? column.accessorKey(item)
+                                              : String(item[column.accessorKey])}
                                     </TableCell>
                                 ))}
                             </TableRow>
@@ -73,4 +76,4 @@ export function DataList<T>({
             </Table>
         </div>
     );
-} 
+}

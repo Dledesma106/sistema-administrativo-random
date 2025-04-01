@@ -5,11 +5,7 @@ import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 interface DateRange {
@@ -23,17 +19,13 @@ interface DataTableDateRangeProps {
     title: string;
 }
 
-export function DataTableDateRange({
-    value,
-    onChange,
-    title,
-}: DataTableDateRangeProps) {
+export function DataTableDateRange({ value, onChange, title }: DataTableDateRangeProps) {
     // Estado interno para manejar las fechas temporales
     const [tempRange, setTempRange] = useState<DateRange>({
         from: value.from,
-        to: value.to
+        to: value.to,
     });
-    
+
     // Estado para controlar si el popover está abierto
     const [isOpen, setIsOpen] = useState(false);
 
@@ -41,7 +33,7 @@ export function DataTableDateRange({
     useEffect(() => {
         setTempRange({
             from: value.from,
-            to: value.to
+            to: value.to,
         });
     }, [value.from, value.to]);
 
@@ -76,7 +68,7 @@ export function DataTableDateRange({
     // Función para aplicar el rango cuando se cierra el popover
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
-        
+
         // Si se está cerrando el popover y ambas fechas están seleccionadas
         if (!open && tempRange.from && tempRange.to) {
             onChange(tempRange);
@@ -84,7 +76,7 @@ export function DataTableDateRange({
             // Si se cierra sin ambas fechas, restauramos al valor original
             setTempRange({
                 from: value.from,
-                to: value.to
+                to: value.to,
             });
         }
     };
@@ -126,8 +118,8 @@ export function DataTableDateRange({
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent 
-                className="w-auto p-3 bg-background" 
+            <PopoverContent
+                className="w-auto bg-background p-3"
                 align="start"
                 sideOffset={4}
             >
@@ -155,14 +147,10 @@ export function DataTableDateRange({
                         </div>
                     </div>
                     <div className="flex justify-between">
-                        <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={clearRange}
-                        >
+                        <Button variant="outline" size="sm" onClick={clearRange}>
                             Limpiar
                         </Button>
-                        <Button 
+                        <Button
                             size="sm"
                             onClick={applyRange}
                             disabled={!tempRange.from || !tempRange.to}
@@ -174,4 +162,4 @@ export function DataTableDateRange({
             </PopoverContent>
         </Popover>
     );
-} 
+}

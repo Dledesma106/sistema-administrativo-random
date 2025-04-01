@@ -56,7 +56,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             compositeRules: [
                 { and: ['IsAuthenticated'] },
                 {
-                    or: ['IsTecnico', 'IsAdministrativoTecnico', 'IsAuditor'],
+                    or: ['IsTecnico', 'IsAdministrativoContable', 'IsAuditor'],
                 },
             ],
         },
@@ -135,7 +135,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             compositeRules: [
                 { and: ['IsAuthenticated'] },
                 {
-                    or: ['IsTecnico'],
+                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
                 },
             ],
         },
@@ -357,7 +357,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoContable'],
+                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
                 },
             ],
         },
@@ -420,7 +420,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
         authz: {
             compositeRules: [
                 { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
+                { or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'] },
             ],
         },
         resolve: async (root, { startDate, endDate, filters }) => {
@@ -653,7 +653,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoContable'],
+                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
                 },
             ],
         },

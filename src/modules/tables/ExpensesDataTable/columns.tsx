@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ExpenseStatus, ExpenseType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import { ExpensesTableRowActions } from './expenses-table-row-actions';
 
@@ -19,11 +20,30 @@ const columnHelper = createColumnHelper<Expense>();
 export const useExpensesTableColumns = () => [
     columnHelper.accessor((row) => row.expenseNumber, {
         id: 'expenseNumber',
-        header: 'Número',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Número</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const expenseNumber = info.getValue();
-            return <span className="font-medium">#{expenseNumber}</span>;
+            return <span className="block text-left font-medium">#{expenseNumber}</span>;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row, {
         id: 'task',
@@ -53,27 +73,68 @@ export const useExpensesTableColumns = () => [
             );
         },
         header: 'Tarea',
+        enableSorting: false,
     }),
     columnHelper.accessor((row) => row.amount, {
         id: 'amount',
-        header: 'Monto',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Monto</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const amount = info.getValue();
 
             return (
-                <p className="max-w-[250px] text-muted-foreground">
+                <p className="block text-left text-muted-foreground">
                     ${amount.toLocaleString('es-AR')}
                 </p>
             );
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.registeredBy, {
         id: 'registeredBy',
         cell: (info) => {
             const expense = info.row.original;
-            return expense.registeredBy.fullName;
+            return (
+                <span className="block text-left">{expense.registeredBy.fullName}</span>
+            );
         },
-        header: 'Registrado por',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Registrado por</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
+        enableSorting: true,
         filterFn: (row, id, userId: string[]) => {
             if (!userId) {
                 return true;
@@ -87,24 +148,85 @@ export const useExpensesTableColumns = () => [
     }),
     columnHelper.accessor((row) => row.doneBy, {
         id: 'doneBy',
-        header: 'Pagado por',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Pagado por</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const expense = info.row.original;
-            return expense.doneBy;
+            return <span className="block text-left">{expense.doneBy}</span>;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.expenseDate, {
         id: 'expenseDate',
-        header: 'Fecha de pago',
-        cell: (info) => {
-            const expenseDate = new Date(info.row.original.expenseDate);
-            expenseDate.setHours(0, 0, 0, 0);
-            return format(expenseDate, 'dd/MM/yyyy');
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Fecha de pago</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
         },
+        cell: (info) => {
+            const expense = info.row.original;
+            const expenseDate = new Date(expense.expenseDate);
+            expenseDate.setHours(0, 0, 0, 0);
+            return (
+                <span className="block text-left">
+                    {format(expenseDate, 'dd/MM/yyyy')}
+                </span>
+            );
+        },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.expenseType, {
         id: 'expenseType',
-        header: 'Razon',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span className="ml-2 text-left">Razón</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         filterFn: (row, id, types: ExpenseType[]) => {
             if (!types) {
                 return true;
@@ -117,8 +239,13 @@ export const useExpensesTableColumns = () => [
         },
         cell: (info) => {
             const type = info.getValue();
-            return <ExpenseTypeBadge type={type} />;
+            return (
+                <div className="text-left">
+                    <ExpenseTypeBadge type={type} />
+                </div>
+            );
         },
+        enableSorting: true,
     }),
     columnHelper.accessor(
         (row) => ({
@@ -128,7 +255,27 @@ export const useExpensesTableColumns = () => [
         }),
         {
             id: 'paySource',
-            header: 'Fuente de pago',
+            header: ({ column }) => {
+                return (
+                    <button
+                        className="flex w-full items-center justify-between gap-1 text-left"
+                        onClick={() =>
+                            column.toggleSorting(column.getIsSorted() === 'asc')
+                        }
+                    >
+                        <span className="ml-2 text-left">Fuente de pago</span>
+                        {column.getIsSorted() && (
+                            <span>
+                                {column.getIsSorted() === 'asc' ? (
+                                    <ArrowUp className="size-4 ml-1" />
+                                ) : (
+                                    <ArrowDown className="size-4 ml-1" />
+                                )}
+                            </span>
+                        )}
+                    </button>
+                );
+            },
             filterFn: (row, id, paySources: ExpensePaySource[]) => {
                 if (!paySources) {
                     return true;
@@ -144,21 +291,46 @@ export const useExpensesTableColumns = () => [
             cell: (info) => {
                 const { paySource, installments, paySourceBank } = info.getValue();
                 return (
-                    <ExpensePaySourceBadge
-                        paySource={paySource}
-                        installments={installments}
-                        paySourceBank={paySourceBank}
-                    />
+                    <div className="text-left">
+                        <ExpensePaySourceBadge
+                            paySource={paySource}
+                            installments={installments}
+                            paySourceBank={paySourceBank}
+                        />
+                    </div>
                 );
             },
+            enableSorting: true,
         },
     ),
     columnHelper.accessor((row) => row.status, {
         id: 'status',
-        header: 'Estado',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span className="ml-2 text-left">Estado</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const status = info.getValue();
-            return <ExpenseStatusBadge status={status} />;
+            return (
+                <div className="text-left">
+                    <ExpenseStatusBadge status={status} />
+                </div>
+            );
         },
         filterFn: (row, id, statuses: ExpenseStatus[]) => {
             if (!statuses?.length) {
@@ -168,6 +340,7 @@ export const useExpensesTableColumns = () => [
             const thisStatus = row.getValue<ExpenseStatus>(id);
             return statuses.includes(thisStatus);
         },
+        enableSorting: true,
     }),
     columnHelper.display({
         id: 'actions',
@@ -176,5 +349,6 @@ export const useExpensesTableColumns = () => [
 
             return <ExpensesTableRowActions expense={expense} />;
         },
+        enableSorting: false,
     }),
 ];

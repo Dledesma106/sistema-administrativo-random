@@ -130,8 +130,6 @@ const CreateOrUpdatePreventiveForm = ({
     });
     const { watch, setValue } = form;
     const { triggerAlert } = useAlert();
-    console.log(watch('lastDoneAt'));
-    console.log(new Date(watch('lastDoneAt') ?? ''));
     // Reemplazar las mutaciones existentes con los hooks personalizados
     const createPreventive = useCreatePreventive();
     const updatePreventive = useUpdatePreventive();
@@ -468,7 +466,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -511,7 +509,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
