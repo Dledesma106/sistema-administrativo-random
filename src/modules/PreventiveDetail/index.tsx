@@ -102,11 +102,7 @@ const Content: React.FC<Props> = ({ preventive }) => {
                 {preventive.frequency && (
                     <div>
                         <Title>Frecuencia</Title>
-                        <p>
-                            {preventive.frequency > 1
-                                ? `Cada ${preventive.frequency} meses`
-                                : 'Todos los meses'}
-                        </p>
+                        <p>{preventive.frequency}</p>
                     </div>
                 )}
 

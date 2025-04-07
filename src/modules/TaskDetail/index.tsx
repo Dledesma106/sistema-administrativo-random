@@ -8,7 +8,7 @@ import { BsPlus } from 'react-icons/bs';
 
 import { expenseColumns } from './columns';
 
-import { GetTaskQuery, TaskStatus } from '@/api/graphql';
+import { GetTaskQuery, TaskStatus, TaskType } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
 import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
 import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
@@ -33,6 +33,11 @@ const Content: React.FC<Props> = ({ task }) => {
     const { user } = useUserContext();
     const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
     const router = useRouter();
+
+    const link =
+        task.taskType === TaskType.Preventivo
+            ? routesBuilder.preventives.details(task.preventive?.id ?? '')
+            : undefined;
 
     return (
         <main className="rounded-lg border border-accent bg-background-primary p-4">
@@ -87,7 +92,11 @@ const Content: React.FC<Props> = ({ task }) => {
 
                 <div>
                     <Title>Tipo de tarea</Title>
-                    <TaskTypeBadge type={task.taskType} />
+                    <TaskTypeBadge
+                        type={task.taskType}
+                        link={link}
+                        frequency={task.preventive?.frequency ?? undefined}
+                    />
                 </div>
 
                 {task.branch ? (

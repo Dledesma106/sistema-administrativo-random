@@ -166,7 +166,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 input: {
                     auditor: null,
                     branch: form.branch ?? null,
-                    business: form.business === 'Otro' ? null : (form.business ?? null),
+                    business: form.business === 'Otro' ? null : form.business ?? null,
                     clientName: form.clientName ?? null,
                     businessName: form.businessName ?? null,
                     description: form.description,
@@ -231,7 +231,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 input: {
                     auditor: null,
                     branch: form.branch ?? null,
-                    business: form.business === 'Otro' ? null : (form.business ?? null),
+                    business: form.business === 'Otro' ? null : form.business ?? null,
                     clientName: form.clientName ?? null,
                     businessName: form.businessName ?? null,
                     description: form.description,

@@ -513,7 +513,7 @@ export type Preventive = {
     batteryChangedAt: Maybe<Scalars['DateTime']>;
     branch: Branch;
     business: Business;
-    frequency: Scalars['Int'];
+    frequency: Maybe<PreventiveFrequency>;
     id: Scalars['ID'];
     lastDoneAt: Maybe<Scalars['DateTime']>;
     months: Array<Scalars['String']>;
@@ -529,12 +529,22 @@ export type PreventiveCrudRef = {
     success: Scalars['Boolean'];
 };
 
+export const PreventiveFrequency = {
+    Bimestral: 'Bimestral',
+    Cuatrimestral: 'Cuatrimestral',
+    Mensual: 'Mensual',
+    Semestral: 'Semestral',
+    Trimestral: 'Trimestral',
+} as const;
+
+export type PreventiveFrequency =
+    (typeof PreventiveFrequency)[keyof typeof PreventiveFrequency];
 export type PreventiveInput = {
     assignedIds: Array<Scalars['String']>;
     batteryChangedAt: InputMaybe<Scalars['DateTime']>;
     branchId: Scalars['String'];
     businessId: Scalars['String'];
-    frequency: Scalars['Int'];
+    frequency: InputMaybe<PreventiveFrequency>;
     lastDoneAt: InputMaybe<Scalars['DateTime']>;
     months: Array<Scalars['String']>;
     observations: InputMaybe<Scalars['String']>;
@@ -820,6 +830,7 @@ export type Task = {
     observations: Maybe<Scalars['String']>;
     openedAt: Scalars['DateTime'];
     participants: Array<Scalars['String']>;
+    preventive: Maybe<Preventive>;
     startedAt: Maybe<Scalars['DateTime']>;
     status: TaskStatus;
     taskNumber: Scalars['Int'];
@@ -1524,7 +1535,7 @@ export type GetPreventivesQuery = {
         id: string;
         lastDoneAt: any | null;
         batteryChangedAt: any | null;
-        frequency: number;
+        frequency: PreventiveFrequency | null;
         months: Array<string>;
         observations: string | null;
         status: PreventiveStatus;
@@ -1556,7 +1567,7 @@ export type GetPreventiveQuery = {
         id: string;
         lastDoneAt: any | null;
         batteryChangedAt: any | null;
-        frequency: number;
+        frequency: PreventiveFrequency | null;
         months: Array<string>;
         observations: string | null;
         status: PreventiveStatus;
@@ -1715,6 +1726,11 @@ export type TasksQuery = {
         clientName: string | null;
         taskType: TaskType;
         status: TaskStatus;
+        preventive: {
+            __typename?: 'Preventive';
+            id: string;
+            frequency: PreventiveFrequency | null;
+        } | null;
         business: { __typename?: 'Business'; id: string; name: string } | null;
         branch: {
             __typename?: 'Branch';
@@ -1756,6 +1772,11 @@ export type GetTaskQuery = {
         taskType: TaskType;
         status: TaskStatus;
         movitecTicket: string | null;
+        preventive: {
+            __typename?: 'Preventive';
+            id: string;
+            frequency: PreventiveFrequency | null;
+        } | null;
         business: { __typename?: 'Business'; id: string; name: string } | null;
         images: Array<{ __typename?: 'Image'; id: string; url: string }>;
         branch: {
@@ -6924,6 +6945,26 @@ export const TasksDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'preventive' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'frequency',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'business' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -7215,6 +7256,26 @@ export const GetTaskDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'businessName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'preventive' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'frequency',
+                                                },
+                                            },
+                                        ],
+                                    },
                                 },
                                 {
                                     kind: 'Field',

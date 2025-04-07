@@ -8,6 +8,7 @@ import { TasksQuery } from '@/api/graphql';
 import { Badge } from '@/components/ui/Badges/badge';
 import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
 import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
+import { routesBuilder } from '@/lib/routes';
 
 type Task = TasksQuery['tasks'][number];
 
@@ -144,7 +145,7 @@ export const useTasksTableColumns = () => [
             return true;
         },
     }),
-    columnHelper.accessor((row) => row.taskType, {
+    columnHelper.accessor((row) => row, {
         id: 'taskType',
         header: 'Tipo',
         filterFn: (row, id, types: TaskType[]) => {
@@ -158,8 +159,12 @@ export const useTasksTableColumns = () => [
             return taskIsInFilteredList;
         },
         cell: (info) => {
-            const type = info.getValue();
-            return <TaskTypeBadge type={type} />;
+            const type = info.row.original.taskType;
+            const frequency = info.row.original.preventive?.frequency ?? undefined;
+            const link = routesBuilder.preventives.details(
+                info.row.original.preventive?.id ?? '',
+            );
+            return <TaskTypeBadge type={type} link={link} frequency={frequency} />;
         },
     }),
     columnHelper.accessor((row) => row.status, {
