@@ -2,8 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { DownloadIcon } from '@radix-ui/react-icons';
 import dayjs from 'dayjs';
+import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
@@ -195,15 +195,14 @@ const Content: React.FC<Props> = ({ expense }) => {
                     {expense.images && expense.images.length > 0 && (
                         <div>
                             <Title>Imágenes</Title>
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                 {expense.images.map((image) => (
                                     <a
                                         key={image.id}
                                         className="group relative block overflow-hidden rounded-md border border-accent"
-                                        download={image.id}
                                         href={image.url}
                                         target="_blank"
-                                        rel="noreferrer"
+                                        rel="noopener noreferrer"
                                     >
                                         <Image
                                             src={image.url}
@@ -213,7 +212,7 @@ const Content: React.FC<Props> = ({ expense }) => {
                                             className="aspect-[5/7] w-full object-cover"
                                         />
                                         <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 opacity-0 transition-colors duration-200 group-hover:bg-background/90 group-hover:opacity-100">
-                                            <DownloadIcon className="h-6 w-6" />
+                                            <Eye className="size-6" />
                                         </div>
                                     </a>
                                 ))}
@@ -227,11 +226,35 @@ const Content: React.FC<Props> = ({ expense }) => {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {expense.files.map((file) => (
                                     <div key={file.id}>
-                                        {file.mimeType.startsWith('application/pdf') ? (
+                                        {file.mimeType &&
+                                        file.mimeType.startsWith('image/') ? (
+                                            <div className="group relative aspect-square overflow-hidden rounded-md border border-accent">
+                                                <Image
+                                                    src={file.url}
+                                                    alt={file.filename || ''}
+                                                    fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                    className="object-contain transition-all duration-300"
+                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/60 group-hover:opacity-100">
+                                                    <div className="flex gap-2">
+                                                        <a
+                                                            href={file.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="rounded-full bg-white p-3 text-black transition-transform hover:scale-110"
+                                                        >
+                                                            <Eye className="size-5" />
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : file.mimeType &&
+                                          file.mimeType.startsWith('application/pdf') ? (
                                             <div className="h-[600px] w-full">
                                                 <PDFViewer
                                                     url={file.url}
-                                                    filename={file.filename}
+                                                    filename={file.filename || ''}
                                                     showPreviewButton={false}
                                                 />
                                             </div>
@@ -245,9 +268,9 @@ const Content: React.FC<Props> = ({ expense }) => {
                                                     className="inline-flex items-center gap-2"
                                                     href={file.url}
                                                     target="_blank"
-                                                    rel="noreferrer"
+                                                    rel="noopener noreferrer"
                                                 >
-                                                    <DownloadIcon />
+                                                    <Eye className="size-5" />
                                                     {file.filename}
                                                 </a>
                                             </Button>

@@ -1,4 +1,4 @@
-import { Preventive, PreventiveStatus } from '@prisma/client';
+import { Preventive, PreventiveStatus, PreventiveFrequency } from '@prisma/client';
 
 import { builder } from '../../builder';
 
@@ -6,6 +6,12 @@ import { builder } from '../../builder';
 export const PreventiveStatusRef = builder.enumType('PreventiveStatus', {
     values: Object.fromEntries(
         Object.entries(PreventiveStatus).map(([key, value]) => [key, { value }]),
+    ),
+});
+
+export const PreventiveFrequencyRef = builder.enumType('PreventiveFrequency', {
+    values: Object.fromEntries(
+        Object.entries(PreventiveFrequency).map(([key, value]) => [key, { value }]),
     ),
 });
 
@@ -22,7 +28,10 @@ export const PreventiveRef = builder.prismaObject('Preventive', {
             nullable: true,
             resolve: (root) => root.batteryChangedAt,
         }),
-        frequency: t.exposeInt('frequency'),
+        frequency: t.expose('frequency', {
+            type: PreventiveFrequencyRef,
+            nullable: true,
+        }),
         months: t.exposeStringList('months'),
         observations: t.exposeString('observations', { nullable: true }),
         status: t.expose('status', { type: PreventiveStatusRef }),
@@ -43,7 +52,10 @@ export const PreventiveInputRef = builder.inputType('PreventiveInput', {
             type: 'DateTime',
             required: false,
         }),
-        frequency: t.int({ required: true }),
+        frequency: t.field({
+            type: PreventiveFrequencyRef,
+            required: false,
+        }),
         months: t.stringList({ required: true }),
         observations: t.string({ required: false }),
         status: t.field({

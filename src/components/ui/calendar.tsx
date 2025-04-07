@@ -16,7 +16,7 @@ function Calendar({
     return (
         <DayPicker
             showOutsideDays={showOutsideDays}
-            className={cn('p-3 bg-background text-foreground', className)}
+            className={cn('bg-background p-3 text-foreground', className)}
             classNames={{
                 months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
                 month: 'space-y-4',
@@ -40,7 +40,7 @@ function Calendar({
                     'h-9 w-9 m-[2px] text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md',
                     '[&:has([aria-selected].day-outside)]:bg-accent/50',
                     'first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md',
-                    'focus-within:relative focus-within:z-20'
+                    'focus-within:relative focus-within:z-20',
                 ),
                 day: cn(
                     buttonVariants({

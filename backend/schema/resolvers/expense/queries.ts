@@ -1,4 +1,4 @@
-import { Expense } from '@prisma/client';
+import { Expense, Prisma } from '@prisma/client';
 
 import {
     ExpenseStatusPothosRef,
@@ -150,8 +150,14 @@ builder.queryFields((t) => ({
             }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
+            orderBy: t.arg.string({ required: false }),
+            orderDirection: t.arg.string({ required: false }),
         },
-        resolve: async (query, _parent, { skip, take, ...filters }) => {
+        resolve: async (
+            query,
+            _parent,
+            { skip, take, orderBy, orderDirection, ...filters },
+        ) => {
             const startDate = filters.expenseDateFrom;
             const endDate = filters.expenseDateTo;
             if (startDate) {
@@ -160,6 +166,34 @@ builder.queryFields((t) => ({
             if (endDate) {
                 endDate.setHours(23, 59, 59, 999);
             }
+
+            const sortDirection =
+                orderDirection?.toLowerCase() === 'asc'
+                    ? Prisma.SortOrder.asc
+                    : Prisma.SortOrder.desc;
+
+            let orderConfig = {};
+
+            if (orderBy) {
+                if (orderBy === 'registeredBy') {
+                    orderConfig = {
+                        registeredBy: {
+                            fullName: sortDirection,
+                        },
+                    };
+                } else if (orderBy === 'task') {
+                    orderConfig = {
+                        task: {
+                            taskNumber: sortDirection,
+                        },
+                    };
+                } else {
+                    orderConfig = { [orderBy]: sortDirection };
+                }
+            } else {
+                orderConfig = { expenseDate: Prisma.SortOrder.desc };
+            }
+
             return prisma.expense.findManyUndeleted({
                 ...query,
                 where: {
@@ -187,7 +221,7 @@ builder.queryFields((t) => ({
                 },
                 skip: skip || 0,
                 take: take || 10,
-                orderBy: { createdAt: 'desc' },
+                orderBy: orderConfig,
             });
         },
     }),

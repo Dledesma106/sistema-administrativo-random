@@ -7,6 +7,7 @@ import { CalendarIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { PreventiveFrequency } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { FancyMultiSelect } from '@/components/MultiSelect';
@@ -53,7 +54,7 @@ type FormValues = {
         label: string;
         value: string;
     }[];
-    frequency?: number | null;
+    frequency?: PreventiveFrequency | null;
     observations: string | null;
     months: {
         label: string;
@@ -130,8 +131,6 @@ const CreateOrUpdatePreventiveForm = ({
     });
     const { watch, setValue } = form;
     const { triggerAlert } = useAlert();
-    console.log(watch('lastDoneAt'));
-    console.log(new Date(watch('lastDoneAt') ?? ''));
     // Reemplazar las mutaciones existentes con los hooks personalizados
     const createPreventive = useCreatePreventive();
     const updatePreventive = useUpdatePreventive();
@@ -178,7 +177,7 @@ const CreateOrUpdatePreventiveForm = ({
             assignedIds: form.assigned.map((technician) => technician.value),
             branchId: form.branch ?? '',
             businessId: form.business ?? '',
-            frequency: form.frequency ?? 0,
+            frequency: form.frequency ?? null,
             lastDoneAt: form.lastDoneAt ? form.lastDoneAt : null,
             batteryChangedAt: form.batteryChangedAt ? form.batteryChangedAt : null,
             months: form.months.map((month) => month.value),
@@ -390,27 +389,44 @@ const CreateOrUpdatePreventiveForm = ({
                         control={form.control}
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Frecuencia (meses)</FormLabel>
+                                <FormLabel>Frecuencia</FormLabel>
                                 <FormControl>
                                     <Combobox
                                         selectPlaceholder="Seleccione la frecuencia"
                                         searchPlaceholder="Buscar frecuencia"
-                                        value={field.value?.toString() ?? ''}
+                                        value={field.value ?? ''}
                                         onChange={(value) => {
-                                            const numValue = value
-                                                ? parseInt(value)
-                                                : null;
-                                            field.onChange(numValue);
-                                            if (numValue) {
+                                            field.onChange(
+                                                value
+                                                    ? (value as PreventiveFrequency)
+                                                    : null,
+                                            );
+                                            if (value) {
                                                 form.setValue('months', []);
                                             }
                                         }}
-                                        items={Array.from({ length: 12 }, (_, i) => ({
-                                            label: `${i + 1} ${
-                                                i + 1 === 1 ? 'mes' : 'meses'
-                                            }`,
-                                            value: (i + 1).toString(),
-                                        }))}
+                                        items={[
+                                            {
+                                                label: 'Mensual',
+                                                value: PreventiveFrequency.Mensual,
+                                            },
+                                            {
+                                                label: 'Bimestral',
+                                                value: PreventiveFrequency.Bimestral,
+                                            },
+                                            {
+                                                label: 'Trimestral',
+                                                value: PreventiveFrequency.Trimestral,
+                                            },
+                                            {
+                                                label: 'Cuatrimestral',
+                                                value: PreventiveFrequency.Cuatrimestral,
+                                            },
+                                            {
+                                                label: 'Semestral',
+                                                value: PreventiveFrequency.Semestral,
+                                            },
+                                        ]}
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -468,7 +484,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -511,7 +527,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>

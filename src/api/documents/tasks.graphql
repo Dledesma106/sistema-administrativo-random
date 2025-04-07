@@ -26,6 +26,10 @@ query tasks(
         closedAt
         description
         participants
+        preventive {
+            id
+            frequency
+        }
         business {
             id
             name
@@ -81,6 +85,10 @@ query GetTask($id: String!) {
         observations
         clientName
         businessName
+        preventive {
+            id
+            frequency
+        }
         business {
             id
             name

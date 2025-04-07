@@ -18,7 +18,7 @@ export function TaskReportButton({ table }: Props) {
                 Generar Reporte de Tareas
             </Button>
 
-            <TaskReportModal 
+            <TaskReportModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 filters={table.getState().columnFilters}

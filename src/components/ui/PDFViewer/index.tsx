@@ -9,11 +9,11 @@ interface PDFViewerProps {
     className?: string;
 }
 
-export const PDFViewer = ({ 
-    url, 
+export const PDFViewer = ({
+    url,
     filename = 'Documento PDF',
     showPreviewButton = true,
-    className = "h-[600px] w-full max-w-3xl"
+    className = 'h-[600px] w-full max-w-3xl',
 }: PDFViewerProps) => {
     if (showPreviewButton) {
         return (
@@ -29,7 +29,10 @@ export const PDFViewer = ({
                             Ver PDF
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl border-accent" onClick={(e) => e.stopPropagation()}>
+                    <DialogContent
+                        className="max-w-4xl border-accent"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <iframe
                             src={url}
                             className={className}
@@ -54,4 +57,4 @@ export const PDFViewer = ({
             allow="fullscreen"
         />
     );
-}; 
+};

@@ -67,7 +67,7 @@ export const expenseColumns: Column<Expense>[] = [
                     {expense.images.map((image) => (
                         <a
                             key={image.id}
-                            className="h-15 group relative inline-block w-20 overflow-hidden rounded-md border border-accent"
+                            className="group relative inline-block h-14 w-20 overflow-hidden rounded-md border border-accent"
                             download={image.id}
                             href={image.url}
                             target="_blank"
@@ -78,10 +78,10 @@ export const expenseColumns: Column<Expense>[] = [
                                 width={40}
                                 height={40}
                                 alt=""
-                                className="h-full w-full object-cover"
+                                className="size-full object-cover"
                             />
                             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                <DownloadIcon className="h-4 w-4" />
+                                <DownloadIcon className="size-4" />
                             </div>
                         </a>
                     ))}
@@ -111,7 +111,7 @@ export const expenseColumns: Column<Expense>[] = [
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    <DownloadIcon className="mr-2 h-4 w-4" />
+                                    <DownloadIcon className="size-4 mr-2" />
                                     {file.filename}
                                 </a>
                             </Button>

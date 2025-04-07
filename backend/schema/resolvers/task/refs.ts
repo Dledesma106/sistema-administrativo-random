@@ -65,6 +65,7 @@ export const TaskPothosRef = builder.prismaObject('Task', {
             nullable: true,
             resolve: (root) => root.deletedAt,
         }),
+        preventive: t.relation('preventive', { nullable: true }),
         status: t.field({
             type: TaskStatusPothosRef,
             resolve: (root) => root.status as TaskStatus,

@@ -15,9 +15,8 @@ export default function AuthenticationPage() {
     useEffect(() => {
         const logOut = query.logout;
         if (logOut) {
-            logoutMutation.mutateAsync().then(() => {
-                logoutUser();
-            });
+            logoutMutation.mutateAsync();
+            logoutUser();
         }
     }, [query]);
 
