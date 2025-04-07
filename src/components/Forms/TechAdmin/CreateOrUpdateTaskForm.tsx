@@ -134,7 +134,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
     const selectedBusiness =
         watchedBusiness && selectedBranch
             ? selectedBranch.businesses.find(
-                  (business) => business.id === watchedBusiness,
+                  (business) => business.id === watchedBusiness
               )
             : null;
 
@@ -166,9 +166,11 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 input: {
                     auditor: null,
                     branch: form.branch ?? null,
-                    business: form.business === 'Otro' ? null : form.business ?? null,
+                    // eslint-disable-next-line prettier/prettier
+                    business: form.business === 'Otro' ? null : (form.business ?? null),
                     clientName: form.clientName ?? null,
-                    businessName: form.businessName ?? null,
+                    // eslint-disable-next-line prettier/prettier
+                    businessName: (form.businessName ?? null),
                     description: form.description,
                     taskType: form.taskType,
                     actNumber: form.actNumber,
@@ -343,7 +345,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                                                     .filter(
                                                         (branch) =>
                                                             branch.client.id ===
-                                                            form.watch('client'),
+                                                            form.watch('client')
                                                     )
                                                     .map((branch) => ({
                                                         label: `${branch.number}, ${branch.city.name}`,
@@ -489,7 +491,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                                                 ([key, value]) => ({
                                                     label: key,
                                                     value: value,
-                                                }),
+                                                })
                                             )}
                                         />
                                     </FormControl>
