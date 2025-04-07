@@ -5,30 +5,5 @@
     "printWidth": 90,
     "plugins": ["prettier-plugin-tailwindcss"],
     "tailwindFunctions": ["clsx"],
-    "endOfLine": "auto",
-    "operatorLinebreak": "before",
-    "bracketSpacing": true,
-    "arrowParens": "always",
-    "proseWrap": "preserve",
-    "quoteProps": "as-needed",
-    "semi": true,
-    "trailingComma": "es5",
-    "bracketSameLine": false,
-    "jsxSingleQuote": false,
-    "jsxBracketSameLine": false,
-    "requirePragma": false,
-    "insertPragma": false,
-    "vueIndentScriptAndStyle": false,
-    "embeddedLanguageFormatting": "auto",
-    "singleAttributePerLine": false,
-    "htmlWhitespaceSensitivity": "css",
-    "overrides": [
-        {
-            "files": "*.ts",
-            "options": {
-                "parser": "typescript",
-                "operatorLinebreak": "before"
-            }
-        }
-    ]
+    "endOfLine": "auto"
 }
