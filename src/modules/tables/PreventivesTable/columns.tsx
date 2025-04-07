@@ -112,11 +112,7 @@ export const PREVENTIVES_TABLE_COLUMNS = [
         cell: (props) => {
             const preventive = props.row.original;
 
-            return preventive.frequency
-                ? preventive.frequency > 1
-                    ? `Cada ${preventive.frequency} meses`
-                    : 'Todos los meses'
-                : '';
+            return preventive.frequency ?? '-';
         },
     }),
     columnHelper.accessor('months', {
