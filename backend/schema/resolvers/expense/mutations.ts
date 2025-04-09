@@ -56,7 +56,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             compositeRules: [
                 { and: ['IsAuthenticated'] },
                 {
-                    or: ['IsTecnico', 'IsAdministrativoContable', 'IsAuditor'],
+                    or: ['IsTecnico', 'IsAdministrativoContable'],
                 },
             ],
         },
@@ -135,7 +135,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             compositeRules: [
                 { and: ['IsAuthenticated'] },
                 {
-                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
+                    or: ['IsAdministrativoContable', 'IsTecnico'],
                 },
             ],
         },
