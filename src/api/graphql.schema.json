@@ -3065,18 +3065,6 @@
                                 "deprecationReason": null
                             },
                             {
-                                "name": "filters",
-                                "description": null,
-                                "type": {
-                                    "kind": "SCALAR",
-                                    "name": "JSON",
-                                    "ofType": null
-                                },
-                                "defaultValue": null,
-                                "isDeprecated": false,
-                                "deprecationReason": null
-                            },
-                            {
                                 "name": "startDate",
                                 "description": null,
                                 "type": {
@@ -3113,28 +3101,12 @@
                                 "name": "endDate",
                                 "description": null,
                                 "type": {
-                                    "kind": "SCALAR",
-                                    "name": "DateTime",
-                                    "ofType": null
-                                },
-                                "defaultValue": null,
-                                "isDeprecated": false,
-                                "deprecationReason": null
-                            },
-                            {
-                                "name": "filters",
-                                "description": null,
-                                "type": {
-                                    "kind": "LIST",
+                                    "kind": "NON_NULL",
                                     "name": null,
                                     "ofType": {
-                                        "kind": "NON_NULL",
-                                        "name": null,
-                                        "ofType": {
-                                            "kind": "INPUT_OBJECT",
-                                            "name": "TaskReportFilterInput",
-                                            "ofType": null
-                                        }
+                                        "kind": "SCALAR",
+                                        "name": "DateTime",
+                                        "ofType": null
                                     }
                                 },
                                 "defaultValue": null,
@@ -3145,9 +3117,13 @@
                                 "name": "startDate",
                                 "description": null,
                                 "type": {
-                                    "kind": "SCALAR",
-                                    "name": "DateTime",
-                                    "ofType": null
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "DateTime",
+                                        "ofType": null
+                                    }
                                 },
                                 "defaultValue": null,
                                 "isDeprecated": false,
@@ -7675,49 +7651,6 @@
                             "ofType": {
                                 "kind": "ENUM",
                                 "name": "TaskType",
-                                "ofType": null
-                            }
-                        },
-                        "defaultValue": null,
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    }
-                ],
-                "interfaces": null,
-                "enumValues": null,
-                "possibleTypes": null
-            },
-            {
-                "kind": "INPUT_OBJECT",
-                "name": "TaskReportFilterInput",
-                "description": null,
-                "fields": null,
-                "inputFields": [
-                    {
-                        "name": "id",
-                        "description": null,
-                        "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "String",
-                                "ofType": null
-                            }
-                        },
-                        "defaultValue": null,
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
-                    {
-                        "name": "value",
-                        "description": null,
-                        "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "JSON",
                                 "ofType": null
                             }
                         },

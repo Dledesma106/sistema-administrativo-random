@@ -16,31 +16,6 @@ import { prisma } from 'lib/prisma';
 
 import { calculateRowHeight } from '../../utils';
 
-function buildWhereClause(filters: any) {
-    const whereClause: any = {};
-
-    filters.forEach((filter: { id: string; value: any }) => {
-        switch (filter.id) {
-            case 'registeredBy':
-                whereClause.registeredBy = { id: { in: filter.value } };
-                break;
-            case 'expenseStatus':
-                whereClause.status = { in: filter.value };
-                break;
-            case 'expenseType':
-                whereClause.expenseType = { in: filter.value };
-                break;
-            case 'paySource':
-                whereClause.paySource = { in: filter.value };
-                break;
-            default:
-                break;
-        }
-    });
-
-    return whereClause;
-}
-
 export const ExpenseMutations = builder.mutationFields((t) => ({
     deleteExpense: t.field({
         type: ExpenseCrudResultPothosRef,
@@ -357,7 +332,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
+                    or: ['IsAdministrativoContable'],
                 },
             ],
         },
@@ -412,18 +387,14 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 type: 'DateTime',
                 required: true,
             }),
-            filters: t.arg({
-                type: 'JSON',
-                required: false,
-            }),
         },
         authz: {
             compositeRules: [
                 { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'] },
+                { or: ['IsAdministrativoContable'] },
             ],
         },
-        resolve: async (root, { startDate, endDate, filters }) => {
+        resolve: async (root, { startDate, endDate }) => {
             console.log(startDate, endDate);
             if (startDate) {
                 startDate.setHours(0, 0, 0, 0);
@@ -438,7 +409,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         gte: startDate,
                         lte: endDate,
                     },
-                    ...(filters && buildWhereClause(filters)),
                 };
 
                 const expenses = await prisma.expense.findMany({
@@ -653,7 +623,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     and: ['IsAuthenticated'],
                 },
                 {
-                    or: ['IsAdministrativoContable', 'IsAdministrativoTecnico'],
+                    or: ['IsAdministrativoContable'],
                 },
             ],
         },

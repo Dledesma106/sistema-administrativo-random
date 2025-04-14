@@ -2,14 +2,8 @@ import { Button } from '@/components/ui/button';
 import { TaskReportModal } from '@/components/Modals/TaskReportModal';
 
 import { useState } from 'react';
-import { Table } from '@tanstack/react-table';
-import { TasksQuery } from '@/api/graphql';
 
-type Props = {
-    table: Table<NonNullable<TasksQuery['tasks']>[number]>;
-};
-
-export function TaskReportButton({ table }: Props) {
+export function TaskReportButton() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
@@ -21,7 +15,6 @@ export function TaskReportButton({ table }: Props) {
             <TaskReportModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                filters={table.getState().columnFilters}
             />
         </>
     );
