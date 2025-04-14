@@ -179,11 +179,9 @@ export const AuthMutations = builder.mutationFields((t) => ({
             }),
         },
         authz: {
-            rules: [
-                'IsTecnico',
-                'IsAdministrativoContable',
-                'IsAdministrativoTecnico',
-                'IsAuditor',
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoTecnico'] },
             ],
         },
         resolve: async (_parent, args) => {

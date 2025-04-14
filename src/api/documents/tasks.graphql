@@ -201,11 +201,9 @@ mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
 mutation GenerateApprovedTasksReport(
     $startDate: DateTime!
     $endDate: DateTime!
-    $filters: [TaskReportFilterInput!]!
 ) {
     generateApprovedTasksReport(
         startDate: $startDate
         endDate: $endDate
-        filters: $filters
     )
 }

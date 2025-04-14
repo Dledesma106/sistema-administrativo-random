@@ -399,14 +399,12 @@ export type MutationFinishTaskArgs = {
 
 export type MutationGenerateApprovedExpensesReportArgs = {
     endDate: Scalars['DateTime'];
-    filters: InputMaybe<Scalars['JSON']>;
     startDate: Scalars['DateTime'];
 };
 
 export type MutationGenerateApprovedTasksReportArgs = {
-    endDate: InputMaybe<Scalars['DateTime']>;
-    filters: InputMaybe<Array<TaskReportFilterInput>>;
-    startDate: InputMaybe<Scalars['DateTime']>;
+    endDate: Scalars['DateTime'];
+    startDate: Scalars['DateTime'];
 };
 
 export type MutationGenerateUploadUrlsArgs = {
@@ -857,11 +855,6 @@ export type TaskInput = {
     description: Scalars['String'];
     movitecTicket: InputMaybe<Scalars['String']>;
     taskType: TaskType;
-};
-
-export type TaskReportFilterInput = {
-    id: Scalars['String'];
-    value: Scalars['JSON'];
 };
 
 export const TaskStatus = {
@@ -1408,7 +1401,6 @@ export type DeleteExpenseMutation = {
 export type GenerateApprovedExpensesReportMutationVariables = Exact<{
     startDate: Scalars['DateTime'];
     endDate: Scalars['DateTime'];
-    filters: InputMaybe<Scalars['JSON']>;
 }>;
 
 export type GenerateApprovedExpensesReportMutation = {
@@ -1894,7 +1886,6 @@ export type UpdateTaskStatusMutation = {
 export type GenerateApprovedTasksReportMutationVariables = Exact<{
     startDate: Scalars['DateTime'];
     endDate: Scalars['DateTime'];
-    filters: Array<TaskReportFilterInput>;
 }>;
 
 export type GenerateApprovedTasksReportMutation = {
@@ -4973,14 +4964,6 @@ export const GenerateApprovedExpensesReportDocument = {
                         },
                     },
                 },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'filters' },
-                    },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'JSON' } },
-                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -5003,14 +4986,6 @@ export const GenerateApprovedExpensesReportDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'endDate' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'filters' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'filters' },
                                 },
                             },
                         ],
@@ -7996,29 +7971,6 @@ export const GenerateApprovedTasksReportDocument = {
                         },
                     },
                 },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'filters' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'ListType',
-                            type: {
-                                kind: 'NonNullType',
-                                type: {
-                                    kind: 'NamedType',
-                                    name: {
-                                        kind: 'Name',
-                                        value: 'TaskReportFilterInput',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -8041,14 +7993,6 @@ export const GenerateApprovedTasksReportDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'endDate' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'filters' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'filters' },
                                 },
                             },
                         ],

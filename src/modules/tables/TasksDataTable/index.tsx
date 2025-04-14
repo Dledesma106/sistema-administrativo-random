@@ -142,9 +142,8 @@ export default function TasksDataTable(props: Props): JSX.Element {
             onRowClick={(row) => router.push(routesBuilder.tasks.details(row.id))}
             headerActions={
                 <>
-                    {(user.roles.includes(Role.AdministrativoContable) ||
-                        user.roles.includes(Role.Auditor)) && (
-                        <TaskReportButton table={table} />
+                    {user.roles.includes(Role.AdministrativoContable) && (
+                        <TaskReportButton />
                     )}
                     {user.roles.includes(Role.AdministrativoTecnico) && (
                         <Button

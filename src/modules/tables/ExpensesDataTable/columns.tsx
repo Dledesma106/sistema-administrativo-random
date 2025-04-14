@@ -197,7 +197,6 @@ export const useExpensesTableColumns = () => [
         cell: (info) => {
             const expense = info.row.original;
             const expenseDate = new Date(expense.expenseDate);
-            expenseDate.setHours(0, 0, 0, 0);
             return (
                 <span className="block text-left">
                     {format(expenseDate, 'dd/MM/yyyy')}

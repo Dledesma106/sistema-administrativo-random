@@ -17,47 +17,6 @@ import { builder } from 'backend/schema/builder';
 import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
-function buildWhereClause(filters: any): any {
-    const whereClause: any = {};
-
-    filters.forEach((filter: { id: string; value: any }) => {
-        switch (filter.id) {
-            case 'client':
-                whereClause['branch.client.id'] = filter.value;
-                break;
-            case 'branch':
-                whereClause['branch.city.id'] = filter.value;
-                break;
-            case 'business':
-                whereClause['business.id'] = filter.value;
-                break;
-            case 'assigned':
-                whereClause['assigned.some'] = { id: { in: filter.value } };
-                break;
-            case 'taskStatus':
-                whereClause['status'] = { in: filter.value };
-                break;
-            case 'taskType':
-                whereClause['taskType'] = { in: filter.value };
-                break;
-            default:
-                break;
-        }
-    });
-
-    return whereClause;
-}
-
-const TaskReportFilterInput = builder.inputType('TaskReportFilterInput', {
-    fields: (t) => ({
-        id: t.string({ required: true }),
-        value: t.field({
-            type: 'JSON',
-            required: true,
-        }),
-    }),
-});
-
 /**
  * Genera un nuevo número de tarea basado en el último número existente
  * @returns Número de tarea generado
@@ -1002,28 +961,24 @@ builder.mutationFields((t) => ({
     generateApprovedTasksReport: t.field({
         type: 'String',
         args: {
-            filters: t.arg({
-                type: [TaskReportFilterInput],
-                required: false,
-            }),
             startDate: t.arg({
                 type: 'DateTime',
-                required: false,
+                required: true,
             }),
             endDate: t.arg({
                 type: 'DateTime',
-                required: false,
+                required: true,
             }),
         },
         authz: {
             compositeRules: [
                 { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoTecnico'] },
+                { or: ['IsAdministrativoContable'] },
             ],
         },
         resolve: async (root, args, _context, _info) => {
             try {
-                const { filters, startDate, endDate } = args;
+                const { startDate, endDate } = args;
 
                 console.log(startDate, endDate);
                 if (startDate) {
@@ -1034,30 +989,14 @@ builder.mutationFields((t) => ({
                 }
 
                 // Construir la cláusula where
-                let whereClause: any = {
+                const whereClause = {
                     deleted: false,
                     status: TaskStatus.Aprobada, // Solo tareas aprobadas
+                    closedAt: {
+                        gte: startDate,
+                        lte: endDate,
+                    },
                 };
-
-                // Agregar filtros de fecha si se proporcionan
-                if (startDate || endDate) {
-                    whereClause.closedAt = {};
-                    if (startDate) {
-                        whereClause.closedAt.gte = startDate;
-                    }
-                    if (endDate) {
-                        whereClause.closedAt.lte = endDate;
-                    }
-                }
-
-                // Agregar filtros adicionales si se proporcionan
-                if (filters && filters.length > 0) {
-                    const additionalFilters = buildWhereClause(filters);
-                    whereClause = {
-                        ...whereClause,
-                        ...additionalFilters,
-                    };
-                }
 
                 // Obtener las tareas con sus relaciones
                 const tasks = await prisma.task.findMany({
@@ -1207,7 +1146,7 @@ builder.mutationFields((t) => ({
 
                     // Obtener nombre de cliente y sucursal
                     const clientName = task.branch?.client?.name || task.clientName || '';
-                    const branchName = task.branch ? `#${task.branch.number}}` : '';
+                    const branchName = task.branch ? `#${task.branch.number}` : '';
 
                     // Agregar fila con los datos
                     worksheet.addRow({

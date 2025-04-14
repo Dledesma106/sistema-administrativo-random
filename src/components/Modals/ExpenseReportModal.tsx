@@ -1,4 +1,3 @@
-import { ColumnFiltersState } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar as CalendarIcon } from 'lucide-react';
@@ -13,10 +12,9 @@ import { useGenerateApprovedExpensesReport } from '@/hooks/api/expenses/useGener
 type Props = {
     isOpen: boolean;
     onClose: () => void;
-    filters: ColumnFiltersState;
 };
 
-export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
+export function ExpenseReportModal({ isOpen, onClose }: Props) {
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
 
@@ -30,7 +28,6 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
         await generateReport({
             startDate: startDate,
             endDate: endDate,
-            filters,
         });
 
         onClose();
@@ -44,7 +41,6 @@ export function ExpenseReportModal({ isOpen, onClose, filters }: Props) {
                 </DialogHeader>
                 <p className="text-sm text-muted-foreground">
                     Selecciona el rango de fechas para los gastos que queres descargar
-                    {filters.length > 0 && ' (se aplicarán los filtros actuales)'}
                 </p>
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
