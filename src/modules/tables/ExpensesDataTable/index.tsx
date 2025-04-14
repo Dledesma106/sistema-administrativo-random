@@ -19,6 +19,7 @@ import {
     ExpenseType,
     GetExpensesQuery,
     GetTechniciansQuery,
+    Role,
 } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -166,10 +167,10 @@ export default function ExpensesDataTable(props: ExpensesDataTableProps): JSX.El
             }
             headerActions={
                 <>
-                    {user.roles.includes('AdministrativoContable') && (
-                        <ExpenseReportButton table={table} />
+                    {user.roles.includes(Role.AdministrativoContable) && (
+                        <ExpenseReportButton />
                     )}
-                    {user.roles.includes('AdministrativoContable') && (
+                    {user.roles.includes(Role.AdministrativoContable) && (
                         <Button
                             className="flex items-center gap-1 pr-6"
                             onClick={() => router.push('/accounting/expenses/create')}
