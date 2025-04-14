@@ -130,7 +130,6 @@ export const PREVENTIVES_TABLE_COLUMNS = [
     }),
     columnHelper.accessor(
         (row) => {
-            console.log(format(new Date(row.lastDoneAt), 'dd/MM/yyyy'));
             return row.lastDoneAt !== null
                 ? format(new Date(row.lastDoneAt), 'dd/MM/yyyy')
                 : '';
