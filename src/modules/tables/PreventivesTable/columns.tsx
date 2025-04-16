@@ -37,6 +37,14 @@ export const PREVENTIVES_TABLE_COLUMNS = [
 
             return <PreventiveStatusBadge status={preventive.status} />;
         },
+        filterFn: (rows, id, ids: string[]) => {
+            if (!ids?.length) {
+                return true;
+            }
+
+            const status = rows.getValue<string>(id);
+            return ids.includes(status);
+        },
     }),
     columnHelper.accessor('branch.city', {
         id: 'city',
@@ -114,6 +122,14 @@ export const PREVENTIVES_TABLE_COLUMNS = [
 
             return preventive.frequency ?? '-';
         },
+        filterFn: (rows, id, ids: string[]) => {
+            if (!ids?.length) {
+                return true;
+            }
+
+            const frequency = rows.getValue<string>(id);
+            return ids.includes(frequency);
+        },
     }),
     columnHelper.accessor('months', {
         header: 'Meses',
@@ -123,6 +139,14 @@ export const PREVENTIVES_TABLE_COLUMNS = [
             return preventive.months.length > 1
                 ? preventive.months.map((month) => `${month}, `)
                 : preventive.months[0];
+        },
+        filterFn: (rows, id, ids: string[]) => {
+            if (!ids?.length) {
+                return true;
+            }
+
+            const months = rows.getValue<string[]>(id);
+            return ids.some((month) => months.includes(month));
         },
     }),
     columnHelper.accessor('observations', {

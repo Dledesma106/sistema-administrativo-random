@@ -5,6 +5,9 @@ query GetPreventives(
     $city: [String!]
     $assigned: [String!]
     $client: [String!]
+    $frequency: [PreventiveFrequency!]
+    $months: [String!]
+    $status: [PreventiveStatus!]
 ) {
     preventives(
         skip: $skip
@@ -13,6 +16,9 @@ query GetPreventives(
         city: $city
         assigned: $assigned
         client: $client
+        frequency: $frequency
+        months: $months
+        status: $status
     ) {
         id
         lastDoneAt
@@ -51,6 +57,9 @@ query GetPreventives(
         city: $city
         assigned: $assigned
         client: $client
+        frequency: $frequency
+        months: $months
+        status: $status
     )
 }
 

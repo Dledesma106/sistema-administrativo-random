@@ -299,6 +299,7 @@ enum PreventiveFrequency {
   Trimestral
   Cuatrimestral
   Semestral
+  Anual
 }
 
 model Preventive {

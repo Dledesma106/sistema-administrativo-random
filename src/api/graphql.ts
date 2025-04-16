@@ -731,7 +731,10 @@ export type QueryPreventivesArgs = {
     business: InputMaybe<Array<Scalars['String']>>;
     city: InputMaybe<Array<Scalars['String']>>;
     client: InputMaybe<Array<Scalars['String']>>;
+    frequency: InputMaybe<Array<PreventiveFrequency>>;
+    months: InputMaybe<Array<Scalars['String']>>;
     skip?: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<Array<PreventiveStatus>>;
     take?: InputMaybe<Scalars['Int']>;
 };
 
@@ -740,6 +743,9 @@ export type QueryPreventivesCountArgs = {
     business: InputMaybe<Array<Scalars['String']>>;
     city: InputMaybe<Array<Scalars['String']>>;
     client: InputMaybe<Array<Scalars['String']>>;
+    frequency: InputMaybe<Array<PreventiveFrequency>>;
+    months: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<Array<PreventiveStatus>>;
 };
 
 export type QueryProvinceArgs = {
@@ -1517,6 +1523,9 @@ export type GetPreventivesQueryVariables = Exact<{
     city: InputMaybe<Array<Scalars['String']>>;
     assigned: InputMaybe<Array<Scalars['String']>>;
     client: InputMaybe<Array<Scalars['String']>>;
+    frequency: InputMaybe<Array<PreventiveFrequency>>;
+    months: InputMaybe<Array<Scalars['String']>>;
+    status: InputMaybe<Array<PreventiveStatus>>;
 }>;
 
 export type GetPreventivesQuery = {
@@ -5636,6 +5645,57 @@ export const GetPreventivesDocument = {
                         },
                     },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'frequency' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'PreventiveFrequency' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'months' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'PreventiveStatus' },
+                            },
+                        },
+                    },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -5690,6 +5750,30 @@ export const GetPreventivesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'client' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'frequency' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'frequency' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'months' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'months' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
                                 },
                             },
                         ],
@@ -5881,6 +5965,30 @@ export const GetPreventivesDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'client' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'frequency' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'frequency' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'months' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'months' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
                                 },
                             },
                         ],
