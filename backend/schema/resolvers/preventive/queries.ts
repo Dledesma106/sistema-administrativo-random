@@ -1,3 +1,5 @@
+import { PreventiveFrequencyRef, PreventiveStatusRef } from './refs';
+
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
@@ -8,30 +10,66 @@ export const PreventiveQueries = builder.queryFields((t) => ({
         args: {
             skip: t.arg.int({ defaultValue: 0 }),
             take: t.arg.int({ defaultValue: 10 }),
-            business: t.arg.stringList(),
-            city: t.arg.stringList(),
-            assigned: t.arg.stringList(),
-            client: t.arg.stringList(),
+            business: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            city: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            assigned: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            client: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            frequency: t.arg({
+                type: [PreventiveFrequencyRef],
+                required: false,
+            }),
+            months: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            status: t.arg({
+                type: [PreventiveStatusRef],
+                required: false,
+            }),
         },
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (
-            query,
-            _parent,
-            { skip, take, business, city, assigned, client },
-        ) => {
+        resolve: async (query, _parent, { skip, take, ...filters }) => {
             return prisma.preventive.findManyUndeleted({
                 ...query,
                 skip: skip || 0,
                 take: take || 10,
                 where: {
-                    AND: [
-                        business ? { businessId: { in: business } } : {},
-                        city ? { branch: { cityId: { in: city } } } : {},
-                        assigned ? { assignedIDs: { hasSome: assigned } } : {},
-                        client ? { branch: { clientId: { in: client } } } : {},
-                    ],
+                    deleted: false,
+                    ...(filters.business?.length && {
+                        businessId: { in: filters.business },
+                    }),
+                    ...(filters.city?.length && {
+                        branch: { cityId: { in: filters.city } },
+                    }),
+                    ...(filters.assigned?.length && {
+                        assignedIDs: { hasSome: filters.assigned },
+                    }),
+                    ...(filters.client?.length && {
+                        branch: { clientId: { in: filters.client } },
+                    }),
+                    ...(filters.frequency?.length && {
+                        frequency: { in: filters.frequency },
+                    }),
+                    ...(filters.months?.length && {
+                        months: { hasSome: filters.months },
+                    }),
+                    ...(filters.status?.length && {
+                        status: { in: filters.status },
+                    }),
                 },
             });
         },
@@ -39,24 +77,63 @@ export const PreventiveQueries = builder.queryFields((t) => ({
 
     preventivesCount: t.int({
         args: {
-            business: t.arg.stringList(),
-            city: t.arg.stringList(),
-            assigned: t.arg.stringList(),
-            client: t.arg.stringList(),
+            business: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            city: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            assigned: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            client: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            frequency: t.arg({
+                type: [PreventiveFrequencyRef],
+                required: false,
+            }),
+            months: t.arg({
+                type: ['String'],
+                required: false,
+            }),
+            status: t.arg({
+                type: [PreventiveStatusRef],
+                required: false,
+            }),
         },
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (_parent, { business, city, assigned, client }) => {
+        resolve: async (_parent, filters) => {
             return prisma.preventive.count({
                 where: {
-                    AND: [
-                        business ? { businessId: { in: business } } : {},
-                        city ? { branch: { cityId: { in: city } } } : {},
-                        assigned ? { assignedIDs: { hasSome: assigned } } : {},
-                        client ? { branch: { clientId: { in: client } } } : {},
-                    ],
                     deleted: false,
+                    ...(filters.business?.length && {
+                        businessId: { in: filters.business },
+                    }),
+                    ...(filters.city?.length && {
+                        branch: { cityId: { in: filters.city } },
+                    }),
+                    ...(filters.assigned?.length && {
+                        assignedIDs: { hasSome: filters.assigned },
+                    }),
+                    ...(filters.client?.length && {
+                        branch: { clientId: { in: filters.client } },
+                    }),
+                    ...(filters.frequency?.length && {
+                        frequency: { in: filters.frequency },
+                    }),
+                    ...(filters.months?.length && {
+                        months: { hasSome: filters.months },
+                    }),
+                    ...(filters.status?.length && {
+                        status: { in: filters.status },
+                    }),
                 },
             });
         },

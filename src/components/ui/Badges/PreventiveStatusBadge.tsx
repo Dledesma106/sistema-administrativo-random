@@ -15,7 +15,7 @@ export function PreventiveStatusBadge({ status }: PreventiveStatusBadgeProps) {
     });
 
     return (
-        <Badge className="gap-2" variant="default">
+        <Badge className="gap-2 min-w-[75px]" variant="default">
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(status))}</span>
         </Badge>
