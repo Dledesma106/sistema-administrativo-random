@@ -34,10 +34,27 @@ builder.queryFields((t) => ({
                 type: [TaskTypePothosRef],
                 required: false,
             }),
+            startDate: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
+            endDate: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
         },
         resolve: async (query, _parent, { skip, take, ...filters }) => {
+            const startDate = filters.startDate;
+            const endDate = filters.endDate;
+            if (startDate) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
+
             return removeDeleted(
                 await prisma.task.findManyUndeleted({
                     ...query,
@@ -60,6 +77,14 @@ builder.queryFields((t) => ({
                         }),
                         ...(filters.assigned?.length && {
                             assignedIDs: { hasSome: filters.assigned },
+                        }),
+                        ...((filters.startDate || filters.endDate) && {
+                            closedAt: {
+                                ...(startDate && {
+                                    gte: startDate,
+                                }),
+                                ...(endDate && { lte: endDate }),
+                            },
                         }),
                     },
                     skip: skip || 0,
@@ -95,8 +120,25 @@ builder.queryFields((t) => ({
                 type: [TaskTypePothosRef],
                 required: false,
             }),
+            startDate: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
+            endDate: t.arg({
+                type: 'DateTime',
+                required: false,
+            }),
         },
         resolve: async (_parent, filters) => {
+            const startDate = filters.startDate;
+            const endDate = filters.endDate;
+            if (startDate) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
+
             return prisma.task.count({
                 where: {
                     deleted: false,
@@ -118,6 +160,14 @@ builder.queryFields((t) => ({
 
                     ...(filters.assigned?.length && {
                         assignedIDs: { hasSome: filters.assigned },
+                    }),
+                    ...((filters.startDate || filters.endDate) && {
+                        closedAt: {
+                            ...(startDate && {
+                                gte: startDate,
+                            }),
+                            ...(endDate && { lte: endDate }),
+                        },
                     }),
                 },
             });
