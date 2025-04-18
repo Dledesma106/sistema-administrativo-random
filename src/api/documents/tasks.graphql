@@ -5,6 +5,8 @@ query tasks(
     $status: [TaskStatus!]
     $client: [String!]
     $taskType: [TaskType!]
+    $startDate: DateTime
+    $endDate: DateTime
     $skip: Int
     $take: Int
 ) {
@@ -15,6 +17,8 @@ query tasks(
         city: $city
         client: $client
         taskType: $taskType
+        startDate: $startDate
+        endDate: $endDate
         skip: $skip
         take: $take
     ) {
@@ -69,6 +73,8 @@ query tasks(
         status: $status
         client: $client
         taskType: $taskType
+        startDate: $startDate
+        endDate: $endDate
     )
 }
 

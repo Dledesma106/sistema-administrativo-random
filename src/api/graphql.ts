@@ -528,6 +528,7 @@ export type PreventiveCrudRef = {
 };
 
 export const PreventiveFrequency = {
+    Anual: 'Anual',
     Bimestral: 'Bimestral',
     Cuatrimestral: 'Cuatrimestral',
     Mensual: 'Mensual',
@@ -771,7 +772,9 @@ export type QueryTasksArgs = {
     business: InputMaybe<Array<Scalars['String']>>;
     city: InputMaybe<Array<Scalars['String']>>;
     client: InputMaybe<Array<Scalars['String']>>;
+    endDate: InputMaybe<Scalars['DateTime']>;
     skip: InputMaybe<Scalars['Int']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
     status: InputMaybe<Array<TaskStatus>>;
     take: InputMaybe<Scalars['Int']>;
     taskType: InputMaybe<Array<TaskType>>;
@@ -782,6 +785,8 @@ export type QueryTasksCountArgs = {
     business: InputMaybe<Array<Scalars['String']>>;
     city: InputMaybe<Array<Scalars['String']>>;
     client: InputMaybe<Array<Scalars['String']>>;
+    endDate: InputMaybe<Scalars['DateTime']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
     status: InputMaybe<Array<TaskStatus>>;
     taskType: InputMaybe<Array<TaskType>>;
 };
@@ -1706,6 +1711,8 @@ export type TasksQueryVariables = Exact<{
     status: InputMaybe<Array<TaskStatus>>;
     client: InputMaybe<Array<Scalars['String']>>;
     taskType: InputMaybe<Array<TaskType>>;
+    startDate: InputMaybe<Scalars['DateTime']>;
+    endDate: InputMaybe<Scalars['DateTime']>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
 }>;
@@ -6913,6 +6920,28 @@ export const TasksDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'startDate' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'DateTime' },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'endDate' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'DateTime' },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
@@ -6975,6 +7004,22 @@ export const TasksDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'taskType' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
                                 },
                             },
                             {
@@ -7251,6 +7296,22 @@ export const TasksDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'taskType' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
                                 },
                             },
                         ],
