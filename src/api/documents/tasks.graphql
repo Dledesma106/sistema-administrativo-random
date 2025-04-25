@@ -9,6 +9,8 @@ query tasks(
     $endDate: DateTime
     $skip: Int
     $take: Int
+    $orderBy: String
+    $orderDirection: String
 ) {
     tasks(
         assigned: $assigned
@@ -19,6 +21,8 @@ query tasks(
         taskType: $taskType
         startDate: $startDate
         endDate: $endDate
+        orderBy: $orderBy
+        orderDirection: $orderDirection
         skip: $skip
         take: $take
     ) {

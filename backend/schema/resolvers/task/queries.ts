@@ -44,8 +44,14 @@ builder.queryFields((t) => ({
             }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
+            orderBy: t.arg.string({ required: false }),
+            orderDirection: t.arg.string({ required: false }),
         },
-        resolve: async (query, _parent, { skip, take, ...filters }) => {
+        resolve: async (
+            query,
+            _parent,
+            { skip, take, orderBy, orderDirection, ...filters },
+        ) => {
             const startDate = filters.startDate;
             const endDate = filters.endDate;
             if (startDate) {
@@ -55,43 +61,142 @@ builder.queryFields((t) => ({
                 endDate.setHours(23, 59, 59, 999);
             }
 
-            return removeDeleted(
-                await prisma.task.findManyUndeleted({
-                    ...query,
-                    where: {
-                        deleted: false,
-                        ...(filters.status?.length && {
-                            status: { in: filters.status },
-                        }),
-                        ...(filters.taskType?.length && {
-                            taskType: { in: filters.taskType },
-                        }),
-                        ...(filters.business?.length && {
-                            businessId: { in: filters.business },
-                        }),
-                        ...(filters.city?.length && {
-                            branch: { cityId: { in: filters.city } },
-                        }),
-                        ...(filters.client?.length && {
-                            branch: { clientId: { in: filters.client } },
-                        }),
-                        ...(filters.assigned?.length && {
-                            assignedIDs: { hasSome: filters.assigned },
-                        }),
-                        ...((filters.startDate || filters.endDate) && {
-                            closedAt: {
-                                ...(startDate && {
-                                    gte: startDate,
-                                }),
-                                ...(endDate && { lte: endDate }),
-                            },
-                        }),
-                    },
-                    skip: skip || 0,
-                    take: take || 10,
-                    orderBy: { createdAt: 'desc' },
-                }),
-            );
+            const sortDirection =
+                orderDirection?.toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+            let orderConfig = {};
+
+            if (orderBy) {
+                if (orderBy === 'assigned') {
+                    orderConfig = {
+                        assigned: {
+                            fullName: sortDirection,
+                        },
+                    };
+                } else if (orderBy === 'business') {
+                    orderConfig = {
+                        business: {
+                            name: sortDirection,
+                        },
+                    };
+                } else if (orderBy === 'branch') {
+                    orderConfig = {
+                        branch: {
+                            number: sortDirection,
+                        },
+                    };
+                } else if (orderBy === 'expenses') {
+                    // Para ordenar por gastos, primero obtenemos todas las tareas con sus gastos
+                    const tasks = await prisma.task.findManyUndeleted({
+                        ...query,
+                        where: {
+                            deleted: false,
+                            ...(filters.status?.length && {
+                                status: { in: filters.status },
+                            }),
+                            ...(filters.taskType?.length && {
+                                taskType: { in: filters.taskType },
+                            }),
+                            ...(filters.business?.length && {
+                                businessId: { in: filters.business },
+                            }),
+                            ...(filters.city?.length && {
+                                branch: { cityId: { in: filters.city } },
+                            }),
+                            ...(filters.client?.length && {
+                                branch: { clientId: { in: filters.client } },
+                            }),
+                            ...(filters.assigned?.length && {
+                                assignedIDs: { hasSome: filters.assigned },
+                            }),
+                            ...((filters.startDate || filters.endDate) && {
+                                closedAt: {
+                                    ...(startDate && {
+                                        gte: startDate,
+                                    }),
+                                    ...(endDate && { lte: endDate }),
+                                },
+                            }),
+                        },
+                        include: {
+                            expenses: true,
+                        },
+                    });
+
+                    // Calculamos el total de gastos para cada tarea
+                    const tasksWithTotalExpenses = removeDeleted(tasks).map((task) => ({
+                        ...task,
+                        totalExpenses: task.expenses.reduce(
+                            (acc, expense) => acc + expense.amount,
+                            0,
+                        ),
+                    }));
+
+                    // Ordenamos las tareas por el total de gastos
+                    const sortedTasks = tasksWithTotalExpenses.sort((a, b) => {
+                        if (sortDirection === 'asc') {
+                            return a.totalExpenses - b.totalExpenses;
+                        }
+                        return b.totalExpenses - a.totalExpenses;
+                    });
+
+                    // Aplicamos paginación
+                    const paginatedTasks = sortedTasks.slice(
+                        skip || 0,
+                        (skip || 0) + (take || 10),
+                    );
+
+                    return paginatedTasks.map((task) => {
+                        const { totalExpenses, ...taskWithoutTotal } = task;
+                        void totalExpenses;
+                        return taskWithoutTotal;
+                    });
+                } else {
+                    orderConfig = { [orderBy]: sortDirection };
+                }
+            } else {
+                orderConfig = { createdAt: 'desc' };
+            }
+            const tasks = await prisma.task.findManyUndeleted({
+                ...query,
+                where: {
+                    deleted: false,
+                    ...(filters.status?.length && {
+                        status: { in: filters.status },
+                    }),
+                    ...(filters.taskType?.length && {
+                        taskType: { in: filters.taskType },
+                    }),
+                    ...(filters.business?.length && {
+                        businessId: { in: filters.business },
+                    }),
+                    ...(filters.city?.length && {
+                        branch: { cityId: { in: filters.city } },
+                    }),
+                    ...(filters.client?.length && {
+                        branch: { clientId: { in: filters.client } },
+                    }),
+                    ...(filters.assigned?.length && {
+                        assignedIDs: { hasSome: filters.assigned },
+                    }),
+                    ...((filters.startDate || filters.endDate) && {
+                        closedAt: {
+                            ...(startDate && {
+                                gte: startDate,
+                            }),
+                            ...(endDate && { lte: endDate }),
+                        },
+                    }),
+                },
+                skip: skip || 0,
+                take: take || 10,
+                orderBy: orderConfig,
+                include: {
+                    expenses: true,
+                },
+            });
+
+            return removeDeleted(tasks);
         },
     }),
     tasksCount: t.int({
