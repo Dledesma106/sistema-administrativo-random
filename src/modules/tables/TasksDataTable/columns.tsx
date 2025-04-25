@@ -1,6 +1,7 @@
 import { TaskStatus, TaskType } from '@prisma/client';
 import { createColumnHelper } from '@tanstack/react-table';
 import { format } from 'date-fns';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import { TasksTableRowActions } from './tasks-table-row-actions';
 
@@ -17,11 +18,30 @@ const columnHelper = createColumnHelper<TasksQuery['tasks'][number]>();
 export const useTasksTableColumns = () => [
     columnHelper.accessor((row) => row.taskNumber, {
         id: 'taskNumber',
-        header: 'Número',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Número</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const taskNumber = info.getValue();
             return <span className="font-medium">#{taskNumber}</span>;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row, {
         id: 'city',
@@ -41,7 +61,9 @@ export const useTasksTableColumns = () => [
                 </>
             );
         },
-        header: 'Locación',
+        header: () => {
+            return <span>Locación</span>;
+        },
         filterFn: (row, id, cityIds: string[]) => {
             if (!cityIds?.length) {
                 return true;
@@ -50,10 +72,13 @@ export const useTasksTableColumns = () => [
             const task = row.original;
             return cityIds.includes(task.branch?.city?.id ?? '');
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.description, {
         id: 'description',
-        header: 'Descripción',
+        header: () => {
+            return <span>Descripción</span>;
+        },
         cell: (info) => {
             let description = info.getValue();
             const maxLength = 67;
@@ -64,6 +89,7 @@ export const useTasksTableColumns = () => [
 
             return <p className="max-w-[250px] text-muted-foreground">{description}</p>;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.business?.id ?? row.businessName, {
         id: 'business',
@@ -71,7 +97,9 @@ export const useTasksTableColumns = () => [
             const task = info.row.original;
             return task.business?.name ?? task.businessName;
         },
-        header: 'Empresa',
+        header: () => {
+            return <span>Empresa</span>;
+        },
         filterFn: (row, id, businessesIDs: string[]) => {
             if (!businessesIDs?.length) {
                 return true;
@@ -80,10 +108,13 @@ export const useTasksTableColumns = () => [
             const task = row.original;
             return businessesIDs.includes(task.business?.id ?? '');
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.branch?.client?.id ?? row.clientName, {
         id: 'client',
-        header: 'Cliente',
+        header: () => {
+            return <span>Cliente</span>;
+        },
         cell: (info) => {
             const task = info.row.original;
             return task.clientName ?? task.branch?.client.name;
@@ -96,19 +127,8 @@ export const useTasksTableColumns = () => [
             const task = row.original;
             return clientsIDs.includes(task.branch?.client?.id ?? '');
         },
+        enableSorting: true,
     }),
-    // columnHelper.accessor((row) => row.branch?.city?.id, {
-    //     id: 'branch',
-    //     header: 'Sucursal',
-    //     filterFn: (row, id, cityIDs: string[]) => {
-    //         if (!cityIDs?.length) {
-    //             return true;
-    //         }
-
-    //         const task = row.original;
-    //         return cityIDs.includes(task.branch?.city?.id ?? '');
-    //     },
-    // }),
     columnHelper.accessor((row) => row.participants, {
         id: 'participants',
         cell: (info) => {
@@ -134,20 +154,22 @@ export const useTasksTableColumns = () => [
                 </div>
             );
         },
-        header: 'Participantes',
+        header: () => {
+            return <span>Participantes</span>;
+        },
         filterFn: (row, id, userId: string[]) => {
             if (!userId) {
                 return true;
             }
-
-            // Como participants es un array de strings (nombres), no podemos filtrar por ID
-            // Si se necesita filtrar, habría que adaptar esta lógica
             return true;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row, {
         id: 'taskType',
-        header: 'Tipo',
+        header: () => {
+            return <span>Tipo</span>;
+        },
         filterFn: (row, id, types: TaskType[]) => {
             if (!types) {
                 return true;
@@ -166,13 +188,31 @@ export const useTasksTableColumns = () => [
             );
             return <TaskTypeBadge type={type} link={link} frequency={frequency} />;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.status, {
         id: 'status',
-        header: 'Estado',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Estado</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const status = info.getValue();
-
             return <TaskStatusBadge status={status} />;
         },
         filterFn: (row, id, statuses: string[]) => {
@@ -185,10 +225,30 @@ export const useTasksTableColumns = () => [
 
             return statusIsInFilteredList;
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => format(new Date(row.createdAt), 'dd/MM/yyyy'), {
         id: 'openedAt',
-        header: 'Fecha apertura',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Fecha apertura</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.closedAt, {
         id: 'closedAt',
@@ -196,11 +256,48 @@ export const useTasksTableColumns = () => [
             const closedAt = info.getValue();
             return !!closedAt ? format(new Date(closedAt), 'dd/MM/yyyy') : closedAt;
         },
-        header: 'Fecha cierre',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Fecha cierre</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.expenses, {
         id: 'expenses',
-        header: 'Gastos',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Gastos</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const expenses = info.getValue();
 
@@ -214,10 +311,13 @@ export const useTasksTableColumns = () => [
 
             return `$${amount.toLocaleString('es-AR')}`;
         },
+        enableSorting: false,
     }),
     columnHelper.accessor((row) => row.assigned, {
         id: 'assigned',
-        header: 'Técnicos Asignados',
+        header: () => {
+            return <span>Técnicos Asignados</span>;
+        },
         enableHiding: true,
         filterFn: (row, id, assignedIds: string[]) => {
             if (!assignedIds?.length) {
@@ -227,10 +327,29 @@ export const useTasksTableColumns = () => [
             const task = row.original;
             return task.assigned.some((user) => assignedIds.includes(user.id));
         },
+        enableSorting: true,
     }),
     columnHelper.accessor((row) => row.useMaterials, {
         id: 'useMaterials',
-        header: 'Materiales',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Materiales</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="size-4 ml-1" />
+                            ) : (
+                                <ArrowDown className="size-4 ml-1" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
         cell: (info) => {
             const materials = info.getValue();
 
@@ -244,12 +363,12 @@ export const useTasksTableColumns = () => [
                 </Badge>
             );
         },
+        enableSorting: true,
     }),
     columnHelper.display({
         id: 'actions',
         cell: (props) => {
             const task = props.row.original;
-
             return <TasksTableRowActions task={task} />;
         },
     }),

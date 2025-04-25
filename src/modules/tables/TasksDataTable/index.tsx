@@ -5,6 +5,8 @@ import {
     ColumnFiltersState,
     getCoreRowModel,
     useReactTable,
+    SortingState,
+    getSortedRowModel,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
@@ -44,6 +46,21 @@ export default function TasksDataTable(props: Props): JSX.Element {
         return saved ? JSON.parse(saved) : [];
     });
 
+    const [sorting, setSorting] = useState<SortingState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('tasksTableSorting');
+        return saved
+            ? JSON.parse(saved)
+            : [
+                  {
+                      id: 'createdAt',
+                      desc: true,
+                  },
+              ];
+    });
+
     const [page, setPage] = useState(() => {
         if (typeof window === 'undefined') {
             return 0;
@@ -65,6 +82,12 @@ export default function TasksDataTable(props: Props): JSX.Element {
             localStorage.setItem('tasksTableFilters', JSON.stringify(columnFilters));
         }
     }, [columnFilters]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('tasksTableSorting', JSON.stringify(sorting));
+        }
+    }, [sorting]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -101,16 +124,20 @@ export default function TasksDataTable(props: Props): JSX.Element {
         endDate:
             (columnFilters.find((f) => f.id === 'closedAt')?.value as { to?: Date })
                 ?.to || null,
+        orderBy: sorting.length > 0 ? sorting[0].id : null,
+        orderDirection: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : null,
     });
 
     const table = useReactTable({
         data: data?.tasks || [],
         columns,
         getCoreRowModel: getCoreRowModel(),
+        getSortedRowModel: getSortedRowModel(),
         onColumnFiltersChange: (filters) => {
             setColumnFilters(filters);
             setPage(0);
         },
+        onSortingChange: setSorting,
         state: {
             columnVisibility: {
                 branch: false,
@@ -119,6 +146,7 @@ export default function TasksDataTable(props: Props): JSX.Element {
                 assigned: false,
             },
             columnFilters,
+            sorting,
         },
     });
 
