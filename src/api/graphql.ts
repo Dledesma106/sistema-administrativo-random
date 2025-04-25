@@ -773,6 +773,8 @@ export type QueryTasksArgs = {
     city: InputMaybe<Array<Scalars['String']>>;
     client: InputMaybe<Array<Scalars['String']>>;
     endDate: InputMaybe<Scalars['DateTime']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
     skip: InputMaybe<Scalars['Int']>;
     startDate: InputMaybe<Scalars['DateTime']>;
     status: InputMaybe<Array<TaskStatus>>;
@@ -1715,6 +1717,8 @@ export type TasksQueryVariables = Exact<{
     endDate: InputMaybe<Scalars['DateTime']>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
 }>;
 
 export type TasksQuery = {
@@ -6950,6 +6954,22 @@ export const TasksDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderBy' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderDirection' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -7020,6 +7040,22 @@ export const TasksDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderDirection' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderDirection' },
                                 },
                             },
                             {
