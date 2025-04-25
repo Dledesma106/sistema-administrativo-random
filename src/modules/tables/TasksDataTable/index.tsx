@@ -95,6 +95,12 @@ export default function TasksDataTable(props: Props): JSX.Element {
         client: (columnFilters.find((f) => f.id === 'client')?.value as string[]) || null,
         taskType:
             (columnFilters.find((f) => f.id === 'taskType')?.value as TaskType[]) || null,
+        startDate:
+            (columnFilters.find((f) => f.id === 'closedAt')?.value as { from?: Date })
+                ?.from || null,
+        endDate:
+            (columnFilters.find((f) => f.id === 'closedAt')?.value as { to?: Date })
+                ?.to || null,
     });
 
     const table = useReactTable({

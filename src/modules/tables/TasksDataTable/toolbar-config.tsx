@@ -70,4 +70,10 @@ export const getTasksTableToolbarConfig = (
             })),
         },
     ],
+    dateRanges: [
+        {
+            columnId: 'closedAt',
+            title: 'Fecha de cierre',
+        },
+    ],
 });
