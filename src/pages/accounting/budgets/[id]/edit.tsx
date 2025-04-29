@@ -21,6 +21,12 @@ export default function EditBudget(): JSX.Element {
         branch: '1', // ID de la sucursal existente
         description: 'Descripción del presupuesto de ejemplo',
         price: 150000,
+        contacts: [
+            {
+                name: 'Juan Pérez',
+                email: 'juan.perez@example.com',
+            },
+        ],
     };
 
     if (isLoadingBusinesses || isLoadingClients || isLoadingBranches) {

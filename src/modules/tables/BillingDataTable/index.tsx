@@ -50,7 +50,7 @@ const mockData: Bill[] = [
         contactEmail: 'carlos.rodriguez@empresac.com',
         billingEmail: 'pagos@empresac.com',
         description: 'Reparaciones emergencia - Febrero 2024',
-        status: 'Pagado',
+        status: 'Pagada',
         amount: 95000,
     },
 ];

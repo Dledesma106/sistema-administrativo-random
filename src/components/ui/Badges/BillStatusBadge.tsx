@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { Badge } from '@/components/ui/Badges/badge';
 import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
 
-export type BillStatus = 'Borrador' | 'Pendiente' | 'Pagado';
+export type BillStatus = 'Borrador' | 'Pendiente' | 'Pagada' | 'Vencida';
 
 interface BillStatusBadgeProps {
     status: BillStatus;
@@ -11,9 +11,10 @@ interface BillStatusBadgeProps {
 
 export function BillStatusBadge({ status }: BillStatusBadgeProps) {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-success': status === 'Pagado',
+        'h-2 w-2 rounded-full bg-success': status === 'Pagada',
         'h-2 w-2 rounded-full bg-yellow-500': status === 'Pendiente',
         'h-2 w-2 rounded-full bg-blue-400': status === 'Borrador',
+        'h-2 w-2 rounded-full bg-red-500': status === 'Vencida',
     });
 
     return (
