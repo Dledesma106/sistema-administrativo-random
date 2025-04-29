@@ -32,9 +32,11 @@ type FormValues = {
     description: string;
     price: number;
     businessName?: string;
-    businessContactName?: string;
     businessCUIT?: string;
-    businessContactEmail?: string;
+    contacts: {
+        name: string;
+        email: string;
+    }[];
     businessBillingEmail?: string;
 };
 
@@ -178,13 +180,13 @@ const CreateOrUpdateBudgetForm = ({
                                     );
                                     form.setValue('businessCUIT', billingData.cuit);
                                     form.setValue(
-                                        'businessContactName',
-                                        billingData.contactName,
+                                        'contacts',
+                                        billingData.contacts.map((contact) => ({
+                                            name: contact.name,
+                                            email: contact.email,
+                                        })),
                                     );
-                                    form.setValue(
-                                        'businessContactEmail',
-                                        billingData.contactEmail,
-                                    );
+
                                     form.setValue(
                                         'businessBillingEmail',
                                         billingData.billingEmail,

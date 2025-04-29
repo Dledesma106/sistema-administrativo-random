@@ -1,13 +1,24 @@
 import { useRouter } from 'next/navigation';
 
 import { useMutation } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+
+import { ContactForm, ContactFormValues } from './ContactForm';
+import { ContactItem } from './ContactItem';
 
 import { GetBusinessesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import {
     Form,
     FormControl,
@@ -27,8 +38,7 @@ type FormValues = {
     businessName?: string;
     legalName: string;
     cuit: string;
-    contactName: string;
-    contactEmail: string;
+    contacts: ContactFormValues[];
     billingEmail: string;
     billingAddress: string;
     taxCondition: 'RESPONSABLE_INSCRIPTO' | 'MONOTRIBUTO' | 'EXENTO' | 'CONSUMIDOR_FINAL';
@@ -51,20 +61,22 @@ const CreateOrUpdateBillingProfileForm = ({
 }: Props): JSX.Element => {
     const router = useRouter();
     const { triggerAlert } = useAlert();
+    const [contacts, setContacts] = useState<ContactFormValues[]>(
+        defaultValues?.contacts || [],
+    );
+    const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+    const [editingContact, setEditingContact] = useState<ContactFormValues | null>(null);
+
     const form = useForm<FormValues>({
         defaultValues: defaultValues || {
             cuit: '',
             legalName: '',
-            contactName: '',
-            contactEmail: '',
             billingEmail: '',
             billingAddress: '',
             taxCondition: '' as FormValues['taxCondition'],
         },
     });
 
-    // Cuando el formulario está embebido, actualizamos el formulario padre
-    // cada vez que cambian los valores
     useEffect(() => {
         if (isEmbedded && onSubmit) {
             const subscription = form.watch((value) => onSubmit(value as FormValues));
@@ -78,7 +90,6 @@ const CreateOrUpdateBillingProfileForm = ({
                 throw new Error('Debe seleccionar una empresa');
             }
 
-            // Aquí iría tu mutación GraphQL para crear
             console.log('Creating billing profile:', form);
         },
         onSuccess: () => {
@@ -106,7 +117,6 @@ const CreateOrUpdateBillingProfileForm = ({
                 throw new Error('Debe seleccionar una empresa');
             }
 
-            // Aquí iría tu mutación GraphQL para actualizar
             console.log('Updating billing profile:', form);
         },
         onSuccess: () => {
@@ -132,6 +142,30 @@ const CreateOrUpdateBillingProfileForm = ({
                 postMutation.mutateAsync(formData);
             }
         }
+    };
+
+    const handleAddContact = (contact: ContactFormValues) => {
+        setContacts((prev) => [...prev, contact]);
+        setIsContactDialogOpen(false);
+    };
+
+    const handleEditContact = (contact: ContactFormValues) => {
+        setEditingContact(contact);
+        setIsContactDialogOpen(true);
+    };
+
+    const handleUpdateContact = (updatedContact: ContactFormValues) => {
+        setContacts((prev) =>
+            prev.map((contact) =>
+                contact === editingContact ? updatedContact : contact,
+            ),
+        );
+        setEditingContact(null);
+        setIsContactDialogOpen(false);
+    };
+
+    const handleDeleteContact = (contactToDelete: ContactFormValues) => {
+        setContacts((prev) => prev.filter((contact) => contact !== contactToDelete));
     };
 
     const formContent = (
@@ -284,46 +318,6 @@ const CreateOrUpdateBillingProfileForm = ({
                 />
 
                 <FormField
-                    name="contactName"
-                    control={form.control}
-                    rules={{ required: 'Este campo es requerido' }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Nombre de Contacto</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Nombre de contacto" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    name="contactEmail"
-                    control={form.control}
-                    rules={{
-                        required: 'Este campo es requerido',
-                        pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: 'Email inválido',
-                        },
-                    }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Email de Contacto</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="Email de contacto"
-                                    type="email"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
                     name="billingEmail"
                     control={form.control}
                     rules={{
@@ -347,6 +341,57 @@ const CreateOrUpdateBillingProfileForm = ({
                         </FormItem>
                     )}
                 />
+
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-medium">Contactos</h3>
+                        <Dialog
+                            open={isContactDialogOpen}
+                            onOpenChange={setIsContactDialogOpen}
+                        >
+                            <DialogTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setEditingContact(null)}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Agregar contacto
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {editingContact
+                                            ? 'Editar contacto'
+                                            : 'Agregar contacto'}
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <ContactForm
+                                    defaultValues={editingContact || undefined}
+                                    onSubmit={
+                                        editingContact
+                                            ? handleUpdateContact
+                                            : handleAddContact
+                                    }
+                                    onCancel={() => setIsContactDialogOpen(false)}
+                                />
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+
+                    <div className="space-y-4">
+                        {contacts.map((contact, index) => (
+                            <ContactItem
+                                key={index}
+                                contact={contact}
+                                onEdit={handleEditContact}
+                                onDelete={handleDeleteContact}
+                            />
+                        ))}
+                    </div>
+                </div>
 
                 {!isEmbedded && (
                     <div className="flex flex-row justify-end gap-4">
