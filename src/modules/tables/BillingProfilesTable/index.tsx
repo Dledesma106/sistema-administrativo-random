@@ -79,7 +79,7 @@ export default function BillingProfilesDataTable({ data, businesses, clients }: 
                 </Button>
             }
             onRowClick={(row) =>
-                router.push(routesBuilder.accounting.billingProfiles.edit(row.id))
+                router.push(routesBuilder.accounting.billingProfiles.details(row.id))
             }
         />
     );

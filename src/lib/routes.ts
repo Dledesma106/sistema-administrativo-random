@@ -67,6 +67,7 @@ export const routesBuilder = {
             list: () => '/accounting/billing-profiles',
             create: () => '/accounting/billing-profiles/new',
             edit: (id: string) => `/accounting/billing-profiles/${id}/edit`,
+            details: (id: string) => `/accounting/billing-profiles/${id}`,
         },
         expenses: {
             list: () => '/accounting/expenses',

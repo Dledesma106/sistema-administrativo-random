@@ -14,8 +14,14 @@ export default function EditBillingProfile(): JSX.Element {
         id: id as string,
         business: '1', // ID de la empresa existente
         cuit: '30123456789',
-        contactName: 'Juan Pérez',
-        contactEmail: 'juan.perez@empresaa.com',
+        contacts: [
+            {
+                name: 'Juan Pérez',
+                email: 'juan.perez@empresaa.com',
+                phone: '1234567890',
+                notes: 'Observaciones',
+            },
+        ],
         billingEmail: 'facturacion@empresaa.com',
         billingAddress: 'Av. Siempre Viva 123',
         legalName: 'Empresa A S.R.L.',
