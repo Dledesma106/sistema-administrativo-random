@@ -12,6 +12,10 @@ export const getClientBranchesTableColumns = (client: GetClientQuery['client']) 
         id: 'number',
         header: 'Número',
     }),
+    columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        header: 'Nombre',
+    }),
     columnHelper.accessor((row) => row.city, {
         id: 'city',
         header: 'Ciudad',

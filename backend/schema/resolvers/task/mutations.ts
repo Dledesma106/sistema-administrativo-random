@@ -1282,6 +1282,21 @@ builder.mutationFields((t) => ({
                         success: false,
                     };
                 }
+
+                if (!task.imagesIDs || task.imagesIDs.length === 0) {
+                    return {
+                        message: 'La tarea no tiene imágenes',
+                        success: false,
+                    };
+                }
+
+                if (!task.actNumber) {
+                    return {
+                        message: 'La tarea no tiene número de acta',
+                        success: false,
+                    };
+                }
+
                 // Actualizar la tarea
                 const updatedTask = await prisma.task.update({
                     where: { id },

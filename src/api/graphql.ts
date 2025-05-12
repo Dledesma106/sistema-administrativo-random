@@ -33,7 +33,8 @@ export type Branch = {
     city: City;
     client: Client;
     id: Scalars['ID'];
-    number: Scalars['Int'];
+    name: Maybe<Scalars['String']>;
+    number: Maybe<Scalars['Int']>;
 };
 
 export type BranchCrudResult = {
@@ -47,7 +48,8 @@ export type BranchInput = {
     businessesIds: Array<Scalars['String']>;
     cityId: Scalars['String'];
     clientId: Scalars['String'];
-    number: Scalars['Int'];
+    name: InputMaybe<Scalars['String']>;
+    number: InputMaybe<Scalars['Int']>;
 };
 
 export type Business = {
@@ -1035,7 +1037,8 @@ export type GetClientBranchesQuery = {
     clientBranches: Array<{
         __typename?: 'Branch';
         id: string;
-        number: number;
+        number: number | null;
+        name: string | null;
         city: {
             __typename?: 'City';
             id: string;
@@ -1053,7 +1056,8 @@ export type GetBranchesQuery = {
     branches: Array<{
         __typename?: 'Branch';
         id: string;
-        number: number;
+        number: number | null;
+        name: string | null;
         city: { __typename?: 'City'; id: string; name: string };
         businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
         client: { __typename?: 'Client'; id: string; name: string };
@@ -1069,7 +1073,8 @@ export type GetBranchQuery = {
     branch: {
         __typename?: 'Branch';
         id: string;
-        number: number;
+        number: number | null;
+        name: string | null;
         city: {
             __typename?: 'City';
             id: string;
@@ -1291,7 +1296,7 @@ export type GetClientsWithBranchesQuery = {
         branches: Array<{
             __typename?: 'Branch';
             id: string;
-            number: number;
+            number: number | null;
             businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
             city: { __typename?: 'City'; id: string; name: string };
         }>;
@@ -1387,7 +1392,7 @@ export type GetExpensesQuery = {
             business: { __typename?: 'Business'; name: string } | null;
             branch: {
                 __typename?: 'Branch';
-                number: number;
+                number: number | null;
                 client: { __typename?: 'Client'; name: string };
                 city: { __typename?: 'City'; name: string };
             } | null;
@@ -1551,7 +1556,7 @@ export type GetPreventivesQuery = {
         branch: {
             __typename?: 'Branch';
             id: string;
-            number: number;
+            number: number | null;
             client: { __typename?: 'Client'; id: string; name: string };
             city: {
                 __typename?: 'City';
@@ -1583,7 +1588,7 @@ export type GetPreventiveQuery = {
         branch: {
             __typename?: 'Branch';
             id: string;
-            number: number;
+            number: number | null;
             client: { __typename?: 'Client'; id: string; name: string };
             city: { __typename?: 'City'; id: string; name: string };
         };
@@ -1747,7 +1752,8 @@ export type TasksQuery = {
         branch: {
             __typename?: 'Branch';
             id: string;
-            number: number;
+            number: number | null;
+            name: string | null;
             city: {
                 __typename?: 'City';
                 id: string;
@@ -1794,7 +1800,8 @@ export type GetTaskQuery = {
         branch: {
             __typename?: 'Branch';
             id: string;
-            number: number;
+            number: number | null;
+            name: string | null;
             city: {
                 __typename?: 'City';
                 id: string;
@@ -2592,6 +2599,7 @@ export const GetClientBranchesDocument = {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'number' },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'city' },
@@ -2708,6 +2716,7 @@ export const GetBranchesDocument = {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'number' },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'city' },
@@ -2811,6 +2820,7 @@ export const GetBranchDocument = {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'number' },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'city' },
@@ -7168,6 +7178,10 @@ export const TasksDocument = {
                                             },
                                             {
                                                 kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'city' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
@@ -7504,6 +7518,10 @@ export const GetTaskDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'number' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
                                             },
                                             {
                                                 kind: 'Field',
