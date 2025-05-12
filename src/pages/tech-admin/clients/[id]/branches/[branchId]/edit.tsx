@@ -38,7 +38,8 @@ export default function EditClientBranch(): JSX.Element {
             label: business.name,
         })),
         cityId: branch.city.id,
-        number: branch.number,
+        number: branch.number ?? undefined,
+        name: branch.name ?? undefined,
     };
 
     return (

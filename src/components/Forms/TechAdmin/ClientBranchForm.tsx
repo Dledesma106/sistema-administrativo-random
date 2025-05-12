@@ -31,6 +31,7 @@ import { routesBuilder } from '@/lib/routes';
 
 export interface BranchFormValues {
     number?: number;
+    name?: string;
     cityId?: string;
     businesses?: {
         value: string;
@@ -103,12 +104,11 @@ export default function ClientBranchForm({
     });
 
     const onSubmit: SubmitHandler<BranchFormValues> = (data) => {
-        if (!data.cityId || !data.businesses || !client || !data.number) {
+        if (!data.cityId || !data.businesses || !client || (!data.number && !data.name)) {
             return;
         }
 
         startLoading();
-
         if (idToUpdate) {
             updateMutation.mutate({
                 id: idToUpdate,
@@ -116,7 +116,8 @@ export default function ClientBranchForm({
                     cityId: data.cityId,
                     businessesIds: data.businesses.map((business) => business.value),
                     clientId: client.id,
-                    number: data.number,
+                    number: data.number ?? null,
+                    name: data.name ?? null,
                 },
             });
             return;
@@ -126,7 +127,8 @@ export default function ClientBranchForm({
                     cityId: data.cityId,
                     businessesIds: data.businesses.map((business) => business.value),
                     clientId: client.id,
-                    number: data.number,
+                    number: data.number ?? null,
+                    name: data.name ?? null,
                 },
             });
         }
@@ -157,7 +159,7 @@ export default function ClientBranchForm({
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            placeholder="Número de Sucursal"
+                                            placeholder="Número de Sucursal (opcional)"
                                             onChange={(e) => {
                                                 const value = e.target.value.replace(
                                                     /[^0-9]/g,
@@ -165,7 +167,7 @@ export default function ClientBranchForm({
                                                 );
 
                                                 if (!value) {
-                                                    field.onChange('');
+                                                    field.onChange(null);
                                                     return;
                                                 }
 
@@ -193,7 +195,25 @@ export default function ClientBranchForm({
                             );
                         }}
                         control={form.control}
-                        rules={{ required: 'Este campo es requerido' }}
+                    />
+
+                    <FormField
+                        name="name"
+                        render={({ field }) => {
+                            return (
+                                <FormItem>
+                                    <FormLabel>Nombre de Sucursal</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="Nombre de la Sucursal (opcional)"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
+                        control={form.control}
                     />
 
                     <FormField

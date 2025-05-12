@@ -22,6 +22,7 @@ builder.mutationFields((t) => ({
                 const branch = await prisma.branch.create({
                     data: {
                         number: input.number,
+                        name: input.name,
                         clientId: input.clientId,
                         cityId: input.cityId,
                         businessesIDs: {
@@ -62,6 +63,7 @@ builder.mutationFields((t) => ({
                     where: { id },
                     data: {
                         number: input.number,
+                        name: input.name,
                         clientId: input.clientId,
                         cityId: input.cityId,
                         businessesIDs: {

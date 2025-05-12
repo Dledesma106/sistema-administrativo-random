@@ -44,6 +44,7 @@ query GetClientBranches(
     ) {
         id
         number
+        name
         city {
             id
             name
@@ -68,6 +69,7 @@ query GetBranches {
     branches {
         id
         number
+        name
         city {
             id
             name
@@ -87,6 +89,7 @@ query GetBranch($id: String!) {
     branch(id: $id) {
         id
         number
+        name
         city {
             id
             name

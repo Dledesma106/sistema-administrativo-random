@@ -52,10 +52,12 @@ export const useTasksTableColumns = () => [
                 <>
                     <strong>{task.branch?.client.name ?? task.clientName}</strong> -{' '}
                     {task.business?.name ?? task.businessName}
-                    {task.branch?.number && (
+                    {task.branch && (
                         <p className="text-xs">
-                            #{task.branch?.number} - {task.branch?.city.name},{' '}
-                            {task.branch?.city.province.name}
+                            {task.branch.number && `#${task.branch.number}`}
+                            {task.branch.name && task.branch.number && ' - '}
+                            {task.branch.name && task.branch.name} -{' '}
+                            {task.branch.city.name}, {task.branch.city.province.name}
                         </p>
                     )}
                 </>

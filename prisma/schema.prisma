@@ -33,7 +33,8 @@ model Branch {
   updatedAt DateTime  @updatedAt
   deleted   Boolean   @default(false)
   deletedAt DateTime? @db.Date
-  number    Int
+  number    Int?
+  name      String?
 
   clientId String @map("client") @db.ObjectId
   client   Client @relation(fields: [clientId], references: [id])
