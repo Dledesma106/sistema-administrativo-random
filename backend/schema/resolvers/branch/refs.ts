@@ -8,7 +8,8 @@ export const BranchPothosRef = builder.prismaObject('Branch', {
     name: 'Branch',
     fields: (t) => ({
         id: t.exposeID('id'),
-        number: t.exposeInt('number'),
+        number: t.exposeInt('number', { nullable: true }),
+        name: t.exposeString('name', { nullable: true }),
         client: t.relation('client'),
         city: t.relation('city'),
         businesses: t.prismaField({
@@ -25,7 +26,8 @@ export const BranchPothosRef = builder.prismaObject('Branch', {
 
 export const BranchInputPothosRef = builder.inputType('BranchInput', {
     fields: (t) => ({
-        number: t.int({ required: true }),
+        number: t.int({ required: false }),
+        name: t.string({ required: false }),
         clientId: t.string({ required: true }),
         cityId: t.string({ required: true }),
         businessesIds: t.stringList({ required: true }),

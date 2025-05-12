@@ -104,8 +104,10 @@ const Content: React.FC<Props> = ({ task }) => {
                         <Title>Sucursal</Title>
 
                         <p className="mb-1">
-                            #{task.branch.number} - {task.branch.client.name} -{' '}
-                            {task.branch.city.name} - {task.business?.name || ''}
+                            {task.branch.number && `#${task.branch.number}`}
+                            {task.branch.name && task.branch.number && ' - '}
+                            {task.branch.name && task.branch.name} -{' '}
+                            {task.branch.city.name} - {task.branch.city.province.name}
                         </p>
                     </div>
                 ) : (
