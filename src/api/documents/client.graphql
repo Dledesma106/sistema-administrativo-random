@@ -42,6 +42,7 @@ query GetClientsWithBranches {
         branches {
             id
             number
+            name
             businesses {
                 id
                 name
