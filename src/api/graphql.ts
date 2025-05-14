@@ -1297,6 +1297,7 @@ export type GetClientsWithBranchesQuery = {
             __typename?: 'Branch';
             id: string;
             number: number | null;
+            name: string | null;
             businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
             city: { __typename?: 'City'; id: string; name: string };
         }>;
@@ -4092,6 +4093,10 @@ export const GetClientsWithBranchesDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'number' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
                                             },
                                             {
                                                 kind: 'Field',

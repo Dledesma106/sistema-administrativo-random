@@ -238,7 +238,9 @@ const CreateOrUpdatePreventiveForm = ({
         clients
             .find((client) => client.id === form.watch('client'))
             ?.branches.map((branch) => ({
-                label: `${branch.number}, ${branch.city.name}`,
+                label: `${branch.number ? `${branch.number} - ` : ''}${
+                    branch.name ? `${branch.name} - ` : ''
+                }${branch.city.name}`,
                 value: branch.id,
             })) || [];
 

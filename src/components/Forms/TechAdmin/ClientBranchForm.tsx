@@ -67,7 +67,7 @@ export default function ClientBranchForm({
             return fetchClient(CreateBranchDocument, data);
         },
         onSuccess: () => {
-            router.push('/tech-admin/cities');
+            router.push(routesBuilder.branches.list(client.id));
             triggerAlert({
                 type: 'Success',
                 message: `Se creó la sucursal correctamente`,
@@ -87,7 +87,7 @@ export default function ClientBranchForm({
             return fetchClient(UpdateBranchDocument, data);
         },
         onSuccess: () => {
-            router.push(`/tech-admin/clients/${client.id}/branches`);
+            router.push(routesBuilder.branches.list(client.id));
             triggerAlert({
                 type: 'Success',
                 message: `Se actualizó la sucursal correctamente`,
