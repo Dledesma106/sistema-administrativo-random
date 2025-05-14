@@ -100,11 +100,15 @@ builder.queryFields((t) => ({
                             ...(filters.business?.length && {
                                 businessId: { in: filters.business },
                             }),
-                            ...(filters.city?.length && {
-                                branch: { cityId: { in: filters.city } },
-                            }),
-                            ...(filters.client?.length && {
-                                branch: { clientId: { in: filters.client } },
+                            ...((filters.city?.length || filters.client?.length) && {
+                                branch: {
+                                    ...(filters.city?.length && {
+                                        cityId: { in: filters.city },
+                                    }),
+                                    ...(filters.client?.length && {
+                                        clientId: { in: filters.client },
+                                    }),
+                                },
                             }),
                             ...(filters.assigned?.length && {
                                 assignedIDs: { hasSome: filters.assigned },
@@ -170,11 +174,15 @@ builder.queryFields((t) => ({
                     ...(filters.business?.length && {
                         businessId: { in: filters.business },
                     }),
-                    ...(filters.city?.length && {
-                        branch: { cityId: { in: filters.city } },
-                    }),
-                    ...(filters.client?.length && {
-                        branch: { clientId: { in: filters.client } },
+                    ...((filters.city?.length || filters.client?.length) && {
+                        branch: {
+                            ...(filters.city?.length && {
+                                cityId: { in: filters.city },
+                            }),
+                            ...(filters.client?.length && {
+                                clientId: { in: filters.client },
+                            }),
+                        },
                     }),
                     ...(filters.assigned?.length && {
                         assignedIDs: { hasSome: filters.assigned },
@@ -256,13 +264,16 @@ builder.queryFields((t) => ({
                     ...(filters.business?.length && {
                         businessId: { in: filters.business },
                     }),
-                    ...(filters.city?.length && {
-                        branch: { cityId: { in: filters.city } },
+                    ...((filters.city?.length || filters.client?.length) && {
+                        branch: {
+                            ...(filters.city?.length && {
+                                cityId: { in: filters.city },
+                            }),
+                            ...(filters.client?.length && {
+                                clientId: { in: filters.client },
+                            }),
+                        },
                     }),
-                    ...(filters.client?.length && {
-                        branch: { clientId: { in: filters.client } },
-                    }),
-
                     ...(filters.assigned?.length && {
                         assignedIDs: { hasSome: filters.assigned },
                     }),
