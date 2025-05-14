@@ -52,14 +52,18 @@ export const PreventiveQueries = builder.queryFields((t) => ({
                     ...(filters.business?.length && {
                         businessId: { in: filters.business },
                     }),
-                    ...(filters.city?.length && {
-                        branch: { cityId: { in: filters.city } },
+                    ...((filters.city?.length || filters.client?.length) && {
+                        branch: {
+                            ...(filters.city?.length && {
+                                cityId: { in: filters.city },
+                            }),
+                            ...(filters.client?.length && {
+                                clientId: { in: filters.client },
+                            }),
+                        },
                     }),
                     ...(filters.assigned?.length && {
                         assignedIDs: { hasSome: filters.assigned },
-                    }),
-                    ...(filters.client?.length && {
-                        branch: { clientId: { in: filters.client } },
                     }),
                     ...(filters.frequency?.length && {
                         frequency: { in: filters.frequency },
@@ -116,14 +120,18 @@ export const PreventiveQueries = builder.queryFields((t) => ({
                     ...(filters.business?.length && {
                         businessId: { in: filters.business },
                     }),
-                    ...(filters.city?.length && {
-                        branch: { cityId: { in: filters.city } },
+                    ...((filters.city?.length || filters.client?.length) && {
+                        branch: {
+                            ...(filters.city?.length && {
+                                cityId: { in: filters.city },
+                            }),
+                            ...(filters.client?.length && {
+                                clientId: { in: filters.client },
+                            }),
+                        },
                     }),
                     ...(filters.assigned?.length && {
                         assignedIDs: { hasSome: filters.assigned },
-                    }),
-                    ...(filters.client?.length && {
-                        branch: { clientId: { in: filters.client } },
                     }),
                     ...(filters.frequency?.length && {
                         frequency: { in: filters.frequency },
