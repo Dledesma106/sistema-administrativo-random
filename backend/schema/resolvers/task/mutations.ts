@@ -17,6 +17,8 @@ import { builder } from 'backend/schema/builder';
 import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
+import { sendPushNotification } from '../../../services/notifications';
+
 /**
  * Genera un nuevo número de tarea basado en el último número existente
  * @returns Número de tarea generado
@@ -196,7 +198,10 @@ builder.mutationFields((t) => ({
 
                 // Obtener nombres completos de los técnicos asignados para inicializar participantes
                 let participantNames: string[] = [];
+                let assignedUserIds: string[] = []; // Store assigned user IDs for notification
+
                 if (input.assigned && input.assigned.length > 0) {
+                    assignedUserIds = [...input.assigned]; // Save IDs for notifications
                     const assignedUsers = await prisma.user.findMany({
                         where: {
                             id: {
@@ -212,7 +217,7 @@ builder.mutationFields((t) => ({
                     participantNames = assignedUsers.map((user) => user.fullName);
                 }
 
-                const task: Task = await prisma.task.create({
+                const task = await prisma.task.create({
                     data: {
                         taskNumber,
                         actNumber: input.actNumber,
@@ -233,6 +238,53 @@ builder.mutationFields((t) => ({
                         movitecTicket: input.movitecTicket,
                     },
                 });
+
+                const taskForNotification = await prisma.task.findUnique({
+                    where: { id: task.id },
+                    select: {
+                        branch: {
+                            select: {
+                                client: true,
+                                name: true,
+                                number: true,
+                            },
+                        },
+                        clientName: true,
+                        taskNumber: true,
+                        description: true,
+                        id: true,
+                    },
+                });
+
+                const clientName =
+                    taskForNotification?.branch?.client?.name ??
+                    taskForNotification?.clientName;
+                const branchIdentifier = `${
+                    taskForNotification?.branch?.number
+                        ? `#${taskForNotification?.branch?.number}`
+                        : ''
+                }${
+                    taskForNotification?.branch?.name
+                        ? ` - ${taskForNotification?.branch?.name}`
+                        : ''
+                }`;
+                // Enviar notificación push si hay usuarios asignados
+                if (assignedUserIds.length > 0) {
+                    await sendPushNotification(assignedUserIds, {
+                        title: `Nueva Tarea Asignada! ${
+                            taskForNotification?.branch
+                                ? `En ${branchIdentifier} de`
+                                : 'Para'
+                        } ${clientName}`,
+                        body: `Se te ha asignado la tarea N° ${task.taskNumber}: ${task.description}`,
+                        data: {
+                            taskId: task.id,
+                            taskNumber: task.taskNumber,
+                            type: 'NEW_TASK_ASSIGNED', // Tipo de notificación para el cliente móvil
+                        },
+                    });
+                }
+
                 return {
                     success: true,
                     task,
