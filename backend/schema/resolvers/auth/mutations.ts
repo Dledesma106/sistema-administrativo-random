@@ -254,4 +254,44 @@ export const AuthMutations = builder.mutationFields((t) => ({
             }
         },
     }),
+
+    registerExpoToken: t.field({
+        type: 'Boolean', // Devuelve true si éxito, false si error
+        args: {
+            token: t.arg.string({ required: true }),
+        },
+        authz: {
+            rules: ['IsAuthenticated'], // Solo usuarios autenticados pueden registrar tokens
+        },
+        resolve: async (_parent, { token }, { user }) => {
+            if (!user || !user.id) {
+                // Este caso no debería ocurrir si IsAuthenticated funciona correctamente
+                console.error('User not authenticated in registerExpoToken');
+                return false;
+            }
+            try {
+                await prisma.expoToken.upsert({
+                    where: {
+                        token, // Clave única para buscar/actualizar
+                    },
+                    update: {
+                        // Si el token ya existe, nos aseguramos que esté asociado al usuario actual
+                        user: {
+                            connect: { id: user.id },
+                        },
+                    },
+                    create: {
+                        token,
+                        user: {
+                            connect: { id: user.id },
+                        },
+                    },
+                });
+                return true;
+            } catch (error) {
+                console.error('Error registering expo token:', error);
+                return false;
+            }
+        },
+    }),
 }));
