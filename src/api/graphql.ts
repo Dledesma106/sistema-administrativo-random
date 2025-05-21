@@ -279,12 +279,14 @@ export type Mutation = {
     deleteProvince: ProvinceCrudResult;
     deleteTask: TaskCrudResult;
     deleteUser: UserCrudPothosRef;
+    downloadTaskPhotos: Scalars['String'];
     finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
     generateUploadUrls: PresignedUrlResponse;
     login: LoginUserResult;
     logout: AuthResult;
+    registerExpoToken: Scalars['Boolean'];
     sendNewUserRandomPassword: UserCrudPothosRef;
     updateBranch: BranchCrudResult;
     updateBusiness: BusinessResult;
@@ -395,6 +397,12 @@ export type MutationDeleteUserArgs = {
     id: Scalars['String'];
 };
 
+export type MutationDownloadTaskPhotosArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    endDate: Scalars['DateTime'];
+    startDate: Scalars['DateTime'];
+};
+
 export type MutationFinishTaskArgs = {
     id: Scalars['String'];
 };
@@ -418,6 +426,10 @@ export type MutationGenerateUploadUrlsArgs = {
 export type MutationLoginArgs = {
     email: Scalars['String'];
     password: Scalars['String'];
+};
+
+export type MutationRegisterExpoTokenArgs = {
+    token: Scalars['String'];
 };
 
 export type MutationSendNewUserRandomPasswordArgs = {
@@ -1919,6 +1931,17 @@ export type GenerateApprovedTasksReportMutationVariables = Exact<{
 export type GenerateApprovedTasksReportMutation = {
     __typename?: 'Mutation';
     generateApprovedTasksReport: string;
+};
+
+export type DownloadTaskPhotosMutationVariables = Exact<{
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
+    businessId: InputMaybe<Scalars['String']>;
+}>;
+
+export type DownloadTaskPhotosMutation = {
+    __typename?: 'Mutation';
+    downloadTaskPhotos: string;
 };
 
 export type GetUsersQueryVariables = Exact<{
@@ -8232,6 +8255,92 @@ export const GenerateApprovedTasksReportDocument = {
 } as unknown as DocumentNode<
     GenerateApprovedTasksReportMutation,
     GenerateApprovedTasksReportMutationVariables
+>;
+export const DownloadTaskPhotosDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'DownloadTaskPhotos' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'startDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'endDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'downloadTaskPhotos' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    DownloadTaskPhotosMutation,
+    DownloadTaskPhotosMutationVariables
 >;
 export const GetUsersDocument = {
     kind: 'Document',
