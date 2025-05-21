@@ -12,16 +12,24 @@ export const useDownloadTaskPhotos = () => {
         {
             startDate: Date;
             endDate: Date;
-            businessId?: string;
+            businessId: string;
         }
     >({
         mutationFn: ({ startDate, endDate, businessId }) =>
             fetchClient(DownloadTaskPhotosDocument, {
                 startDate,
                 endDate,
-                businessId: businessId ?? null,
+                businessId,
             }),
         onSuccess: (data) => {
+            if (!data.downloadTaskPhotos) {
+                triggerAlert({
+                    type: 'Failure',
+                    message: 'No se pudo generar el archivo de fotos',
+                });
+                return;
+            }
+
             const downloadUrl = data.downloadTaskPhotos;
 
             const link = document.createElement('a');
@@ -36,10 +44,18 @@ export const useDownloadTaskPhotos = () => {
                 message: 'Fotos de tareas descargadas con éxito',
             });
         },
-        onError: (error) => {
+        onError: (error: any) => {
+            let errorMessage = 'Error al descargar las fotos';
+
+            if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+                errorMessage = error.graphQLErrors[0].extensions.originalError.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             triggerAlert({
                 type: 'Failure',
-                message: `Error al descargar las fotos de tareas: ${error}`,
+                message: errorMessage,
             });
         },
     });
