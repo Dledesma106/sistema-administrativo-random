@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpenseStatus, TaskStatus, Task, PreventiveStatus } from '@prisma/client';
 import { format } from 'date-fns';
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 
 import {
     TaskCrudResultPothosRef,
@@ -171,6 +172,114 @@ function calculateMaxRowHeight(row: ExcelJS.Row, worksheet: ExcelJS.Worksheet): 
     // Añadimos un pequeño margen adicional
     return maxHeight + 5;
 }
+
+export const downloadTaskPhotos = async (args: {
+    startDate: Date;
+    endDate: Date;
+    businessId: string;
+}) => {
+    try {
+        const { startDate, endDate, businessId } = args;
+
+        // Buscar las tareas que coincidan con los filtros
+        const tasks = await prisma.task.findManyUndeleted({
+            where: {
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate,
+                },
+                businessId,
+                status: TaskStatus.Finalizada,
+                images: {
+                    some: {
+                        deleted: false,
+                    },
+                },
+            },
+            include: {
+                images: true,
+                business: true,
+            },
+        });
+
+        if (tasks.length === 0) {
+            throw new Error(
+                'No se encontraron tareas finalizadas con imágenes en el rango de fechas especificado',
+            );
+        }
+
+        // Crear un archivo ZIP
+        const zip = new JSZip();
+
+        // Configurar el cliente S3
+        const s3Client = new S3Client({
+            region: process.env.AWS_REGION,
+            credentials: {
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+            },
+        });
+
+        // Descargar y agregar cada imagen al ZIP
+        for (const task of tasks) {
+            for (let i = 0; i < task.images.length; i++) {
+                const image = task.images[i];
+                if (image.deleted) {
+                    continue;
+                }
+
+                // Obtener la URL firmada para la imagen
+                const command = new GetObjectCommand({
+                    Bucket: process.env.AWS_S3_BUCKET_NAME,
+                    Key: image.key,
+                });
+                const signedUrl = await getSignedUrl(s3Client, command, {
+                    expiresIn: 3600,
+                });
+
+                // Descargar la imagen
+                const response = await fetch(signedUrl);
+                const imageBuffer = await response.arrayBuffer();
+
+                // Crear el nombre del archivo
+                const fileName = `${task.actNumber || ''}_${task.taskNumber}_${task.business?.name || task.businessName}_${i + 1}.jpg`;
+
+                // Agregar la imagen al ZIP
+                zip.file(fileName, imageBuffer);
+            }
+        }
+
+        // Generar el archivo ZIP
+        const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+
+        // Subir el ZIP a S3
+        const zipKey = `temp/downloads/fotos-tareas-${tasks[0].business?.name}-${format(startDate, 'dd-MM-yyyy')}-${format(endDate, 'dd-MM-yyyy')}.zip`;
+        await s3Client.send(
+            new PutObjectCommand({
+                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                Key: zipKey,
+                Body: zipBuffer,
+                ContentType: 'application/zip',
+            }),
+        );
+
+        // Generar una URL firmada para el ZIP
+        const zipCommand = new GetObjectCommand({
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: zipKey,
+        });
+        const zipSignedUrl = await getSignedUrl(s3Client, zipCommand, {
+            expiresIn: 3600,
+        });
+
+        return zipSignedUrl;
+    } catch (error) {
+        console.error('Error al descargar las fotos:', error);
+        throw new Error(
+            `Error al descargar las fotos: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+    }
+};
 
 builder.mutationFields((t) => ({
     createTask: t.field({
@@ -1371,6 +1480,35 @@ builder.mutationFields((t) => ({
                     success: false,
                 };
             }
+        },
+    }),
+    downloadTaskPhotos: t.string({
+        args: {
+            startDate: t.arg({
+                type: 'DateTime',
+                required: true,
+            }),
+            endDate: t.arg({
+                type: 'DateTime',
+                required: true,
+            }),
+            businessId: t.arg({
+                type: 'String',
+                required: false,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            return downloadTaskPhotos({
+                startDate: args.startDate,
+                endDate: args.endDate,
+                businessId: args.businessId || '',
+            });
         },
     }),
 }));
