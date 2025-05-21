@@ -48,11 +48,15 @@ export async function fetchClient<T, V>(
                 message = firstErrorSplitted.slice(1).join('');
             }
 
+            const customError = new Error(message);
+            (customError as any).graphQLErrors = json.errors;
+            (customError as any).originalError = firstError;
+
             if (message === 'Error decoding signature') {
                 sessionStorage.removeItem('token');
                 return fetchClient<T, V>(query, variables);
             } else {
-                throw new Error(message);
+                throw customError;
             }
         }
 
