@@ -229,5 +229,9 @@ mutation DownloadTaskPhotos(
         startDate: $startDate
         endDate: $endDate
         businessId: $businessId
-    )
+    ) {
+        success
+        url
+        message
+    }
 }

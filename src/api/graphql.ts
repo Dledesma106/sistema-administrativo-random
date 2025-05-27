@@ -118,6 +118,13 @@ export type ClientResult = {
     success: Scalars['Boolean'];
 };
 
+export type DownloadTaskPhotosResult = {
+    __typename?: 'DownloadTaskPhotosResult';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    url: Maybe<Scalars['String']>;
+};
+
 export type Expense = {
     __typename?: 'Expense';
     amount: Scalars['Float'];
@@ -279,7 +286,7 @@ export type Mutation = {
     deleteProvince: ProvinceCrudResult;
     deleteTask: TaskCrudResult;
     deleteUser: UserCrudPothosRef;
-    downloadTaskPhotos: Scalars['String'];
+    downloadTaskPhotos: DownloadTaskPhotosResult;
     finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
@@ -1941,7 +1948,12 @@ export type DownloadTaskPhotosMutationVariables = Exact<{
 
 export type DownloadTaskPhotosMutation = {
     __typename?: 'Mutation';
-    downloadTaskPhotos: string;
+    downloadTaskPhotos: {
+        __typename?: 'DownloadTaskPhotosResult';
+        success: boolean;
+        url: string | null;
+        message: string | null;
+    };
 };
 
 export type GetUsersQueryVariables = Exact<{
@@ -8333,6 +8345,20 @@ export const DownloadTaskPhotosDocument = {
                                 },
                             },
                         ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                            ],
+                        },
                     },
                 ],
             },

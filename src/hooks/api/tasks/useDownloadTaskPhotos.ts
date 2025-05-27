@@ -22,18 +22,26 @@ export const useDownloadTaskPhotos = () => {
                 businessId,
             }),
         onSuccess: (data) => {
-            if (!data.downloadTaskPhotos) {
+            const result = data.downloadTaskPhotos;
+
+            if (!result.success) {
                 triggerAlert({
                     type: 'Failure',
-                    message: 'No se pudo generar el archivo de fotos',
+                    message: result.message || 'No se pudo generar el archivo de fotos',
                 });
                 return;
             }
 
-            const downloadUrl = data.downloadTaskPhotos;
+            if (!result.url) {
+                triggerAlert({
+                    type: 'Failure',
+                    message: 'No se pudo obtener la URL de descarga',
+                });
+                return;
+            }
 
             const link = document.createElement('a');
-            link.href = downloadUrl;
+            link.href = result.url;
             link.download = 'fotos-tareas.zip';
             document.body.appendChild(link);
             link.click();
