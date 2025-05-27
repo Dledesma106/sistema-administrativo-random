@@ -48,6 +48,7 @@ export const useDownloadTaskPhotos = () => {
             let errorMessage = 'Error al descargar las fotos';
 
             if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+                console.log(error);
                 errorMessage = error.graphQLErrors[0].extensions.originalError.message;
             } else if (error.message) {
                 errorMessage = error.message;

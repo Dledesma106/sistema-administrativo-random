@@ -49,7 +49,6 @@ export function DataTable<TData>({
 
         const contentHeight = actualRowCount * ROW_HEIGHT + HEADER_HEIGHT;
         const height = `h-[${Math.max(Math.min(contentHeight, MAX_HEIGHT), MIN_HEIGHT)}px] max-h-[470px]`;
-        console.log(height);
         return height;
     }, [table.getRowModel().rows.length, totalCount]);
 
