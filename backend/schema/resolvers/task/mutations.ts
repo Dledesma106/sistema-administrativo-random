@@ -11,6 +11,7 @@ import {
     UpdateMyTaskInput,
     MyTaskInputPothosRef,
     TaskStatusPothosRef,
+    DownloadTaskPhotosResultPothosRef,
 } from './refs';
 
 import { createImageSignedUrlAsync, getFileSignedUrl } from 'backend/s3Client';
@@ -173,113 +174,19 @@ function calculateMaxRowHeight(row: ExcelJS.Row, worksheet: ExcelJS.Worksheet): 
     return maxHeight + 5;
 }
 
-export const downloadTaskPhotos = async (args: {
-    startDate: Date;
-    endDate: Date;
-    businessId: string;
-}) => {
-    try {
-        const { startDate, endDate, businessId } = args;
-
-        // Buscar las tareas que coincidan con los filtros
-        const tasks = await prisma.task.findManyUndeleted({
-            where: {
-                createdAt: {
-                    gte: startDate,
-                    lte: endDate,
-                },
-                businessId,
-                status: TaskStatus.Finalizada,
-                images: {
-                    some: {
-                        deleted: false,
-                    },
-                },
-            },
-            include: {
-                images: true,
-                business: true,
-            },
-        });
-
-        if (tasks.length === 0) {
-            throw new Error(
-                'No se encontraron tareas finalizadas con imágenes en el rango de fechas especificado',
-            );
-        }
-
-        // Crear un archivo ZIP
-        const zip = new JSZip();
-
-        // Configurar el cliente S3
-        const s3Client = new S3Client({
-            region: process.env.AWS_REGION,
-            credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-            },
-        });
-
-        // Descargar y agregar cada imagen al ZIP
-        for (const task of tasks) {
-            for (let i = 0; i < task.images.length; i++) {
-                const image = task.images[i];
-                if (image.deleted) {
-                    continue;
-                }
-
-                // Obtener la URL firmada para la imagen
-                const command = new GetObjectCommand({
-                    Bucket: process.env.AWS_S3_BUCKET_NAME,
-                    Key: image.key,
-                });
-                const signedUrl = await getSignedUrl(s3Client, command, {
-                    expiresIn: 3600,
-                });
-
-                // Descargar la imagen
-                const response = await fetch(signedUrl);
-                const imageBuffer = await response.arrayBuffer();
-
-                // Crear el nombre del archivo
-                const fileName = `${task.actNumber || ''}_${task.taskNumber}_${task.business?.name || task.businessName}_${i + 1}.jpg`;
-
-                // Agregar la imagen al ZIP
-                zip.file(fileName, imageBuffer);
-            }
-        }
-
-        // Generar el archivo ZIP
-        const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
-
-        // Subir el ZIP a S3
-        const zipKey = `temp/downloads/fotos-tareas-${tasks[0].business?.name}-${format(startDate, 'dd-MM-yyyy')}-${format(endDate, 'dd-MM-yyyy')}.zip`;
-        await s3Client.send(
-            new PutObjectCommand({
-                Bucket: process.env.AWS_S3_BUCKET_NAME,
-                Key: zipKey,
-                Body: zipBuffer,
-                ContentType: 'application/zip',
-            }),
-        );
-
-        // Generar una URL firmada para el ZIP
-        const zipCommand = new GetObjectCommand({
-            Bucket: process.env.AWS_S3_BUCKET_NAME,
-            Key: zipKey,
-        });
-        const zipSignedUrl = await getSignedUrl(s3Client, zipCommand, {
-            expiresIn: 3600,
-        });
-
-        return zipSignedUrl;
-    } catch (error) {
-        console.error('Error al descargar las fotos:', error);
-        throw new Error(
-            `Error al descargar las fotos: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
-    }
-};
+builder.objectType(DownloadTaskPhotosResultPothosRef, {
+    fields: (t) => ({
+        success: t.boolean({ resolve: (parent) => parent.success }),
+        url: t.string({
+            nullable: true,
+            resolve: (parent) => parent.url,
+        }),
+        message: t.string({
+            nullable: true,
+            resolve: (parent) => parent.message,
+        }),
+    }),
+});
 
 builder.mutationFields((t) => ({
     createTask: t.field({
@@ -1482,7 +1389,8 @@ builder.mutationFields((t) => ({
             }
         },
     }),
-    downloadTaskPhotos: t.string({
+    downloadTaskPhotos: t.field({
+        type: DownloadTaskPhotosResultPothosRef,
         args: {
             startDate: t.arg({
                 type: 'DateTime',
@@ -1504,11 +1412,150 @@ builder.mutationFields((t) => ({
             ],
         },
         resolve: async (root, args, _context, _info) => {
-            return downloadTaskPhotos({
-                startDate: args.startDate,
-                endDate: args.endDate,
-                businessId: args.businessId || '',
-            });
+            try {
+                const { startDate, endDate, businessId } = args;
+                if (startDate) {
+                    startDate.setHours(0, 0, 0, 0);
+                }
+                if (endDate) {
+                    endDate.setHours(23, 59, 59, 999);
+                }
+                const business = await prisma.business.findUniqueUndeleted({
+                    where: {
+                        id: businessId || '',
+                    },
+                });
+
+                // Buscar las tareas que coincidan con los filtros
+                const tasks = await prisma.task.findManyUndeleted({
+                    where: {
+                        closedAt: {
+                            gte: startDate,
+                            lte: endDate,
+                        },
+                        businessId,
+                        status: {
+                            in: [TaskStatus.Finalizada, TaskStatus.Aprobada],
+                        },
+                        images: {
+                            some: {
+                                deleted: false,
+                            },
+                        },
+                    },
+                    include: {
+                        images: true,
+                        business: true,
+                    },
+                });
+
+                if (tasks.length === 0) {
+                    return {
+                        success: false,
+                        message: `No se encontraron tareas finalizadas o aprobadas con imágenes para la empresa ${business?.name} en el período del ${format(startDate, 'dd/MM/yyyy')} al ${format(endDate, 'dd/MM/yyyy')}`,
+                    };
+                }
+
+                // Crear un archivo ZIP
+                const zip = new JSZip();
+
+                // Configurar el cliente S3
+                const s3Client = new S3Client({
+                    region: process.env.AWS_REGION,
+                    credentials: {
+                        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                    },
+                });
+
+                // Descargar y agregar cada imagen al ZIP
+                for (const task of tasks) {
+                    for (let i = 0; i < task.images.length; i++) {
+                        const image = task.images[i];
+                        if (image.deleted) {
+                            continue;
+                        }
+
+                        try {
+                            // Obtener la URL firmada para la imagen
+                            const command = new GetObjectCommand({
+                                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                                Key: image.key,
+                            });
+                            const signedUrl = await getSignedUrl(s3Client, command, {
+                                expiresIn: 3600,
+                            });
+
+                            // Descargar la imagen
+                            const response = await fetch(signedUrl);
+                            if (!response.ok) {
+                                return {
+                                    success: false,
+                                    message: `Error al descargar la imagen: ${response.statusText}`,
+                                };
+                            }
+                            const imageBuffer = await response.arrayBuffer();
+
+                            // Crear el nombre del archivo
+                            const fileName = `${task.actNumber || ''}_${task.taskNumber}_${task.business?.name || task.businessName}_${i + 1}.jpg`;
+
+                            // Agregar la imagen al ZIP
+                            zip.file(fileName, imageBuffer);
+                        } catch (error) {
+                            console.error(
+                                `Error procesando imagen de la tarea ${task.taskNumber}:`,
+                                error,
+                            );
+                            return {
+                                success: false,
+                                message: `Error al procesar las imágenes de la tarea ${task.taskNumber}: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                            };
+                        }
+                    }
+                }
+
+                try {
+                    // Generar el archivo ZIP
+                    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+
+                    // Subir el ZIP a S3
+                    const zipKey = `temp/downloads/fotos-tareas-${tasks[0].business?.name}-${format(startDate, 'dd-MM-yyyy')}-${format(endDate, 'dd-MM-yyyy')}.zip`;
+                    await s3Client.send(
+                        new PutObjectCommand({
+                            Bucket: process.env.AWS_S3_BUCKET_NAME,
+                            Key: zipKey,
+                            Body: zipBuffer,
+                            ContentType: 'application/zip',
+                        }),
+                    );
+
+                    // Generar una URL firmada para el ZIP
+                    const zipCommand = new GetObjectCommand({
+                        Bucket: process.env.AWS_S3_BUCKET_NAME,
+                        Key: zipKey,
+                    });
+                    const zipSignedUrl = await getSignedUrl(s3Client, zipCommand, {
+                        expiresIn: 3600,
+                    });
+
+                    return {
+                        success: true,
+                        url: zipSignedUrl,
+                    };
+                } catch (error) {
+                    console.error('Error al generar o subir el archivo ZIP:', error);
+                    return {
+                        success: false,
+                        message: `Error al generar el archivo ZIP: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                    };
+                }
+            } catch (error) {
+                console.error('Error en downloadTaskPhotos resolver:', error);
+                return {
+                    success: false,
+                    message: `Error al procesar la solicitud: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                };
+            }
         },
     }),
 }));

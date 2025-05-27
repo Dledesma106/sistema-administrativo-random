@@ -19,6 +19,12 @@ export const TaskStatusPothosRef = builder.enumType('TaskStatus', {
     ),
 });
 
+export const DownloadTaskPhotosResultPothosRef = builder.objectRef<{
+    success: boolean;
+    url?: string;
+    message?: string;
+}>('DownloadTaskPhotosResult');
+
 export const TaskPothosRef = builder.prismaObject('Task', {
     fields: (t) => ({
         id: t.exposeID('id'),

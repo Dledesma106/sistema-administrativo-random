@@ -12,20 +12,36 @@ export const useDownloadTaskPhotos = () => {
         {
             startDate: Date;
             endDate: Date;
-            businessId?: string;
+            businessId: string;
         }
     >({
         mutationFn: ({ startDate, endDate, businessId }) =>
             fetchClient(DownloadTaskPhotosDocument, {
                 startDate,
                 endDate,
-                businessId: businessId ?? null,
+                businessId,
             }),
         onSuccess: (data) => {
-            const downloadUrl = data.downloadTaskPhotos;
+            const result = data.downloadTaskPhotos;
+
+            if (!result.success) {
+                triggerAlert({
+                    type: 'Failure',
+                    message: result.message || 'No se pudo generar el archivo de fotos',
+                });
+                return;
+            }
+
+            if (!result.url) {
+                triggerAlert({
+                    type: 'Failure',
+                    message: 'No se pudo obtener la URL de descarga',
+                });
+                return;
+            }
 
             const link = document.createElement('a');
-            link.href = downloadUrl;
+            link.href = result.url;
             link.download = 'fotos-tareas.zip';
             document.body.appendChild(link);
             link.click();
@@ -36,10 +52,19 @@ export const useDownloadTaskPhotos = () => {
                 message: 'Fotos de tareas descargadas con éxito',
             });
         },
-        onError: (error) => {
+        onError: (error: any) => {
+            let errorMessage = 'Error al descargar las fotos';
+
+            if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+                console.log(error);
+                errorMessage = error.graphQLErrors[0].extensions.originalError.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             triggerAlert({
                 type: 'Failure',
-                message: `Error al descargar las fotos de tareas: ${error}`,
+                message: errorMessage,
             });
         },
     });
