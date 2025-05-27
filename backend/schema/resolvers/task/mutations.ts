@@ -1414,7 +1414,12 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { startDate, endDate, businessId } = args;
-
+                if (startDate) {
+                    startDate.setHours(0, 0, 0, 0);
+                }
+                if (endDate) {
+                    endDate.setHours(23, 59, 59, 999);
+                }
                 const business = await prisma.business.findUniqueUndeleted({
                     where: {
                         id: businessId || '',
@@ -1424,7 +1429,7 @@ builder.mutationFields((t) => ({
                 // Buscar las tareas que coincidan con los filtros
                 const tasks = await prisma.task.findManyUndeleted({
                     where: {
-                        ClosedAt: {
+                        closedAt: {
                             gte: startDate,
                             lte: endDate,
                         },
