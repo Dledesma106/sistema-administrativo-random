@@ -1424,12 +1424,14 @@ builder.mutationFields((t) => ({
                 // Buscar las tareas que coincidan con los filtros
                 const tasks = await prisma.task.findManyUndeleted({
                     where: {
-                        createdAt: {
+                        ClosedAt: {
                             gte: startDate,
                             lte: endDate,
                         },
                         businessId,
-                        status: TaskStatus.Finalizada,
+                        status: {
+                            in: [TaskStatus.Finalizada, TaskStatus.Aprobada],
+                        },
                         images: {
                             some: {
                                 deleted: false,
@@ -1445,7 +1447,7 @@ builder.mutationFields((t) => ({
                 if (tasks.length === 0) {
                     return {
                         success: false,
-                        message: `No se encontraron tareas finalizadas con imágenes para la empresa ${business?.name} en el período del ${format(startDate, 'dd/MM/yyyy')} al ${format(endDate, 'dd/MM/yyyy')}`,
+                        message: `No se encontraron tareas finalizadas o aprobadas con imágenes para la empresa ${business?.name} en el período del ${format(startDate, 'dd/MM/yyyy')} al ${format(endDate, 'dd/MM/yyyy')}`,
                     };
                 }
 
