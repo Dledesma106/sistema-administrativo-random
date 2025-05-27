@@ -24,6 +24,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { TableSkeleton } from '@/components/ui/skeleton';
+import { TaskPhotosButton } from '@/components/ui/TaskPhotosButton';
 import { TaskReportButton } from '@/components/ui/TaskReportButton';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetTasks } from '@/hooks/api/tasks/useGetTasks';
@@ -177,7 +178,10 @@ export default function TasksDataTable(props: Props): JSX.Element {
             headerActions={
                 <>
                     {user.roles.includes(Role.AdministrativoContable) && (
-                        <TaskReportButton />
+                        <>
+                            <TaskReportButton />
+                            <TaskPhotosButton businesses={props.businesses} />
+                        </>
                     )}
                     {user.roles.includes(Role.AdministrativoTecnico) && (
                         <Button

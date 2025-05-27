@@ -219,3 +219,19 @@ mutation GenerateApprovedTasksReport(
         endDate: $endDate
     )
 }
+
+mutation DownloadTaskPhotos(
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $businessId: String
+) {
+    downloadTaskPhotos(
+        startDate: $startDate
+        endDate: $endDate
+        businessId: $businessId
+    ) {
+        success
+        url
+        message
+    }
+}
