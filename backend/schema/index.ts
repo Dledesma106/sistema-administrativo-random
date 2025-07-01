@@ -11,5 +11,9 @@ import './resolvers/expense';
 import './resolvers/preventive';
 import './resolvers/auth';
 import './resolvers/file';
+import './resolvers/billingProfile';
+import './resolvers/budget';
+import './resolvers/gmail';
+import './resolvers/serviceOrder';
 
 export const schema = builder.toSchema();
