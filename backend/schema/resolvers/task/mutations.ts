@@ -252,6 +252,7 @@ builder.mutationFields((t) => ({
                             set: participantNames, // Inicializar con nombres de asignados
                         },
                         movitecTicket: input.movitecTicket,
+                        serviceOrderId: input.serviceOrderId,
                     },
                 });
 

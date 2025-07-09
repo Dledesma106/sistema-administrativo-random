@@ -11,5 +11,13 @@ import './resolvers/expense';
 import './resolvers/preventive';
 import './resolvers/auth';
 import './resolvers/file';
+import './resolvers/billingProfile';
+import './resolvers/budget';
+import './resolvers/gmail';
+import './resolvers/serviceOrder';
+import './resolvers/bill';
+import './resolvers/taskPrice';
+import './resolvers/bankAccount';
+import './resolvers/bankMovement';
 
 export const schema = builder.toSchema();

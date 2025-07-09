@@ -183,6 +183,9 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
         movitecTicket: t.string({
             required: false,
         }),
+        serviceOrderId: t.string({
+            required: false,
+        }),
     }),
 });
 
