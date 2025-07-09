@@ -67,6 +67,8 @@ model Business {
   branchesIDs  String[]       @db.ObjectId
   branches     Branch[]       @relation(fields: [branchesIDs], references: [id])
   serviceOrder ServiceOrder[]
+  Bill         Bill[]
+  taskPrices   TaskPrice[]
 
   @@map("businesses")
 }
@@ -302,7 +304,31 @@ model Task {
   serviceOrderId String?       @map("serviceOrder") @db.ObjectId
   serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
 
+  priceHistory TaskPriceHistory[]
+
   @@map("tasks")
+}
+
+type TaskPriceHistory {
+  price     Float
+  updatedAt DateTime
+}
+
+model TaskPrice {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt
+
+  taskType TaskType
+  price    Float
+
+  businessId String   @map("business") @db.ObjectId
+  business   Business @relation(fields: [businessId], references: [id])
+
+  priceHistory TaskPriceHistory[]
+
+  @@unique([businessId, taskType])
+  @@map("task_prices")
 }
 
 enum PreventiveStatus {
@@ -413,7 +439,9 @@ model BillingProfile {
   businessId String   @unique @map("business") @db.ObjectId
   business   Business @relation(fields: [businessId], references: [id])
 
-  budgets Budget[]
+  budgets     Budget[]
+  Bill        Bill[]
+  BankAccount BankAccount[]
 
   @@map("billing_profiles")
 }
@@ -494,4 +522,121 @@ model ServiceOrder {
   budget   Budget? @relation(fields: [budgetId], references: [id])
 
   @@map("service_orders")
+}
+
+enum BillStatus {
+  Borrador
+  Emitida
+  Vencida
+  Pagada
+}
+
+enum CAEStatus {
+  Autorizado
+  Rechazado
+  Observado
+}
+
+enum AlicuotaIVA {
+  IVA_21
+  IVA_10_5
+  IVA_27
+  IVA_0
+}
+
+enum AccountType {
+  CuentaCorriente
+  CajaDeAhorro
+  CuentaDeSueldo
+  CuentaEnMonedaExtranjera
+}
+
+type BillDetail {
+  description String
+  quantity    Int
+  unitPrice   Float
+  alicuotaIVA AlicuotaIVA
+}
+
+type CAEData {
+  code              String
+  expirationDate    DateTime
+  comprobanteNumber String
+  status            CAEStatus
+}
+
+model Bill {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt
+
+  businessId String   @map("business") @db.ObjectId
+  business   Business @relation(fields: [businessId], references: [id])
+
+  billingProfileId String         @map("billingProfile") @db.ObjectId
+  billingProfile   BillingProfile @relation(fields: [billingProfileId], references: [id])
+
+  legalName      String
+  CUIT           String
+  billingAddress String
+  IVACondition   IVACondition
+
+  status          BillStatus
+  description     String?
+  comprobanteType String
+  saleCondition   String
+  punctualService Boolean    @default(false)
+  serviceDate     DateTime?  @db.Date
+  startDate       DateTime?  @db.Date
+  endDate         DateTime?  @db.Date
+  dueDate         DateTime?  @db.Date
+
+  caeData           CAEData?
+  details           BillDetail[]
+  withholdingAmount Float?
+
+  @@map("bills")
+}
+
+model BankAccount {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
+  bank          String
+  accountNumber String
+  cbu           String?
+  alias         String?
+  accountType   AccountType
+  holder        String
+  holderCUIT    String
+  balance       Float       @default(0)
+
+  billingProfileId     String?         @map("billingProfile") @db.ObjectId
+  billingProfile       BillingProfile? @relation(fields: [billingProfileId], references: [id])
+  sourceMovements      BankMovement[]  @relation("SourceMovements")
+  destinationMovements BankMovement[]  @relation("DestinationMovements")
+
+  @@map("bank_accounts")
+}
+
+model BankMovement {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
+  amount Float
+  date   DateTime @db.Date
+
+  sourceAccountId String      @map("sourceAccount") @db.ObjectId
+  sourceAccount   BankAccount @relation("SourceMovements", fields: [sourceAccountId], references: [id])
+
+  destinationAccountId String?      @map("destinationAccount") @db.ObjectId
+  destinationAccount   BankAccount? @relation("DestinationMovements", fields: [destinationAccountId], references: [id])
+
+  @@map("bank_movements")
 }
