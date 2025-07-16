@@ -1,4 +1,5 @@
-import { TaskPricePothosRef, TaskTypePothosRef } from './refs';
+import { TaskPricePothosRef } from './refs';
+import { TaskTypePothosRef } from '../task/refs';
 
 import { prisma } from 'lib/prisma';
 
