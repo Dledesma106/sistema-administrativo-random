@@ -1,12 +1,6 @@
-import { TaskType } from '@prisma/client';
-
 import { builder } from '../../builder';
-
-export const TaskTypePothosRef = builder.enumType('TaskType', {
-    values: Object.fromEntries(
-        Object.entries(TaskType).map(([name, value]) => [name, { value }]),
-    ),
-});
+import { TaskType } from '@prisma/client';
+import { TaskTypePothosRef } from '../task/refs';
 
 export const TaskPriceHistoryPothosRef = builder
     .objectRef<{
@@ -36,7 +30,7 @@ export const TaskPricePothosRef = builder.prismaObject('TaskPrice', {
         }),
         taskType: t.field({
             type: TaskTypePothosRef,
-            resolve: (root) => root.taskType,
+            resolve: (root) => root.taskType.replace('_', ' ') as TaskType,
         }),
         price: t.exposeFloat('price'),
         business: t.relation('business'),

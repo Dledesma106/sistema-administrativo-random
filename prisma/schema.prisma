@@ -173,6 +173,7 @@ model File {
 
   expenseIDs String[]  @db.ObjectId
   expenses   Expense[] @relation(fields: [expenseIDs], references: [id])
+  Bill       Bill[]
 
   @@map("files")
 }
@@ -551,6 +552,12 @@ enum AccountType {
   CuentaEnMonedaExtranjera
 }
 
+enum ComprobanteType {
+  A
+  B
+  C
+}
+
 type BillDetail {
   description String
   quantity    Int
@@ -583,17 +590,19 @@ model Bill {
 
   status          BillStatus
   description     String?
-  comprobanteType String
+  comprobanteType ComprobanteType
   saleCondition   String
-  punctualService Boolean    @default(false)
-  serviceDate     DateTime?  @db.Date
-  startDate       DateTime?  @db.Date
-  endDate         DateTime?  @db.Date
-  dueDate         DateTime?  @db.Date
+  punctualService Boolean         @default(false)
+  serviceDate     DateTime?       @db.Date
+  startDate       DateTime?       @db.Date
+  endDate         DateTime?       @db.Date
+  dueDate         DateTime?       @db.Date
 
   caeData           CAEData?
   details           BillDetail[]
   withholdingAmount Float?
+  pdfId             String?      @db.ObjectId
+  pdf               File?        @relation(fields: [pdfId], references: [id])
 
   @@map("bills")
 }

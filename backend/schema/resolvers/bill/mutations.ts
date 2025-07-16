@@ -1,6 +1,7 @@
 import { BillCrudResultPothosRef, BillInputPothosRef } from './refs';
 
 import { prisma } from 'lib/prisma';
+import { emitirFacturaElectronica } from '../../../services/billService';
 
 import { builder } from '../../builder';
 
@@ -33,14 +34,8 @@ builder.mutationFields((t) => ({
                         message: 'Perfil de facturación no encontrado',
                     };
                 }
-                // Si el estado es Emitida, dejar un TODO para AFIP
-                const caeData = undefined;
-                if (input.status === 'Emitida') {
-                    // TODO: Integrar con AFIP para obtener CAE y datos fiscales
-                }
 
-                // TODO: Integrar con servicio externo para cálculo de retenciones
-
+                // Crear la factura en la base de datos
                 const bill = await prisma.bill.create({
                     data: {
                         businessId: billingProfile.businessId,
@@ -58,10 +53,31 @@ builder.mutationFields((t) => ({
                         startDate: input.startDate,
                         endDate: input.endDate,
                         dueDate: input.dueDate,
-                        caeData,
                         details: input.details,
                     },
                 });
+
+                // Si el estado es Emitida, emitir la factura electrónica
+                if (input.status === 'Emitida') {
+                    try {
+                        const billEmitida = await emitirFacturaElectronica(bill.id);
+                        return {
+                            success: true,
+                            bill: billEmitida,
+                        };
+                    } catch (error) {
+                        // Si falla la emisión, actualizar el estado a Borrador
+                        await prisma.bill.update({
+                            where: { id: bill.id },
+                            data: { status: 'Borrador' },
+                        });
+                        return {
+                            success: false,
+                            message: 'Error al emitir factura electrónica: ' + (error instanceof Error ? error.message : error),
+                        };
+                    }
+                }
+
                 return {
                     success: true,
                     bill,
@@ -99,14 +115,8 @@ builder.mutationFields((t) => ({
                         message: 'Factura no encontrada',
                     };
                 }
-                // Si el estado es Emitida, dejar un TODO para AFIP
-                const caeData = undefined;
-                if (input.status === 'Emitida') {
-                    // TODO: Integrar con AFIP para obtener CAE y datos fiscales
-                }
 
-                // TODO: Integrar con servicio externo para cálculo de retenciones
-
+                // Actualizar la factura en la base de datos
                 const updated = await prisma.bill.update({
                     where: { id },
                     data: {
@@ -120,10 +130,31 @@ builder.mutationFields((t) => ({
                         startDate: input.startDate,
                         endDate: input.endDate,
                         dueDate: input.dueDate,
-                        caeData,
                         details: input.details,
                     },
                 });
+
+                // Si el estado cambió a Emitida, emitir la factura electrónica
+                if (input.status === 'Emitida' && bill.status !== 'Emitida') {
+                    try {
+                        const billEmitida = await emitirFacturaElectronica(id);
+                        return {
+                            success: true,
+                            bill: billEmitida,
+                        };
+                    } catch (error) {
+                        // Si falla la emisión, revertir el estado
+                        await prisma.bill.update({
+                            where: { id },
+                            data: { status: bill.status },
+                        });
+                        return {
+                            success: false,
+                            message: 'Error al emitir factura electrónica: ' + (error instanceof Error ? error.message : error),
+                        };
+                    }
+                }
+
                 return {
                     success: true,
                     bill: updated,

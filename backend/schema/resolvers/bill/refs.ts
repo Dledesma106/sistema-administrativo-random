@@ -1,4 +1,5 @@
-import { BillStatus, CAEStatus, AlicuotaIVA, IVACondition } from '@prisma/client';
+import { BillStatus, CAEStatus, AlicuotaIVA, ComprobanteType } from '@prisma/client';
+import { IVAConditionPothosRef } from '../billingProfile/refs';
 
 import { builder } from '../../builder';
 
@@ -20,9 +21,9 @@ export const AlicuotaIVAPothosRef = builder.enumType('AlicuotaIVA', {
     ),
 });
 
-export const IVAConditionPothosRef = builder.enumType('IVACondition', {
+export const ComprobanteTypePothosRef = builder.enumType('ComprobanteType', {
     values: Object.fromEntries(
-        Object.entries(IVACondition).map(([name, value]) => [name, { value }]),
+        Object.entries(ComprobanteType).map(([name, value]) => [name, { value }]),
     ),
 });
 
@@ -92,7 +93,10 @@ export const BillPothosRef = builder.prismaObject('Bill', {
             resolve: (root) => root.status,
         }),
         description: t.exposeString('description', { nullable: true }),
-        comprobanteType: t.exposeString('comprobanteType'),
+        comprobanteType: t.field({
+            type: ComprobanteTypePothosRef,
+            resolve: (root) => root.comprobanteType,
+        }),
         saleCondition: t.exposeString('saleCondition'),
         punctualService: t.exposeBoolean('punctualService'),
         serviceDate: t.field({
@@ -161,7 +165,10 @@ export const BillDetailInputPothosRef = builder.inputType('BillDetailInput', {
 export const BillInputPothosRef = builder.inputType('BillInput', {
     fields: (t) => ({
         billingProfileId: t.string({ required: true }),
-        comprobanteType: t.string({ required: true }),
+        comprobanteType: t.field({
+            type: ComprobanteTypePothosRef,
+            required: true,
+        }),
         saleCondition: t.string({ required: true }),
         punctualService: t.boolean({ required: true }),
         serviceDate: t.field({
