@@ -1,4 +1,5 @@
 import React from 'react';
+
 import type { EmailThread } from './index';
 
 interface Props {
@@ -24,4 +25,4 @@ export default function EmailThreadItem({ thread, selected, onSelect }: Props) {
             </div>
         </div>
     );
-} 
+}

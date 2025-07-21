@@ -1,4 +1,5 @@
 import React from 'react';
+
 import EmailThreadItem from './EmailThreadItem';
 import type { EmailThread } from './index';
 
@@ -13,7 +14,9 @@ export default function EmailThreadList({ threads, onSelect, selectedId }: Props
     const filteredThreads = threads.filter(
         (t) =>
             t.subject.toLowerCase().includes(search.toLowerCase()) ||
-            t.messages.some((m) => m.content.toLowerCase().includes(search.toLowerCase()))
+            t.messages.some((m) =>
+                m.content.toLowerCase().includes(search.toLowerCase()),
+            ),
     );
 
     return (
@@ -40,4 +43,4 @@ export default function EmailThreadList({ threads, onSelect, selectedId }: Props
             </div>
         </div>
     );
-} 
+}

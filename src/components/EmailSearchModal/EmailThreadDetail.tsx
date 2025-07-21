@@ -3,7 +3,7 @@ import type { EmailThread } from './index';
 export default function EmailThreadDetail({ thread }: { thread: EmailThread }) {
     return (
         <div className="flex-1 overflow-y-auto pl-4">
-            <div className="font-bold mb-2">{thread.subject}</div>
+            <div className="mb-2 font-bold">{thread.subject}</div>
             <div className="space-y-4">
                 {thread.messages.map((email) => (
                     <div
@@ -32,4 +32,4 @@ export default function EmailThreadDetail({ thread }: { thread: EmailThread }) {
             </div>
         </div>
     );
-} 
+}

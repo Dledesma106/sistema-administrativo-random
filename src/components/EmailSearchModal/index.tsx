@@ -1,6 +1,8 @@
 import { useState } from 'react';
+
 import EmailThreadDetail from './EmailThreadDetail';
 import EmailThreadList from './EmailThreadList';
+
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -63,7 +65,8 @@ const mockEmailThreads: EmailThread[] = [
                 from: 'soporte@cliente.com',
                 to: ['ventas@miempresa.com'],
                 timestamp: '2024-03-21T09:45:00Z',
-                content: 'Hola,\n\nQuisiera consultar sobre la factura enviada.\n\nGracias,\nSoporte',
+                content:
+                    'Hola,\n\nQuisiera consultar sobre la factura enviada.\n\nGracias,\nSoporte',
                 type: 'RECEIVED',
             },
         ],
@@ -81,11 +84,11 @@ export default function EmailSearchModal({
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="flex h-[80vh] min-w-[900px] max-w-4xl">
-                <DialogHeader className="px-8 pt-8 pb-2">
+                <DialogHeader className="px-8 pb-2 pt-8">
                     <DialogTitle>Buscar cadenas de mails</DialogTitle>
                 </DialogHeader>
-                <div className="gap-6 overflow-hidden px-8 pb-2 flex flex-1">
-                    <div className="h-full w-96 flex-col border-r border-accent pr-4 flex">
+                <div className="flex flex-1 gap-6 overflow-hidden px-8 pb-2">
+                    <div className="flex h-full w-96 flex-col border-r border-accent pr-4">
                         <EmailThreadList
                             threads={mockEmailThreads}
                             onSelect={setSelected}
@@ -102,7 +105,7 @@ export default function EmailSearchModal({
                         )}
                     </div>
                 </div>
-                <div className="border-t border-accent px-8 pb-8 pt-2 flex justify-end gap-2">
+                <div className="flex justify-end gap-2 border-t border-accent px-8 pb-8 pt-2">
                     <Button variant="outline" onClick={onClose}>
                         Cancelar
                     </Button>
@@ -121,4 +124,4 @@ export default function EmailSearchModal({
             </DialogContent>
         </Dialog>
     );
-} 
+}
