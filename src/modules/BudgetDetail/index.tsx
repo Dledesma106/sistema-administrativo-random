@@ -17,6 +17,7 @@ const Title = ({ children }: { children: React.ReactNode }) => (
 const mockBudget = {
     id: '1',
     company: 'Empresa A',
+    subject: 'Implementación de sistema de gestión',
     description: 'Descripción detallada del presupuesto A',
     price: 150000,
     status: BudgetStatus.Recibido,
@@ -142,6 +143,11 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                 </div>
 
                 <div>
+                    <Title>Asunto</Title>
+                    <p className="mb-1">{mockBudget.subject}</p>
+                </div>
+
+                <div>
                     <Title>Empresa</Title>
                     <p className="mb-1">{mockBudget.company}</p>
                 </div>
@@ -165,7 +171,7 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                 </div>
 
                 <div>
-                    <Title>Precio</Title>
+                    <Title>Monto</Title>
                     <p className="mb-1">
                         {mockBudget.price.toLocaleString('es-AR', {
                             style: 'currency',

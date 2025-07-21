@@ -8,6 +8,7 @@ const mockBudgets = [
     {
         id: '1',
         company: 'Empresa A',
+        subject: 'Asunto del presupuesto A',
         description: 'Descripción del presupuesto A',
         price: 150000,
         status: BudgetStatus.Enviado,
@@ -15,6 +16,7 @@ const mockBudgets = [
     {
         id: '2',
         company: 'Empresa B',
+        subject: 'Asunto del presupuesto B',
         description: 'Descripción del presupuesto B',
         price: 250000,
         status: BudgetStatus.Recibido,
@@ -22,6 +24,7 @@ const mockBudgets = [
     {
         id: '3',
         company: 'Empresa C',
+        subject: 'Asunto del presupuesto C',
         description: 'Descripción del presupuesto C',
         price: 350000,
         status: BudgetStatus.Aprobado,
@@ -29,6 +32,7 @@ const mockBudgets = [
     {
         id: '4',
         company: 'Empresa D',
+        subject: 'Asunto del presupuesto D',
         description: 'Descripción del presupuesto D',
         price: 450000,
         status: BudgetStatus.Rechazado,
