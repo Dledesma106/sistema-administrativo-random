@@ -83,7 +83,7 @@ export default function TaskPricesDataTable({ data, businesses }: Props) {
                 </Button>
             }
             onRowClick={(row) =>
-                router.push(routesBuilder.accounting.taskPrices.edit(row.id))
+                router.push(routesBuilder.accounting.taskPrices.details(row.id))
             }
         />
     );

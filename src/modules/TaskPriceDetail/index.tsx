@@ -2,6 +2,7 @@ import { TaskType } from '@prisma/client';
 import { format } from 'date-fns';
 import { useState } from 'react';
 
+import { UpdatePriceModal } from '@/components/Modals/UpdatePriceModal';
 import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
 import { Button } from '@/components/ui/button';
 import { DataList, Column } from '@/components/ui/data-list';
@@ -46,6 +47,8 @@ type Props = {
 const Content: React.FC<Props> = ({ taskPrice }) => {
     const [currentPrice, setCurrentPrice] = useState(taskPrice.price);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [priceHistory, setPriceHistory] = useState(taskPrice.priceHistory);
 
     const priceHistoryColumns: Column<PriceHistoryItem>[] = [
         {
@@ -66,10 +69,21 @@ const Content: React.FC<Props> = ({ taskPrice }) => {
     ];
 
     const handleUpdatePrice = () => {
+        setIsModalOpen(true);
+    };
+
+    const handleConfirmUpdatePrice = (newPrice: number) => {
         setIsUpdating(true);
         // Simular actualización
         setTimeout(() => {
-            setCurrentPrice(currentPrice + 1000); // Solo para demo
+            // Agregar el precio anterior al historial
+            const previousPriceEntry = {
+                price: currentPrice,
+                updatedAt: new Date(),
+            };
+
+            setPriceHistory([previousPriceEntry, ...priceHistory]);
+            setCurrentPrice(newPrice);
             setIsUpdating(false);
         }, 1000);
     };
@@ -113,12 +127,20 @@ const Content: React.FC<Props> = ({ taskPrice }) => {
                 <section>
                     <Title>Historial de precios</Title>
                     <DataList
-                        data={taskPrice.priceHistory}
+                        data={priceHistory}
                         columns={priceHistoryColumns}
                         emptyMessage="No hay historial de precios"
                     />
                 </section>
             </div>
+
+            <UpdatePriceModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                currentPrice={currentPrice}
+                onUpdatePrice={handleConfirmUpdatePrice}
+                isUpdating={isUpdating}
+            />
         </main>
     );
 };
