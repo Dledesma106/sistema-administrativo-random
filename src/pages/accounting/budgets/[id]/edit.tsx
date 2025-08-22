@@ -19,6 +19,7 @@ export default function EditBudget(): JSX.Element {
         business: '1', // ID de la empresa existente
         client: '1', // ID del cliente existente
         branch: '1', // ID de la sucursal existente
+        subject: 'Asunto del presupuesto de ejemplo',
         description: 'Descripción del presupuesto de ejemplo',
         price: 150000,
         contacts: [

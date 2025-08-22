@@ -9,6 +9,7 @@ import BudgetStatusBadge, {
 type Budget = {
     id: string;
     company: string;
+    subject: string;
     description: string;
     price: number;
     status: BudgetStatus;
@@ -20,6 +21,11 @@ const columnHelper = createColumnHelper<Budget>();
 export const useBudgetsTableColumns = () => [
     columnHelper.accessor('company', {
         header: 'Empresa',
+        enableSorting: true,
+    }),
+    columnHelper.accessor('subject', {
+        header: 'Asunto',
+        enableSorting: true,
     }),
     columnHelper.accessor('description', {
         header: 'Descripción',
@@ -37,9 +43,10 @@ export const useBudgetsTableColumns = () => [
     columnHelper.accessor('status', {
         header: 'Estado',
         cell: (info) => <BudgetStatusBadge status={info.getValue()} />,
+        enableSorting: true,
     }),
     columnHelper.accessor('price', {
-        header: 'Precio',
+        header: 'Monto',
         cell: (info) => {
             const price = info.getValue();
             return price.toLocaleString('es-AR', {
@@ -47,6 +54,7 @@ export const useBudgetsTableColumns = () => [
                 currency: 'ARS',
             });
         },
+        enableSorting: true,
     }),
     columnHelper.display({
         id: 'actions',

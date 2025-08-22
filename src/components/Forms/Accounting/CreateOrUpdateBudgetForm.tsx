@@ -1,6 +1,7 @@
 import { useRouter } from 'next/navigation';
 
 import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import CreateOrUpdateBillingProfileForm from './CreateOrUpdateBillingProfileForm';
@@ -8,6 +9,8 @@ import CreateOrUpdateBillingProfileForm from './CreateOrUpdateBillingProfileForm
 import { GetBranchesQuery, GetClientsQuery, GetBusinessesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
+import EmailSearchModal from '@/components/EmailSearchModal';
+import type { EmailThread } from '@/components/EmailSearchModal';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -30,6 +33,7 @@ type FormValues = {
     branch?: string | null;
     business: string;
     description: string;
+    subject: string;
     price: number;
     businessName?: string;
     businessCUIT?: string;
@@ -128,11 +132,42 @@ const CreateOrUpdateBudgetForm = ({
         }
     };
 
+    const [isMailModalOpen, setMailModalOpen] = useState(false);
+    const [selectedEmailThread, setSelectedEmailThread] = useState<EmailThread | null>(
+        null,
+    );
+
     return (
         <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 asChild className="mb-4">
                 <h1>{budgetIdToUpdate ? 'Editar Presupuesto' : 'Crear Presupuesto'}</h1>
             </TypographyH2>
+
+            {/* Botón para buscar cadenas de mails */}
+            <div className="mb-4 flex flex-row items-center gap-2">
+                <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={() => setMailModalOpen(true)}
+                >
+                    Buscar cadenas de mails
+                </Button>
+                {selectedEmailThread && (
+                    <span className="text-xs text-muted-foreground">
+                        Asunto seleccionado: {selectedEmailThread?.subject}
+                    </span>
+                )}
+            </div>
+
+            <EmailSearchModal
+                open={isMailModalOpen}
+                onClose={() => setMailModalOpen(false)}
+                onSelect={(thread: EmailThread) => {
+                    setSelectedEmailThread(thread);
+                    form.setValue('subject', thread.subject);
+                }}
+                selectedThread={selectedEmailThread}
+            />
 
             <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>

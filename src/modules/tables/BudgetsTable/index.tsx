@@ -25,6 +25,7 @@ type Props = {
     data: {
         id: string;
         company: string;
+        subject: string;
         description: string;
         price: number;
         status: BudgetStatus;
@@ -41,11 +42,19 @@ export default function BudgetsDataTable({ data, businesses }: Props) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const columns = useBudgetsTableColumns();
 
+    // Filtrar por asunto (subject)
+    const filteredData = searchTerm
+        ? data.filter((row) =>
+              row.subject?.toLowerCase().includes(searchTerm.toLowerCase()),
+          )
+        : data;
+
     const table = useReactTable({
-        data,
+        data: filteredData,
         columns,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
@@ -68,8 +77,12 @@ export default function BudgetsDataTable({ data, businesses }: Props) {
         <DataTable
             table={table}
             title="Presupuestos"
-            toolbarConfig={getBudgetsTableToolbarConfig(businesses)}
-            totalCount={data.length}
+            toolbarConfig={getBudgetsTableToolbarConfig(
+                businesses,
+                searchTerm,
+                setSearchTerm,
+            )}
+            totalCount={filteredData.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
