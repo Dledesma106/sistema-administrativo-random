@@ -18,15 +18,12 @@ export function CustomScrollArea({
                 'overflow-auto',
                 'rounded-md border border-accent',
                 height,
-                'scrollbar-thin',
-                'scrollbar-thumb-primary',
-                'scrollbar-track-background',
-                '[&::-webkit-scrollbar]:w-1.5',
-                '[&::-webkit-scrollbar-thumb]:rounded-full',
-                '[&::-webkit-scrollbar-track]:bg-transparent',
-                '[&::-webkit-scrollbar-button]:bg-transparent',
                 className,
             )}
+            style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'hsl(var(--primary)) transparent',
+            }}
         >
             {children}
         </div>

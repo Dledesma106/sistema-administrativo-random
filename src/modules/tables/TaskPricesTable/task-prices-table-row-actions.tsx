@@ -1,3 +1,5 @@
+import { useRouter } from 'next/router';
+
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -11,17 +13,23 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { routesBuilder } from '@/lib/routes';
 
 interface Props {
     taskPrice: TaskPrice;
 }
 
 export function TaskPricesTableRowActions({ taskPrice }: Props) {
+    const router = useRouter();
     const [modal, setModal] = useState(false);
 
     const handleDelete = () => {
         console.log('Eliminar precio de tarea:', taskPrice.id);
         setModal(false);
+    };
+
+    const handleViewDetails = () => {
+        router.push(routesBuilder.accounting.taskPrices.details(taskPrice.id));
     };
 
     return (
@@ -34,6 +42,9 @@ export function TaskPricesTableRowActions({ taskPrice }: Props) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[160px]">
+                    <DropdownMenuItem onClick={handleViewDetails}>
+                        Ver detalle
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <div onClick={() => setModal(true)}>Eliminar</div>
                     </DropdownMenuItem>

@@ -76,6 +76,7 @@ export const routesBuilder = {
         taskPrices: {
             list: () => '/accounting/task-prices',
             create: () => '/accounting/task-prices/new',
+            details: (id: string) => `/accounting/task-prices/${id}`,
             edit: (id: string) => `/accounting/task-prices/${id}/edit`,
         },
     },
