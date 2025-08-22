@@ -7,7 +7,14 @@ export const getBudgetsTableToolbarConfig = (
         id: string;
         name: string;
     }[],
+    searchTerm: string,
+    onSearch: (term: string) => void,
 ): ToolbarConfig<any> => ({
+    search: {
+        placeholder: 'Buscar por asunto...',
+        term: searchTerm,
+        onSearch,
+    },
     filters: [
         {
             columnId: 'company',

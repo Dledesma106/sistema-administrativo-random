@@ -132,7 +132,7 @@ const config = {
             },
         },
     },
-    plugins: [animate, scrollbar({ nocompatible: true })],
+    plugins: [animate, scrollbar],
 };
 
 export default config;
