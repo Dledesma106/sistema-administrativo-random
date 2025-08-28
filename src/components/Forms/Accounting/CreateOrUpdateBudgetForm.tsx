@@ -206,7 +206,6 @@ const CreateOrUpdateBudgetForm = ({
                     {isNewBusiness && (
                         <div className="space-y-4 rounded-lg border border-accent p-4">
                             <CreateOrUpdateBillingProfileForm
-                                businesses={businesses}
                                 isEmbedded={true}
                                 onSubmit={(billingData) => {
                                     form.setValue(

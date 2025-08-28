@@ -1,8 +1,8 @@
 import { BillCrudResultPothosRef, BillInputPothosRef } from './refs';
 
 import { prisma } from 'lib/prisma';
-import { emitirFacturaElectronica } from '../../../services/billService';
 
+import { emitirFacturaElectronica } from '../../../services/billService';
 import { builder } from '../../builder';
 
 builder.mutationFields((t) => ({
@@ -58,7 +58,7 @@ builder.mutationFields((t) => ({
                 });
 
                 // Si el estado es Emitida, emitir la factura electrónica
-                if (input.status === 'Emitida') {
+                if (input.status === 'Pendiente') {
                     try {
                         const billEmitida = await emitirFacturaElectronica(bill.id);
                         return {
@@ -73,7 +73,9 @@ builder.mutationFields((t) => ({
                         });
                         return {
                             success: false,
-                            message: 'Error al emitir factura electrónica: ' + (error instanceof Error ? error.message : error),
+                            message:
+                                'Error al emitir factura electrónica: ' +
+                                (error instanceof Error ? error.message : error),
                         };
                     }
                 }
@@ -135,7 +137,7 @@ builder.mutationFields((t) => ({
                 });
 
                 // Si el estado cambió a Emitida, emitir la factura electrónica
-                if (input.status === 'Emitida' && bill.status !== 'Emitida') {
+                if (input.status === 'Pendiente' && bill.status !== 'Pendiente') {
                     try {
                         const billEmitida = await emitirFacturaElectronica(id);
                         return {
@@ -150,7 +152,9 @@ builder.mutationFields((t) => ({
                         });
                         return {
                             success: false,
-                            message: 'Error al emitir factura electrónica: ' + (error instanceof Error ? error.message : error),
+                            message:
+                                'Error al emitir factura electrónica: ' +
+                                (error instanceof Error ? error.message : error),
                         };
                     }
                 }

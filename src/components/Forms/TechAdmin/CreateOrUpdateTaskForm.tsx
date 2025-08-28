@@ -135,7 +135,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
     const selectedBusiness =
         watchedBusiness && selectedBranch
             ? selectedBranch.businesses.find(
-                  (business) => business.id === watchedBusiness
+                  (business) => business.id === watchedBusiness,
               )
             : null;
 
@@ -169,12 +169,13 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                     branch: form.branch ?? null,
                     business: form.business === 'Otro' ? null : (form.business ?? null),
                     clientName: form.clientName ?? null,
-                    businessName: (form.businessName ?? null),
+                    businessName: form.businessName ?? null,
                     description: form.description,
                     taskType: form.taskType,
                     actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
                     movitecTicket: form.movitecTicket,
+                    serviceOrderId: null,
                 },
             });
         },
@@ -232,7 +233,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                 input: {
                     auditor: null,
                     branch: form.branch ?? null,
-                    business: form.business === 'Otro' ? null : form.business ?? null,
+                    business: form.business === 'Otro' ? null : (form.business ?? null),
                     clientName: form.clientName ?? null,
                     businessName: form.businessName ?? null,
                     description: form.description,
@@ -240,6 +241,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                     actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
                     movitecTicket: form.movitecTicket,
+                    serviceOrderId: null,
                 },
             });
         },
@@ -344,7 +346,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                                                     .filter(
                                                         (branch) =>
                                                             branch.client.id ===
-                                                            form.watch('client')
+                                                            form.watch('client'),
                                                     )
                                                     .map((branch) => ({
                                                         label: `${branch.number ? `#${branch.number}, ` : ''}${branch.name ? `${branch.name}, ` : ''}${branch.city.name}`,
@@ -490,7 +492,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                                                 ([key, value]) => ({
                                                     label: key,
                                                     value: value,
-                                                })
+                                                }),
                                             )}
                                         />
                                     </FormControl>

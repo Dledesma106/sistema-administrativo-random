@@ -1,6 +1,5 @@
 import { useRouter } from 'next/navigation';
 
-import { useMutation } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -8,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { ContactForm, ContactFormValues } from './ContactForm';
 import { ContactItem } from './ContactItem';
 
-import { GetBusinessesQuery } from '@/api/graphql';
+import { GetBusinessesWithoutBillingProfileQuery, IvaCondition } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
@@ -30,8 +29,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
-import { routesBuilder } from '@/lib/routes';
-import { getCleanErrorMessage } from '@/lib/utils';
+import {
+    useCreateBillingProfile,
+    useUpdateBillingProfile,
+} from '@/hooks/api/billingProfile';
+import {
+    capitalizeFirstLetter,
+    pascalCaseToSpaces,
+    getCleanErrorMessage,
+} from '@/lib/utils';
 
 type FormValues = {
     business: string;
@@ -41,26 +47,31 @@ type FormValues = {
     contacts: ContactFormValues[];
     billingEmail: string;
     billingAddress: string;
-    taxCondition: 'RESPONSABLE_INSCRIPTO' | 'MONOTRIBUTO' | 'EXENTO' | 'CONSUMIDOR_FINAL';
+    taxCondition: IvaCondition;
 };
 
 interface Props {
     defaultValues?: FormValues;
     profileIdToUpdate?: string;
-    businesses: NonNullable<GetBusinessesQuery['businesses']>;
     isEmbedded?: boolean;
     onSubmit?: (data: FormValues) => void;
+    businessesWithoutProfile?: NonNullable<
+        GetBusinessesWithoutBillingProfileQuery['businesses']
+    >;
 }
 
 const CreateOrUpdateBillingProfileForm = ({
     defaultValues,
     profileIdToUpdate,
-    businesses,
     isEmbedded = false,
     onSubmit,
+    businessesWithoutProfile,
 }: Props): JSX.Element => {
     const router = useRouter();
     const { triggerAlert } = useAlert();
+    const createBillingProfile = useCreateBillingProfile();
+    const updateBillingProfile = useUpdateBillingProfile();
+
     const [contacts, setContacts] = useState<ContactFormValues[]>(
         defaultValues?.contacts || [],
     );
@@ -84,63 +95,78 @@ const CreateOrUpdateBillingProfileForm = ({
         }
     }, [form, isEmbedded, onSubmit]);
 
-    const postMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            if (!form.business) {
-                throw new Error('Debe seleccionar una empresa');
+    const handleSubmit = async (formData: FormValues): Promise<void> => {
+        if (isEmbedded) {
+            if (onSubmit) {
+                onSubmit(formData);
             }
+            return;
+        }
 
-            console.log('Creating billing profile:', form);
-        },
-        onSuccess: () => {
-            triggerAlert({
-                type: 'Success',
-                message: 'El perfil de facturación fue creado correctamente',
-            });
-            router.push(routesBuilder.accounting.billingProfiles.list());
-        },
-        onError: (error) => {
-            triggerAlert({
-                type: 'Failure',
-                message: getCleanErrorMessage(error),
-            });
-        },
-    });
-
-    const putMutation = useMutation({
-        mutationFn: async (form: FormValues) => {
-            if (!profileIdToUpdate) {
-                throw new Error('No se pudo actualizar el perfil de facturación');
-            }
-
-            if (!form.business) {
-                throw new Error('Debe seleccionar una empresa');
-            }
-
-            console.log('Updating billing profile:', form);
-        },
-        onSuccess: () => {
-            triggerAlert({
-                type: 'Success',
-                message: 'El perfil de facturación fue actualizado correctamente',
-            });
-            router.push(routesBuilder.accounting.billingProfiles.list());
-        },
-        onError: (error) => {
-            triggerAlert({
-                type: 'Failure',
-                message: getCleanErrorMessage(error),
-            });
-        },
-    });
-
-    const handleSubmit = (formData: FormValues): void => {
-        if (!isEmbedded) {
+        try {
             if (profileIdToUpdate) {
-                putMutation.mutateAsync(formData);
+                console.log('Actualizar perfil existente');
+                // Actualizar perfil existente
+                if (!formData.business) {
+                    throw new Error('Debe seleccionar una empresa');
+                }
+
+                const input = {
+                    CUIT: formData.cuit,
+                    legalName: formData.legalName,
+                    IVACondition: formData.taxCondition,
+                    comercialAddress: formData.billingAddress,
+                    billingEmail: formData.billingEmail,
+                    contacts: contacts.map((contact) => ({
+                        email: contact.email,
+                        fullName: contact.name,
+                        phone: contact.phone,
+                        notes: contact.notes,
+                    })),
+                };
+
+                await updateBillingProfile.mutateAsync({
+                    id: profileIdToUpdate,
+                    input,
+                });
+                triggerAlert({
+                    type: 'Success',
+                    message: 'El perfil de facturación fue actualizado correctamente',
+                });
             } else {
-                postMutation.mutateAsync(formData);
+                // Crear nuevo perfil
+                if (!formData.business) {
+                    throw new Error('Debe seleccionar una empresa');
+                }
+
+                const input = {
+                    CUIT: formData.cuit,
+                    legalName: formData.legalName,
+                    IVACondition: formData.taxCondition,
+                    comercialAddress: formData.billingAddress,
+                    billingEmail: formData.billingEmail,
+                    businessId: formData.business === 'other' ? null : formData.business,
+                    businessName: formData.businessName ?? null,
+                    contacts: contacts.map((contact) => ({
+                        email: contact.email,
+                        fullName: contact.name,
+                        phone: contact.phone,
+                        notes: contact.notes,
+                    })),
+                };
+
+                await createBillingProfile.mutateAsync({ input });
+                triggerAlert({
+                    type: 'Success',
+                    message: 'El perfil de facturación fue creado correctamente',
+                });
             }
+            router.back();
+        } catch (error: any) {
+            triggerAlert({
+                type: 'Failure',
+                message: getCleanErrorMessage(error),
+            });
         }
     };
 
@@ -171,7 +197,7 @@ const CreateOrUpdateBillingProfileForm = ({
     const formContent = (
         <Form {...form}>
             <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
-                {!isEmbedded && (
+                {!isEmbedded && !profileIdToUpdate && (
                     <FormField
                         name="business"
                         control={form.control}
@@ -190,10 +216,12 @@ const CreateOrUpdateBillingProfileForm = ({
                                                 label: 'Otro',
                                                 value: 'other',
                                             },
-                                            ...businesses.map((business) => ({
-                                                label: business.name,
-                                                value: business.id,
-                                            })),
+                                            ...(businessesWithoutProfile || []).map(
+                                                (business) => ({
+                                                    label: business.name,
+                                                    value: business.id,
+                                                }),
+                                            ),
                                         ]}
                                     />
                                 </FormControl>
@@ -201,6 +229,15 @@ const CreateOrUpdateBillingProfileForm = ({
                             </FormItem>
                         )}
                     />
+                )}
+
+                {!isEmbedded && profileIdToUpdate && (
+                    <FormItem>
+                        <FormLabel>Empresa</FormLabel>
+                        <p className="text-sm">
+                            {defaultValues?.businessName || 'Empresa asociada'}
+                        </p>
+                    </FormItem>
                 )}
 
                 {(isEmbedded || form.watch('business') === 'other') && (
@@ -277,24 +314,14 @@ const CreateOrUpdateBillingProfileForm = ({
                                     searchPlaceholder="Buscar condición"
                                     value={field.value ?? ''}
                                     onChange={field.onChange}
-                                    items={[
-                                        {
-                                            label: 'Responsable Inscripto',
-                                            value: 'RESPONSABLE_INSCRIPTO',
-                                        },
-                                        {
-                                            label: 'Monotributo',
-                                            value: 'MONOTRIBUTO',
-                                        },
-                                        {
-                                            label: 'Exento',
-                                            value: 'EXENTO',
-                                        },
-                                        {
-                                            label: 'Consumidor Final',
-                                            value: 'CONSUMIDOR_FINAL',
-                                        },
-                                    ]}
+                                    items={Object.values(IvaCondition).map(
+                                        (condition) => ({
+                                            label: capitalizeFirstLetter(
+                                                pascalCaseToSpaces(condition),
+                                            ),
+                                            value: condition,
+                                        }),
+                                    )}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -398,16 +425,15 @@ const CreateOrUpdateBillingProfileForm = ({
                         <Button
                             variant="outline"
                             type="button"
-                            onClick={() =>
-                                router.push(
-                                    routesBuilder.accounting.billingProfiles.list(),
-                                )
-                            }
+                            onClick={() => router.back()}
                         >
                             Cancelar
                         </Button>
                         <ButtonWithSpinner
-                            showSpinner={postMutation.isPending || putMutation.isPending}
+                            showSpinner={
+                                createBillingProfile.isPending ||
+                                updateBillingProfile.isPending
+                            }
                         >
                             Guardar
                         </ButtonWithSpinner>

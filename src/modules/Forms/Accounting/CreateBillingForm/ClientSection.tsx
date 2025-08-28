@@ -10,10 +10,10 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { BillingProfile } from '@/modules/tables/BillingProfilesTable/columns';
+import { ColumnBillingProfile } from '@/modules/tables/BillingProfilesTable/columns';
 
 type Props = {
-    billingProfiles: BillingProfile[];
+    billingProfiles: ColumnBillingProfile[];
 };
 
 export const ClientSection = ({ billingProfiles }: Props) => {
@@ -28,9 +28,9 @@ export const ClientSection = ({ billingProfiles }: Props) => {
                 );
                 if (selectedProfile) {
                     form.setValue('legalName', selectedProfile.legalName);
-                    form.setValue('cuit', selectedProfile.cuit);
-                    form.setValue('businessAddress', selectedProfile.businessAddress);
-                    form.setValue('ivaCondition', selectedProfile.ivaCondition);
+                    form.setValue('cuit', selectedProfile.CUIT);
+                    form.setValue('businessAddress', selectedProfile.comercialAddress);
+                    form.setValue('ivaCondition', selectedProfile.IVACondition);
                 }
             }
         });

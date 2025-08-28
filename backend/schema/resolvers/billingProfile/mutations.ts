@@ -32,18 +32,8 @@ builder.mutationFields((t) => ({
 
                 let businessId = input.businessId;
 
-                // Si no se proporciona businessId pero sí businessName, crear la empresa
-                if (!businessId && input.businessName) {
-                    const newBusiness = await prisma.business.create({
-                        data: {
-                            name: input.businessName,
-                        },
-                    });
-                    businessId = newBusiness.id;
-                }
-
-                // Verificar que tenemos un businessId válido
-                if (!businessId) {
+                // Verificar que tenemos al menos un businessId o businessName
+                if (!businessId && !input.businessName) {
                     return {
                         success: false,
                         message:
@@ -51,9 +41,30 @@ builder.mutationFields((t) => ({
                     };
                 }
 
+                // Si no se proporciona businessId pero sí businessName, crear la empresa
+                if (!businessId && input.businessName) {
+                    try {
+                        const newBusiness = await prisma.business.create({
+                            data: {
+                                name: input.businessName,
+                            },
+                        });
+                        businessId = newBusiness.id;
+                    } catch (error) {
+                        return {
+                            success: false,
+                            message: `Error al crear la empresa: ${
+                                error instanceof Error
+                                    ? error.message
+                                    : 'Error desconocido'
+                            }`,
+                        };
+                    }
+                }
+
                 // Verificar que el business existe
                 const business = await prisma.business.findUniqueUndeleted({
-                    where: { id: businessId },
+                    where: { id: businessId! },
                 });
 
                 if (!business) {
@@ -65,7 +76,7 @@ builder.mutationFields((t) => ({
 
                 // Verificar que no existe ya un perfil de facturación para este business
                 const existingProfile = await prisma.billingProfile.findUniqueUndeleted({
-                    where: { businessId },
+                    where: { businessId: businessId! },
                 });
 
                 if (existingProfile) {
@@ -85,7 +96,7 @@ builder.mutationFields((t) => ({
                         billingEmail: input.billingEmail,
                         contacts: input.contacts || [],
                         business: {
-                            connect: { id: businessId },
+                            connect: { id: businessId! },
                         },
                     },
                 });
@@ -132,6 +143,9 @@ builder.mutationFields((t) => ({
                 // Verificar que el perfil existe
                 const existingProfile = await prisma.billingProfile.findUniqueUndeleted({
                     where: { id },
+                    include: {
+                        business: true,
+                    },
                 });
 
                 if (!existingProfile) {
@@ -153,6 +167,9 @@ builder.mutationFields((t) => ({
                         }),
                         ...(input.billingEmail && { billingEmail: input.billingEmail }),
                         ...(input.contacts && { contacts: input.contacts }),
+                    },
+                    include: {
+                        business: true,
                     },
                 });
 

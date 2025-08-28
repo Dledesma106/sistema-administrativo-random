@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
-import { BillingProfile } from './columns';
+import { ColumnBillingProfile } from './columns';
 
 import Modal from '@/components/Modal';
 import { Button } from '@/components/ui/button';
@@ -13,19 +13,25 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useDeleteBillingProfile } from '@/hooks/api/billingProfile';
 import { routesBuilder } from '@/lib/routes';
 
 interface Props {
-    profile: BillingProfile;
+    profile: ColumnBillingProfile;
 }
 
 export function BillingProfilesTableRowActions({ profile }: Props) {
     const [modal, setModal] = useState(false);
     const router = useRouter();
+    const deleteBillingProfile = useDeleteBillingProfile();
 
-    const handleDelete = () => {
-        console.log('Eliminar perfil:', profile.id);
-        setModal(false);
+    const handleDelete = async () => {
+        try {
+            await deleteBillingProfile.mutateAsync({ id: profile.id });
+            setModal(false);
+        } catch (error) {
+            console.error('Error al eliminar el perfil:', error);
+        }
     };
 
     return (
@@ -61,7 +67,7 @@ export function BillingProfilesTableRowActions({ profile }: Props) {
                 openModal={modal}
                 handleToggleModal={() => setModal(false)}
                 action={handleDelete}
-                msg={`¿Seguro que quiere eliminar el perfil de ${profile.businessName}?`}
+                msg={`¿Seguro que quiere eliminar el perfil de ${profile.business.name}?`}
             />
         </>
     );

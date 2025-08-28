@@ -1,7 +1,7 @@
 import { BillStatus, CAEStatus, AlicuotaIVA, ComprobanteType } from '@prisma/client';
-import { IVAConditionPothosRef } from '../billingProfile/refs';
 
 import { builder } from '../../builder';
+import { IVAConditionPothosRef } from '../billingProfile/refs';
 
 export const BillStatusPothosRef = builder.enumType('BillStatus', {
     values: Object.fromEntries(
@@ -119,6 +119,7 @@ export const BillPothosRef = builder.prismaObject('Bill', {
             nullable: true,
             resolve: (root) => root.dueDate,
         }),
+        pointOfSale: t.exposeInt('pointOfSale', { nullable: true }),
         caeData: t.field({
             type: CAEDataPothosRef,
             nullable: true,

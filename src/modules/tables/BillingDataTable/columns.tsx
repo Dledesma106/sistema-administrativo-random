@@ -2,7 +2,8 @@ import { createColumnHelper } from '@tanstack/react-table';
 
 import { BillingTableRowActions } from './billing-table-row-actions';
 
-import { BillStatus, BillStatusBadge } from '@/components/ui/Badges/BillStatusBadge';
+import { BillStatus } from '@/api/graphql';
+import { BillStatusBadge } from '@/components/ui/Badges/BillStatusBadge';
 
 export type Bill = {
     id: string;

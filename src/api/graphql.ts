@@ -20,11 +20,194 @@ export type Scalars = {
     JSON: any;
 };
 
+export const AccountType = {
+    CajaDeAhorro: 'CajaDeAhorro',
+    CuentaCorriente: 'CuentaCorriente',
+    CuentaDeSueldo: 'CuentaDeSueldo',
+    CuentaEnMonedaExtranjera: 'CuentaEnMonedaExtranjera',
+} as const;
+
+export type AccountType = (typeof AccountType)[keyof typeof AccountType];
+export const AlicuotaIva = {
+    Iva_0: 'IVA_0',
+    Iva_10_5: 'IVA_10_5',
+    Iva_21: 'IVA_21',
+    Iva_27: 'IVA_27',
+} as const;
+
+export type AlicuotaIva = (typeof AlicuotaIva)[keyof typeof AlicuotaIva];
 export type AuthResult = {
     __typename?: 'AuthResult';
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     user: Maybe<User>;
+};
+
+export type BankAccount = {
+    __typename?: 'BankAccount';
+    accountNumber: Scalars['String'];
+    accountType: AccountType;
+    alias: Maybe<Scalars['String']>;
+    balance: Scalars['Float'];
+    bank: Scalars['String'];
+    billingProfile: Maybe<BillingProfile>;
+    cbu: Maybe<Scalars['String']>;
+    createdAt: Scalars['DateTime'];
+    deleted: Scalars['Boolean'];
+    deletedAt: Maybe<Scalars['DateTime']>;
+    holder: Scalars['String'];
+    holderCUIT: Scalars['String'];
+    id: Scalars['ID'];
+    updatedAt: Scalars['DateTime'];
+};
+
+export type BankAccountCrudResult = {
+    __typename?: 'BankAccountCrudResult';
+    bankAccount: Maybe<BankAccount>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type BankAccountInput = {
+    accountNumber: Scalars['String'];
+    accountType: AccountType;
+    alias: InputMaybe<Scalars['String']>;
+    bank: Scalars['String'];
+    billingProfileId: InputMaybe<Scalars['String']>;
+    cbu: InputMaybe<Scalars['String']>;
+    holder: Scalars['String'];
+    holderCUIT: Scalars['String'];
+};
+
+export type BankAccountUpdateInput = {
+    alias: Scalars['String'];
+};
+
+export type BankMovement = {
+    __typename?: 'BankMovement';
+    amount: Scalars['Float'];
+    createdAt: Scalars['DateTime'];
+    date: Scalars['DateTime'];
+    deleted: Scalars['Boolean'];
+    deletedAt: Maybe<Scalars['DateTime']>;
+    destinationAccount: Maybe<BankAccount>;
+    id: Scalars['ID'];
+    sourceAccount: BankAccount;
+    updatedAt: Scalars['DateTime'];
+};
+
+export type BankMovementCrudResult = {
+    __typename?: 'BankMovementCrudResult';
+    bankMovement: Maybe<BankMovement>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type Bill = {
+    __typename?: 'Bill';
+    CUIT: Scalars['String'];
+    IVACondition: IvaCondition;
+    billingAddress: Scalars['String'];
+    billingProfile: BillingProfile;
+    business: Business;
+    caeData: Maybe<CaeData>;
+    comprobanteType: ComprobanteType;
+    createdAt: Scalars['DateTime'];
+    description: Maybe<Scalars['String']>;
+    details: Array<BillDetail>;
+    dueDate: Maybe<Scalars['DateTime']>;
+    endDate: Maybe<Scalars['DateTime']>;
+    id: Scalars['ID'];
+    legalName: Scalars['String'];
+    pointOfSale: Maybe<Scalars['Int']>;
+    punctualService: Scalars['Boolean'];
+    saleCondition: Scalars['String'];
+    serviceDate: Maybe<Scalars['DateTime']>;
+    startDate: Maybe<Scalars['DateTime']>;
+    status: BillStatus;
+    updatedAt: Scalars['DateTime'];
+    withholdingAmount: Maybe<Scalars['Float']>;
+};
+
+export type BillCrudResult = {
+    __typename?: 'BillCrudResult';
+    bill: Maybe<Bill>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type BillDetail = {
+    __typename?: 'BillDetail';
+    alicuotaIVA: AlicuotaIva;
+    description: Scalars['String'];
+    quantity: Scalars['Int'];
+    unitPrice: Scalars['Float'];
+};
+
+export type BillDetailInput = {
+    alicuotaIVA: AlicuotaIva;
+    description: Scalars['String'];
+    quantity: Scalars['Int'];
+    unitPrice: Scalars['Float'];
+};
+
+export type BillInput = {
+    billingProfileId: Scalars['String'];
+    comprobanteType: ComprobanteType;
+    description: InputMaybe<Scalars['String']>;
+    details: Array<BillDetailInput>;
+    dueDate: InputMaybe<Scalars['DateTime']>;
+    endDate: InputMaybe<Scalars['DateTime']>;
+    punctualService: Scalars['Boolean'];
+    saleCondition: Scalars['String'];
+    serviceDate: InputMaybe<Scalars['DateTime']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
+    status: BillStatus;
+    withholdingAmount: InputMaybe<Scalars['Float']>;
+};
+
+export const BillStatus = {
+    Borrador: 'Borrador',
+    Pagada: 'Pagada',
+    Pendiente: 'Pendiente',
+    Vencida: 'Vencida',
+} as const;
+
+export type BillStatus = (typeof BillStatus)[keyof typeof BillStatus];
+export type BillingProfile = {
+    __typename?: 'BillingProfile';
+    CUIT: Scalars['String'];
+    IVACondition: IvaCondition;
+    billingEmail: Scalars['String'];
+    bills: Array<Bill>;
+    business: Business;
+    comercialAddress: Scalars['String'];
+    contacts: Array<Contact>;
+    createdAt: Scalars['DateTime'];
+    deleted: Scalars['Boolean'];
+    deletedAt: Maybe<Scalars['DateTime']>;
+    firstContact: Maybe<Contact>;
+    id: Scalars['ID'];
+    legalName: Scalars['String'];
+    updatedAt: Scalars['DateTime'];
+};
+
+export type BillingProfileCrudResult = {
+    __typename?: 'BillingProfileCrudResult';
+    billingProfile: Maybe<BillingProfile>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type BillingProfileInput = {
+    CUIT: Scalars['String'];
+    IVACondition: IvaCondition;
+    billingEmail: Scalars['String'];
+    businessId: InputMaybe<Scalars['String']>;
+    businessName: InputMaybe<Scalars['String']>;
+    comercialAddress: Scalars['String'];
+    contacts: InputMaybe<Array<ContactInput>>;
+    legalName: Scalars['String'];
 };
 
 export type Branch = {
@@ -52,6 +235,50 @@ export type BranchInput = {
     number: InputMaybe<Scalars['Int']>;
 };
 
+export type Budget = {
+    __typename?: 'Budget';
+    billingProfile: BillingProfile;
+    branch: Maybe<Branch>;
+    client: Maybe<Client>;
+    createdAt: Scalars['DateTime'];
+    createdBy: User;
+    deleted: Scalars['Boolean'];
+    deletedAt: Maybe<Scalars['DateTime']>;
+    description: Maybe<Scalars['String']>;
+    gmailThreadId: Maybe<Scalars['String']>;
+    id: Scalars['ID'];
+    price: Scalars['Float'];
+    status: BudgetStatus;
+    subject: Scalars['String'];
+    updatedAt: Scalars['DateTime'];
+};
+
+export type BudgetCrudResult = {
+    __typename?: 'BudgetCrudResult';
+    budget: Maybe<Budget>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type BudgetInput = {
+    billingProfileId: Scalars['String'];
+    branchId: InputMaybe<Scalars['String']>;
+    clientId: InputMaybe<Scalars['String']>;
+    description: InputMaybe<Scalars['String']>;
+    gmailThreadId: InputMaybe<Scalars['String']>;
+    price: Scalars['Float'];
+    subject: Scalars['String'];
+};
+
+export const BudgetStatus = {
+    Aprobado: 'Aprobado',
+    Borrador: 'Borrador',
+    Enviado: 'Enviado',
+    Expirado: 'Expirado',
+    Rechazado: 'Rechazado',
+} as const;
+
+export type BudgetStatus = (typeof BudgetStatus)[keyof typeof BudgetStatus];
 export type Business = {
     __typename?: 'Business';
     branchesIDs: Maybe<Array<Scalars['String']>>;
@@ -73,6 +300,21 @@ export type BusinessResult = {
     success: Scalars['Boolean'];
 };
 
+export type CaeData = {
+    __typename?: 'CAEData';
+    code: Scalars['String'];
+    comprobanteNumber: Scalars['String'];
+    expirationDate: Scalars['DateTime'];
+    status: CaeStatus;
+};
+
+export const CaeStatus = {
+    Autorizado: 'Autorizado',
+    Observado: 'Observado',
+    Rechazado: 'Rechazado',
+} as const;
+
+export type CaeStatus = (typeof CaeStatus)[keyof typeof CaeStatus];
 export type ChangePasswordInput = {
     currentPassword: Scalars['String'];
     newPassword: Scalars['String'];
@@ -116,6 +358,28 @@ export type ClientResult = {
     client: Maybe<Client>;
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
+};
+
+export const ComprobanteType = {
+    A: 'A',
+    B: 'B',
+    C: 'C',
+} as const;
+
+export type ComprobanteType = (typeof ComprobanteType)[keyof typeof ComprobanteType];
+export type Contact = {
+    __typename?: 'Contact';
+    email: Scalars['String'];
+    fullName: Scalars['String'];
+    notes: Scalars['String'];
+    phone: Scalars['String'];
+};
+
+export type ContactInput = {
+    email: Scalars['String'];
+    fullName: Scalars['String'];
+    notes: Scalars['String'];
+    phone: Scalars['String'];
 };
 
 export type DownloadTaskPhotosResult = {
@@ -244,6 +508,55 @@ export type FileInput = {
     url: Scalars['String'];
 };
 
+export type GmailMessage = {
+    __typename?: 'GmailMessage';
+    historyId: Scalars['String'];
+    id: Scalars['String'];
+    internalDate: Scalars['String'];
+    labelIds: Array<Scalars['String']>;
+    payload: Scalars['JSON'];
+    sizeEstimate: Scalars['Int'];
+    snippet: Scalars['String'];
+    threadId: Scalars['String'];
+};
+
+export type GmailResult = {
+    __typename?: 'GmailResult';
+    data: Maybe<Scalars['JSON']>;
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+};
+
+export type GmailThread = {
+    __typename?: 'GmailThread';
+    historyId: Scalars['String'];
+    id: Scalars['String'];
+    messages: Array<GmailMessage>;
+    snippet: Scalars['String'];
+};
+
+export type GmailThreadResult = {
+    __typename?: 'GmailThreadResult';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    thread: Maybe<GmailThread>;
+};
+
+export type GmailThreadsResult = {
+    __typename?: 'GmailThreadsResult';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    threads: Maybe<Array<GmailThread>>;
+};
+
+export const IvaCondition = {
+    ConsumidorFinal: 'ConsumidorFinal',
+    Exento: 'Exento',
+    Monotributo: 'Monotributo',
+    ResponsableInscripto: 'ResponsableInscripto',
+} as const;
+
+export type IvaCondition = (typeof IvaCondition)[keyof typeof IvaCondition];
 export type Image = {
     __typename?: 'Image';
     id: Scalars['ID'];
@@ -264,7 +577,11 @@ export type LoginUserResult = {
 export type Mutation = {
     __typename?: 'Mutation';
     changePassword: AuthResult;
+    createBankAccount: BankAccountCrudResult;
+    createBill: BillCrudResult;
+    createBillingProfile: BillingProfileCrudResult;
     createBranch: BranchCrudResult;
+    createBudget: BudgetCrudResult;
     createBusiness: BusinessResult;
     createCity: CityCrudRef;
     createClient: ClientResult;
@@ -273,9 +590,14 @@ export type Mutation = {
     createMyTask: TaskCrudResult;
     createPreventive: PreventiveCrudRef;
     createProvince: ProvinceCrudResult;
+    createServiceOrder: ServiceOrderCrudResult;
     createTask: TaskCrudResult;
+    createTaskPrice: TaskPriceCrudResult;
     createUser: UserCrudPothosRef;
+    deleteBankAccount: BankAccountCrudResult;
+    deleteBillingProfile: BillingProfileCrudResult;
     deleteBranch: BranchCrudResult;
+    deleteBudget: BudgetCrudResult;
     deleteBusiness: BusinessResult;
     deleteCity: CityCrudRef;
     deleteClient: ClientResult;
@@ -295,7 +617,12 @@ export type Mutation = {
     logout: AuthResult;
     registerExpoToken: Scalars['Boolean'];
     sendNewUserRandomPassword: UserCrudPothosRef;
+    updateBankAccount: BankAccountCrudResult;
+    updateBill: BillCrudResult;
+    updateBillingProfile: BillingProfileCrudResult;
     updateBranch: BranchCrudResult;
+    updateBudget: BudgetCrudResult;
+    updateBudgetStatus: BudgetCrudResult;
     updateBusiness: BusinessResult;
     updateCity: CityCrudRef;
     updateClient: ClientResult;
@@ -305,6 +632,7 @@ export type Mutation = {
     updatePreventive: PreventiveCrudRef;
     updateProvince: ProvinceCrudResult;
     updateTask: TaskCrudResult;
+    updateTaskPrice: TaskPriceCrudResult;
     updateTaskStatus: TaskCrudResult;
     updateUser: UserCrudPothosRef;
 };
@@ -313,8 +641,24 @@ export type MutationChangePasswordArgs = {
     data: ChangePasswordInput;
 };
 
+export type MutationCreateBankAccountArgs = {
+    input: BankAccountInput;
+};
+
+export type MutationCreateBillArgs = {
+    input: BillInput;
+};
+
+export type MutationCreateBillingProfileArgs = {
+    input: BillingProfileInput;
+};
+
 export type MutationCreateBranchArgs = {
     input: BranchInput;
+};
+
+export type MutationCreateBudgetArgs = {
+    input: BudgetInput;
 };
 
 export type MutationCreateBusinessArgs = {
@@ -350,15 +694,39 @@ export type MutationCreateProvinceArgs = {
     data: ProvinceInput;
 };
 
+export type MutationCreateServiceOrderArgs = {
+    branchId: Scalars['String'];
+    businessId: Scalars['String'];
+    clientId: Scalars['String'];
+    description: InputMaybe<Scalars['String']>;
+    status: ServiceOrderStatus;
+};
+
 export type MutationCreateTaskArgs = {
     input: TaskInput;
+};
+
+export type MutationCreateTaskPriceArgs = {
+    input: TaskPriceInput;
 };
 
 export type MutationCreateUserArgs = {
     input: UserInput;
 };
 
+export type MutationDeleteBankAccountArgs = {
+    id: Scalars['String'];
+};
+
+export type MutationDeleteBillingProfileArgs = {
+    id: Scalars['String'];
+};
+
 export type MutationDeleteBranchArgs = {
+    id: Scalars['String'];
+};
+
+export type MutationDeleteBudgetArgs = {
     id: Scalars['String'];
 };
 
@@ -443,9 +811,34 @@ export type MutationSendNewUserRandomPasswordArgs = {
     id: Scalars['String'];
 };
 
+export type MutationUpdateBankAccountArgs = {
+    id: Scalars['String'];
+    input: BankAccountUpdateInput;
+};
+
+export type MutationUpdateBillArgs = {
+    id: Scalars['String'];
+    input: BillInput;
+};
+
+export type MutationUpdateBillingProfileArgs = {
+    id: Scalars['String'];
+    input: UpdateBillingProfileInput;
+};
+
 export type MutationUpdateBranchArgs = {
     id: Scalars['String'];
     input: BranchInput;
+};
+
+export type MutationUpdateBudgetArgs = {
+    id: Scalars['String'];
+    input: UpdateBudgetInput;
+};
+
+export type MutationUpdateBudgetStatusArgs = {
+    id: Scalars['String'];
+    input: UpdateBudgetStatusInput;
 };
 
 export type MutationUpdateBusinessArgs = {
@@ -490,6 +883,11 @@ export type MutationUpdateProvinceArgs = {
 export type MutationUpdateTaskArgs = {
     id: Scalars['String'];
     input: TaskInput;
+};
+
+export type MutationUpdateTaskPriceArgs = {
+    id: Scalars['String'];
+    input: TaskPriceUpdateInput;
 };
 
 export type MutationUpdateTaskStatusArgs = {
@@ -599,9 +997,25 @@ export type ProvinceInput = {
 
 export type Query = {
     __typename?: 'Query';
+    bankAccount: Maybe<BankAccount>;
+    bankAccounts: Array<BankAccount>;
+    bankAccountsByBillingProfile: Array<BankAccount>;
+    bankMovement: Maybe<BankMovement>;
+    bankMovements: Array<BankMovement>;
+    bankMovementsCount: Scalars['Int'];
+    bill: Maybe<Bill>;
+    billingProfileByBusinessId: Maybe<BillingProfile>;
+    billingProfileById: Maybe<BillingProfile>;
+    billingProfiles: Array<BillingProfile>;
+    billingProfilesCount: Scalars['Int'];
+    bills: Array<Bill>;
+    billsCount: Scalars['Int'];
     branch: Branch;
     branchBusinesses: Array<Business>;
     branches: Array<Branch>;
+    budgetById: Maybe<Budget>;
+    budgets: Array<Budget>;
+    budgetsCount: Scalars['Int'];
     business: Business;
     businesses: Array<Business>;
     businessesCount: Scalars['Int'];
@@ -618,7 +1032,12 @@ export type Query = {
     expensesCount: Scalars['Int'];
     file: File;
     files: Array<File>;
+    getGmailThread: GmailThreadResult;
+    getGmailThreadInfo: GmailThreadResult;
+    getRecentGmailThreads: GmailThreadsResult;
+    gmailThreadExists: Scalars['Boolean'];
     images: Array<Image>;
+    isGmailConfigured: GmailResult;
     myAssignedTaskById: Maybe<Task>;
     myAssignedTasks: Array<Task>;
     myExpenseById: Maybe<Expense>;
@@ -629,7 +1048,15 @@ export type Query = {
     province: Province;
     provinces: Array<Province>;
     provincesCount: Scalars['Int'];
+    searchBudgetThreads: GmailThreadsResult;
+    searchGmailThreads: GmailThreadsResult;
+    searchThreadsByClient: GmailThreadsResult;
+    serviceOrder: Maybe<ServiceOrder>;
+    serviceOrders: Array<ServiceOrder>;
     taskById: Maybe<Task>;
+    taskPrice: Maybe<TaskPrice>;
+    taskPrices: Array<TaskPrice>;
+    taskPricesCount: Scalars['Int'];
     taskTypes: Array<TaskType>;
     tasks: Array<Task>;
     tasksCount: Scalars['Int'];
@@ -637,6 +1064,74 @@ export type Query = {
     user: User;
     users: Array<User>;
     usersCount: Scalars['Int'];
+};
+
+export type QueryBankAccountArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryBankAccountsByBillingProfileArgs = {
+    billingProfileId: Scalars['String'];
+};
+
+export type QueryBankMovementArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryBankMovementsArgs = {
+    destinationAccountId: InputMaybe<Scalars['String']>;
+    endDate: InputMaybe<Scalars['DateTime']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    sourceAccountId: InputMaybe<Scalars['String']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryBankMovementsCountArgs = {
+    destinationAccountId: InputMaybe<Scalars['String']>;
+    endDate: InputMaybe<Scalars['DateTime']>;
+    sourceAccountId: InputMaybe<Scalars['String']>;
+    startDate: InputMaybe<Scalars['DateTime']>;
+};
+
+export type QueryBillArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryBillingProfileByBusinessIdArgs = {
+    businessId: Scalars['String'];
+};
+
+export type QueryBillingProfileByIdArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryBillingProfilesArgs = {
+    businessId: InputMaybe<Array<Scalars['String']>>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryBillingProfilesCountArgs = {
+    businessId: InputMaybe<Array<Scalars['String']>>;
+};
+
+export type QueryBillsArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<BillStatus>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryBillsCountArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    status: InputMaybe<BillStatus>;
 };
 
 export type QueryBranchArgs = {
@@ -647,6 +1142,24 @@ export type QueryBranchBusinessesArgs = {
     branch: InputMaybe<Scalars['String']>;
 };
 
+export type QueryBudgetByIdArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryBudgetsArgs = {
+    businessId: InputMaybe<Array<Scalars['String']>>;
+    clientId: InputMaybe<Array<Scalars['String']>>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryBudgetsCountArgs = {
+    businessId: InputMaybe<Array<Scalars['String']>>;
+    clientId: InputMaybe<Array<Scalars['String']>>;
+};
+
 export type QueryBusinessArgs = {
     id: Scalars['String'];
 };
@@ -655,6 +1168,7 @@ export type QueryBusinessesArgs = {
     search: InputMaybe<Scalars['String']>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
+    withoutBillingProfile: InputMaybe<Scalars['Boolean']>;
 };
 
 export type QueryBusinessesCountArgs = {
@@ -736,6 +1250,18 @@ export type QueryFileArgs = {
     id: Scalars['String'];
 };
 
+export type QueryGetGmailThreadArgs = {
+    threadId: Scalars['String'];
+};
+
+export type QueryGetGmailThreadInfoArgs = {
+    threadId: Scalars['String'];
+};
+
+export type QueryGmailThreadExistsArgs = {
+    threadId: Scalars['String'];
+};
+
 export type QueryMyAssignedTaskByIdArgs = {
     id: Scalars['String'];
 };
@@ -784,8 +1310,52 @@ export type QueryProvincesCountArgs = {
     search: InputMaybe<Scalars['String']>;
 };
 
+export type QuerySearchBudgetThreadsArgs = {
+    query: InputMaybe<Scalars['String']>;
+};
+
+export type QuerySearchGmailThreadsArgs = {
+    input: SearchGmailThreadsInput;
+};
+
+export type QuerySearchThreadsByClientArgs = {
+    clientEmail: Scalars['String'];
+};
+
+export type QueryServiceOrderArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryServiceOrdersArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    clientId: InputMaybe<Scalars['String']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<Scalars['String']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
 export type QueryTaskByIdArgs = {
     id: Scalars['String'];
+};
+
+export type QueryTaskPriceArgs = {
+    id: Scalars['String'];
+};
+
+export type QueryTaskPricesArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    take: InputMaybe<Scalars['Int']>;
+    taskType: InputMaybe<TaskType>;
+};
+
+export type QueryTaskPricesCountArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    taskType: InputMaybe<TaskType>;
 };
 
 export type QueryTasksArgs = {
@@ -840,6 +1410,42 @@ export const Role = {
 } as const;
 
 export type Role = (typeof Role)[keyof typeof Role];
+export type SearchGmailThreadsInput = {
+    /** Número máximo de resultados (default: 20) */
+    maxResults: InputMaybe<Scalars['Int']>;
+    /** Query de búsqueda de Gmail (ej: "from:example@gmail.com subject:presupuesto") */
+    query: Scalars['String'];
+};
+
+export type ServiceOrder = {
+    __typename?: 'ServiceOrder';
+    branch: Branch;
+    business: Business;
+    client: Client;
+    createdAt: Scalars['DateTime'];
+    description: Maybe<Scalars['String']>;
+    id: Scalars['ID'];
+    serviceOrderNumber: Scalars['Int'];
+    status: ServiceOrderStatus;
+    tasks: Array<Task>;
+    updatedAt: Scalars['DateTime'];
+};
+
+export type ServiceOrderCrudResult = {
+    __typename?: 'ServiceOrderCrudResult';
+    message: Maybe<Scalars['String']>;
+    serviceOrder: Maybe<ServiceOrder>;
+    success: Scalars['Boolean'];
+};
+
+export const ServiceOrderStatus = {
+    EnProgreso: 'EnProgreso',
+    Finalizada: 'Finalizada',
+    Pendiente: 'Pendiente',
+} as const;
+
+export type ServiceOrderStatus =
+    (typeof ServiceOrderStatus)[keyof typeof ServiceOrderStatus];
 export type Task = {
     __typename?: 'Task';
     actNumber: Maybe<Scalars['Int']>;
@@ -888,7 +1494,43 @@ export type TaskInput = {
     clientName: InputMaybe<Scalars['String']>;
     description: Scalars['String'];
     movitecTicket: InputMaybe<Scalars['String']>;
+    serviceOrderId: InputMaybe<Scalars['String']>;
     taskType: TaskType;
+};
+
+export type TaskPrice = {
+    __typename?: 'TaskPrice';
+    business: Business;
+    businessId: Scalars['String'];
+    createdAt: Scalars['DateTime'];
+    id: Scalars['ID'];
+    price: Scalars['Float'];
+    priceHistory: Array<TaskPriceHistory>;
+    taskType: TaskType;
+    updatedAt: Scalars['DateTime'];
+};
+
+export type TaskPriceCrudResult = {
+    __typename?: 'TaskPriceCrudResult';
+    message: Maybe<Scalars['String']>;
+    success: Scalars['Boolean'];
+    taskPrice: Maybe<TaskPrice>;
+};
+
+export type TaskPriceHistory = {
+    __typename?: 'TaskPriceHistory';
+    price: Scalars['Float'];
+    updatedAt: Scalars['DateTime'];
+};
+
+export type TaskPriceInput = {
+    businessId: Scalars['String'];
+    price: Scalars['Float'];
+    taskType: TaskType;
+};
+
+export type TaskPriceUpdateInput = {
+    price: Scalars['Float'];
 };
 
 export const TaskStatus = {
@@ -909,6 +1551,27 @@ export const TaskType = {
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
+export type UpdateBillingProfileInput = {
+    CUIT: InputMaybe<Scalars['String']>;
+    IVACondition: InputMaybe<IvaCondition>;
+    billingEmail: InputMaybe<Scalars['String']>;
+    comercialAddress: InputMaybe<Scalars['String']>;
+    contacts: InputMaybe<Array<ContactInput>>;
+    legalName: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateBudgetInput = {
+    branchId: InputMaybe<Scalars['String']>;
+    clientId: InputMaybe<Scalars['String']>;
+    description: InputMaybe<Scalars['String']>;
+    price: InputMaybe<Scalars['Float']>;
+    subject: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateBudgetStatusInput = {
+    status: BudgetStatus;
+};
+
 export type UpdateMyTaskInput = {
     actNumber: InputMaybe<Scalars['String']>;
     closedAt: InputMaybe<Scalars['DateTime']>;
@@ -997,6 +1660,186 @@ export type ChangePasswordMutation = {
         success: boolean;
         message: string | null;
     };
+};
+
+export type CreateBillingProfileMutationVariables = Exact<{
+    input: BillingProfileInput;
+}>;
+
+export type CreateBillingProfileMutation = {
+    __typename?: 'Mutation';
+    createBillingProfile: {
+        __typename?: 'BillingProfileCrudResult';
+        success: boolean;
+        message: string | null;
+        billingProfile: {
+            __typename?: 'BillingProfile';
+            id: string;
+            CUIT: string;
+            legalName: string;
+            IVACondition: IvaCondition;
+            comercialAddress: string;
+            billingEmail: string;
+            createdAt: any;
+            updatedAt: any;
+            business: { __typename?: 'Business'; id: string; name: string };
+            contacts: Array<{ __typename?: 'Contact'; email: string; fullName: string }>;
+        } | null;
+    };
+};
+
+export type UpdateBillingProfileMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: UpdateBillingProfileInput;
+}>;
+
+export type UpdateBillingProfileMutation = {
+    __typename?: 'Mutation';
+    updateBillingProfile: {
+        __typename?: 'BillingProfileCrudResult';
+        success: boolean;
+        message: string | null;
+        billingProfile: {
+            __typename?: 'BillingProfile';
+            id: string;
+            CUIT: string;
+            legalName: string;
+            IVACondition: IvaCondition;
+            comercialAddress: string;
+            billingEmail: string;
+            createdAt: any;
+            updatedAt: any;
+            business: { __typename?: 'Business'; id: string; name: string };
+            contacts: Array<{ __typename?: 'Contact'; email: string; fullName: string }>;
+        } | null;
+    };
+};
+
+export type DeleteBillingProfileMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DeleteBillingProfileMutation = {
+    __typename?: 'Mutation';
+    deleteBillingProfile: {
+        __typename?: 'BillingProfileCrudResult';
+        success: boolean;
+        message: string | null;
+        billingProfile: {
+            __typename?: 'BillingProfile';
+            id: string;
+            CUIT: string;
+            legalName: string;
+            IVACondition: IvaCondition;
+            comercialAddress: string;
+            billingEmail: string;
+            createdAt: any;
+            updatedAt: any;
+            business: { __typename?: 'Business'; id: string; name: string };
+            contacts: Array<{ __typename?: 'Contact'; email: string; fullName: string }>;
+        } | null;
+    };
+};
+
+export type GetBillingProfilesQueryVariables = Exact<{
+    businessId?: InputMaybe<Array<Scalars['String']>>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+    orderBy?: InputMaybe<Scalars['String']>;
+    orderDirection?: InputMaybe<Scalars['String']>;
+}>;
+
+export type GetBillingProfilesQuery = {
+    __typename?: 'Query';
+    billingProfilesCount: number;
+    billingProfiles: Array<{
+        __typename?: 'BillingProfile';
+        id: string;
+        CUIT: string;
+        legalName: string;
+        IVACondition: IvaCondition;
+        comercialAddress: string;
+        billingEmail: string;
+        createdAt: any;
+        updatedAt: any;
+        business: { __typename?: 'Business'; id: string; name: string };
+        contacts: Array<{ __typename?: 'Contact'; email: string; fullName: string }>;
+        firstContact: { __typename?: 'Contact'; email: string; fullName: string } | null;
+    }>;
+};
+
+export type GetBillingProfileByIdQueryVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type GetBillingProfileByIdQuery = {
+    __typename?: 'Query';
+    billingProfileById: {
+        __typename?: 'BillingProfile';
+        id: string;
+        CUIT: string;
+        legalName: string;
+        IVACondition: IvaCondition;
+        comercialAddress: string;
+        billingEmail: string;
+        createdAt: any;
+        updatedAt: any;
+        business: { __typename?: 'Business'; id: string; name: string };
+        contacts: Array<{
+            __typename?: 'Contact';
+            email: string;
+            fullName: string;
+            phone: string;
+            notes: string;
+        }>;
+        bills: Array<{
+            __typename?: 'Bill';
+            id: string;
+            description: string | null;
+            serviceDate: any | null;
+            startDate: any | null;
+            dueDate: any | null;
+            status: BillStatus;
+            pointOfSale: number | null;
+            caeData: { __typename?: 'CAEData'; comprobanteNumber: string } | null;
+            details: Array<{
+                __typename?: 'BillDetail';
+                quantity: number;
+                unitPrice: number;
+            }>;
+        }>;
+    } | null;
+};
+
+export type GetBillingProfileByBusinessIdQueryVariables = Exact<{
+    businessId: Scalars['String'];
+}>;
+
+export type GetBillingProfileByBusinessIdQuery = {
+    __typename?: 'Query';
+    billingProfileByBusinessId: {
+        __typename?: 'BillingProfile';
+        id: string;
+        CUIT: string;
+        legalName: string;
+        IVACondition: IvaCondition;
+        comercialAddress: string;
+        billingEmail: string;
+        createdAt: any;
+        updatedAt: any;
+        business: { __typename?: 'Business'; id: string; name: string };
+        contacts: Array<{ __typename?: 'Contact'; email: string; fullName: string }>;
+    } | null;
+};
+
+export type GetBusinessesWithoutBillingProfileQueryVariables = Exact<{
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+}>;
+
+export type GetBusinessesWithoutBillingProfileQuery = {
+    __typename?: 'Query';
+    businesses: Array<{ __typename?: 'Business'; id: string; name: string }>;
 };
 
 export type CreateBranchMutationVariables = Exact<{
@@ -2283,6 +3126,1112 @@ export const ChangePasswordDocument = {
         },
     ],
 } as unknown as DocumentNode<ChangePasswordMutation, ChangePasswordMutationVariables>;
+export const CreateBillingProfileDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'CreateBillingProfile' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'BillingProfileInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createBillingProfile' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingProfile' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'CUIT' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'legalName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'IVACondition',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comercialAddress',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'billingEmail',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'createdAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'updatedAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'contacts' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    CreateBillingProfileMutation,
+    CreateBillingProfileMutationVariables
+>;
+export const UpdateBillingProfileDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateBillingProfile' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'UpdateBillingProfileInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateBillingProfile' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingProfile' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'CUIT' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'legalName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'IVACondition',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comercialAddress',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'billingEmail',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'createdAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'updatedAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'contacts' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    UpdateBillingProfileMutation,
+    UpdateBillingProfileMutationVariables
+>;
+export const DeleteBillingProfileDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'DeleteBillingProfile' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deleteBillingProfile' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingProfile' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'CUIT' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'legalName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'IVACondition',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comercialAddress',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'billingEmail',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'createdAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'updatedAt',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'contacts' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    DeleteBillingProfileMutation,
+    DeleteBillingProfileMutationVariables
+>;
+export const GetBillingProfilesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBillingProfiles' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: {
+                        kind: 'ListType',
+                        type: {
+                            kind: 'NonNullType',
+                            type: {
+                                kind: 'NamedType',
+                                name: { kind: 'Name', value: 'String' },
+                            },
+                        },
+                    },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderBy' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderDirection' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billingProfiles' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderDirection' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderDirection' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'IVACondition' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comercialAddress' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingEmail' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'contacts' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'firstContact' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billingProfilesCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetBillingProfilesQuery, GetBillingProfilesQueryVariables>;
+export const GetBillingProfileByIdDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBillingProfileById' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billingProfileById' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'IVACondition' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comercialAddress' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingEmail' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'contacts' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'phone' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'notes' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bills' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'description',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'serviceDate',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'startDate',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'dueDate' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'pointOfSale',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'caeData' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'comprobanteNumber',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'details' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'quantity',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'unitPrice',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetBillingProfileByIdQuery,
+    GetBillingProfileByIdQueryVariables
+>;
+export const GetBillingProfileByBusinessIdDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBillingProfileByBusinessId' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billingProfileByBusinessId' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'IVACondition' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comercialAddress' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingEmail' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'contacts' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'email' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetBillingProfileByBusinessIdQuery,
+    GetBillingProfileByBusinessIdQueryVariables
+>;
+export const GetBusinessesWithoutBillingProfileDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBusinessesWithoutBillingProfile' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'businesses' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'withoutBillingProfile' },
+                                value: { kind: 'BooleanValue', value: true },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetBusinessesWithoutBillingProfileQuery,
+    GetBusinessesWithoutBillingProfileQueryVariables
+>;
 export const CreateBranchDocument = {
     kind: 'Document',
     definitions: [

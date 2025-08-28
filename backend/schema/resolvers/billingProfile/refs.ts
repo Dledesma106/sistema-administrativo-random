@@ -10,6 +10,8 @@ export const ContactPothosRef = builder
     .objectRef<{
         email: string;
         fullName: string;
+        phone: string;
+        notes: string;
     }>('Contact')
     .implement({
         fields: (t) => ({
@@ -18,6 +20,12 @@ export const ContactPothosRef = builder
             }),
             fullName: t.string({
                 resolve: (contact) => contact.fullName,
+            }),
+            phone: t.string({
+                resolve: (contact) => contact.phone,
+            }),
+            notes: t.string({
+                resolve: (contact) => contact.notes,
             }),
         }),
     });
@@ -54,6 +62,12 @@ export const BillingProfilePothosRef = builder.prismaObject('BillingProfile', {
             type: [ContactPothosRef],
             resolve: (root) => root.contacts || [],
         }),
+        firstContact: t.field({
+            type: ContactPothosRef,
+            nullable: true,
+            resolve: (root) => (root as any).firstContact || root.contacts?.[0] || null,
+        }),
+        bills: t.relation('Bill'),
     }),
 });
 
@@ -63,6 +77,12 @@ export const ContactInputPothosRef = builder.inputType('ContactInput', {
             required: true,
         }),
         fullName: t.string({
+            required: true,
+        }),
+        phone: t.string({
+            required: true,
+        }),
+        notes: t.string({
             required: true,
         }),
     }),
