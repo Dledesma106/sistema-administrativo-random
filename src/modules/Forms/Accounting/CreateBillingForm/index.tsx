@@ -18,7 +18,7 @@ import { Form } from '@/components/ui/form';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
-import { BillingProfile } from '@/modules/tables/BillingProfilesTable/columns';
+import { ColumnBillingProfile } from '@/modules/tables/BillingProfilesTable/columns';
 
 // Esquema de validación
 const billingFormSchema = z.object({
@@ -57,7 +57,7 @@ const billingFormSchema = z.object({
 });
 
 type Props = {
-    billingProfiles: BillingProfile[];
+    billingProfiles: ColumnBillingProfile[];
 };
 
 export const CreateBillingForm = ({ billingProfiles }: Props) => {

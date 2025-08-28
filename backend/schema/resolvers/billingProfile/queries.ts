@@ -104,7 +104,7 @@ builder.queryFields((t) => ({
 
             // Si no es ordenamiento por contactos, usar Prisma
             if (orderBy !== 'contactName' && orderBy !== 'contactEmail') {
-                return await prisma.billingProfile.findManyUndeleted({
+                const billingProfiles = await prisma.billingProfile.findManyUndeleted({
                     ...query,
                     where: {
                         ...(businessId?.length && {
@@ -118,6 +118,12 @@ builder.queryFields((t) => ({
                         business: true,
                     },
                 });
+
+                // Agregar solo el primer contacto a cada perfil
+                return billingProfiles.map((profile) => ({
+                    ...profile,
+                    firstContact: profile.contacts?.[0] || null,
+                }));
             }
 
             // Para ordenamiento por contactos, ya retornamos el resultado arriba
@@ -175,6 +181,13 @@ builder.queryFields((t) => ({
                 ...query,
                 where: {
                     id,
+                },
+                include: {
+                    Bill: {
+                        orderBy: {
+                            createdAt: 'desc',
+                        },
+                    },
                 },
             });
         },

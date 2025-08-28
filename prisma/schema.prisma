@@ -450,6 +450,8 @@ model BillingProfile {
 type Contact {
   email    String
   fullName String
+  phone    String
+  notes    String
 }
 
 enum BudgetStatus {
@@ -527,7 +529,7 @@ model ServiceOrder {
 
 enum BillStatus {
   Borrador
-  Emitida
+  Pendiente
   Vencida
   Pagada
 }
@@ -597,6 +599,7 @@ model Bill {
   startDate       DateTime?       @db.Date
   endDate         DateTime?       @db.Date
   dueDate         DateTime?       @db.Date
+  pointOfSale     Int? // Punto de venta (4 dígitos asignado por AFIP)
 
   caeData           CAEData?
   details           BillDetail[]

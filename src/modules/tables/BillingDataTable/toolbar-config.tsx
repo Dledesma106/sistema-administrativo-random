@@ -26,8 +26,12 @@ export const getBillingTableToolbarConfig = (
                     value: 'Pendiente',
                 },
                 {
-                    label: 'Pagado',
-                    value: 'Pagado',
+                    label: 'Pagada',
+                    value: 'Pagada',
+                },
+                {
+                    label: 'Vencida',
+                    value: 'Vencida',
                 },
             ],
         },
