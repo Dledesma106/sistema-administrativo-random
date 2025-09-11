@@ -106,10 +106,14 @@ query GetBillingProfiles(
         contacts {
             email
             fullName
+            phone
+            notes
         }
         firstContact {
             email
             fullName
+            phone
+            notes
         }
     }
     billingProfilesCount(businessId: $businessId)
@@ -171,6 +175,8 @@ query GetBillingProfileByBusinessId($businessId: String!) {
         contacts {
             email
             fullName
+            phone
+            notes
         }
     }
 }

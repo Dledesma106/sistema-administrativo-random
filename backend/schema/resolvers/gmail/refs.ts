@@ -65,6 +65,22 @@ GmailThreadPothosRef.implement({
         snippet: t.string({
             resolve: (thread) => thread.snippet,
         }),
+        subject: t.string({
+            nullable: true,
+            resolve: (thread) => {
+                // Obtener el subject del primer mensaje del thread
+                if (thread.messages && thread.messages.length > 0) {
+                    const firstMessage = thread.messages[0];
+                    if (firstMessage.payload && firstMessage.payload.headers) {
+                        const subjectHeader = firstMessage.payload.headers.find(
+                            (header: any) => header.name === 'Subject',
+                        );
+                        return subjectHeader ? subjectHeader.value : null;
+                    }
+                }
+                return null;
+            },
+        }),
     }),
 });
 

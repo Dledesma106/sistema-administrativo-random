@@ -1,0 +1,287 @@
+# Queries para presupuestos
+query GetBudgets(
+    $clientId: [String!]
+    $businessId: [String!]
+    $skip: Int
+    $take: Int
+    $orderBy: String
+    $orderDirection: String
+) {
+    budgets(
+        clientId: $clientId
+        businessId: $businessId
+        skip: $skip
+        take: $take
+        orderBy: $orderBy
+        orderDirection: $orderDirection
+    ) {
+        id
+        subject
+        description
+        price
+        status
+        createdAt
+        updatedAt
+        billingProfile {
+            id
+            business {
+                id
+                name
+            }
+        }
+        client {
+            id
+            name
+        }
+        branch {
+            id
+            name
+            number
+        }
+        createdBy {
+            id
+            fullName
+        }
+    }
+    budgetsCount
+}
+
+query GetBudgetById($id: String!) {
+    budgetById(id: $id) {
+        id
+        subject
+        description
+        price
+        status
+        gmailThreadId
+        createdAt
+        updatedAt
+        billingProfile {
+            id
+            legalName
+            CUIT
+            IVACondition
+            comercialAddress
+            billingEmail
+            contacts {
+                email
+                fullName
+                phone
+                notes
+            }
+            business {
+                id
+                name
+            }
+        }
+        client {
+            id
+            name
+        }
+        branch {
+            id
+            name
+            number
+        }
+        createdBy {
+            id
+            fullName
+        }
+    }
+}
+
+# Query para buscar cadenas de mail por asunto
+query SearchGmailThreads($query: String) {
+    searchBudgetThreads(query: $query) {
+        success
+        message
+        threads {
+            id
+            subject
+            snippet
+            historyId
+            messages {
+                id
+                threadId
+                labelIds
+                snippet
+            }
+        }
+    }
+}
+
+# Query para buscar empresas con sus perfiles de facturación
+query GetBusinessesWithBillingProfiles($search: String, $skip: Int, $take: Int) {
+    businesses(search: $search, skip: $skip, take: $take) {
+        id
+        name
+        billingProfile {
+            id
+            legalName
+            CUIT
+            IVACondition
+            billingEmail
+            comercialAddress
+        }
+    }
+}
+
+# Query para traer sucursales de un cliente que trabajen con una empresa
+query GetClientBranchesByBusiness($clientId: String!, $businessId: String!) {
+    clientBranchesByBusiness(clientId: $clientId, businessId: $businessId) {
+        id
+        name
+        number
+        city {
+            id
+            name
+            province {
+                id
+                name
+            }
+        }
+    }
+}
+
+# Mutations para presupuestos
+mutation CreateBudget($input: BudgetInput!) {
+    createBudget(input: $input) {
+        success
+        message
+        budget {
+            id
+            subject
+            description
+            price
+            status
+            gmailThreadId
+            createdAt
+            billingProfile {
+                id
+                legalName
+                business {
+                    id
+                    name
+                }
+            }
+            client {
+                id
+                name
+            }
+            branch {
+                id
+                name
+                number
+            }
+            createdBy {
+                id
+                fullName
+            }
+        }
+    }
+}
+
+mutation UpdateBudget($id: String!, $input: UpdateBudgetInput!) {
+    updateBudget(id: $id, input: $input) {
+        success
+        message
+        budget {
+            id
+            subject
+            description
+            price
+            status
+            gmailThreadId
+            updatedAt
+            billingProfile {
+                id
+                legalName
+                business {
+                    id
+                    name
+                }
+            }
+            client {
+                id
+                name
+            }
+            branch {
+                id
+                name
+                number
+            }
+        }
+    }
+}
+
+mutation DeleteBudget($id: String!) {
+    deleteBudget(id: $id) {
+        success
+        message
+    }
+}
+
+mutation UpdateBudgetStatus($id: String!, $input: UpdateBudgetStatusInput!) {
+    updateBudgetStatus(id: $id, input: $input) {
+        success
+        message
+        budget {
+            id
+            subject
+            description
+            price
+            status
+            gmailThreadId
+            createdAt
+            updatedAt
+            billingProfile {
+                id
+                business {
+                    id
+                    name
+                }
+            }
+            createdBy {
+                id
+                fullName
+            }
+        }
+    }
+}
+
+mutation CreateBudgetWithBillingProfile($input: CreateBudgetWithBillingProfileInput!) {
+    createBudgetWithBillingProfile(input: $input) {
+        success
+        message
+        budget {
+            id
+            subject
+            description
+            price
+            status
+            gmailThreadId
+            createdAt
+            billingProfile {
+                id
+                legalName
+                business {
+                    id
+                    name
+                }
+            }
+            client {
+                id
+                name
+            }
+            branch {
+                id
+                name
+                number
+            }
+            createdBy {
+                id
+                fullName
+            }
+        }
+    }
+}

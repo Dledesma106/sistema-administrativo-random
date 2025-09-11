@@ -5,21 +5,23 @@ import EmailThreadList from './EmailThreadList';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useSearchGmailThreads } from '@/hooks/api/budget';
 
-// Tipos para hilos de mail
+// Tipos adaptados a la respuesta real de GraphQL
 export type EmailMessage = {
     id: string;
-    from: string;
-    to: string[];
-    cc?: string[];
-    timestamp: string;
-    content: string;
-    type: 'SENT' | 'RECEIVED' | 'FORWARDED';
+    threadId: string;
+    labelIds: string[];
+    snippet: string;
 };
 
 export type EmailThread = {
     id: string;
-    subject: string;
+    subject: string | null;
+    snippet: string;
+    historyId: string;
     messages: EmailMessage[];
 };
 
@@ -30,49 +32,6 @@ type Props = {
     selectedThread?: EmailThread | null;
 };
 
-const mockEmailThreads: EmailThread[] = [
-    {
-        id: 'thread-1',
-        subject: 'Re: Presupuesto #1 - Empresa A',
-        messages: [
-            {
-                id: 'email-1',
-                from: 'juan.perez@empresaa.com',
-                to: ['ventas@miempresa.com'],
-                timestamp: '2024-03-20T10:30:00Z',
-                content:
-                    'Buenos días,\n\nNecesitaría un presupuesto para los servicios mencionados anteriormente.\n\nSaludos cordiales,\nJuan Pérez',
-                type: 'RECEIVED',
-            },
-            {
-                id: 'email-2',
-                from: 'ventas@miempresa.com',
-                to: ['juan.perez@empresaa.com'],
-                cc: ['gerencia@miempresa.com'],
-                timestamp: '2024-03-20T14:15:00Z',
-                content:
-                    'Estimado Juan,\n\nAdjunto el presupuesto solicitado.\nQuedo a disposición por cualquier consulta.\n\nSaludos,\nDepartamento de Ventas',
-                type: 'SENT',
-            },
-        ],
-    },
-    {
-        id: 'thread-2',
-        subject: 'Consulta sobre facturación',
-        messages: [
-            {
-                id: 'email-3',
-                from: 'soporte@cliente.com',
-                to: ['ventas@miempresa.com'],
-                timestamp: '2024-03-21T09:45:00Z',
-                content:
-                    'Hola,\n\nQuisiera consultar sobre la factura enviada.\n\nGracias,\nSoporte',
-                type: 'RECEIVED',
-            },
-        ],
-    },
-];
-
 export default function EmailSearchModal({
     open,
     onClose,
@@ -80,20 +39,67 @@ export default function EmailSearchModal({
     selectedThread,
 }: Props) {
     const [selected, setSelected] = useState<EmailThread | null>(selectedThread || null);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Hook real de Gmail
+    const {
+        data: gmailData,
+        isLoading,
+        error,
+    } = useSearchGmailThreads({
+        query:
+            searchQuery ||
+            'subject:(presupuesto OR cotización OR presupuestar) OR subject:(budget OR quote)',
+    });
+
+    const threads = gmailData?.searchBudgetThreads?.threads || [];
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        // La búsqueda se ejecuta automáticamente cuando cambia searchQuery
+    };
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="flex h-[80vh] min-w-[900px] max-w-4xl">
+            <DialogContent className="flex h-[80vh] min-w-[900px] max-w-4xl flex-col">
                 <DialogHeader className="px-8 pb-2 pt-8">
                     <DialogTitle>Buscar cadenas de mails</DialogTitle>
                 </DialogHeader>
+
+                {/* Barra de búsqueda */}
+                <div className="px-8 pb-4">
+                    <form onSubmit={handleSearch} className="flex gap-2">
+                        <div className="flex-1">
+                            <Label htmlFor="search" className="sr-only">
+                                Buscar en Gmail
+                            </Label>
+                            <Input
+                                id="search"
+                                placeholder="Buscar en Gmail (ej: from:cliente@email.com subject:presupuesto)"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading ? 'Buscando...' : 'Buscar'}
+                        </Button>
+                    </form>
+                </div>
+
                 <div className="flex flex-1 gap-6 overflow-hidden px-8 pb-2">
                     <div className="flex h-full w-96 flex-col border-r border-accent pr-4">
-                        <EmailThreadList
-                            threads={mockEmailThreads}
-                            onSelect={setSelected}
-                            selectedId={selected?.id}
-                        />
+                        {error ? (
+                            <div className="text-sm text-destructive">
+                                Error: {error.message}
+                            </div>
+                        ) : (
+                            <EmailThreadList
+                                threads={threads}
+                                onSelect={setSelected}
+                                selectedId={selected?.id}
+                                isLoading={isLoading}
+                            />
+                        )}
                     </div>
                     <div className="h-full flex-1 overflow-y-auto pl-4">
                         {selected ? (
