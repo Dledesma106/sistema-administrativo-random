@@ -1,6 +1,7 @@
 import { Budget, BudgetStatus } from '@prisma/client';
 
 import { builder } from '../../builder';
+import { ContactInputPothosRef } from '../billingProfile/refs';
 
 export const BudgetStatusPothosRef = builder.enumType('BudgetStatus', {
     values: Object.values(BudgetStatus),
@@ -93,6 +94,63 @@ export const UpdateBudgetStatusInputPothosRef = builder.inputType(
             status: t.field({
                 type: BudgetStatusPothosRef,
                 required: true,
+            }),
+        }),
+    },
+);
+
+export const CreateBudgetWithBillingProfileInputPothosRef = builder.inputType(
+    'CreateBudgetWithBillingProfileInput',
+    {
+        fields: (t) => ({
+            // Datos del presupuesto
+            subject: t.string({
+                required: true,
+            }),
+            description: t.string({
+                required: false,
+            }),
+            price: t.float({
+                required: true,
+            }),
+            clientId: t.string({
+                required: false,
+            }),
+            branchId: t.string({
+                required: false,
+            }),
+            gmailThreadId: t.string({
+                required: false,
+            }),
+            // Datos del perfil de facturación (opcional si ya existe)
+            billingProfileId: t.string({
+                required: false,
+            }),
+            // Datos para crear nuevo perfil de facturación
+            businessId: t.string({
+                required: false,
+            }),
+            businessName: t.string({
+                required: false,
+            }),
+            businessCUIT: t.string({
+                required: false,
+            }),
+            businessBillingEmail: t.string({
+                required: false,
+            }),
+            businessLegalName: t.string({
+                required: false,
+            }),
+            businessComercialAddress: t.string({
+                required: false,
+            }),
+            businessIVACondition: t.string({
+                required: false,
+            }),
+            contacts: t.field({
+                type: [ContactInputPothosRef],
+                required: false,
             }),
         }),
     },

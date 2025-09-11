@@ -39,7 +39,7 @@ import {
     getCleanErrorMessage,
 } from '@/lib/utils';
 
-type FormValues = {
+export type FormValues = {
     business: string;
     businessName?: string;
     legalName: string;
@@ -58,6 +58,8 @@ interface Props {
     businessesWithoutProfile?: NonNullable<
         GetBusinessesWithoutBillingProfileQuery['businesses']
     >;
+    businessId?: string;
+    selectedBusiness?: string;
 }
 
 const CreateOrUpdateBillingProfileForm = ({
@@ -66,6 +68,8 @@ const CreateOrUpdateBillingProfileForm = ({
     isEmbedded = false,
     onSubmit,
     businessesWithoutProfile,
+    businessId,
+    selectedBusiness,
 }: Props): JSX.Element => {
     const router = useRouter();
     const { triggerAlert } = useAlert();
@@ -95,6 +99,31 @@ const CreateOrUpdateBillingProfileForm = ({
         }
     }, [form, isEmbedded, onSubmit]);
 
+    // Actualizar formulario cuando se obtenga el perfil de facturación existente
+    useEffect(() => {
+        if (businessId && !profileIdToUpdate) {
+            form.setValue('legalName', defaultValues?.legalName || '');
+            form.setValue('cuit', defaultValues?.cuit || '');
+            form.setValue('billingEmail', defaultValues?.billingEmail || '');
+            form.setValue('billingAddress', defaultValues?.billingAddress || '');
+            form.setValue(
+                'taxCondition',
+                (defaultValues?.taxCondition as FormValues['taxCondition']) || '',
+            );
+
+            // Actualizar contactos si existen
+            if (defaultValues?.contacts && defaultValues.contacts.length > 0) {
+                const formattedContacts = defaultValues.contacts.map((contact) => ({
+                    name: contact.name,
+                    email: contact.email,
+                    phone: contact.phone,
+                    notes: contact.notes,
+                }));
+                setContacts(formattedContacts);
+            }
+        }
+    }, [defaultValues, businessId, profileIdToUpdate, form]);
+
     const handleSubmit = async (formData: FormValues): Promise<void> => {
         if (isEmbedded) {
             if (onSubmit) {
@@ -105,7 +134,6 @@ const CreateOrUpdateBillingProfileForm = ({
 
         try {
             if (profileIdToUpdate) {
-                console.log('Actualizar perfil existente');
                 // Actualizar perfil existente
                 if (!formData.business) {
                     throw new Error('Debe seleccionar una empresa');
@@ -231,7 +259,7 @@ const CreateOrUpdateBillingProfileForm = ({
                     />
                 )}
 
-                {!isEmbedded && profileIdToUpdate && (
+                {(profileIdToUpdate || defaultValues?.businessName) && (
                     <FormItem>
                         <FormLabel>Empresa</FormLabel>
                         <p className="text-sm">
@@ -240,7 +268,8 @@ const CreateOrUpdateBillingProfileForm = ({
                     </FormItem>
                 )}
 
-                {(isEmbedded || form.watch('business') === 'other') && (
+                {/* Campo nombre de empresa - solo visible cuando es nueva empresa */}
+                {(form.watch('business') === 'other' || selectedBusiness === 'other') && (
                     <FormField
                         name="businessName"
                         control={form.control}
@@ -257,168 +286,171 @@ const CreateOrUpdateBillingProfileForm = ({
                     />
                 )}
 
-                <FormField
-                    name="cuit"
-                    control={form.control}
-                    rules={{
-                        required: 'Este campo es requerido',
-                        pattern: {
-                            value: /^[0-9]{11}$/,
-                            message: 'El CUIT debe tener 11 dígitos',
-                        },
-                    }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>CUIT</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="CUIT sin guiones"
-                                    type="number"
-                                    className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                {/* Solo mostrar otros campos si no es showOnlyName */}
+                <>
+                    <FormField
+                        name="cuit"
+                        control={form.control}
+                        rules={{
+                            required: 'Este campo es requerido',
+                            pattern: {
+                                value: /^[0-9]{11}$/,
+                                message: 'El CUIT debe tener 11 dígitos',
+                            },
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>CUIT</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="CUIT sin guiones"
+                                        type="number"
+                                        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    name="legalName"
-                    control={form.control}
-                    rules={{ required: 'Este campo es requerido' }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Razón Social</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="Razón social como figura en AFIP"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        name="legalName"
+                        control={form.control}
+                        rules={{ required: 'Este campo es requerido' }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Razón Social</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Razón social como figura en AFIP"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    name="taxCondition"
-                    control={form.control}
-                    rules={{ required: 'Este campo es requerido' }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Condición frente al IVA</FormLabel>
-                            <FormControl>
-                                <Combobox
-                                    selectPlaceholder="Seleccione condición IVA"
-                                    searchPlaceholder="Buscar condición"
-                                    value={field.value ?? ''}
-                                    onChange={field.onChange}
-                                    items={Object.values(IvaCondition).map(
-                                        (condition) => ({
-                                            label: capitalizeFirstLetter(
-                                                pascalCaseToSpaces(condition),
-                                            ),
-                                            value: condition,
-                                        }),
-                                    )}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        name="taxCondition"
+                        control={form.control}
+                        rules={{ required: 'Este campo es requerido' }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Condición frente al IVA</FormLabel>
+                                <FormControl>
+                                    <Combobox
+                                        selectPlaceholder="Seleccione condición IVA"
+                                        searchPlaceholder="Buscar condición"
+                                        value={field.value ?? ''}
+                                        onChange={field.onChange}
+                                        items={Object.values(IvaCondition).map(
+                                            (condition) => ({
+                                                label: capitalizeFirstLetter(
+                                                    pascalCaseToSpaces(condition),
+                                                ),
+                                                value: condition,
+                                            }),
+                                        )}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    name="billingAddress"
-                    control={form.control}
-                    rules={{ required: 'Este campo es requerido' }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Domicilio comercial</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Domicilio comercial" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                    <FormField
+                        name="billingAddress"
+                        control={form.control}
+                        rules={{ required: 'Este campo es requerido' }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Domicilio comercial</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Domicilio comercial" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <FormField
-                    name="billingEmail"
-                    control={form.control}
-                    rules={{
-                        required: 'Este campo es requerido',
-                        pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: 'Email inválido',
-                        },
-                    }}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Email de Facturación</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="Email de facturación"
-                                    type="email"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-medium">Contactos</h3>
-                        <Dialog
-                            open={isContactDialogOpen}
-                            onOpenChange={setIsContactDialogOpen}
-                        >
-                            <DialogTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setEditingContact(null)}
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Agregar contacto
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>
-                                        {editingContact
-                                            ? 'Editar contacto'
-                                            : 'Agregar contacto'}
-                                    </DialogTitle>
-                                </DialogHeader>
-                                <ContactForm
-                                    defaultValues={editingContact || undefined}
-                                    onSubmit={
-                                        editingContact
-                                            ? handleUpdateContact
-                                            : handleAddContact
-                                    }
-                                    onCancel={() => setIsContactDialogOpen(false)}
-                                />
-                            </DialogContent>
-                        </Dialog>
-                    </div>
+                    <FormField
+                        name="billingEmail"
+                        control={form.control}
+                        rules={{
+                            required: 'Este campo es requerido',
+                            pattern: {
+                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: 'Email inválido',
+                            },
+                        }}
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email de Facturación</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Email de facturación"
+                                        type="email"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
                     <div className="space-y-4">
-                        {contacts.map((contact, index) => (
-                            <ContactItem
-                                key={index}
-                                contact={contact}
-                                onEdit={handleEditContact}
-                                onDelete={handleDeleteContact}
-                            />
-                        ))}
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-medium">Contactos</h3>
+                            <Dialog
+                                open={isContactDialogOpen}
+                                onOpenChange={setIsContactDialogOpen}
+                            >
+                                <DialogTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEditingContact(null)}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Agregar contacto
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>
+                                            {editingContact
+                                                ? 'Editar contacto'
+                                                : 'Agregar contacto'}
+                                        </DialogTitle>
+                                    </DialogHeader>
+                                    <ContactForm
+                                        defaultValues={editingContact || undefined}
+                                        onSubmit={
+                                            editingContact
+                                                ? handleUpdateContact
+                                                : handleAddContact
+                                        }
+                                        onCancel={() => setIsContactDialogOpen(false)}
+                                    />
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+
+                        <div className="space-y-4">
+                            {contacts.map((contact, index) => (
+                                <ContactItem
+                                    key={index}
+                                    contact={contact}
+                                    onEdit={handleEditContact}
+                                    onDelete={handleDeleteContact}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
+                </>
 
                 {!isEmbedded && (
                     <div className="flex flex-row justify-end gap-4">

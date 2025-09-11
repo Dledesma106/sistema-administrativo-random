@@ -211,6 +211,9 @@ builder.mutationFields((t) => ({
                 // Verificar que el perfil existe
                 const existingProfile = await prisma.billingProfile.findUniqueUndeleted({
                     where: { id },
+                    include: {
+                        business: true,
+                    },
                 });
 
                 if (!existingProfile) {
@@ -219,6 +222,16 @@ builder.mutationFields((t) => ({
                         message: 'El perfil de facturación no existe',
                     };
                 }
+
+                // Desasociar el perfil de facturación de la empresa
+                await prisma.business.update({
+                    where: { id: existingProfile.businessId },
+                    data: {
+                        billingProfile: {
+                            disconnect: true,
+                        },
+                    },
+                });
 
                 // Eliminar el perfil (soft delete)
                 const deletedProfile = await prisma.billingProfile.softDeleteOne({ id });

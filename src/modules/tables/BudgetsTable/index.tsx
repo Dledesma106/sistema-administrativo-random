@@ -10,62 +10,123 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useBudgetsTableColumns } from './columns';
 import { getBudgetsTableToolbarConfig } from './toolbar-config';
 
-import { BudgetStatus } from '@/components/ui/Badges/BudgetStatusBadge';
+import { GetBusinessesQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import { TableSkeleton } from '@/components/ui/skeleton';
+import { useGetBudgets } from '@/hooks/api/budget/useGetBudgets';
 import { routesBuilder } from '@/lib/routes';
 
 type Props = {
-    data: {
-        id: string;
-        company: string;
-        subject: string;
-        description: string;
-        price: number;
-        status: BudgetStatus;
-    }[];
-    businesses: {
-        id: string;
-        name: string;
-    }[];
+    businesses: NonNullable<GetBusinessesQuery['businesses']>;
 };
 
-export default function BudgetsDataTable({ data, businesses }: Props) {
+export default function BudgetsDataTable({ businesses }: Props) {
     const router = useRouter();
-    const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-    const [page, setPage] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
-    const [searchTerm, setSearchTerm] = useState('');
+
+    // Estados con persistencia en localStorage
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('budgetsTableFilters');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [sorting, setSorting] = useState<SortingState>(() => {
+        if (typeof window === 'undefined') {
+            return [];
+        }
+        const saved = localStorage.getItem('budgetsTableSorting');
+        return saved
+            ? JSON.parse(saved)
+            : [
+                  {
+                      id: 'createdAt',
+                      desc: true,
+                  },
+              ];
+    });
+
+    const [page, setPage] = useState(() => {
+        if (typeof window === 'undefined') {
+            return 0;
+        }
+        const saved = localStorage.getItem('budgetsTablePage');
+        return saved ? parseInt(saved) : 0;
+    });
+
+    const [pageSize, setPageSize] = useState(() => {
+        if (typeof window === 'undefined') {
+            return 10;
+        }
+        const saved = localStorage.getItem('budgetsTablePageSize');
+        return saved ? parseInt(saved) : 10;
+    });
+
+    // Persistir estados en localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('budgetsTableFilters', JSON.stringify(columnFilters));
+        }
+    }, [columnFilters]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('budgetsTableSorting', JSON.stringify(sorting));
+        }
+    }, [sorting]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('budgetsTablePage', page.toString());
+        }
+    }, [page]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('budgetsTablePageSize', pageSize.toString());
+        }
+    }, [pageSize]);
 
     const columns = useBudgetsTableColumns();
 
-    // Filtrar por asunto (subject)
-    const filteredData = searchTerm
-        ? data.filter((row) =>
-              row.subject?.toLowerCase().includes(searchTerm.toLowerCase()),
-          )
-        : data;
+    const { data, error, isLoading } = useGetBudgets({
+        skip: page * pageSize,
+        take: pageSize,
+        businessId:
+            (columnFilters.find((f) => f.id === 'business')?.value as string[]) || null,
+        clientId:
+            (columnFilters.find((f) => f.id === 'client')?.value as string[]) || null,
+        orderBy: sorting.length > 0 ? sorting[0].id : null,
+        orderDirection: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : null,
+    });
 
     const table = useReactTable({
-        data: filteredData,
+        data: data?.budgets || [],
         columns,
-        onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        onColumnFiltersChange: (filters) => {
+            setColumnFilters(filters);
+            setPage(0);
+        },
+        onSortingChange: setSorting,
         state: {
-            sorting,
+            columnVisibility: {
+                // Ocultar columnas que no se muestran por defecto
+            },
             columnFilters,
+            sorting,
             pagination: {
                 pageIndex: page,
                 pageSize,
@@ -73,20 +134,31 @@ export default function BudgetsDataTable({ data, businesses }: Props) {
         },
     });
 
+    if (error) {
+        return <div>Hubo un error al cargar los presupuestos</div>;
+    }
+
+    if (isLoading) {
+        return <TableSkeleton />;
+    }
+
+    if (!data) {
+        return <TableSkeleton />;
+    }
+
     return (
         <DataTable
             table={table}
             title="Presupuestos"
-            toolbarConfig={getBudgetsTableToolbarConfig(
-                businesses,
-                searchTerm,
-                setSearchTerm,
-            )}
-            totalCount={filteredData.length}
+            toolbarConfig={getBudgetsTableToolbarConfig(businesses)}
+            totalCount={data?.budgetsCount || 0}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
+            onRowClick={(row) =>
+                router.push(routesBuilder.accounting.budgets.details(row.id))
+            }
             headerActions={
                 <Button
                     className="flex items-center gap-1 pr-6"
@@ -95,9 +167,6 @@ export default function BudgetsDataTable({ data, businesses }: Props) {
                     <BsPlus size="20" />
                     <span>Crear Presupuesto</span>
                 </Button>
-            }
-            onRowClick={(row) =>
-                router.push(routesBuilder.accounting.budgets.details(row.id))
             }
         />
     );

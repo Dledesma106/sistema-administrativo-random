@@ -40,6 +40,9 @@ export const BusinessQueries = builder.queryFields((t) => ({
                         skip,
                         take,
                     }),
+                include: {
+                    billingProfile: true,
+                },
             });
         },
     }),

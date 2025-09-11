@@ -13,6 +13,7 @@ export const BusinessRef = builder.prismaObject('Business', {
             type: 'Date',
             nullable: true,
         }),
+        billingProfile: t.relation('billingProfile'),
     }),
 });
 
