@@ -474,6 +474,7 @@ model Budget {
   description String? // Descripción
   price       Float // Precio
   status      BudgetStatus @default(Borrador)
+  clientName  String? // Nombre del cliente
 
   // Integración con Gmail
   gmailThreadId String? // ID de la cadena de mail

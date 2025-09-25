@@ -1,4 +1,4 @@
-import { BudgetStatus, ServiceOrderStatus } from '@prisma/client';
+import { BudgetStatus, IVACondition, ServiceOrderStatus } from '@prisma/client';
 
 import {
     BudgetCrudResultPothosRef,
@@ -119,9 +119,158 @@ builder.mutationFields((t) => ({
                         subject: input.subject,
                         description: input.description,
                         price: input.price,
-                        gmailThreadId: input.gmailThreadId,
+                        clientName: input.clientName,
                         billingProfile: {
                             connect: { id: input.billingProfileId },
+                        },
+                        ...(input.clientId && {
+                            client: {
+                                connect: { id: input.clientId },
+                            },
+                        }),
+                        ...(input.branchId && {
+                            branch: {
+                                connect: { id: input.branchId },
+                            },
+                        }),
+                        createdBy: {
+                            connect: { id: user.id },
+                        },
+                    },
+                });
+
+                return {
+                    success: true,
+                    budget,
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Error al crear el presupuesto: ${
+                        error instanceof Error ? error.message : 'Error desconocido'
+                    }`,
+                };
+            }
+        },
+    }),
+    createBudgetWithBillingProfile: t.field({
+        type: BudgetCrudResultPothosRef,
+        args: {
+            input: t.arg({
+                type: CreateBudgetWithBillingProfileInputPothosRef,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                {
+                    and: ['IsAuthenticated'],
+                },
+                {
+                    or: ['IsAdministrativoContable'],
+                },
+            ],
+        },
+        resolve: async (root, args, { user }, _info) => {
+            try {
+                const { input } = args;
+
+                // Validar que se proporcione o billingProfileId o datos para crear uno nuevo
+                if (!input.billingProfileId && !input.businessCUIT) {
+                    return {
+                        success: false,
+                        message:
+                            'Debe proporcionar un perfil de facturación existente o datos para crear uno nuevo',
+                    };
+                }
+
+                // Validar cliente y sucursal
+                const validation = await validateClientAndBranch(
+                    input.clientId,
+                    input.branchId,
+                );
+                if (!validation.isValid) {
+                    return {
+                        success: false,
+                        message: validation.message,
+                    };
+                }
+
+                let billingProfileId = input.billingProfileId;
+                let businessId = input.businessId;
+                if (!input.businessId) {
+                    if (!input.businessName) {
+                        return {
+                            success: false,
+                            message:
+                                'No se proporciono un nombre de empresa ni una empresa valida',
+                        };
+                    } else {
+                        const newBusiness = await prisma.business.create({
+                            data: {
+                                name: input.businessName!,
+                            },
+                        });
+                        businessId = newBusiness.id;
+                    }
+                }
+
+                // Verificar que no tenga ya un perfil de facturación
+                const existingProfile = await prisma.billingProfile.findUniqueUndeleted({
+                    where: { businessId: businessId! },
+                });
+
+                if (existingProfile) {
+                    return {
+                        success: false,
+                        message: 'La empresa ya tiene un perfil de facturación',
+                    };
+                }
+
+                // Crear el nuevo perfil de facturación
+                const newBillingProfile = await prisma.billingProfile.create({
+                    data: {
+                        CUIT: input.businessCUIT!,
+                        legalName: input.businessLegalName!,
+                        IVACondition: input.businessIVACondition as IVACondition,
+                        comercialAddress: input.businessComercialAddress!,
+                        billingEmail: input.businessBillingEmail!,
+                        business: {
+                            connect: { id: businessId! },
+                        },
+                        contacts:
+                            input.contacts?.map((contact) => ({
+                                fullName: contact.fullName,
+                                email: contact.email,
+                                phone: contact.phone,
+                                notes: contact.notes || '',
+                            })) || [],
+                    },
+                });
+
+                billingProfileId = newBillingProfile.id;
+
+                // Verificar que el perfil de facturación existe
+                const billingProfile = await prisma.billingProfile.findUniqueUndeleted({
+                    where: { id: billingProfileId! },
+                });
+
+                if (!billingProfile) {
+                    return {
+                        success: false,
+                        message: 'El perfil de facturación no existe',
+                    };
+                }
+
+                // Crear el presupuesto
+                const budget = await prisma.budget.create({
+                    data: {
+                        subject: input.subject,
+                        description: input.description,
+                        price: input.price,
+                        clientName: input.clientName,
+                        billingProfile: {
+                            connect: { id: billingProfileId! },
                         },
                         ...(input.clientId && {
                             client: {
@@ -213,6 +362,9 @@ builder.mutationFields((t) => ({
                 }
                 if (input.price !== undefined) {
                     updateData.price = input.price;
+                }
+                if (input.clientName !== undefined) {
+                    updateData.clientName = input.clientName;
                 }
 
                 // Manejar relaciones
@@ -388,154 +540,6 @@ builder.mutationFields((t) => ({
                 return {
                     success: false,
                     message: `Error al eliminar el presupuesto: ${
-                        error instanceof Error ? error.message : 'Error desconocido'
-                    }`,
-                };
-            }
-        },
-    }),
-    createBudgetWithBillingProfile: t.field({
-        type: BudgetCrudResultPothosRef,
-        args: {
-            input: t.arg({
-                type: CreateBudgetWithBillingProfileInputPothosRef,
-                required: true,
-            }),
-        },
-        authz: {
-            compositeRules: [
-                {
-                    and: ['IsAuthenticated'],
-                },
-                {
-                    or: ['IsAdministrativoContable'],
-                },
-            ],
-        },
-        resolve: async (root, args, { user }, _info) => {
-            try {
-                const { input } = args;
-
-                // Validar que se proporcione o billingProfileId o datos para crear uno nuevo
-                if (!input.billingProfileId && !input.businessId) {
-                    return {
-                        success: false,
-                        message:
-                            'Debe proporcionar un perfil de facturación existente o datos para crear uno nuevo',
-                    };
-                }
-
-                // Validar cliente y sucursal
-                const validation = await validateClientAndBranch(
-                    input.clientId,
-                    input.branchId,
-                );
-                if (!validation.isValid) {
-                    return {
-                        success: false,
-                        message: validation.message,
-                    };
-                }
-
-                let billingProfileId = input.billingProfileId;
-
-                // Si no hay billingProfileId, crear un nuevo perfil de facturación
-                if (!billingProfileId && input.businessId) {
-                    // Verificar que la empresa existe
-                    const business = await prisma.business.findUniqueUndeleted({
-                        where: { id: input.businessId },
-                    });
-
-                    if (!business) {
-                        return {
-                            success: false,
-                            message: 'La empresa no existe',
-                        };
-                    }
-
-                    // Verificar que no tenga ya un perfil de facturación
-                    const existingProfile =
-                        await prisma.billingProfile.findUniqueUndeleted({
-                            where: { businessId: input.businessId },
-                        });
-
-                    if (existingProfile) {
-                        return {
-                            success: false,
-                            message: 'La empresa ya tiene un perfil de facturación',
-                        };
-                    }
-
-                    // Crear el nuevo perfil de facturación
-                    const newBillingProfile = await prisma.billingProfile.create({
-                        data: {
-                            CUIT: input.businessCUIT!,
-                            legalName: input.businessLegalName!,
-                            IVACondition: input.businessIVACondition as any,
-                            comercialAddress: input.businessComercialAddress!,
-                            billingEmail: input.businessBillingEmail!,
-                            business: {
-                                connect: { id: input.businessId },
-                            },
-                            contacts:
-                                input.contacts?.map((contact) => ({
-                                    fullName: contact.fullName,
-                                    email: contact.email,
-                                    phone: contact.phone,
-                                    notes: contact.notes || '',
-                                })) || [],
-                        },
-                    });
-
-                    billingProfileId = newBillingProfile.id;
-                }
-
-                // Verificar que el perfil de facturación existe
-                const billingProfile = await prisma.billingProfile.findUniqueUndeleted({
-                    where: { id: billingProfileId! },
-                });
-
-                if (!billingProfile) {
-                    return {
-                        success: false,
-                        message: 'El perfil de facturación no existe',
-                    };
-                }
-
-                // Crear el presupuesto
-                const budget = await prisma.budget.create({
-                    data: {
-                        subject: input.subject,
-                        description: input.description,
-                        price: input.price,
-                        gmailThreadId: input.gmailThreadId,
-                        billingProfile: {
-                            connect: { id: billingProfileId! },
-                        },
-                        ...(input.clientId && {
-                            client: {
-                                connect: { id: input.clientId },
-                            },
-                        }),
-                        ...(input.branchId && {
-                            branch: {
-                                connect: { id: input.branchId },
-                            },
-                        }),
-                        createdBy: {
-                            connect: { id: user.id },
-                        },
-                    },
-                });
-
-                return {
-                    success: true,
-                    budget,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: `Error al crear el presupuesto: ${
                         error instanceof Error ? error.message : 'Error desconocido'
                     }`,
                 };

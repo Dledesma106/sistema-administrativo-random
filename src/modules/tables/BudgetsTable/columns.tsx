@@ -53,10 +53,13 @@ export const useBudgetsTableColumns = () => [
             const budget = info.row.original;
             return (
                 <div>
-                    <strong>{budget.client?.name || 'Sin cliente'}</strong>
+                    <strong>
+                        {budget.client?.name || budget.clientName || 'Sin cliente'}
+                    </strong>
                     {budget.branch && (
                         <p className="text-xs text-muted-foreground">
-                            Sucursal #{budget.branch.number} - {budget.branch.name}
+                            {budget.branch.number && `Sucursal #${budget.branch.number}`}
+                            {budget.branch.name && ` - ${budget.branch.name}`}
                         </p>
                     )}
                 </div>

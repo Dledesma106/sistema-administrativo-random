@@ -145,18 +145,21 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                 <div>
                     <Title>Cliente</Title>
                     <p className="mb-1">
-                        {budget.client?.name || 'Sin cliente asignado'}
+                        {budget.client?.name ||
+                            budget.clientName ||
+                            'Sin cliente asignado'}
                     </p>
                 </div>
 
-                <div>
-                    <Title>Sucursal</Title>
-                    <p className="mb-1">
-                        {budget.branch
-                            ? `Sucursal #${budget.branch.number} - ${budget.branch.name}`
-                            : 'Sin sucursal asignada'}
-                    </p>
-                </div>
+                {budget.branch && (
+                    <div>
+                        <Title>Sucursal</Title>
+                        <p className="mb-1">
+                            {budget.branch.number && `Sucursal #${budget.branch.number}`}
+                            {budget.branch.name && ` - ${budget.branch.name}`}
+                        </p>
+                    </div>
+                )}
 
                 <div>
                     <Title>Perfil de Facturación</Title>
@@ -185,22 +188,6 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                     <p className="mb-1">{budget.createdBy.fullName}</p>
                 </div>
             </div>
-
-            {budget.gmailThreadId && (
-                <div className="mt-8">
-                    <Title>Comunicaciones</Title>
-                    <div className="rounded-lg border border-accent p-4">
-                        <p className="text-muted-foreground">
-                            Este presupuesto está vinculado a un hilo de Gmail (ID:{' '}
-                            {budget.gmailThreadId}).
-                        </p>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            La integración con Gmail para mostrar las comunicaciones
-                            estará disponible próximamente.
-                        </p>
-                    </div>
-                </div>
-            )}
         </main>
     );
 };

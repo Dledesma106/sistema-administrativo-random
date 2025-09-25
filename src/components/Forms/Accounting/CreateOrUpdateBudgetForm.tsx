@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import BillingProfileDisplay from './BillingProfileDisplay';
@@ -8,11 +8,9 @@ import CreateOrUpdateBillingProfileForm, {
     FormValues as BillingProfileFormValues,
 } from './CreateOrUpdateBillingProfileForm';
 
-import { GetBranchesQuery, GetClientsQuery, GetBusinessesQuery } from '@/api/graphql';
+import { GetBusinessesQuery } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
-import EmailSearchModal from '@/components/EmailSearchModal';
-import type { EmailThread } from '@/components/EmailSearchModal';
 import { Button } from '@/components/ui/button';
 import {
     Form,
@@ -31,7 +29,6 @@ import { useCreateBudget } from '@/hooks/api/budget/useCreateBudget';
 import { useCreateBudgetWithBillingProfile } from '@/hooks/api/budget/useCreateBudgetWithBillingProfile';
 import { useUpdateBudget } from '@/hooks/api/budget/useUpdateBudget';
 import { useGetClientsByBusiness } from '@/hooks/api/client/useGetClientsByBusiness';
-import { routesBuilder } from '@/lib/routes';
 import { getCleanErrorMessage } from '@/lib/utils';
 
 type FormValues = {
@@ -49,16 +46,12 @@ type Props = {
     defaultValues?: FormValues;
     budgetIdToUpdate?: string;
     businesses: NonNullable<GetBusinessesQuery['businesses']>;
-    clients: NonNullable<GetClientsQuery['clients']>;
-    branches: NonNullable<GetBranchesQuery['branches']>;
 };
 
 const CreateOrUpdateBudgetForm = ({
     defaultValues,
     budgetIdToUpdate,
     businesses,
-    clients,
-    branches,
 }: Props): JSX.Element => {
     const router = useRouter();
     const { triggerAlert } = useAlert();
@@ -68,6 +61,7 @@ const CreateOrUpdateBudgetForm = ({
             business: '',
             client: null,
             branch: null,
+            clientName: '',
             subject: '',
             description: '',
             price: 0,
@@ -96,14 +90,23 @@ const CreateOrUpdateBudgetForm = ({
         businessId: !isNewBusiness && watchBusiness ? watchBusiness : '',
         search: null,
     });
+    const clientBranches = clientsByBusinessData?.clientsByBusiness?.find(
+        (client) => client.id === form.watch('client'),
+    )?.branches;
 
     // Usar clientes filtrados por empresa si hay una empresa seleccionada, sino usar todos los clientes
-    const availableClients = clientsByBusinessData?.clientsByBusiness || clients;
+    const availableClients = clientsByBusinessData?.clientsByBusiness;
 
     // Establecer valores por defecto cuando se carguen los datos
     useEffect(() => {
         if (defaultValues) {
             form.reset(defaultValues);
+
+            // Si hay un clientName, significa que es un cliente externo
+            // Establecer automáticamente "Otro" en el dropdown de cliente
+            if (defaultValues.clientName && !defaultValues.client) {
+                form.setValue('client', 'other');
+            }
         }
     }, [defaultValues, form]);
 
@@ -137,6 +140,7 @@ const CreateOrUpdateBudgetForm = ({
                     subject: formData.subject || '',
                     description: formData.description || '',
                     price: formData.price || 0,
+                    clientName: formData.clientName || '',
                     clientId:
                         formData.client === 'other' ? null : formData.client || null,
                     branchId: formData.branch || null,
@@ -170,11 +174,11 @@ const CreateOrUpdateBudgetForm = ({
                         subject: formData.subject || '',
                         description: formData.description || '',
                         price: formData.price || 0,
+                        clientName: formData.clientName || '',
                         billingProfileId,
                         clientId:
                             formData.client === 'other' ? null : formData.client || null,
                         branchId: formData.branch || null,
-                        gmailThreadId: selectedEmailThread?.id || null,
                     };
 
                     const result = await createBudget.mutateAsync({ input });
@@ -202,7 +206,9 @@ const CreateOrUpdateBudgetForm = ({
                         description: formData.description || '',
                         price: formData.price || 0,
                         billingProfileId: null, // No existe, se creará
-                        businessId: formData.business!,
+                        clientName: formData.clientName || '',
+                        businessId:
+                            formData.business !== 'other' ? formData.business : null,
                         businessName: formData.billingProfile.businessName!,
                         businessCUIT: formData.billingProfile.cuit!,
                         businessBillingEmail: formData.billingProfile.billingEmail!,
@@ -219,7 +225,6 @@ const CreateOrUpdateBudgetForm = ({
                         clientId:
                             formData.client === 'other' ? null : formData.client || null,
                         branchId: formData.branch || null,
-                        gmailThreadId: selectedEmailThread?.id || null,
                     };
 
                     const result = await createBudgetWithBillingProfile.mutateAsync({
@@ -249,42 +254,11 @@ const CreateOrUpdateBudgetForm = ({
         }
     };
 
-    const [isMailModalOpen, setMailModalOpen] = useState(false);
-    const [selectedEmailThread, setSelectedEmailThread] = useState<EmailThread | null>(
-        null,
-    );
-
     return (
         <main className="rounded-md border border-accent bg-background-primary p-4">
             <TypographyH2 asChild className="mb-4">
                 <h1>{budgetIdToUpdate ? 'Editar Presupuesto' : 'Crear Presupuesto'}</h1>
             </TypographyH2>
-
-            {/* Botón para buscar cadenas de mails */}
-            <div className="mb-4 flex flex-row items-center gap-2">
-                <Button
-                    variant="secondary"
-                    type="button"
-                    onClick={() => setMailModalOpen(true)}
-                >
-                    Buscar cadenas de mails
-                </Button>
-                {selectedEmailThread && (
-                    <span className="text-xs text-muted-foreground">
-                        Asunto seleccionado: {selectedEmailThread?.subject}
-                    </span>
-                )}
-            </div>
-
-            <EmailSearchModal
-                open={isMailModalOpen}
-                onClose={() => setMailModalOpen(false)}
-                onSelect={(thread: EmailThread) => {
-                    setSelectedEmailThread(thread);
-                    form.setValue('subject', thread.subject || '');
-                }}
-                selectedThread={selectedEmailThread}
-            />
 
             <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -385,37 +359,41 @@ const CreateOrUpdateBudgetForm = ({
                         )}
                     </div>
 
-                    <FormField
-                        name="client"
-                        rules={{
-                            required: 'Este campo es requerido',
-                        }}
-                        control={form.control}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Cliente</FormLabel>
-                                <FormControl>
-                                    <Combobox
-                                        selectPlaceholder="Seleccione un cliente"
-                                        searchPlaceholder="Buscar cliente"
-                                        value={field.value ?? ''}
-                                        onChange={field.onChange}
-                                        items={[
-                                            {
-                                                label: 'Otro',
-                                                value: 'other',
-                                            },
-                                            ...availableClients.map((client) => ({
-                                                label: client.name,
-                                                value: client.id,
-                                            })),
-                                        ]}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    {watchBusiness && (
+                        <FormField
+                            name="client"
+                            rules={{
+                                required: 'Este campo es requerido',
+                            }}
+                            control={form.control}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Cliente</FormLabel>
+                                    <FormControl>
+                                        <Combobox
+                                            selectPlaceholder="Seleccione un cliente"
+                                            searchPlaceholder="Buscar cliente"
+                                            value={field.value ?? ''}
+                                            onChange={field.onChange}
+                                            items={[
+                                                {
+                                                    label: 'Otro',
+                                                    value: 'other',
+                                                },
+                                                ...(availableClients || []).map(
+                                                    (client) => ({
+                                                        label: client.name,
+                                                        value: client.id,
+                                                    }),
+                                                ),
+                                            ]}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
 
                     {form.watch('client') === 'other' && (
                         <FormField
@@ -440,46 +418,42 @@ const CreateOrUpdateBudgetForm = ({
                         />
                     )}
 
-                    {form.watch('client') !== 'other' && form.watch('client') && (
-                        <FormField
-                            name="branch"
-                            control={form.control}
-                            rules={{
-                                required: 'Este campo es requerido',
-                            }}
-                            disabled={!form.watch('client')}
-                            render={({ field }) => (
-                                <FormItem
-                                    className={
-                                        field.disabled
-                                            ? 'pointer-events-none opacity-30'
-                                            : ''
-                                    }
-                                >
-                                    <FormLabel>Sucursal</FormLabel>
-                                    <FormControl>
-                                        <Combobox
-                                            selectPlaceholder="Seleccione una sucursal"
-                                            searchPlaceholder="Buscar sucursal"
-                                            value={field.value || ''}
-                                            onChange={field.onChange}
-                                            items={branches
-                                                .filter(
-                                                    (branch) =>
-                                                        branch.client.id ===
-                                                        form.watch('client'),
-                                                )
-                                                .map((branch) => ({
-                                                    label: `${branch.number}, ${branch.city.name}`,
+                    {form.watch('client') !== 'other' &&
+                        form.watch('client') &&
+                        clientBranches && (
+                            <FormField
+                                name="branch"
+                                control={form.control}
+                                rules={{
+                                    required: 'Este campo es requerido',
+                                }}
+                                disabled={!form.watch('client')}
+                                render={({ field }) => (
+                                    <FormItem
+                                        className={
+                                            field.disabled
+                                                ? 'pointer-events-none opacity-30'
+                                                : ''
+                                        }
+                                    >
+                                        <FormLabel>Sucursal</FormLabel>
+                                        <FormControl>
+                                            <Combobox
+                                                selectPlaceholder="Seleccione una sucursal"
+                                                searchPlaceholder="Buscar sucursal"
+                                                value={field.value || ''}
+                                                onChange={field.onChange}
+                                                items={clientBranches?.map((branch) => ({
+                                                    label: `${branch.number ? `#${branch.number}, ` : ''}${branch.name ? `${branch.name} - ` : ''}${branch.city.name}`,
                                                     value: branch.id,
                                                 }))}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    )}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
 
                     <FormField
                         name="subject"
@@ -562,9 +536,7 @@ const CreateOrUpdateBudgetForm = ({
                     <div className="flex flex-row justify-end gap-4">
                         <Button
                             variant="outline"
-                            onClick={() =>
-                                router.push(routesBuilder.accounting.budgets.list())
-                            }
+                            onClick={() => router.back()}
                             type="button"
                         >
                             Cancelar

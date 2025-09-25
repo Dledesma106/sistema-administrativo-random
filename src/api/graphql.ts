@@ -240,12 +240,12 @@ export type Budget = {
     billingProfile: BillingProfile;
     branch: Maybe<Branch>;
     client: Maybe<Client>;
+    clientName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
     createdBy: User;
     deleted: Scalars['Boolean'];
     deletedAt: Maybe<Scalars['DateTime']>;
     description: Maybe<Scalars['String']>;
-    gmailThreadId: Maybe<Scalars['String']>;
     id: Scalars['ID'];
     price: Scalars['Float'];
     status: BudgetStatus;
@@ -264,8 +264,8 @@ export type BudgetInput = {
     billingProfileId: Scalars['String'];
     branchId: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
-    gmailThreadId: InputMaybe<Scalars['String']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -394,9 +394,9 @@ export type CreateBudgetWithBillingProfileInput = {
     businessLegalName: InputMaybe<Scalars['String']>;
     businessName: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     contacts: InputMaybe<Array<ContactInput>>;
     description: InputMaybe<Scalars['String']>;
-    gmailThreadId: InputMaybe<Scalars['String']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -1600,6 +1600,7 @@ export type UpdateBillingProfileInput = {
 export type UpdateBudgetInput = {
     branchId: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
     price: InputMaybe<Scalars['Float']>;
     subject: InputMaybe<Scalars['String']>;
@@ -2022,6 +2023,7 @@ export type GetBudgetsQuery = {
         description: string | null;
         price: number;
         status: BudgetStatus;
+        clientName: string | null;
         createdAt: any;
         updatedAt: any;
         billingProfile: {
@@ -2053,7 +2055,7 @@ export type GetBudgetByIdQuery = {
         description: string | null;
         price: number;
         status: BudgetStatus;
-        gmailThreadId: string | null;
+        clientName: string | null;
         createdAt: any;
         updatedAt: any;
         billingProfile: {
@@ -2173,7 +2175,6 @@ export type CreateBudgetMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             createdAt: any;
             billingProfile: {
                 __typename?: 'BillingProfile';
@@ -2211,7 +2212,6 @@ export type UpdateBudgetMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             updatedAt: any;
             billingProfile: {
                 __typename?: 'BillingProfile';
@@ -2261,7 +2261,6 @@ export type UpdateBudgetStatusMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             createdAt: any;
             updatedAt: any;
             billingProfile: {
@@ -2291,7 +2290,6 @@ export type CreateBudgetWithBillingProfileMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             createdAt: any;
             billingProfile: {
                 __typename?: 'BillingProfile';
@@ -5440,6 +5438,10 @@ export const GetBudgetsDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'clientName' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'createdAt' },
                                 },
                                 {
@@ -5601,7 +5603,7 @@ export const GetBudgetByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'gmailThreadId' },
+                                    name: { kind: 'Name', value: 'clientName' },
                                 },
                                 {
                                     kind: 'Field',
@@ -6220,13 +6222,6 @@ export const CreateBudgetDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
                                                     value: 'createdAt',
                                                 },
                                             },
@@ -6469,13 +6464,6 @@ export const UpdateBudgetDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'status' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -6757,13 +6745,6 @@ export const UpdateBudgetStatusDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
                                                     value: 'createdAt',
                                                 },
                                             },
@@ -6940,13 +6921,6 @@ export const CreateBudgetWithBillingProfileDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'status' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
                                             },
                                             {
                                                 kind: 'Field',

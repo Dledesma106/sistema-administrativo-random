@@ -2247,6 +2247,18 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "clientName",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "createdAt",
                         "description": null,
                         "args": [],
@@ -2308,18 +2320,6 @@
                     },
                     {
                         "name": "description",
-                        "description": null,
-                        "args": [],
-                        "type": {
-                            "kind": "SCALAR",
-                            "name": "String",
-                            "ofType": null
-                        },
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
-                    {
-                        "name": "gmailThreadId",
                         "description": null,
                         "args": [],
                         "type": {
@@ -2514,7 +2514,7 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "description",
+                        "name": "clientName",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
@@ -2526,7 +2526,7 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "gmailThreadId",
+                        "name": "description",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
@@ -3611,6 +3611,18 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "clientName",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "contacts",
                         "description": null,
                         "type": {
@@ -3632,18 +3644,6 @@
                     },
                     {
                         "name": "description",
-                        "description": null,
-                        "type": {
-                            "kind": "SCALAR",
-                            "name": "String",
-                            "ofType": null
-                        },
-                        "defaultValue": null,
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
-                    {
-                        "name": "gmailThreadId",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
@@ -14289,6 +14289,18 @@
                     },
                     {
                         "name": "clientId",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "clientName",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
