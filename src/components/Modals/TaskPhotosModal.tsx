@@ -65,6 +65,16 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
                 startDate: startDate,
                 endDate: endDate,
                 businessId: selectedBusiness,
+                onProgress: (progressData) => {
+                    setProgress({
+                        stage:
+                            progressData.percentage < 90 ? 'downloading' : 'compressing',
+                        message: progressData.message,
+                        progress: progressData.percentage,
+                        totalFiles: progressData.total,
+                        processedFiles: progressData.current,
+                    });
+                },
             });
 
             setProgress({
@@ -135,7 +145,13 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
                                 <Calendar
                                     mode="single"
                                     selected={startDate}
-                                    onSelect={setStartDate}
+                                    onSelect={(date) => {
+                                        setStartDate(date);
+                                        // Si la fecha de fin es anterior a la nueva fecha de inicio, resetearla
+                                        if (date && endDate && endDate < date) {
+                                            setEndDate(undefined);
+                                        }
+                                    }}
                                     locale={es}
                                     disabled={{ after: new Date() }}
                                 />
@@ -171,7 +187,15 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
                                     selected={endDate}
                                     onSelect={setEndDate}
                                     locale={es}
-                                    disabled={{ after: new Date() }}
+                                    disabled={{
+                                        after: new Date(),
+                                        before: startDate
+                                            ? new Date(
+                                                  startDate.getTime() -
+                                                      24 * 60 * 60 * 1000,
+                                              )
+                                            : undefined,
+                                    }}
                                 />
                             </PopoverContent>
                         </Popover>
