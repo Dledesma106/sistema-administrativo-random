@@ -8,14 +8,27 @@ interface DownloadTaskPhotosParams {
     startDate: Date;
     endDate: Date;
     businessId?: string;
+    onProgress?: (progress: {
+        current: number;
+        total: number;
+        percentage: number;
+        message: string;
+    }) => void;
 }
 
 export const useDownloadTaskPhotos = () => {
     return useMutation({
         mutationFn: async (params: DownloadTaskPhotosParams) => {
-            const { startDate, endDate, businessId } = params;
+            const { startDate, endDate, businessId, onProgress } = params;
 
             // Paso 1: Obtener las fotos con información de nombres
+            onProgress?.({
+                current: 0,
+                total: 100,
+                percentage: 0,
+                message: 'Obteniendo información de fotos...',
+            });
+
             const photosResult = await fetchClient(GetTaskPhotosKeysDocument, {
                 startDate,
                 endDate,
@@ -28,6 +41,13 @@ export const useDownloadTaskPhotos = () => {
                 throw new Error('No se encontraron fotos para el período seleccionado');
             }
 
+            onProgress?.({
+                current: 10,
+                total: 100,
+                percentage: 10,
+                message: `Encontradas ${imageDataStrings.length} fotos. Preparando descarga...`,
+            });
+
             // Paso 2: Crear el archivo ZIP
             const zip = new JSZip();
 
@@ -35,6 +55,16 @@ export const useDownloadTaskPhotos = () => {
             for (let i = 0; i < imageDataStrings.length; i++) {
                 const imageDataString = imageDataStrings[i];
                 const imageData = JSON.parse(imageDataString);
+
+                // Actualizar progreso
+                const progressPercentage =
+                    Math.round(((i + 1) / imageDataStrings.length) * 80) + 10; // 10-90%
+                onProgress?.({
+                    current: i + 1,
+                    total: imageDataStrings.length,
+                    percentage: progressPercentage,
+                    message: `Descargando foto ${i + 1} de ${imageDataStrings.length}: ${imageData.fileName}`,
+                });
 
                 try {
                     // Obtener imagen descargada desde el backend
@@ -51,7 +81,7 @@ export const useDownloadTaskPhotos = () => {
                             `Error getting image data for ${imageData.fileName}:`,
                             imageResponse.statusText,
                         );
-                        return; // Continuar con la siguiente imagen
+                        continue; // Continuar con la siguiente imagen
                     }
 
                     const { imageData: base64Data } = await imageResponse.json();
@@ -73,9 +103,23 @@ export const useDownloadTaskPhotos = () => {
             }
 
             // Paso 4: Generar el archivo ZIP
+            onProgress?.({
+                current: imageDataStrings.length,
+                total: imageDataStrings.length,
+                percentage: 90,
+                message: 'Generando archivo ZIP...',
+            });
+
             const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' });
 
             // Paso 5: Crear y descargar el archivo
+            onProgress?.({
+                current: imageDataStrings.length,
+                total: imageDataStrings.length,
+                percentage: 95,
+                message: 'Preparando descarga...',
+            });
+
             const blob = new Blob([zipBuffer], { type: 'application/zip' });
             const url = URL.createObjectURL(blob);
 
@@ -89,6 +133,13 @@ export const useDownloadTaskPhotos = () => {
 
             // Limpiar la URL
             URL.revokeObjectURL(url);
+
+            onProgress?.({
+                current: imageDataStrings.length,
+                total: imageDataStrings.length,
+                percentage: 100,
+                message: '¡Descarga completada!',
+            });
 
             return { success: true };
         },
