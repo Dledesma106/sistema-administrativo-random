@@ -618,6 +618,7 @@ export type Query = {
     expensesCount: Scalars['Int'];
     file: File;
     files: Array<File>;
+    getTaskPhotosWithInfo: Array<Scalars['String']>;
     images: Array<Image>;
     myAssignedTaskById: Maybe<Task>;
     myAssignedTasks: Array<Task>;
@@ -734,6 +735,12 @@ export type QueryExpensesCountArgs = {
 
 export type QueryFileArgs = {
     id: Scalars['String'];
+};
+
+export type QueryGetTaskPhotosWithInfoArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    endDate: Scalars['DateTime'];
+    startDate: Scalars['DateTime'];
 };
 
 export type QueryMyAssignedTaskByIdArgs = {
@@ -1938,6 +1945,17 @@ export type GenerateApprovedTasksReportMutationVariables = Exact<{
 export type GenerateApprovedTasksReportMutation = {
     __typename?: 'Mutation';
     generateApprovedTasksReport: string;
+};
+
+export type GetTaskPhotosKeysQueryVariables = Exact<{
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
+    businessId: InputMaybe<Scalars['String']>;
+}>;
+
+export type GetTaskPhotosKeysQuery = {
+    __typename?: 'Query';
+    getTaskPhotosWithInfo: Array<string>;
 };
 
 export type DownloadTaskPhotosMutationVariables = Exact<{
@@ -8268,6 +8286,89 @@ export const GenerateApprovedTasksReportDocument = {
     GenerateApprovedTasksReportMutation,
     GenerateApprovedTasksReportMutationVariables
 >;
+export const GetTaskPhotosKeysDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetTaskPhotosKeys' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'startDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'endDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'getTaskPhotosWithInfo' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetTaskPhotosKeysQuery, GetTaskPhotosKeysQueryVariables>;
 export const DownloadTaskPhotosDocument = {
     kind: 'Document',
     definitions: [

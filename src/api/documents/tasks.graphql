@@ -210,13 +210,15 @@ mutation updateTaskStatus($id: String!, $status: TaskStatus!) {
     }
 }
 
-mutation GenerateApprovedTasksReport(
-    $startDate: DateTime!
-    $endDate: DateTime!
-) {
-    generateApprovedTasksReport(
+mutation GenerateApprovedTasksReport($startDate: DateTime!, $endDate: DateTime!) {
+    generateApprovedTasksReport(startDate: $startDate, endDate: $endDate)
+}
+
+query GetTaskPhotosKeys($startDate: DateTime!, $endDate: DateTime!, $businessId: String) {
+    getTaskPhotosWithInfo(
         startDate: $startDate
         endDate: $endDate
+        businessId: $businessId
     )
 }
 
