@@ -5,6 +5,7 @@ builder.queryFields((t) => ({
     budgets: t.prismaField({
         type: ['Budget'],
         args: {
+            search: t.arg.string({ required: false }),
             clientId: t.arg({
                 type: ['String'],
                 required: false,
@@ -31,7 +32,7 @@ builder.queryFields((t) => ({
         resolve: async (
             query,
             _parent,
-            { clientId, businessId, skip, take, orderBy, orderDirection },
+            { search, clientId, businessId, skip, take, orderBy, orderDirection },
         ) => {
             const sortDirection =
                 orderDirection?.toLowerCase() === 'asc' ? 'asc' : 'desc';
@@ -69,6 +70,12 @@ builder.queryFields((t) => ({
             return await prisma.budget.findManyUndeleted({
                 ...query,
                 where: {
+                    ...(search && {
+                        subject: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    }),
                     ...(clientId?.length && {
                         clientId: { in: clientId },
                     }),
@@ -94,6 +101,7 @@ builder.queryFields((t) => ({
     }),
     budgetsCount: t.int({
         args: {
+            search: t.arg.string({ required: false }),
             clientId: t.arg({
                 type: ['String'],
                 required: false,
@@ -113,10 +121,16 @@ builder.queryFields((t) => ({
                 },
             ],
         },
-        resolve: async (_parent, { clientId, businessId }) => {
+        resolve: async (_parent, { search, clientId, businessId }) => {
             return prisma.budget.count({
                 where: {
                     deleted: false,
+                    ...(search && {
+                        subject: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    }),
                     ...(clientId?.length && {
                         clientId: { in: clientId },
                     }),

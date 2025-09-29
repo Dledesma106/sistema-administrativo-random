@@ -52,9 +52,6 @@ export const BudgetInputPothosRef = builder.inputType('BudgetInput', {
         price: t.float({
             required: true,
         }),
-        businessName: t.string({
-            required: false,
-        }),
         billingProfileId: t.string({
             required: true,
         }),

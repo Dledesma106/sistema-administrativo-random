@@ -16,7 +16,7 @@ import { BsPlus } from 'react-icons/bs';
 import { useBudgetsTableColumns } from './columns';
 import { getBudgetsTableToolbarConfig } from './toolbar-config';
 
-import { GetBusinessesQuery } from '@/api/graphql';
+import { GetBusinessesQuery, GetClientsQuery } from '@/api/graphql';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { TableSkeleton } from '@/components/ui/skeleton';
@@ -25,12 +25,19 @@ import { routesBuilder } from '@/lib/routes';
 
 type Props = {
     businesses: NonNullable<GetBusinessesQuery['businesses']>;
+    clients: NonNullable<GetClientsQuery['clients']>;
 };
 
-export default function BudgetsDataTable({ businesses }: Props) {
+export default function BudgetsDataTable({ businesses, clients }: Props) {
     const router = useRouter();
 
     // Estados con persistencia en localStorage
+    const [searchTerm, setSearchTerm] = useState<string>(() => {
+        if (typeof window === 'undefined') {
+            return '';
+        }
+        return localStorage.getItem('budgetsTableSearch') || '';
+    });
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
         if (typeof window === 'undefined') {
             return [];
@@ -95,18 +102,27 @@ export default function BudgetsDataTable({ businesses }: Props) {
         }
     }, [pageSize]);
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('budgetsTableSearch', searchTerm);
+        }
+    }, [searchTerm]);
+
     const columns = useBudgetsTableColumns();
 
-    const { data, error, isLoading } = useGetBudgets({
+    const budgetsVariables = {
         skip: page * pageSize,
         take: pageSize,
+        search: searchTerm || null,
         businessId:
             (columnFilters.find((f) => f.id === 'business')?.value as string[]) || null,
         clientId:
             (columnFilters.find((f) => f.id === 'client')?.value as string[]) || null,
         orderBy: sorting.length > 0 ? sorting[0].id : null,
         orderDirection: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : null,
-    });
+    } as unknown as Parameters<typeof useGetBudgets>[0];
+
+    const { data, error, isLoading } = useGetBudgets(budgetsVariables);
 
     const table = useReactTable({
         data: data?.budgets || [],
@@ -150,7 +166,13 @@ export default function BudgetsDataTable({ businesses }: Props) {
         <DataTable
             table={table}
             title="Presupuestos"
-            toolbarConfig={getBudgetsTableToolbarConfig(businesses)}
+            toolbarConfig={getBudgetsTableToolbarConfig(businesses, clients, {
+                searchTerm,
+                onSearch: (term: string) => {
+                    setSearchTerm(term);
+                    setPage(0);
+                },
+            })}
             totalCount={data?.budgetsCount || 0}
             page={page}
             pageSize={pageSize}

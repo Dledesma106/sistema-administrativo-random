@@ -1,5 +1,6 @@
 # Queries para presupuestos
 query GetBudgets(
+    $search: String
     $clientId: [String!]
     $businessId: [String!]
     $skip: Int
@@ -8,6 +9,7 @@ query GetBudgets(
     $orderDirection: String
 ) {
     budgets(
+        search: $search
         clientId: $clientId
         businessId: $businessId
         skip: $skip
@@ -44,7 +46,7 @@ query GetBudgets(
             fullName
         }
     }
-    budgetsCount
+    budgetsCount(search: $search)
 }
 
 query GetBudgetById($id: String!) {

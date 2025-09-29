@@ -2,6 +2,7 @@ import { TaskStatus, TaskType } from '@prisma/client';
 
 import { TaskStatusPothosRef, TaskTypePothosRef } from './refs';
 
+// import { createImageSignedUrlAsync } from 'backend/s3Client';
 import { builder } from 'backend/schema/builder';
 import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
@@ -373,6 +374,91 @@ builder.queryFields((t) => ({
         type: [TaskTypePothosRef],
         resolve: () => {
             return Object.values(TaskType);
+        },
+    }),
+    getTaskPhotosWithInfo: t.field({
+        type: ['String'],
+        args: {
+            startDate: t.arg({
+                type: 'DateTime',
+                required: true,
+            }),
+            endDate: t.arg({
+                type: 'DateTime',
+                required: true,
+            }),
+            businessId: t.arg({
+                type: 'String',
+                required: false,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            const { startDate, endDate, businessId } = args;
+
+            if (startDate) {
+                startDate.setHours(0, 0, 0, 0);
+            }
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
+
+            // Buscar las tareas que coincidan con los filtros
+            const tasks = await prisma.task.findManyUndeleted({
+                where: {
+                    closedAt: {
+                        gte: startDate,
+                        lte: endDate,
+                    },
+                    businessId,
+                    status: {
+                        in: [TaskStatus.Finalizada, TaskStatus.Aprobada],
+                    },
+                    images: {
+                        some: {
+                            deleted: false,
+                        },
+                    },
+                },
+                include: {
+                    images: {
+                        where: {
+                            deleted: false,
+                        },
+                    },
+                    business: true,
+                },
+            });
+
+            // Crear un array con información de cada imagen
+            const imageInfo = [];
+            for (const task of tasks) {
+                for (let i = 0; i < task.images.length; i++) {
+                    const image = task.images[i];
+                    const businessName =
+                        task.business?.name || task.businessName || 'SinEmpresa';
+                    const fileName = `${task.actNumber || ''}_${task.taskNumber}_${businessName}_${i + 1}.jpg`;
+                    imageInfo.push({
+                        url: image.key, // Usaremos la key para generar la URL
+                        fileName,
+                    });
+                }
+            }
+
+            // Devolver solo la información de las imágenes (sin descargar)
+            const imageMetadata = imageInfo.map((item) => {
+                return JSON.stringify({
+                    key: item.url, // La key de S3
+                    fileName: item.fileName,
+                });
+            });
+
+            return imageMetadata;
         },
     }),
 }));
