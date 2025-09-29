@@ -96,38 +96,6 @@ const CreateOrUpdatePreventiveForm = ({
     const router = useRouter();
     const form = useForm<FormValues>({
         defaultValues,
-        resolver: (values) => {
-            const errors: Record<string, { type: string; message: string }> = {};
-
-            // Validar que se use frequency O months, pero no ambos
-            if (values.frequency && values.months?.length > 0) {
-                errors.frequency = {
-                    type: 'manual',
-                    message: 'No puede especificar frecuencia y meses simultáneamente',
-                };
-                errors.months = {
-                    type: 'manual',
-                    message: 'No puede especificar frecuencia y meses simultáneamente',
-                };
-            }
-
-            // Validar que al menos uno esté presente
-            if (!values.frequency && (!values.months || values.months.length === 0)) {
-                errors.frequency = {
-                    type: 'manual',
-                    message: 'Debe especificar una frecuencia o seleccionar meses',
-                };
-                errors.months = {
-                    type: 'manual',
-                    message: 'Debe especificar una frecuencia o seleccionar meses',
-                };
-            }
-
-            return {
-                values,
-                errors,
-            };
-        },
     });
     const { watch, setValue } = form;
     const { triggerAlert } = useAlert();
@@ -155,6 +123,24 @@ const CreateOrUpdatePreventiveForm = ({
     }, [watch, setValue]);
 
     const onSubmit = (form: FormValues): void => {
+        // Validar que se use frequency O months, pero no ambos
+        if (form.frequency && form.months?.length > 0) {
+            triggerAlert({
+                type: 'Failure',
+                message: 'No puede especificar frecuencia y meses simultáneamente',
+            });
+            return;
+        }
+
+        // Validar que al menos uno esté presente
+        if (!form.frequency && (!form.months || form.months.length === 0)) {
+            triggerAlert({
+                type: 'Failure',
+                message: 'Debe especificar una frecuencia o seleccionar meses',
+            });
+            return;
+        }
+
         // Validar que las fechas no sean futuras
         const now = new Date();
         if (form.lastDoneAt && new Date(form.lastDoneAt) > now) {
@@ -486,7 +472,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
+                                                <CalendarIcon className="ml-auto size-4 opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -529,7 +515,7 @@ const CreateOrUpdatePreventiveForm = ({
                                                 ) : (
                                                     <span>Seleccione una fecha</span>
                                                 )}
-                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
+                                                <CalendarIcon className="ml-auto size-4 opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>

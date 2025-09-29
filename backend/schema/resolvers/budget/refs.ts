@@ -17,7 +17,7 @@ export const BudgetPothosRef = builder.prismaObject('Budget', {
             type: BudgetStatusPothosRef,
             resolve: (root) => root.status as BudgetStatus,
         }),
-        gmailThreadId: t.exposeString('gmailThreadId', { nullable: true }),
+        clientName: t.exposeString('clientName', { nullable: true }),
         createdAt: t.field({
             type: 'DateTime',
             resolve: (root) => root.createdAt,
@@ -55,13 +55,13 @@ export const BudgetInputPothosRef = builder.inputType('BudgetInput', {
         billingProfileId: t.string({
             required: true,
         }),
+        clientName: t.string({
+            required: false,
+        }),
         clientId: t.string({
             required: false,
         }),
         branchId: t.string({
-            required: false,
-        }),
-        gmailThreadId: t.string({
             required: false,
         }),
     }),
@@ -76,6 +76,9 @@ export const UpdateBudgetInputPothosRef = builder.inputType('UpdateBudgetInput',
             required: false,
         }),
         price: t.float({
+            required: false,
+        }),
+        clientName: t.string({
             required: false,
         }),
         clientId: t.string({
@@ -113,13 +116,13 @@ export const CreateBudgetWithBillingProfileInputPothosRef = builder.inputType(
             price: t.float({
                 required: true,
             }),
+            clientName: t.string({
+                required: false,
+            }),
             clientId: t.string({
                 required: false,
             }),
             branchId: t.string({
-                required: false,
-            }),
-            gmailThreadId: t.string({
                 required: false,
             }),
             // Datos del perfil de facturación (opcional si ya existe)

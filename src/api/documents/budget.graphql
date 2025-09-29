@@ -1,5 +1,6 @@
 # Queries para presupuestos
 query GetBudgets(
+    $search: String
     $clientId: [String!]
     $businessId: [String!]
     $skip: Int
@@ -8,6 +9,7 @@ query GetBudgets(
     $orderDirection: String
 ) {
     budgets(
+        search: $search
         clientId: $clientId
         businessId: $businessId
         skip: $skip
@@ -20,6 +22,7 @@ query GetBudgets(
         description
         price
         status
+        clientName
         createdAt
         updatedAt
         billingProfile {
@@ -43,7 +46,7 @@ query GetBudgets(
             fullName
         }
     }
-    budgetsCount
+    budgetsCount(search: $search)
 }
 
 query GetBudgetById($id: String!) {
@@ -53,7 +56,7 @@ query GetBudgetById($id: String!) {
         description
         price
         status
-        gmailThreadId
+        clientName
         createdAt
         updatedAt
         billingProfile {
@@ -154,7 +157,6 @@ mutation CreateBudget($input: BudgetInput!) {
             description
             price
             status
-            gmailThreadId
             createdAt
             billingProfile {
                 id
@@ -191,7 +193,6 @@ mutation UpdateBudget($id: String!, $input: UpdateBudgetInput!) {
             description
             price
             status
-            gmailThreadId
             updatedAt
             billingProfile {
                 id
@@ -231,7 +232,6 @@ mutation UpdateBudgetStatus($id: String!, $input: UpdateBudgetStatusInput!) {
             description
             price
             status
-            gmailThreadId
             createdAt
             updatedAt
             billingProfile {
@@ -259,7 +259,6 @@ mutation CreateBudgetWithBillingProfile($input: CreateBudgetWithBillingProfileIn
             description
             price
             status
-            gmailThreadId
             createdAt
             billingProfile {
                 id

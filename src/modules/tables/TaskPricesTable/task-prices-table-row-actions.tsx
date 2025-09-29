@@ -28,7 +28,7 @@ export function TaskPricesTableRowActions({ taskPrice }: Props) {
         <div className="flex w-full justify-end">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="size-8 flex p-0">
+                    <Button variant="ghost" className="flex size-8 p-0">
                         <DotsHorizontalIcon className="size-4" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>

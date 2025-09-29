@@ -240,12 +240,12 @@ export type Budget = {
     billingProfile: BillingProfile;
     branch: Maybe<Branch>;
     client: Maybe<Client>;
+    clientName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
     createdBy: User;
     deleted: Scalars['Boolean'];
     deletedAt: Maybe<Scalars['DateTime']>;
     description: Maybe<Scalars['String']>;
-    gmailThreadId: Maybe<Scalars['String']>;
     id: Scalars['ID'];
     price: Scalars['Float'];
     status: BudgetStatus;
@@ -264,8 +264,8 @@ export type BudgetInput = {
     billingProfileId: Scalars['String'];
     branchId: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
-    gmailThreadId: InputMaybe<Scalars['String']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -394,9 +394,9 @@ export type CreateBudgetWithBillingProfileInput = {
     businessLegalName: InputMaybe<Scalars['String']>;
     businessName: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     contacts: InputMaybe<Array<ContactInput>>;
     description: InputMaybe<Scalars['String']>;
-    gmailThreadId: InputMaybe<Scalars['String']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -1062,6 +1062,7 @@ export type Query = {
     getGmailThread: GmailThreadResult;
     getGmailThreadInfo: GmailThreadResult;
     getRecentGmailThreads: GmailThreadsResult;
+    getTaskPhotosWithInfo: Array<Scalars['String']>;
     gmailThreadExists: Scalars['Boolean'];
     images: Array<Image>;
     isGmailConfigured: GmailResult;
@@ -1178,6 +1179,7 @@ export type QueryBudgetsArgs = {
     clientId: InputMaybe<Array<Scalars['String']>>;
     orderBy: InputMaybe<Scalars['String']>;
     orderDirection: InputMaybe<Scalars['String']>;
+    search: InputMaybe<Scalars['String']>;
     skip: InputMaybe<Scalars['Int']>;
     take: InputMaybe<Scalars['Int']>;
 };
@@ -1185,6 +1187,7 @@ export type QueryBudgetsArgs = {
 export type QueryBudgetsCountArgs = {
     businessId: InputMaybe<Array<Scalars['String']>>;
     clientId: InputMaybe<Array<Scalars['String']>>;
+    search: InputMaybe<Scalars['String']>;
 };
 
 export type QueryBusinessArgs = {
@@ -1293,6 +1296,12 @@ export type QueryGetGmailThreadArgs = {
 
 export type QueryGetGmailThreadInfoArgs = {
     threadId: Scalars['String'];
+};
+
+export type QueryGetTaskPhotosWithInfoArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    endDate: Scalars['DateTime'];
+    startDate: Scalars['DateTime'];
 };
 
 export type QueryGmailThreadExistsArgs = {
@@ -1600,6 +1609,7 @@ export type UpdateBillingProfileInput = {
 export type UpdateBudgetInput = {
     branchId: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
+    clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
     price: InputMaybe<Scalars['Float']>;
     subject: InputMaybe<Scalars['String']>;
@@ -2004,6 +2014,7 @@ export type GetBranchQuery = {
 };
 
 export type GetBudgetsQueryVariables = Exact<{
+    search: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Array<Scalars['String']>>;
     businessId: InputMaybe<Array<Scalars['String']>>;
     skip: InputMaybe<Scalars['Int']>;
@@ -2022,6 +2033,7 @@ export type GetBudgetsQuery = {
         description: string | null;
         price: number;
         status: BudgetStatus;
+        clientName: string | null;
         createdAt: any;
         updatedAt: any;
         billingProfile: {
@@ -2053,7 +2065,7 @@ export type GetBudgetByIdQuery = {
         description: string | null;
         price: number;
         status: BudgetStatus;
-        gmailThreadId: string | null;
+        clientName: string | null;
         createdAt: any;
         updatedAt: any;
         billingProfile: {
@@ -2173,7 +2185,6 @@ export type CreateBudgetMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             createdAt: any;
             billingProfile: {
                 __typename?: 'BillingProfile';
@@ -2211,7 +2222,6 @@ export type UpdateBudgetMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             updatedAt: any;
             billingProfile: {
                 __typename?: 'BillingProfile';
@@ -2261,7 +2271,6 @@ export type UpdateBudgetStatusMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             createdAt: any;
             updatedAt: any;
             billingProfile: {
@@ -2291,7 +2300,6 @@ export type CreateBudgetWithBillingProfileMutation = {
             description: string | null;
             price: number;
             status: BudgetStatus;
-            gmailThreadId: string | null;
             createdAt: any;
             billingProfile: {
                 __typename?: 'BillingProfile';
@@ -3165,6 +3173,17 @@ export type GenerateApprovedTasksReportMutationVariables = Exact<{
 export type GenerateApprovedTasksReportMutation = {
     __typename?: 'Mutation';
     generateApprovedTasksReport: string;
+};
+
+export type GetTaskPhotosKeysQueryVariables = Exact<{
+    startDate: Scalars['DateTime'];
+    endDate: Scalars['DateTime'];
+    businessId: InputMaybe<Scalars['String']>;
+}>;
+
+export type GetTaskPhotosKeysQuery = {
+    __typename?: 'Query';
+    getTaskPhotosWithInfo: Array<string>;
 };
 
 export type DownloadTaskPhotosMutationVariables = Exact<{
@@ -5308,6 +5327,14 @@ export const GetBudgetsDocument = {
                     kind: 'VariableDefinition',
                     variable: {
                         kind: 'Variable',
+                        name: { kind: 'Name', value: 'search' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
                         name: { kind: 'Name', value: 'clientId' },
                     },
                     type: {
@@ -5374,6 +5401,14 @@ export const GetBudgetsDocument = {
                         arguments: [
                             {
                                 kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
                                 name: { kind: 'Name', value: 'clientId' },
                                 value: {
                                     kind: 'Variable',
@@ -5437,6 +5472,10 @@ export const GetBudgetsDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'clientName' },
                                 },
                                 {
                                     kind: 'Field',
@@ -5540,7 +5579,20 @@ export const GetBudgetsDocument = {
                             ],
                         },
                     },
-                    { kind: 'Field', name: { kind: 'Name', value: 'budgetsCount' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'budgetsCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'search' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'search' },
+                                },
+                            },
+                        ],
+                    },
                 ],
             },
         },
@@ -5601,7 +5653,7 @@ export const GetBudgetByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'gmailThreadId' },
+                                    name: { kind: 'Name', value: 'clientName' },
                                 },
                                 {
                                     kind: 'Field',
@@ -6220,13 +6272,6 @@ export const CreateBudgetDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
                                                     value: 'createdAt',
                                                 },
                                             },
@@ -6469,13 +6514,6 @@ export const UpdateBudgetDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'status' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -6757,13 +6795,6 @@ export const UpdateBudgetStatusDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
                                                     value: 'createdAt',
                                                 },
                                             },
@@ -6940,13 +6971,6 @@ export const CreateBudgetWithBillingProfileDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'status' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'gmailThreadId',
-                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -12545,6 +12569,89 @@ export const GenerateApprovedTasksReportDocument = {
     GenerateApprovedTasksReportMutation,
     GenerateApprovedTasksReportMutationVariables
 >;
+export const GetTaskPhotosKeysDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetTaskPhotosKeys' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'startDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'endDate' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'DateTime' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'getTaskPhotosWithInfo' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'startDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'endDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'endDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetTaskPhotosKeysQuery, GetTaskPhotosKeysQueryVariables>;
 export const DownloadTaskPhotosDocument = {
     kind: 'Document',
     definitions: [

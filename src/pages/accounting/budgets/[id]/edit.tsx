@@ -2,23 +2,19 @@ import { useRouter } from 'next/router';
 
 import CreateOrUpdateBudgetForm from '@/components/Forms/Accounting/CreateOrUpdateBudgetForm';
 import { FormSkeleton } from '@/components/ui/skeleton';
-import { useGetBranches } from '@/hooks/api/branch/useGetBranches';
 import { useGetBudgetById } from '@/hooks/api/budget/useGetBudgetById';
 import { useGetBusinesses } from '@/hooks/api/business/useGetBusinesses';
-import { useGetClients } from '@/hooks/api/client/useGetClients';
 
 export default function EditBudget(): JSX.Element {
     const {
         query: { id },
     } = useRouter();
     const { data: businessesData, isLoading: isLoadingBusinesses } = useGetBusinesses({});
-    const { data: clientsData, isLoading: isLoadingClients } = useGetClients({});
-    const { data: branchesData, isLoading: isLoadingBranches } = useGetBranches({});
     const { data: budgetData, isLoading: isLoadingBudget } = useGetBudgetById({
         id: id as string,
     });
 
-    if (isLoadingBusinesses || isLoadingClients || isLoadingBranches || isLoadingBudget) {
+    if (isLoadingBusinesses || isLoadingBudget) {
         return <FormSkeleton />;
     }
 
@@ -31,6 +27,7 @@ export default function EditBudget(): JSX.Element {
     const defaultValues = {
         business: budget.billingProfile.business.id,
         client: budget.client?.id,
+        clientName: budget.clientName ?? '',
         branch: budget.branch?.id,
         subject: budget.subject,
         description: budget.description!,
@@ -56,8 +53,6 @@ export default function EditBudget(): JSX.Element {
         <CreateOrUpdateBudgetForm
             budgetIdToUpdate={budgetData?.budgetById?.id as string}
             businesses={businessesData?.businesses || []}
-            clients={clientsData?.clients || []}
-            branches={branchesData?.branches || []}
             defaultValues={defaultValues}
         />
     );
