@@ -1,4 +1,3 @@
-import scrollbar from 'tailwind-scrollbar';
 import defaultTheme from 'tailwindcss/defaultTheme';
 import animate from 'tailwindcss-animate';
 
@@ -132,7 +131,7 @@ const config = {
             },
         },
     },
-    plugins: [animate, scrollbar({ nocompatible: true })],
+    plugins: [animate],
 };
 
 export default config;

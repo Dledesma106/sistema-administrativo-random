@@ -763,7 +763,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                                     ) : (
                                                         <span>Seleccione una fecha</span>
                                                     )}
-                                                    <CalendarIcon className="size-4 ml-auto opacity-50" />
+                                                    <CalendarIcon className="ml-auto size-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
@@ -926,7 +926,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                                 height={32}
                                             />
                                         ) : (
-                                            <span className="max-w-32 mr-2 truncate">
+                                            <span className="mr-2 max-w-32 truncate">
                                                 {file.name}
                                             </span>
                                         )}
@@ -943,7 +943,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                             ))}
                             {files.length < 5 && (
                                 <label className="flex cursor-pointer items-center rounded-md border border-dashed border-accent bg-background p-2 hover:bg-accent/10">
-                                    <PlusCircle className="size-4 mr-2" />
+                                    <PlusCircle className="mr-2 size-4" />
                                     <span>Añadir imagen</span>
                                     <input
                                         type="file"

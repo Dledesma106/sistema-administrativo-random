@@ -69,7 +69,7 @@ function UserMenu({ user }: NavBarProps) {
                 <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
                         <Link href="/edit-profile" className="flex w-full cursor-pointer">
-                            <User className="size-4 mr-2" />
+                            <User className="mr-2 size-4" />
                             <span>Perfil</span>
                         </Link>
                     </DropdownMenuItem>
@@ -81,7 +81,7 @@ function UserMenu({ user }: NavBarProps) {
                         variant="ghost"
                         disabled={logoutMutation.isPending}
                     >
-                        <LogOut className="size-4 mr-2" />
+                        <LogOut className="mr-2 size-4" />
                         <span>Cerrar sesión</span>
                     </Button>
                 </DropdownMenuItem>

@@ -75,11 +75,11 @@ export default function ClientBranchForm({
             stopLoading();
         },
         onError: () => {
-            triggerAlert({
+            (triggerAlert({
                 type: 'Failure',
                 message: `No se pudo crear la sucursal`,
             }),
-                stopLoading();
+                stopLoading());
         },
     });
     const updateMutation = useMutation({
@@ -95,11 +95,11 @@ export default function ClientBranchForm({
             stopLoading();
         },
         onError: () => {
-            triggerAlert({
+            (triggerAlert({
                 type: 'Failure',
                 message: `No se pudo actualizar la sucursal`,
             }),
-                stopLoading();
+                stopLoading());
         },
     });
 

@@ -64,7 +64,7 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
                                     variant="outline"
                                     className="justify-start text-left font-normal"
                                 >
-                                    <CalendarIcon className="size-4 mr-2" />
+                                    <CalendarIcon className="mr-2 size-4" />
                                     {startDate ? (
                                         format(startDate, 'PP', { locale: es })
                                     ) : (
@@ -97,7 +97,7 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
                                     variant="outline"
                                     className="justify-start text-left font-normal"
                                 >
-                                    <CalendarIcon className="size-4 mr-2" />
+                                    <CalendarIcon className="mr-2 size-4" />
                                     {endDate ? (
                                         format(endDate, 'PP', { locale: es })
                                     ) : (

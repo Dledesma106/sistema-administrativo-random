@@ -34,7 +34,7 @@ export function BillingTableRowActions({ bill }: Props) {
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="size-8 flex p-0"
+                        className="flex size-8 p-0"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <DotsHorizontalIcon className="size-4" />

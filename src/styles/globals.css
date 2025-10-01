@@ -35,14 +35,14 @@
 
         --radius: 0.5rem;
 
-        --skeleton: 220 13% 91%;  /* color para modo claro */
+        --skeleton: 220 13% 91%; /* color para modo claro */
         --skeleton-foreground: 220 13% 91%;
     }
 
     .dark {
         --background: 240 2% 19%;
         --background-primary: 168 37% 15%;
-        --foreground:  0 0% 87%;
+        --foreground: 0 0% 87%;
 
         --card: 222.2 84% 4.9%;
         --card-foreground: 210 40% 98%;
@@ -69,22 +69,17 @@
         --input: 217.2 32.6% 17.5%;
         --ring: 212.7 26.8% 83.9%;
 
-        --skeleton: 215 27.9% 16.9%;  /* color para modo oscuro */
+        --skeleton: 215 27.9% 16.9%; /* color para modo oscuro */
         --skeleton-foreground: 215 27.9% 16.9%;
     }
 
-    html, body {
+    html,
+    body {
         @apply overflow-auto;
     }
 
     * {
-        @apply scrollbar-thin 
-        scrollbar-thumb-background hover:scrollbar-thumb-primary
-        scrollbar-track-background
-        [&::-webkit-scrollbar]:w-1.5
-        [&::-webkit-scrollbar-thumb]:rounded-full
-        [&::-webkit-scrollbar-track]:bg-transparent
-        [&::-webkit-scrollbar-button]:bg-transparent;
+        /* Scrollbar styles removed to avoid dependency issues */
     }
 }
 
@@ -103,8 +98,8 @@
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
     -webkit-text-fill-color: hsl(var(--foreground)) !important;

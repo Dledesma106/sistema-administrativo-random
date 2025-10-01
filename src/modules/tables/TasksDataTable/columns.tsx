@@ -28,9 +28,9 @@ export const useTasksTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="size-4 ml-1" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="size-4 ml-1" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -204,9 +204,9 @@ export const useTasksTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="size-4 ml-1" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="size-4 ml-1" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -241,9 +241,9 @@ export const useTasksTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="size-4 ml-1" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="size-4 ml-1" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -268,9 +268,9 @@ export const useTasksTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="size-4 ml-1" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="size-4 ml-1" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -291,9 +291,9 @@ export const useTasksTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="size-4 ml-1" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="size-4 ml-1" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -343,9 +343,9 @@ export const useTasksTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="size-4 ml-1" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="size-4 ml-1" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}

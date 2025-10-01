@@ -162,7 +162,7 @@ export const InvoiceSection = () => {
                                                 ) : (
                                                     <span>Seleccione fecha</span>
                                                 )}
-                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
+                                                <CalendarIcon className="ml-auto size-4 opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
@@ -207,7 +207,7 @@ export const InvoiceSection = () => {
                                                     ) : (
                                                         <span>Seleccione fecha</span>
                                                     )}
-                                                    <CalendarIcon className="size-4 ml-auto opacity-50" />
+                                                    <CalendarIcon className="ml-auto size-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
@@ -255,7 +255,7 @@ export const InvoiceSection = () => {
                                                 ) : (
                                                     <span>Seleccione fecha</span>
                                                 )}
-                                                <CalendarIcon className="size-4 ml-auto opacity-50" />
+                                                <CalendarIcon className="ml-auto size-4 opacity-50" />
                                             </Button>
                                         </FormControl>
                                     </PopoverTrigger>
