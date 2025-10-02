@@ -20,6 +20,21 @@ builder.objectType(UploadUrlInfoRef, {
     }),
 });
 
+// Crear un tipo para la información de presigned URL
+const PresignedUrlInfoRef = builder.objectRef<{
+    url: string;
+    key: string;
+    expiresIn: number;
+}>('PresignedUrlInfo');
+
+builder.objectType(PresignedUrlInfoRef, {
+    fields: (t) => ({
+        url: t.exposeString('url'),
+        key: t.exposeString('key'),
+        expiresIn: t.exposeInt('expiresIn'),
+    }),
+});
+
 // Crear un tipo para la respuesta de URLs presignadas
 const PresignedUrlResponseRef = builder.objectRef<{
     success: boolean;
@@ -38,6 +53,28 @@ builder.objectType(PresignedUrlResponseRef, {
         uploadUrls: t.field({
             type: [UploadUrlInfoRef],
             resolve: (parent) => parent.uploadUrls,
+        }),
+    }),
+});
+
+// Crear un tipo para la respuesta de presigned URLs
+const GeneratePresignedUrlsResponseRef = builder.objectRef<{
+    success: boolean;
+    message?: string;
+    presignedUrls: Array<{
+        url: string;
+        key: string;
+        expiresIn: number;
+    }>;
+}>('GeneratePresignedUrlsResponse');
+
+builder.objectType(GeneratePresignedUrlsResponseRef, {
+    fields: (t) => ({
+        success: t.exposeBoolean('success'),
+        message: t.exposeString('message', { nullable: true }),
+        presignedUrls: t.field({
+            type: [PresignedUrlInfoRef],
+            resolve: (parent) => parent.presignedUrls,
         }),
     }),
 });
@@ -156,6 +193,68 @@ export const FileMutations = builder.mutationFields((t) => ({
                     success: false,
                     message: 'Error al generar las URLs para subir archivos',
                     uploadUrls: [],
+                };
+            }
+        },
+    }),
+
+    // Mutación para generar presigned URLs (más segura)
+    generatePresignedUrls: t.field({
+        type: GeneratePresignedUrlsResponseRef,
+        args: {
+            fileCount: t.arg.int({ required: true }),
+            prefix: t.arg.string({ required: true }),
+            mimeTypes: t.arg.stringList({ required: true }),
+        },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
+        resolve: async (_parent, { fileCount, prefix, mimeTypes }) => {
+            try {
+                if (fileCount <= 0 || fileCount > 10) {
+                    return {
+                        success: false,
+                        message: 'El número de archivos debe estar entre 1 y 10',
+                        presignedUrls: [],
+                    };
+                }
+
+                if (mimeTypes.length !== fileCount) {
+                    return {
+                        success: false,
+                        message:
+                            'La cantidad de tipos MIME debe coincidir con la cantidad de archivos',
+                        presignedUrls: [],
+                    };
+                }
+
+                const presignedUrls = await Promise.all(
+                    Array.from({ length: fileCount }).map(async (_, index) => {
+                        // Generar un nombre de archivo único
+                        const uniqueKey = `${prefix}/${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${index + 1}`;
+                        const presignedUrl = await createUploadPresignedUrl(
+                            uniqueKey,
+                            mimeTypes[index],
+                        );
+
+                        return {
+                            url: presignedUrl.url,
+                            key: presignedUrl.key,
+                            expiresIn: 3600, // 1 hora en segundos
+                        };
+                    }),
+                );
+
+                return {
+                    success: true,
+                    presignedUrls,
+                };
+            } catch (error) {
+                console.error('Error al generar presigned URLs:', error);
+                return {
+                    success: false,
+                    message: 'Error al generar las presigned URLs para subir archivos',
+                    presignedUrls: [],
                 };
             }
         },

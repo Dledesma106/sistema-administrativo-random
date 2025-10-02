@@ -244,6 +244,13 @@ export type FileInput = {
     url: Scalars['String'];
 };
 
+export type GeneratePresignedUrlsResponse = {
+    __typename?: 'GeneratePresignedUrlsResponse';
+    message: Maybe<Scalars['String']>;
+    presignedUrls: Array<PresignedUrlInfo>;
+    success: Scalars['Boolean'];
+};
+
 export type Image = {
     __typename?: 'Image';
     id: Scalars['ID'];
@@ -290,6 +297,7 @@ export type Mutation = {
     finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
+    generatePresignedUrls: GeneratePresignedUrlsResponse;
     generateUploadUrls: PresignedUrlResponse;
     login: LoginUserResult;
     logout: AuthResult;
@@ -424,6 +432,12 @@ export type MutationGenerateApprovedTasksReportArgs = {
     startDate: Scalars['DateTime'];
 };
 
+export type MutationGeneratePresignedUrlsArgs = {
+    fileCount: Scalars['Int'];
+    mimeTypes: Array<Scalars['String']>;
+    prefix: Scalars['String'];
+};
+
 export type MutationGenerateUploadUrlsArgs = {
     fileCount: Scalars['Int'];
     mimeTypes: Array<Scalars['String']>;
@@ -517,6 +531,13 @@ export type MyTaskInput = {
     startedAt: InputMaybe<Scalars['DateTime']>;
     taskType: TaskType;
     useMaterials: Scalars['Boolean'];
+};
+
+export type PresignedUrlInfo = {
+    __typename?: 'PresignedUrlInfo';
+    expiresIn: Scalars['Int'];
+    key: Scalars['String'];
+    url: Scalars['String'];
 };
 
 export type PresignedUrlResponse = {
@@ -1551,6 +1572,27 @@ export type GenerateUploadUrlsMutation = {
             url: string;
             key: string;
             urlExpire: string;
+        }>;
+    };
+};
+
+export type GeneratePresignedUrlsMutationVariables = Exact<{
+    fileCount: Scalars['Int'];
+    prefix: Scalars['String'];
+    mimeTypes: Array<Scalars['String']>;
+}>;
+
+export type GeneratePresignedUrlsMutation = {
+    __typename?: 'Mutation';
+    generatePresignedUrls: {
+        __typename?: 'GeneratePresignedUrlsResponse';
+        success: boolean;
+        message: string | null;
+        presignedUrls: Array<{
+            __typename?: 'PresignedUrlInfo';
+            url: string;
+            key: string;
+            expiresIn: number;
         }>;
     };
 };
@@ -5640,6 +5682,138 @@ export const GenerateUploadUrlsDocument = {
 } as unknown as DocumentNode<
     GenerateUploadUrlsMutation,
     GenerateUploadUrlsMutationVariables
+>;
+export const GeneratePresignedUrlsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GeneratePresignedUrls' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'fileCount' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'prefix' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'mimeTypes' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'ListType',
+                            type: {
+                                kind: 'NonNullType',
+                                type: {
+                                    kind: 'NamedType',
+                                    name: { kind: 'Name', value: 'String' },
+                                },
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'generatePresignedUrls' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fileCount' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fileCount' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'prefix' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'prefix' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'mimeTypes' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'mimeTypes' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'presignedUrls' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expiresIn',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GeneratePresignedUrlsMutation,
+    GeneratePresignedUrlsMutationVariables
 >;
 export const GetPreventivesDocument = {
     kind: 'Document',

@@ -9,3 +9,19 @@ mutation GenerateUploadUrls($fileCount: Int!, $prefix: String!, $mimeTypes: [Str
         }
     }
 }
+
+mutation GeneratePresignedUrls(
+    $fileCount: Int!
+    $prefix: String!
+    $mimeTypes: [String!]!
+) {
+    generatePresignedUrls(fileCount: $fileCount, prefix: $prefix, mimeTypes: $mimeTypes) {
+        success
+        message
+        presignedUrls {
+            url
+            key
+            expiresIn
+        }
+    }
+}

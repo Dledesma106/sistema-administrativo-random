@@ -1,10 +1,12 @@
 {
     "__schema": {
         "queryType": {
-            "name": "Query"
+            "name": "Query",
+            "kind": "OBJECT"
         },
         "mutationType": {
-            "name": "Mutation"
+            "name": "Mutation",
+            "kind": "OBJECT"
         },
         "subscriptionType": null,
         "types": [
@@ -12,6 +14,7 @@
                 "kind": "OBJECT",
                 "name": "AuthResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -63,6 +66,7 @@
                 "kind": "SCALAR",
                 "name": "Boolean",
                 "description": "The `Boolean` scalar type represents `true` or `false`.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -73,6 +77,7 @@
                 "kind": "OBJECT",
                 "name": "Branch",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "businesses",
@@ -180,6 +185,7 @@
                 "kind": "OBJECT",
                 "name": "BranchCrudResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "branch",
@@ -231,6 +237,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "BranchInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -322,6 +329,7 @@
                 "kind": "OBJECT",
                 "name": "Business",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "branchesIDs",
@@ -429,6 +437,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "BusinessInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -456,6 +465,7 @@
                 "kind": "OBJECT",
                 "name": "BusinessResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "business",
@@ -507,6 +517,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "ChangePasswordInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -550,6 +561,7 @@
                 "kind": "OBJECT",
                 "name": "City",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "id",
@@ -609,6 +621,7 @@
                 "kind": "OBJECT",
                 "name": "CityCrudRef",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "city",
@@ -660,6 +673,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "CityInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -703,6 +717,7 @@
                 "kind": "OBJECT",
                 "name": "Client",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "branches",
@@ -814,6 +829,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "ClientInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -841,6 +857,7 @@
                 "kind": "OBJECT",
                 "name": "ClientResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "client",
@@ -892,6 +909,7 @@
                 "kind": "SCALAR",
                 "name": "Date",
                 "description": "A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -902,6 +920,7 @@
                 "kind": "SCALAR",
                 "name": "DateTime",
                 "description": "A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -912,6 +931,7 @@
                 "kind": "OBJECT",
                 "name": "DownloadTaskPhotosResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -963,6 +983,7 @@
                 "kind": "OBJECT",
                 "name": "Expense",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "amount",
@@ -1262,6 +1283,7 @@
                 "kind": "OBJECT",
                 "name": "ExpenseCrudResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "expense",
@@ -1313,6 +1335,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "ExpenseInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -1556,6 +1579,7 @@
                 "kind": "ENUM",
                 "name": "ExpensePaySource",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -1597,6 +1621,7 @@
                 "kind": "ENUM",
                 "name": "ExpensePaySourceBank",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -1638,6 +1663,7 @@
                 "kind": "ENUM",
                 "name": "ExpenseStatus",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -1667,6 +1693,7 @@
                 "kind": "ENUM",
                 "name": "ExpenseType",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -1720,6 +1747,7 @@
                 "kind": "OBJECT",
                 "name": "ExpensesResponse",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "items",
@@ -1771,6 +1799,7 @@
                 "kind": "OBJECT",
                 "name": "File",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "createdAt",
@@ -1946,6 +1975,7 @@
                 "kind": "OBJECT",
                 "name": "FileCrudRef",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "file",
@@ -1997,6 +2027,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "FileInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -2088,6 +2119,7 @@
                 "kind": "SCALAR",
                 "name": "Float",
                 "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -2095,9 +2127,74 @@
                 "possibleTypes": null
             },
             {
+                "kind": "OBJECT",
+                "name": "GeneratePresignedUrlsResponse",
+                "description": null,
+                "isOneOf": null,
+                "fields": [
+                    {
+                        "name": "message",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "presignedUrls",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "LIST",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "OBJECT",
+                                        "name": "PresignedUrlInfo",
+                                        "ofType": null
+                                    }
+                                }
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "success",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "Boolean",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ],
+                "inputFields": null,
+                "interfaces": [],
+                "enumValues": null,
+                "possibleTypes": null
+            },
+            {
                 "kind": "SCALAR",
                 "name": "ID",
                 "description": "The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -2108,6 +2205,7 @@
                 "kind": "OBJECT",
                 "name": "Image",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "id",
@@ -2179,6 +2277,7 @@
                 "kind": "SCALAR",
                 "name": "Int",
                 "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -2189,6 +2288,7 @@
                 "kind": "SCALAR",
                 "name": "JSON",
                 "description": "The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -2199,6 +2299,7 @@
                 "kind": "OBJECT",
                 "name": "LoginUserResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "accessToken",
@@ -2274,6 +2375,7 @@
                 "kind": "OBJECT",
                 "name": "Mutation",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "changePassword",
@@ -3271,6 +3373,79 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "generatePresignedUrls",
+                        "description": null,
+                        "args": [
+                            {
+                                "name": "fileCount",
+                                "description": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "Int",
+                                        "ofType": null
+                                    }
+                                },
+                                "defaultValue": null,
+                                "isDeprecated": false,
+                                "deprecationReason": null
+                            },
+                            {
+                                "name": "mimeTypes",
+                                "description": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "LIST",
+                                        "name": null,
+                                        "ofType": {
+                                            "kind": "NON_NULL",
+                                            "name": null,
+                                            "ofType": {
+                                                "kind": "SCALAR",
+                                                "name": "String",
+                                                "ofType": null
+                                            }
+                                        }
+                                    }
+                                },
+                                "defaultValue": null,
+                                "isDeprecated": false,
+                                "deprecationReason": null
+                            },
+                            {
+                                "name": "prefix",
+                                "description": null,
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String",
+                                        "ofType": null
+                                    }
+                                },
+                                "defaultValue": null,
+                                "isDeprecated": false,
+                                "deprecationReason": null
+                            }
+                        ],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "OBJECT",
+                                "name": "GeneratePresignedUrlsResponse",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "generateUploadUrls",
                         "description": null,
                         "args": [
@@ -4052,6 +4227,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "MyTaskInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -4269,8 +4445,69 @@
             },
             {
                 "kind": "OBJECT",
+                "name": "PresignedUrlInfo",
+                "description": null,
+                "isOneOf": null,
+                "fields": [
+                    {
+                        "name": "expiresIn",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "Int",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "key",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "String",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "url",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "String",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ],
+                "inputFields": null,
+                "interfaces": [],
+                "enumValues": null,
+                "possibleTypes": null
+            },
+            {
+                "kind": "OBJECT",
                 "name": "PresignedUrlResponse",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -4334,6 +4571,7 @@
                 "kind": "OBJECT",
                 "name": "Preventive",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "assigned",
@@ -4529,6 +4767,7 @@
                 "kind": "OBJECT",
                 "name": "PreventiveCrudRef",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -4580,6 +4819,7 @@
                 "kind": "ENUM",
                 "name": "PreventiveFrequency",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -4627,6 +4867,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "PreventiveInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -4782,6 +5023,7 @@
                 "kind": "ENUM",
                 "name": "PreventiveStatus",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -4805,6 +5047,7 @@
                 "kind": "OBJECT",
                 "name": "Province",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "cities",
@@ -4904,6 +5147,7 @@
                 "kind": "OBJECT",
                 "name": "ProvinceCrudResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -4955,6 +5199,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "ProvinceInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -4982,6 +5227,7 @@
                 "kind": "OBJECT",
                 "name": "Query",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "branch",
@@ -7417,6 +7663,7 @@
                 "kind": "ENUM",
                 "name": "Role",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -7452,6 +7699,7 @@
                 "kind": "SCALAR",
                 "name": "String",
                 "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -7462,6 +7710,7 @@
                 "kind": "OBJECT",
                 "name": "Task",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "actNumber",
@@ -7893,6 +8142,7 @@
                 "kind": "OBJECT",
                 "name": "TaskCrudResult",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -7944,6 +8194,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "TaskInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -8095,6 +8346,7 @@
                 "kind": "ENUM",
                 "name": "TaskStatus",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -8130,6 +8382,7 @@
                 "kind": "ENUM",
                 "name": "TaskType",
                 "description": null,
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -8177,6 +8430,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "UpdateMyTaskInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -8368,6 +8622,7 @@
                 "kind": "OBJECT",
                 "name": "UploadUrlInfo",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "key",
@@ -8427,6 +8682,7 @@
                 "kind": "OBJECT",
                 "name": "User",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "city",
@@ -8554,6 +8810,7 @@
                 "kind": "OBJECT",
                 "name": "UserCrudPothosRef",
                 "description": null,
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "message",
@@ -8605,6 +8862,7 @@
                 "kind": "INPUT_OBJECT",
                 "name": "UserInput",
                 "description": null,
+                "isOneOf": false,
                 "fields": null,
                 "inputFields": [
                     {
@@ -8704,6 +8962,7 @@
                 "kind": "OBJECT",
                 "name": "__Directive",
                 "description": "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "name",
@@ -8820,6 +9079,7 @@
                 "kind": "ENUM",
                 "name": "__DirectiveLocation",
                 "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -8945,6 +9205,7 @@
                 "kind": "OBJECT",
                 "name": "__EnumValue",
                 "description": "One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.",
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "name",
@@ -9012,6 +9273,7 @@
                 "kind": "OBJECT",
                 "name": "__Field",
                 "description": "Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.",
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "name",
@@ -9132,6 +9394,7 @@
                 "kind": "OBJECT",
                 "name": "__InputValue",
                 "description": "Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.",
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "name",
@@ -9227,6 +9490,7 @@
                 "kind": "OBJECT",
                 "name": "__Schema",
                 "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "description",
@@ -9338,6 +9602,7 @@
                 "kind": "OBJECT",
                 "name": "__Type",
                 "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+                "isOneOf": null,
                 "fields": [
                     {
                         "name": "kind",
@@ -9541,6 +9806,18 @@
                         },
                         "isDeprecated": false,
                         "deprecationReason": null
+                    },
+                    {
+                        "name": "isOneOf",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "Boolean",
+                            "ofType": null
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
                     }
                 ],
                 "inputFields": null,
@@ -9552,6 +9829,7 @@
                 "kind": "ENUM",
                 "name": "__TypeKind",
                 "description": "An enum describing what kind of type a given `__Type` is.",
+                "isOneOf": null,
                 "fields": null,
                 "inputFields": null,
                 "interfaces": null,
@@ -9657,6 +9935,13 @@
                         "deprecationReason": null
                     }
                 ]
+            },
+            {
+                "name": "oneOf",
+                "description": "Indicates exactly one field must be supplied and this field must not be `null`.",
+                "isRepeatable": false,
+                "locations": ["INPUT_OBJECT"],
+                "args": []
             },
             {
                 "name": "skip",

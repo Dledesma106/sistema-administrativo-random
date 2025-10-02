@@ -27,13 +27,15 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
+import { ImageViewer } from '@/components/ui/ImageViewer';
 import { Input } from '@/components/ui/input';
+import { PDFViewer } from '@/components/ui/PDFViewer';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import { toast } from '@/components/ui/use-toast';
-import { useCreateExpense } from '@/hooks/api/expense/useCreateExpense';
-import { useGenerateUploadUrls } from '@/hooks/api/file/useGenerateUploadUrls';
+import { useCreateExpense } from '@/hooks/api/expenses/useCreateExpense';
+import { useFileUpload } from '@/hooks/api/file/useFileUpload';
 import { routesBuilder } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -131,16 +133,7 @@ const formatDate = (date: Date | string | null | undefined): string => {
 export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormProps) {
     const router = useRouter();
     const createExpenseMutation = useCreateExpense();
-    const generateUploadUrlsMutation = useGenerateUploadUrls();
-    const [files, setFiles] = useState<File[]>([]);
-    const [uploadedFiles, setUploadedFiles] = useState<
-        {
-            key: string;
-            filename: string;
-            mimeType: string;
-            size: number;
-        }[]
-    >([]);
+    const { files, isUploading, uploadFiles, addFiles, removeFile } = useFileUpload();
 
     const form = useForm<ExpenseFormValues>({
         defaultValues: {
@@ -168,148 +161,14 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
             return;
         }
 
-        // Verificar que no se exceda el límite de 5 archivos
-        if (files.length + event.target.files.length > 5) {
-            toast({
-                description: 'No se pueden adjuntar más de 5 archivos en total',
-                variant: 'destructive',
-                duration: 5000,
-            });
-            return;
-        }
+        const newFiles = Array.from(event.target.files);
 
-        try {
-            // Guardar referencia a los archivos seleccionados
-            const newFiles = Array.from(event.target.files);
-
-            // Mostrar toast de carga
-            toast({
-                description: 'Preparando archivos...',
-                duration: 3000,
-            });
-
-            // Generar prefijo único para los archivos
-            const prefix = taskId ? `expenses/${taskId}` : 'expenses/no-task';
-
-            // Obtener URLs presignadas para subida
-            const result = await generateUploadUrlsMutation.mutateAsync({
-                fileCount: newFiles.length,
-                prefix,
-                mimeTypes: newFiles.map((file) => file.type),
-            });
-
-            if (!result.generateUploadUrls.success) {
-                console.log(result.generateUploadUrls.message);
-                throw new Error(
-                    result.generateUploadUrls.message ||
-                        'Error al generar URLs para subida',
-                );
-            }
-
-            // Mostrar toast de carga para la subida
-            toast({
-                description: 'Subiendo archivos...',
-                duration: 5000,
-            });
-
-            // Subir los archivos mediante nuestro endpoint de proxy
-            const uploadPromises = newFiles.map(async (file, index) => {
-                const { key } = result.generateUploadUrls.uploadUrls[index];
-
-                // Convertir archivo a Base64
-                const reader = new FileReader();
-                const fileBase64Promise = new Promise<string>((resolve) => {
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.readAsDataURL(file);
-                });
-
-                const fileBase64 = await fileBase64Promise;
-
-                // Enviar al endpoint de proxy
-                const uploadResponse = await fetch('/api/upload-file', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        file: fileBase64,
-                        contentType: file.type,
-                        key: key,
-                    }),
-                });
-
-                if (!uploadResponse.ok) {
-                    const errorData = await uploadResponse.json();
-                    throw new Error(
-                        `Error al subir el archivo ${file.name}: ${
-                            errorData.error || uploadResponse.statusText
-                        }`,
-                    );
-                }
-
-                return {
-                    key,
-                    filename: file.name,
-                    mimeType: file.type,
-                    size: file.size,
-                };
-            });
-
-            // Esperar a que todas las subidas se completen
-            const fileInfo = await Promise.all(uploadPromises);
-
-            // Actualizar UI
-            setFiles([...files, ...newFiles]);
-
-            // Actualizar el formulario con las claves de los archivos
-            form.setValue('fileKeys', [
-                ...form.getValues('fileKeys'),
-                ...fileInfo.map((f) => f.key),
-            ]);
-            form.setValue('filenames', [
-                ...form.getValues('filenames'),
-                ...fileInfo.map((f) => f.filename),
-            ]);
-            form.setValue('mimeTypes', [
-                ...form.getValues('mimeTypes'),
-                ...fileInfo.map((f) => f.mimeType),
-            ]);
-            form.setValue('sizes', [
-                ...form.getValues('sizes'),
-                ...fileInfo.map((f) => f.size),
-            ]);
-
-            // También guardar la información para uso posterior
-            setUploadedFiles([...uploadedFiles, ...fileInfo]);
-
-            // Notificar éxito
-            toast({
-                description: `${newFiles.length} ${
-                    newFiles.length === 1 ? 'archivo subido' : 'archivos subidos'
-                } exitosamente.`,
-                variant: 'success',
-                duration: 3000,
-            });
-        } catch (error) {
-            console.error('Error al subir archivos:', error);
-            toast({
-                description: `Error al subir los archivos: ${
-                    error instanceof Error ? error.message : 'Error desconocido'
-                }`,
-                variant: 'destructive',
-                duration: 5000,
-            });
-        }
+        // Solo agregar archivos al estado (no subir todavía)
+        addFiles(newFiles);
     };
 
-    const removeFile = (index: number) => {
-        const newFiles = [...files];
-        newFiles.splice(index, 1);
-        setFiles(newFiles);
-
-        const newUploadedFiles = [...uploadedFiles];
-        newUploadedFiles.splice(index, 1);
-        setUploadedFiles(newUploadedFiles);
+    const handleRemoveFile = (index: number) => {
+        removeFile(index);
 
         // Actualizamos los valores del formulario
         form.setValue(
@@ -356,79 +215,12 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                 return;
             }
 
-            // Mostrar toast de carga para archivos
-            toast({
-                description: 'Subiendo archivos...',
-                duration: 5000,
-            });
-
             try {
-                // Generar prefijo para los archivos temporales - usaremos un timestamp
-                const timestamp = new Date().getTime();
-                // Usar el taskId si está disponible, o un prefijo temporal
-                const prefix = taskId
-                    ? `expenses/${taskId}/temp_${timestamp}`
-                    : `expenses/no-task/temp_${timestamp}`;
+                // Generar prefijo para los archivos
+                const prefix = taskId ? `expenses/${taskId}` : 'expenses/no-task';
 
-                // Obtener URLs presignadas para subida
-                const urlsResult = await generateUploadUrlsMutation.mutateAsync({
-                    fileCount: files.length,
-                    prefix,
-                    mimeTypes: files.map((file) => file.type),
-                });
-
-                if (!urlsResult.generateUploadUrls.success) {
-                    throw new Error(
-                        urlsResult.generateUploadUrls.message ||
-                            'Error al generar URLs para subida de archivos',
-                    );
-                }
-
-                // Subir los archivos a S3 usando nuestro endpoint de proxy
-                const uploadPromises = files.map(async (file, index) => {
-                    const { key } = urlsResult.generateUploadUrls.uploadUrls[index];
-
-                    // Convertir archivo a Base64
-                    const reader = new FileReader();
-                    const fileBase64Promise = new Promise<string>((resolve) => {
-                        reader.onload = () => resolve(reader.result as string);
-                        reader.readAsDataURL(file);
-                    });
-
-                    const fileBase64 = await fileBase64Promise;
-
-                    // Enviar al endpoint de proxy
-                    const uploadResponse = await fetch('/api/upload-file', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            file: fileBase64,
-                            contentType: file.type,
-                            key: key,
-                        }),
-                    });
-
-                    if (!uploadResponse.ok) {
-                        const errorData = await uploadResponse.json();
-                        throw new Error(
-                            `Error al subir el archivo ${file.name}: ${
-                                errorData.error || uploadResponse.statusText
-                            }`,
-                        );
-                    }
-
-                    return {
-                        key,
-                        filename: file.name,
-                        mimeType: file.type,
-                        size: file.size,
-                    };
-                });
-
-                // Esperar a que todas las subidas se completen
-                const fileInfo = await Promise.all(uploadPromises);
+                // Subir archivos usando el hook (solo ahora, no antes)
+                const fileInfo = await uploadFiles(files, prefix);
 
                 // Mostrar toast de carga para la creación del gasto
                 toast({
@@ -436,9 +228,9 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                     duration: 3000,
                 });
 
-                // Ahora creamos el gasto con las claves de archivos ya subidos
+                // Crear el gasto con las claves de archivos ya subidos
                 const result = await createExpenseMutation.mutateAsync({
-                    taskId,
+                    taskId: taskId || '',
                     expenseData: {
                         amount: values.amount,
                         expenseType: values.expenseType,
@@ -488,7 +280,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                     }
                 }, 1000);
             } catch (error) {
-                console.error('Error al procesar la solicitud:', error);
+                // console.error('Error al procesar la solicitud:', error);
 
                 // Mostrar toast de error
                 toast({
@@ -503,7 +295,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
             }
         } catch (error) {
             // Error en la validación o preparación de datos
-            console.error('Error al preparar datos:', error);
+            // console.error('Error al preparar datos:', error);
 
             // Mostrar toast de error
             toast({
@@ -918,13 +710,28 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                 >
                                     <div className="flex items-center">
                                         {file.type.startsWith('image/') ? (
-                                            <Image
+                                            <ImageViewer
                                                 src={URL.createObjectURL(file)}
                                                 alt={file.name}
-                                                className="mr-2 h-64 w-48 rounded object-cover"
-                                                width={32}
-                                                height={32}
+                                                filename={file.name}
+                                                showPreviewButton={true}
+                                                className="mr-2 h-64 w-48 object-cover"
+                                                previewClassName="group relative mr-2 cursor-pointer overflow-hidden rounded-md border border-accent"
                                             />
+                                        ) : file.type === 'application/pdf' ? (
+                                            <div className="mr-2 flex flex-col items-center">
+                                                <div className="flex h-32 w-48 flex-col items-center justify-center p-2">
+                                                    <PDFViewer
+                                                        url={URL.createObjectURL(file)}
+                                                        filename={file.name}
+                                                        showPreviewButton={true}
+                                                        className="size-full"
+                                                    />
+                                                </div>
+                                                <span className="mt-1 max-w-48 truncate text-xs text-muted-foreground">
+                                                    {file.name}
+                                                </span>
+                                            </div>
                                         ) : (
                                             <span className="mr-2 max-w-32 truncate">
                                                 {file.name}
@@ -935,7 +742,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => removeFile(index)}
+                                        onClick={() => handleRemoveFile(index)}
                                     >
                                         <X className="size-4" />
                                     </Button>
@@ -944,12 +751,12 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                             {files.length < 5 && (
                                 <label className="flex cursor-pointer items-center rounded-md border border-dashed border-accent bg-background p-2 hover:bg-accent/10">
                                     <PlusCircle className="mr-2 size-4" />
-                                    <span>Añadir imagen</span>
+                                    <span>Añadir archivo</span>
                                     <input
                                         type="file"
                                         className="hidden"
                                         onChange={handleFileUpload}
-                                        accept="image/*"
+                                        accept="image/*,application/pdf"
                                     />
                                 </label>
                             )}
@@ -977,12 +784,16 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                         <Button
                             type="submit"
                             disabled={
-                                createExpenseMutation.isPending || files.length === 0
+                                createExpenseMutation.isPending ||
+                                isUploading ||
+                                files.length === 0
                             }
                         >
                             {createExpenseMutation.isPending
                                 ? 'Creando...'
-                                : 'Crear Gasto'}
+                                : isUploading
+                                  ? 'Subiendo archivos...'
+                                  : 'Crear Gasto'}
                         </Button>
                     </div>
                 </form>

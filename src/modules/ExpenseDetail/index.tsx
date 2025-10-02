@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -10,6 +9,7 @@ import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
+import { ImageViewer } from '@/components/ui/ImageViewer';
 import { Input } from '@/components/ui/input';
 import { PDFViewer } from '@/components/ui/PDFViewer';
 import { TypographyH1 } from '@/components/ui/typography';
@@ -195,26 +195,18 @@ const Content: React.FC<Props> = ({ expense }) => {
                     {expense.images && expense.images.length > 0 && (
                         <div>
                             <Title>Imágenes</Title>
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                                 {expense.images.map((image) => (
-                                    <a
+                                    <ImageViewer
                                         key={image.id}
-                                        className="group relative block overflow-hidden rounded-md border border-accent"
-                                        href={image.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        <Image
-                                            src={image.url}
-                                            width={500}
-                                            height={700}
-                                            alt=""
-                                            className="aspect-[5/7] w-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 opacity-0 transition-colors duration-200 group-hover:bg-background/90 group-hover:opacity-100">
-                                            <Eye className="size-6" />
-                                        </div>
-                                    </a>
+                                        src={image.url}
+                                        alt=""
+                                        filename={`Imagen ${image.id}`}
+                                        showPreviewButton={true}
+                                        className="max-h-32 w-auto object-contain"
+                                        previewClassName="group overflow-hidden rounded-md border border-accent"
+                                        modalClassName="max-w-6xl border-accent"
+                                    />
                                 ))}
                             </div>
                         </div>
@@ -223,32 +215,19 @@ const Content: React.FC<Props> = ({ expense }) => {
                     {expense.files && expense.files.length > 0 && (
                         <div>
                             <Title>Archivos</Title>
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="flex flex-wrap gap-4">
                                 {expense.files.map((file) => (
                                     <div key={file.id}>
                                         {file.mimeType &&
                                         file.mimeType.startsWith('image/') ? (
-                                            <div className="group relative aspect-square overflow-hidden rounded-md border border-accent">
-                                                <Image
-                                                    src={file.url}
-                                                    alt={file.filename || ''}
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                    className="object-contain transition-all duration-300"
-                                                />
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/60 group-hover:opacity-100">
-                                                    <div className="flex gap-2">
-                                                        <a
-                                                            href={file.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="rounded-full bg-white p-3 text-black transition-transform hover:scale-110"
-                                                        >
-                                                            <Eye className="size-5" />
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <ImageViewer
+                                                src={file.url}
+                                                alt={file.filename || ''}
+                                                filename={file.filename || ''}
+                                                showPreviewButton={true}
+                                                className="aspect-square object-contain transition-all duration-300"
+                                                previewClassName="group relative aspect-square overflow-hidden rounded-md border border-accent"
+                                            />
                                         ) : file.mimeType &&
                                           file.mimeType.startsWith('application/pdf') ? (
                                             <div className="h-[600px] w-full">
