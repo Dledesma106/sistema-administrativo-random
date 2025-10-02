@@ -237,7 +237,8 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                         paySource: values.paySource,
                         paySourceBank:
                             values.paySource === ExpensePaySource.Credito ||
-                            values.paySource === ExpensePaySource.Debito
+                            values.paySource === ExpensePaySource.Debito ||
+                            values.paySource === ExpensePaySource.Transferencia
                                 ? values.paySourceBank || null
                                 : null,
                         installments: values.installments || 1,
@@ -445,7 +446,8 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
 
                         {/* Banco emisor (condicional) */}
                         {(watchPaySource === ExpensePaySource.Credito ||
-                            watchPaySource === ExpensePaySource.Debito) && (
+                            watchPaySource === ExpensePaySource.Debito ||
+                            watchPaySource === ExpensePaySource.Transferencia) && (
                             <FormField
                                 name="paySourceBank"
                                 control={form.control}
