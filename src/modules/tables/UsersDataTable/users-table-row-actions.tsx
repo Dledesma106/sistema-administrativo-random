@@ -93,7 +93,7 @@ export function UsersTableRowActions({ user }: Props) {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <Pencil className="size-4 mr-2" />
+                            <Pencil className="mr-2 size-4" />
                             Editar
                         </div>
                     </DropdownMenuItem>
@@ -104,7 +104,7 @@ export function UsersTableRowActions({ user }: Props) {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <Trash2 className="size-4 mr-2" />
+                            <Trash2 className="mr-2 size-4" />
                             Eliminar
                         </div>
                     </DropdownMenuItem>
@@ -115,7 +115,7 @@ export function UsersTableRowActions({ user }: Props) {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <CgPassword className="size-4 mr-2" />
+                            <CgPassword className="mr-2 size-4" />
                             Regenerar contraseña
                         </div>
                     </DropdownMenuItem>

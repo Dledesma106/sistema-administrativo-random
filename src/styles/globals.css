@@ -36,6 +36,7 @@
         --radius: 0.5rem;
 
         --skeleton: 220 13% 91%; /* color para modo claro */
+        --skeleton: 220 13% 91%; /* color para modo claro */
         --skeleton-foreground: 220 13% 91%;
     }
 
@@ -79,31 +80,7 @@
     }
 
     * {
-        /* Custom scrollbar styles */
-        scrollbar-width: thin;
-        scrollbar-color: hsl(var(--background)) transparent;
-    }
-
-    *::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-
-    *::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    *::-webkit-scrollbar-thumb {
-        background-color: hsl(var(--background));
-        border-radius: 9999px;
-    }
-
-    *::-webkit-scrollbar-thumb:hover {
-        background-color: hsl(var(--primary));
-    }
-
-    *::-webkit-scrollbar-button {
-        background: transparent;
+        /* Scrollbar styles removed to avoid dependency issues */
     }
 }
 

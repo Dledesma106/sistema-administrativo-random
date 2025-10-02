@@ -1,0 +1,97 @@
+module.exports = {
+    root: true,
+    ignorePatterns: ['.eslintrc.cjs'],
+    plugins: ['@typescript-eslint', 'import', 'tailwindcss'],
+    extends: [
+        'plugin:@typescript-eslint/recommended',
+        'next/core-web-vitals',
+        'plugin:prettier/recommended',
+        'prettier',
+        'plugin:tailwindcss/recommended',
+        'plugin:import/errors',
+        'plugin:import/warnings',
+    ],
+    settings: {
+        'import/resolver': {
+            typescript: {
+                alwaysTryTypes: true,
+                project: './tsconfig.json',
+            },
+        },
+    },
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname,
+    },
+    rules: {
+        'no-unused-vars': 'off',
+        'tailwindcss/classnames-order': 'off',
+        '@typescript-eslint/no-unused-vars': [
+            'error',
+            {
+                argsIgnorePattern: '^_',
+            },
+        ],
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-unnecessary-type-constraint': 'off',
+        'import/order': [
+            'error',
+            {
+                groups: [['builtin', 'external'], 'internal'],
+                pathGroups: [
+                    {
+                        pattern: 'next',
+                        group: 'external',
+                        position: 'before',
+                    },
+                    {
+                        pattern: 'next/**',
+                        group: 'external',
+                        position: 'before',
+                    },
+                    {
+                        pattern: '@/',
+                        group: 'internal',
+                        position: 'before',
+                    },
+                    {
+                        pattern: './**',
+                        group: 'internal',
+                        position: 'before',
+                    },
+                ],
+                pathGroupsExcludedImportTypes: ['builtin'],
+                'newlines-between': 'always',
+                alphabetize: {
+                    order: 'asc',
+                    caseInsensitive: true,
+                },
+            },
+        ],
+        'brace-style': [
+            'error',
+            '1tbs',
+            {
+                allowSingleLine: false,
+            },
+        ],
+        curly: ['error', 'all'],
+        eqeqeq: ['error', 'always'],
+        'no-console': 'warn',
+        'object-curly-spacing': ['error', 'always'],
+        'object-property-newline': [
+            'error',
+            {
+                allowAllPropertiesOnSameLine: false,
+            },
+        ],
+        'import/no-named-as-default-member': 'off',
+    },
+    overrides: [
+        {
+            files: ['*.js'],
+            extends: ['plugin:@typescript-eslint/disable-type-checked'],
+        },
+    ],
+};

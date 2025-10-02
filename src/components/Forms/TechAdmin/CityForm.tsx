@@ -61,11 +61,11 @@ export default function CityForm({
             stopLoading();
         },
         onError: () => {
-            triggerAlert({
+            (triggerAlert({
                 type: 'Failure',
                 message: `No se pudo crear la ciudad`,
             }),
-                stopLoading();
+                stopLoading());
         },
     });
     const updateMutation = useMutation({
@@ -81,11 +81,11 @@ export default function CityForm({
             stopLoading();
         },
         onError: () => {
-            triggerAlert({
+            (triggerAlert({
                 type: 'Failure',
                 message: `No se pudo actualizar la ciudad`,
             }),
-                stopLoading();
+                stopLoading());
         },
     });
 
