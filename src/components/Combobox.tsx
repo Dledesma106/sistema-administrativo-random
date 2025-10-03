@@ -15,10 +15,18 @@ type Props = {
     }[];
     selectPlaceholder: string;
     searchPlaceholder: string;
+    disabled?: boolean;
 };
 
 const Combobox = (props: Props) => {
-    const { value, onChange, items, searchPlaceholder, selectPlaceholder } = props;
+    const {
+        value,
+        onChange,
+        items,
+        searchPlaceholder,
+        selectPlaceholder,
+        disabled = false,
+    } = props;
     const [open, setOpen] = useState(false);
     const label = value ? items.find((item) => item.value === value)?.label : null;
 
@@ -55,20 +63,24 @@ const Combobox = (props: Props) => {
 
     return (
         <div>
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover
+                open={open && !disabled}
+                onOpenChange={disabled ? () => {} : setOpen}
+            >
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="min-w-[200px] justify-between"
+                        className="w-full justify-between"
+                        disabled={disabled}
                     >
                         {label || selectPlaceholder}
                         <ChevronsUpDown className="ml-2 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
 
-                <PopoverContent className="w-[200px] p-0">
+                <PopoverContent className="w-full p-0">
                     <SelectableList
                         options={items}
                         selectedValues={new Set(value ? [value] : [])}

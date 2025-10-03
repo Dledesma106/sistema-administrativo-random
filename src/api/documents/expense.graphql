@@ -8,6 +8,7 @@ query GetExpense($id: String!) {
         cityName
         paySource
         paySourceBank
+        invoiceType
         status
         doneBy
         task {
@@ -70,6 +71,7 @@ query GetExpenses(
         expenseType
         paySource
         paySourceBank
+        invoiceType
         installments
         expenseDate
         observations
@@ -118,14 +120,8 @@ mutation DeleteExpense($id: String!, $taskId: String!) {
     }
 }
 
-mutation GenerateApprovedExpensesReport(
-    $startDate: DateTime!
-    $endDate: DateTime!
-) {
-    generateApprovedExpensesReport(
-        startDate: $startDate
-        endDate: $endDate
-    )
+mutation GenerateApprovedExpensesReport($startDate: DateTime!, $endDate: DateTime!) {
+    generateApprovedExpensesReport(startDate: $startDate, endDate: $endDate)
 }
 
 mutation UpdateExpenseStatus($expenseId: String!, $status: ExpenseStatus!) {

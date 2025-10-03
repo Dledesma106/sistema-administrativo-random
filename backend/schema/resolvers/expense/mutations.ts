@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { ExpenseStatus } from '@prisma/client';
+import { ExpenseStatus, ExpenseInvoiceType } from '@prisma/client';
 import { format } from 'date-fns';
 import ExcelJS from 'exceljs';
 
@@ -87,7 +87,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     expense: deletedExpense,
                 };
             } catch (error) {
-                console.error('Error al eliminar el gasto:', error);
                 return {
                     message: `Error al eliminar el gasto: ${
                         error instanceof Error ? error.message : 'Error desconocido'
@@ -281,6 +280,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         paySource: expenseData.paySource,
                         doneBy: expenseData.doneBy,
                         paySourceBank: expenseData.paySourceBank,
+                        invoiceType: expenseData.invoiceType,
                         installments: expenseData.installments,
                         expenseDate: expenseDate,
                         observations: expenseData.observations,
@@ -305,7 +305,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     expense: newExpense,
                 };
             } catch (error) {
-                console.error(error);
                 return {
                     success: false,
                     message: `Error al crear el gasto: ${
@@ -395,7 +394,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             ],
         },
         resolve: async (root, { startDate, endDate }) => {
-            console.log(startDate, endDate);
             if (startDate) {
                 startDate.setHours(0, 0, 0, 0);
             }
@@ -485,6 +483,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 15,
                     },
                     {
+                        header: 'Tipo de factura',
+                        key: 'invoiceType',
+                        width: 25,
+                    },
+                    {
                         header: 'Factura recibida',
                         key: 'status',
                         width: 15,
@@ -524,6 +527,25 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                             statusText = expense.status;
                     }
 
+                    // Mapear tipo de factura a texto legible
+                    let invoiceTypeText;
+                    switch (expense.invoiceType as ExpenseInvoiceType) {
+                        case ExpenseInvoiceType.FacturaPapel:
+                            invoiceTypeText = 'Factura Papel';
+                            break;
+                        case ExpenseInvoiceType.FacturaElectronicaAdjunta:
+                            invoiceTypeText = 'Factura Electrónica Adjunta';
+                            break;
+                        case ExpenseInvoiceType.FacturaViaMailOWhatsapp:
+                            invoiceTypeText = 'Factura vía Mail o WhatsApp';
+                            break;
+                        case ExpenseInvoiceType.SinFactura:
+                            invoiceTypeText = 'Sin Factura';
+                            break;
+                        default:
+                            invoiceTypeText = expense.invoiceType as unknown as string;
+                    }
+
                     worksheet.addRow({
                         expenseNumber: `#${expense.expenseNumber}`,
                         cityName: expense.cityName ?? '-',
@@ -539,7 +561,9 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         }),
                         doneBy: expense.doneBy,
                         paySource: expense.paySource,
-                        paySourceBank: ['Credito', 'Debito'].includes(expense.paySource)
+                        paySourceBank: ['Credito', 'Debito', 'Transferencia'].includes(
+                            expense.paySource,
+                        )
                             ? expense.paySourceBank || '-'
                             : '-',
                         installments: expense.installments || '-',
@@ -549,6 +573,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                                   currency: 'ARS',
                               })
                             : '-',
+                        invoiceType: invoiceTypeText,
                         status: statusText,
                     });
 
@@ -602,7 +627,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
 
                 return await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
             } catch (error) {
-                console.error('Error generating expenses report:', error);
                 throw new Error('Error al generar el reporte de gastos');
             }
         },
