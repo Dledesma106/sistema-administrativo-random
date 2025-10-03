@@ -6,6 +6,7 @@ import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
 import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
+import ExpenseInvoiceTypeBadge from '@/components/ui/Badges/ExpenseInvoiceTypeBadge';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
@@ -184,6 +185,11 @@ const Content: React.FC<Props> = ({ expense }) => {
                         installments={expense.installments}
                         paySourceBank={expense.paySourceBank}
                     />
+                </div>
+
+                <div>
+                    <Title>Tipo de factura</Title>
+                    <ExpenseInvoiceTypeBadge invoiceType={expense.invoiceType} />
                 </div>
 
                 <div>

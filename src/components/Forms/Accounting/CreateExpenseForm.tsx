@@ -13,6 +13,7 @@ import {
     ExpensePaySource,
     ExpensePaySourceBank,
     ExpenseType,
+    ExpenseInvoiceType,
     GetTechniciansQuery,
 } from '@/api/graphql';
 import Combobox from '@/components/Combobox';
@@ -37,7 +38,7 @@ import { toast } from '@/components/ui/use-toast';
 import { useCreateExpense } from '@/hooks/api/expenses/useCreateExpense';
 import { useFileUpload } from '@/hooks/api/file/useFileUpload';
 import { routesBuilder } from '@/lib/routes';
-import { cn } from '@/lib/utils';
+import { capitalizeFirstLetter, cn, pascalCaseToSpaces } from '@/lib/utils';
 
 // Definición de las opciones para ciudades
 const CITY_OPTIONS = [
@@ -77,6 +78,7 @@ interface ExpenseFormValues {
     expenseType: ExpenseType;
     paySource: ExpensePaySource;
     paySourceBank?: ExpensePaySourceBank;
+    invoiceType: ExpenseInvoiceType;
     installments?: number;
     expenseDate: Date;
     doneBy: string;
@@ -140,6 +142,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
             amount: 0,
             installments: 1,
             expenseDate: new Date(),
+            invoiceType: ExpenseInvoiceType.SinFactura,
             fileKeys: [],
             filenames: [],
             mimeTypes: [],
@@ -241,6 +244,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                             values.paySource === ExpensePaySource.Transferencia
                                 ? values.paySourceBank || null
                                 : null,
+                        invoiceType: values.invoiceType,
                         installments: values.installments || 1,
                         expenseDate: values.expenseDate,
                         doneBy: finalDoneBy,
@@ -444,25 +448,37 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                             )}
                         />
 
-                        {/* Banco emisor (condicional) */}
-                        {(watchPaySource === ExpensePaySource.Credito ||
-                            watchPaySource === ExpensePaySource.Debito ||
-                            watchPaySource === ExpensePaySource.Transferencia) && (
-                            <FormField
-                                name="paySourceBank"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                }}
-                                render={({ field }) => (
+                        {/* Banco emisor */}
+                        <FormField
+                            name="paySourceBank"
+                            control={form.control}
+                            rules={{
+                                required:
+                                    watchPaySource === ExpensePaySource.Credito ||
+                                    watchPaySource === ExpensePaySource.Debito ||
+                                    watchPaySource === ExpensePaySource.Transferencia
+                                        ? 'Este campo es requerido'
+                                        : false,
+                            }}
+                            render={({ field }) => {
+                                const isRequired =
+                                    watchPaySource === ExpensePaySource.Credito ||
+                                    watchPaySource === ExpensePaySource.Debito ||
+                                    watchPaySource === ExpensePaySource.Transferencia;
+                                return (
                                     <FormItem>
                                         <FormLabel>Banco emisor</FormLabel>
                                         <FormControl>
                                             <Combobox
-                                                selectPlaceholder="Seleccione un banco"
+                                                selectPlaceholder={
+                                                    isRequired
+                                                        ? 'Seleccione un banco'
+                                                        : 'No aplica para este método de pago'
+                                                }
                                                 searchPlaceholder="Buscar banco"
                                                 value={field.value || ''}
                                                 onChange={field.onChange}
+                                                disabled={!isRequired}
                                                 items={Object.values(
                                                     ExpensePaySourceBank,
                                                 ).map((bank) => ({
@@ -473,23 +489,31 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
-                                )}
-                            />
-                        )}
+                                );
+                            }}
+                        />
 
-                        {/* Cuotas (condicional) */}
-                        {watchPaySource === ExpensePaySource.Credito && (
-                            <FormField
-                                name="installments"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                    min: {
-                                        value: 1,
-                                        message: 'Las cuotas deben ser al menos 1',
-                                    },
-                                }}
-                                render={({ field }) => (
+                        {/* Cuotas */}
+                        <FormField
+                            name="installments"
+                            control={form.control}
+                            rules={{
+                                required:
+                                    watchPaySource === ExpensePaySource.Credito
+                                        ? 'Este campo es requerido'
+                                        : false,
+                                min:
+                                    watchPaySource === ExpensePaySource.Credito
+                                        ? {
+                                              value: 1,
+                                              message: 'Las cuotas deben ser al menos 1',
+                                          }
+                                        : undefined,
+                            }}
+                            render={({ field }) => {
+                                const isRequired =
+                                    watchPaySource === ExpensePaySource.Credito;
+                                return (
                                     <FormItem>
                                         <FormLabel>Cuotas</FormLabel>
                                         <FormControl>
@@ -498,6 +522,10 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                                 placeholder="1"
                                                 value={installmentsInputValue}
                                                 onChange={(e) => {
+                                                    if (!isRequired) {
+                                                        return;
+                                                    }
+
                                                     const value = e.target.value;
                                                     if (/^$|^[0-9]*$/.test(value)) {
                                                         setInstallmentsInputValue(value);
@@ -510,6 +538,10 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                                 }}
                                                 onFocus={(e) => e.target.select()}
                                                 onBlur={() => {
+                                                    if (!isRequired) {
+                                                        return;
+                                                    }
+
                                                     // Si el campo está vacío o es menor que 1 al perder el foco, mostrar 1
                                                     if (
                                                         installmentsInputValue === '' ||
@@ -519,13 +551,45 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                                         field.onChange(1);
                                                     }
                                                 }}
+                                                disabled={!isRequired}
                                             />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
-                                )}
-                            />
-                        )}
+                                );
+                            }}
+                        />
+
+                        {/* Tipo de factura */}
+                        <FormField
+                            name="invoiceType"
+                            control={form.control}
+                            rules={{
+                                required: 'Este campo es requerido',
+                            }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tipo de factura</FormLabel>
+                                    <FormControl>
+                                        <Combobox
+                                            selectPlaceholder="Seleccione un tipo de factura"
+                                            searchPlaceholder="Buscar tipo de factura"
+                                            value={field.value || ''}
+                                            onChange={field.onChange}
+                                            items={Object.values(ExpenseInvoiceType).map(
+                                                (type) => ({
+                                                    label: capitalizeFirstLetter(
+                                                        pascalCaseToSpaces(type),
+                                                    ),
+                                                    value: type,
+                                                }),
+                                            )}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
                         {/* Fecha de pago */}
                         <FormField
@@ -535,7 +599,7 @@ export default function CreateExpenseForm({ taskId, techs }: CreateExpenseFormPr
                                 required: 'Este campo es requerido',
                             }}
                             render={({ field }) => (
-                                <FormItem className="flex flex-col">
+                                <FormItem>
                                     <FormLabel>Fecha de pago</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>

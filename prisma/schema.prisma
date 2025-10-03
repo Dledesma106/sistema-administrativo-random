@@ -141,6 +141,13 @@ enum ExpenseStatus {
   Rechazado
 }
 
+enum ExpenseInvoiceType {
+  FacturaPapel
+  FacturaElectronicaAdjunta
+  FacturaViaMailOWhatsapp
+  SinFactura
+}
+
 model File {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime  @default(now()) @db.Date
@@ -181,6 +188,7 @@ model Expense {
   paySource     ExpensePaySource
   paySourceBank ExpensePaySourceBank?
   status        ExpenseStatus
+  invoiceType   ExpenseInvoiceType
 
   taskId String? @map("task") @db.ObjectId
   task   Task?   @relation(fields: [taskId], references: [id])

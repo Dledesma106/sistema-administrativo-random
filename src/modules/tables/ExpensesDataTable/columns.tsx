@@ -8,6 +8,7 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import { ExpensesTableRowActions } from './expenses-table-row-actions';
 
 import { ExpensePaySource, GetExpensesQuery } from '@/api/graphql';
+import ExpenseInvoiceTypeBadge from '@/components/ui/Badges/ExpenseInvoiceTypeBadge';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseStatusBadge from '@/components/ui/Badges/ExpenseStatusBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
@@ -302,6 +303,37 @@ export const useExpensesTableColumns = () => [
             enableSorting: true,
         },
     ),
+    columnHelper.accessor((row) => row.invoiceType, {
+        id: 'invoiceType',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full items-center justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span className="ml-2 text-left">Tipo de factura</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="ml-1 size-4" />
+                            ) : (
+                                <ArrowDown className="ml-1 size-4" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
+        cell: (info) => {
+            const invoiceType = info.getValue();
+            return (
+                <div className="text-left">
+                    <ExpenseInvoiceTypeBadge invoiceType={invoiceType} />
+                </div>
+            );
+        },
+        enableSorting: true,
+    }),
     columnHelper.accessor((row) => row.status, {
         id: 'status',
         header: ({ column }) => {

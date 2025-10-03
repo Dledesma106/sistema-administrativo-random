@@ -140,6 +140,7 @@ export type Expense = {
     id: Scalars['ID'];
     images: Array<Image>;
     installments: Maybe<Scalars['Int']>;
+    invoiceType: ExpenseInvoiceType;
     observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
     paySourceBank: Maybe<ExpensePaySourceBank>;
@@ -165,6 +166,7 @@ export type ExpenseInput = {
     filenames: InputMaybe<Array<Scalars['String']>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     installments: Scalars['Int'];
+    invoiceType: ExpenseInvoiceType;
     mimeTypes: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
@@ -172,6 +174,15 @@ export type ExpenseInput = {
     sizes: InputMaybe<Array<Scalars['Int']>>;
 };
 
+export const ExpenseInvoiceType = {
+    FacturaElectronicaAdjunta: 'FacturaElectronicaAdjunta',
+    FacturaPapel: 'FacturaPapel',
+    FacturaViaMailOWhatsapp: 'FacturaViaMailOWhatsapp',
+    SinFactura: 'SinFactura',
+} as const;
+
+export type ExpenseInvoiceType =
+    (typeof ExpenseInvoiceType)[keyof typeof ExpenseInvoiceType];
 export const ExpensePaySource = {
     Credito: 'Credito',
     Debito: 'Debito',
@@ -1381,6 +1392,7 @@ export type GetExpenseQuery = {
         cityName: string | null;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
+        invoiceType: ExpenseInvoiceType;
         status: ExpenseStatus;
         doneBy: string;
         observations: string | null;
@@ -1426,6 +1438,7 @@ export type GetExpensesQuery = {
         expenseType: ExpenseType;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
+        invoiceType: ExpenseInvoiceType;
         installments: number | null;
         expenseDate: any | null;
         observations: string | null;
@@ -4398,6 +4411,10 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'invoiceType' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'status' },
                                 },
                                 {
@@ -4764,6 +4781,10 @@ export const GetExpensesDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'paySourceBank' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'invoiceType' },
                                 },
                                 {
                                     kind: 'Field',

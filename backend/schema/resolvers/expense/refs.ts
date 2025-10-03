@@ -4,6 +4,7 @@ import {
     ExpensePaySource,
     Expense,
     ExpensePaySourceBank,
+    ExpenseInvoiceType,
 } from '@prisma/client';
 
 import { prisma } from 'lib/prisma';
@@ -36,6 +37,12 @@ export const ExpensePaySourceBankPothosRef = builder.enumType('ExpensePaySourceB
     ),
 });
 
+export const ExpenseInvoiceTypePothosRef = builder.enumType('ExpenseInvoiceType', {
+    values: Object.fromEntries(
+        Object.entries(ExpenseInvoiceType).map(([name, value]) => [name, { value }]),
+    ),
+});
+
 export const ExpenseInputType = builder.inputType('ExpenseInput', {
     fields: (t) => ({
         amount: t.float({ required: true }),
@@ -50,6 +57,10 @@ export const ExpenseInputType = builder.inputType('ExpenseInput', {
         paySourceBank: t.field({
             type: ExpensePaySourceBankPothosRef,
             required: false,
+        }),
+        invoiceType: t.field({
+            type: ExpenseInvoiceTypePothosRef,
+            required: true,
         }),
         installments: t.int({ required: true }),
         expenseDate: t.field({
@@ -97,6 +108,10 @@ export const ExpensePothosRef = builder.prismaObject('Expense', {
             nullable: true,
             type: ExpensePaySourceBankPothosRef,
             resolve: (root) => root.paySourceBank as ExpensePaySourceBank,
+        }),
+        invoiceType: t.field({
+            type: ExpenseInvoiceTypePothosRef,
+            resolve: (root) => root.invoiceType as ExpenseInvoiceType,
         }),
         installments: t.exposeInt('installments', {
             nullable: true,
