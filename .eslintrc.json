@@ -11,13 +11,16 @@
     ],
     "settings": {
         "import/resolver": {
-            "typescript": {}
+            "typescript": {
+                "alwaysTryTypes": true,
+                "project": "./tsconfig.json"
+            }
         }
     },
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "project": "./tsconfig.json",
-        "tsconfigRootDir": "./"
+        "tsconfigRootDir": "."
     },
     "rules": {
         "no-unused-vars": "off",

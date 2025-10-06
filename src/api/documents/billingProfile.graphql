@@ -1,0 +1,190 @@
+# Mutations para Billing Profiles
+
+mutation CreateBillingProfile($input: BillingProfileInput!) {
+    createBillingProfile(input: $input) {
+        success
+        message
+        billingProfile {
+            id
+            CUIT
+            legalName
+            IVACondition
+            comercialAddress
+            billingEmail
+            createdAt
+            updatedAt
+            business {
+                id
+                name
+            }
+            contacts {
+                email
+                fullName
+            }
+        }
+    }
+}
+
+mutation UpdateBillingProfile($id: String!, $input: UpdateBillingProfileInput!) {
+    updateBillingProfile(id: $id, input: $input) {
+        success
+        message
+        billingProfile {
+            id
+            CUIT
+            legalName
+            IVACondition
+            comercialAddress
+            billingEmail
+            createdAt
+            updatedAt
+            business {
+                id
+                name
+            }
+            contacts {
+                email
+                fullName
+            }
+        }
+    }
+}
+
+mutation DeleteBillingProfile($id: String!) {
+    deleteBillingProfile(id: $id) {
+        success
+        message
+        billingProfile {
+            id
+            CUIT
+            legalName
+            IVACondition
+            comercialAddress
+            billingEmail
+            createdAt
+            updatedAt
+            business {
+                id
+                name
+            }
+            contacts {
+                email
+                fullName
+            }
+        }
+    }
+}
+
+# Queries para Billing Profiles
+
+query GetBillingProfiles(
+    $businessId: [String!] = null
+    $skip: Int = null
+    $take: Int = null
+    $orderBy: String = null
+    $orderDirection: String = null
+) {
+    billingProfiles(
+        businessId: $businessId
+        skip: $skip
+        take: $take
+        orderBy: $orderBy
+        orderDirection: $orderDirection
+    ) {
+        id
+        CUIT
+        legalName
+        IVACondition
+        comercialAddress
+        billingEmail
+        createdAt
+        updatedAt
+        business {
+            id
+            name
+        }
+        contacts {
+            email
+            fullName
+            phone
+            notes
+        }
+        firstContact {
+            email
+            fullName
+            phone
+            notes
+        }
+    }
+    billingProfilesCount(businessId: $businessId)
+}
+
+query GetBillingProfileById($id: String!) {
+    billingProfileById(id: $id) {
+        id
+        CUIT
+        legalName
+        IVACondition
+        comercialAddress
+        billingEmail
+        createdAt
+        updatedAt
+        business {
+            id
+            name
+        }
+        contacts {
+            email
+            fullName
+            phone
+            notes
+        }
+        bills {
+            id
+            description
+            serviceDate
+            startDate
+            dueDate
+            status
+            pointOfSale
+            caeData {
+                comprobanteNumber
+            }
+            details {
+                quantity
+                unitPrice
+            }
+        }
+    }
+}
+
+query GetBillingProfileByBusinessId($businessId: String!) {
+    billingProfileByBusinessId(businessId: $businessId) {
+        id
+        CUIT
+        legalName
+        IVACondition
+        comercialAddress
+        billingEmail
+        createdAt
+        updatedAt
+        business {
+            id
+            name
+        }
+        contacts {
+            email
+            fullName
+            phone
+            notes
+        }
+    }
+}
+
+# Query para obtener empresas sin perfil de facturación
+query GetBusinessesWithoutBillingProfile($skip: Int = null, $take: Int = null) {
+    businesses(withoutBillingProfile: true, skip: $skip, take: $take) {
+        id
+        name
+    }
+}

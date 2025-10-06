@@ -2,31 +2,26 @@ import { createColumnHelper } from '@tanstack/react-table';
 
 import { BillingProfilesTableRowActions } from './billing-profiles-table-row-actions';
 
-export type BillingProfile = {
-    id: string;
-    businessName: string;
-    cuit: string;
-    legalName: string;
-    businessAddress: string;
-    ivaCondition: string;
-    contactName: string;
-    contactEmail: string;
-    billingEmail: string;
-};
+import { GetBillingProfilesQuery } from '@/api/graphql';
 
-const columnHelper = createColumnHelper<BillingProfile>();
+// Tipo específico para la tabla usando el tipo generado por GraphQL CodeGen
+export type ColumnBillingProfile = NonNullable<
+    GetBillingProfilesQuery['billingProfiles']
+>[0];
+
+const columnHelper = createColumnHelper<ColumnBillingProfile>();
 
 export const useBillingProfilesTableColumns = () => [
-    columnHelper.accessor('businessName', {
+    columnHelper.accessor('business.name', {
         header: 'Empresa',
     }),
-    columnHelper.accessor('cuit', {
+    columnHelper.accessor('CUIT', {
         header: 'CUIT',
     }),
-    columnHelper.accessor('contactName', {
+    columnHelper.accessor('firstContact.fullName', {
         header: 'Contacto',
     }),
-    columnHelper.accessor('contactEmail', {
+    columnHelper.accessor('firstContact.email', {
         header: 'Email de contacto',
         cell: (info) => (
             <a

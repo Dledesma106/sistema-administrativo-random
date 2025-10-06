@@ -175,6 +175,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                     actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
                     movitecTicket: form.movitecTicket,
+                    serviceOrderId: null,
                 },
             });
         },
@@ -240,6 +241,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                     actNumber: form.actNumber,
                     assigned: form.assignedIDs.map((technician) => technician.value),
                     movitecTicket: form.movitecTicket,
+                    serviceOrderId: null,
                 },
             });
         },

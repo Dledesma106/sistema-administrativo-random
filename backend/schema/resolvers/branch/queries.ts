@@ -94,4 +94,22 @@ builder.queryFields((t) => ({
             return prisma.branch.count({ where });
         },
     }),
+
+    clientBranchesByBusiness: t.prismaField({
+        type: [BranchPothosRef],
+        args: {
+            clientId: t.arg.string({ required: true }),
+            businessId: t.arg.string({ required: true }),
+        },
+        resolve: async (query, _parent, { clientId, businessId }) => {
+            return prisma.branch.findManyUndeleted({
+                ...query,
+                where: {
+                    clientId,
+                    businessesIDs: { has: businessId },
+                },
+                orderBy: { number: 'asc' },
+            });
+        },
+    }),
 }));

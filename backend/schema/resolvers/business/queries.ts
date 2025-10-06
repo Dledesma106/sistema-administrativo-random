@@ -7,22 +7,29 @@ export const BusinessQueries = builder.queryFields((t) => ({
         type: ['Business'],
         args: {
             search: t.arg.string({ required: false }),
+            withoutBillingProfile: t.arg.boolean({ required: false }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
         },
         authz: {
             rules: ['IsAuthenticated'],
         },
-        resolve: async (query, _parent, { search, skip, take }) => {
-            return prisma.business.findMany({
+        resolve: async (
+            query,
+            _parent,
+            { search, withoutBillingProfile, skip, take },
+        ) => {
+            return prisma.business.findManyUndeleted({
                 ...query,
                 where: {
-                    deleted: false,
                     ...(search && {
                         name: {
                             contains: search,
                             mode: 'insensitive',
                         },
+                    }),
+                    ...(withoutBillingProfile && {
+                        billingProfile: null, // Empresas sin perfil de facturación
                     }),
                 },
                 orderBy: {
@@ -33,6 +40,9 @@ export const BusinessQueries = builder.queryFields((t) => ({
                         skip,
                         take,
                     }),
+                include: {
+                    billingProfile: true,
+                },
             });
         },
     }),

@@ -79,4 +79,39 @@ export const ClientQueries = builder.queryFields((t) => ({
             });
         },
     }),
+
+    clientsByBusiness: t.prismaField({
+        type: ['Client'],
+        args: {
+            businessId: t.arg.string({ required: true }),
+            search: t.arg.string({ required: false }),
+        },
+        authz: {
+            rules: ['IsAuthenticated'],
+        },
+        resolve: async (query, _parent, { businessId, search }) => {
+            return prisma.client.findMany({
+                ...query,
+                where: {
+                    deleted: false,
+                    branch: {
+                        some: {
+                            businessesIDs: {
+                                has: businessId,
+                            },
+                        },
+                    },
+                    ...(search && {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive',
+                        },
+                    }),
+                },
+                orderBy: {
+                    name: 'asc',
+                },
+            });
+        },
+    }),
 }));

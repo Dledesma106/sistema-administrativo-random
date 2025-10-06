@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { useBillingProfilesTableColumns } from './columns';
-import type { BillingProfile } from './columns';
+import type { ColumnBillingProfile } from './columns';
 import { getBillingProfilesTableToolbarConfig } from './toolbar-config';
 
 import { GetBusinessesQuery, GetClientsQuery } from '@/api/graphql';
@@ -23,7 +23,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { routesBuilder } from '@/lib/routes';
 
 type Props = {
-    data: BillingProfile[];
+    data: ColumnBillingProfile[];
     businesses: GetBusinessesQuery['businesses'];
     clients: GetClientsQuery['clients'];
 };
@@ -84,3 +84,6 @@ export default function BillingProfilesDataTable({ data, businesses, clients }: 
         />
     );
 }
+
+// Re-export the type for external use
+export type { ColumnBillingProfile };

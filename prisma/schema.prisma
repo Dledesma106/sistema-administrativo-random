@@ -43,9 +43,11 @@ model Branch {
   city       City         @relation(fields: [cityId], references: [id])
   Preventive Preventive[]
   Task       Task[]
+  budgets    Budget[]
 
-  businessesIDs String[]   @db.ObjectId
-  businesses    Business[] @relation(fields: [businessesIDs], references: [id])
+  businessesIDs String[]       @db.ObjectId
+  businesses    Business[]     @relation(fields: [businessesIDs], references: [id])
+  serviceOrder  ServiceOrder[]
 
   @@map("branches")
 }
@@ -58,11 +60,15 @@ model Business {
   deletedAt DateTime? @db.Date
   name      String    @unique(map: "name_1")
 
-  preventives Preventive[]
-  tasks       Task[]
+  preventives    Preventive[]
+  tasks          Task[]
+  billingProfile BillingProfile?
 
-  branchesIDs String[] @db.ObjectId
-  branches    Branch[] @relation(fields: [branchesIDs], references: [id])
+  branchesIDs  String[]       @db.ObjectId
+  branches     Branch[]       @relation(fields: [branchesIDs], references: [id])
+  serviceOrder ServiceOrder[]
+  Bill         Bill[]
+  taskPrices   TaskPrice[]
 
   @@map("businesses")
 }
@@ -104,7 +110,9 @@ model Client {
   deletedAt DateTime? @db.Date
   name      String    @unique(map: "name_1")
 
-  branch Branch[]
+  branch       Branch[]
+  budgets      Budget[]
+  serviceOrder ServiceOrder[]
 
   @@map("clients")
 }
@@ -133,6 +141,13 @@ enum ExpensePaySourceBank {
   Chubut
   BBVA
   Otro
+}
+
+enum IVACondition {
+  ResponsableInscripto
+  Monotributo
+  Exento
+  ConsumidorFinal
 }
 
 enum ExpenseStatus {
@@ -165,6 +180,7 @@ model File {
 
   expenseIDs String[]  @db.ObjectId
   expenses   Expense[] @relation(fields: [expenseIDs], references: [id])
+  Bill       Bill[]
 
   @@map("files")
 }
@@ -296,7 +312,34 @@ model Task {
   preventiveId String?     @map("preventive") @db.ObjectId
   preventive   Preventive? @relation(fields: [preventiveId], references: [id])
 
+  serviceOrderId String?       @map("serviceOrder") @db.ObjectId
+  serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+
+  priceHistory TaskPriceHistory[]
+
   @@map("tasks")
+}
+
+type TaskPriceHistory {
+  price     Float
+  updatedAt DateTime
+}
+
+model TaskPrice {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt
+
+  taskType TaskType
+  price    Float
+
+  businessId String   @map("business") @db.ObjectId
+  business   Business @relation(fields: [businessId], references: [id])
+
+  priceHistory TaskPriceHistory[]
+
+  @@unique([businessId, taskType])
+  @@map("task_prices")
 }
 
 enum PreventiveStatus {
@@ -373,6 +416,7 @@ model User {
   createdTasks       Task[]    @relation("createdTasks")
   createdTasksIds    String[]  @db.ObjectId
   Task               Task[]
+  createdBudgets     Budget[]  @relation("createdBudgets")
 
   expoTokens ExpoToken[]
 
@@ -398,4 +442,234 @@ type AttachmentFile {
 
   url       String
   urlExpire DateTime?
+}
+
+model BillingProfile {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt        DateTime     @default(now()) @db.Date
+  updatedAt        DateTime     @updatedAt
+  deleted          Boolean      @default(false)
+  deletedAt        DateTime?    @db.Date
+  CUIT             String
+  legalName        String
+  IVACondition     IVACondition
+  comercialAddress String
+  billingEmail     String
+  contacts         Contact[]
+
+  businessId String   @unique @map("business") @db.ObjectId
+  business   Business @relation(fields: [businessId], references: [id])
+
+  budgets     Budget[]
+  Bill        Bill[]
+  BankAccount BankAccount[]
+
+  @@map("billing_profiles")
+}
+
+type Contact {
+  email    String
+  fullName String
+  phone    String
+  notes    String
+}
+
+enum BudgetStatus {
+  Borrador
+  Enviado
+  Aprobado
+  Rechazado
+  Expirado
+}
+
+model Budget {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
+  // Información básica del presupuesto
+  subject     String // Asunto
+  description String? // Descripción
+  price       Float // Precio
+  status      BudgetStatus @default(Borrador)
+  clientName  String? // Nombre del cliente
+
+  // Integración con Gmail
+  gmailThreadId String? // ID de la cadena de mail
+
+  // Relaciones
+  billingProfileId String         @map("billingProfile") @db.ObjectId
+  billingProfile   BillingProfile @relation(fields: [billingProfileId], references: [id])
+
+  clientId String? @map("client") @db.ObjectId
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  branchId String? @map("branch") @db.ObjectId
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  createdById String @map("createdBy") @db.ObjectId
+  createdBy   User   @relation("createdBudgets", fields: [createdById], references: [id])
+
+  serviceOrder ServiceOrder[]
+
+  @@map("budgets")
+}
+
+enum ServiceOrderStatus {
+  Pendiente
+  EnProgreso
+  Finalizada
+}
+
+model ServiceOrder {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt          DateTime           @default(now()) @db.Date
+  updatedAt          DateTime           @updatedAt
+  serviceOrderNumber Int                @unique
+  status             ServiceOrderStatus
+  description        String?
+
+  clientId String @map("client") @db.ObjectId
+  client   Client @relation(fields: [clientId], references: [id])
+
+  businessId String   @map("business") @db.ObjectId
+  business   Business @relation(fields: [businessId], references: [id])
+
+  branchId String @map("branch") @db.ObjectId
+  branch   Branch @relation(fields: [branchId], references: [id])
+
+  tasks Task[]
+
+  budgetId String? @map("budget") @db.ObjectId
+  budget   Budget? @relation(fields: [budgetId], references: [id])
+
+  @@map("service_orders")
+}
+
+enum BillStatus {
+  Borrador
+  Pendiente
+  Vencida
+  Pagada
+}
+
+enum CAEStatus {
+  Autorizado
+  Rechazado
+  Observado
+}
+
+enum AlicuotaIVA {
+  IVA_21
+  IVA_10_5
+  IVA_27
+  IVA_0
+}
+
+enum AccountType {
+  CuentaCorriente
+  CajaDeAhorro
+  CuentaDeSueldo
+  CuentaEnMonedaExtranjera
+}
+
+enum ComprobanteType {
+  A
+  B
+  C
+}
+
+type BillDetail {
+  description String
+  quantity    Int
+  unitPrice   Float
+  alicuotaIVA AlicuotaIVA
+}
+
+type CAEData {
+  code              String
+  expirationDate    DateTime
+  comprobanteNumber String
+  status            CAEStatus
+}
+
+model Bill {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now()) @db.Date
+  updatedAt DateTime @updatedAt
+
+  businessId String   @map("business") @db.ObjectId
+  business   Business @relation(fields: [businessId], references: [id])
+
+  billingProfileId String         @map("billingProfile") @db.ObjectId
+  billingProfile   BillingProfile @relation(fields: [billingProfileId], references: [id])
+
+  legalName      String
+  CUIT           String
+  billingAddress String
+  IVACondition   IVACondition
+
+  status          BillStatus
+  description     String?
+  comprobanteType ComprobanteType
+  saleCondition   String
+  punctualService Boolean         @default(false)
+  serviceDate     DateTime?       @db.Date
+  startDate       DateTime?       @db.Date
+  endDate         DateTime?       @db.Date
+  dueDate         DateTime?       @db.Date
+  pointOfSale     Int? // Punto de venta (4 dígitos asignado por AFIP)
+
+  caeData           CAEData?
+  details           BillDetail[]
+  withholdingAmount Float?
+  pdfId             String?      @db.ObjectId
+  pdf               File?        @relation(fields: [pdfId], references: [id])
+
+  @@map("bills")
+}
+
+model BankAccount {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
+  bank          String
+  accountNumber String
+  cbu           String?
+  alias         String?
+  accountType   AccountType
+  holder        String
+  holderCUIT    String
+  balance       Float       @default(0)
+
+  billingProfileId     String?         @map("billingProfile") @db.ObjectId
+  billingProfile       BillingProfile? @relation(fields: [billingProfileId], references: [id])
+  sourceMovements      BankMovement[]  @relation("SourceMovements")
+  destinationMovements BankMovement[]  @relation("DestinationMovements")
+
+  @@map("bank_accounts")
+}
+
+model BankMovement {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
+
+  amount Float
+  date   DateTime @db.Date
+
+  sourceAccountId String      @map("sourceAccount") @db.ObjectId
+  sourceAccount   BankAccount @relation("SourceMovements", fields: [sourceAccountId], references: [id])
+
+  destinationAccountId String?      @map("destinationAccount") @db.ObjectId
+  destinationAccount   BankAccount? @relation("DestinationMovements", fields: [destinationAccountId], references: [id])
+
+  @@map("bank_movements")
 }
