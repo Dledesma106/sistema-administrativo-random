@@ -20,6 +20,7 @@ query GetExpense($id: String!) {
             fullName
         }
         observations
+        administrativeNotes
         images {
             id
             url
@@ -29,6 +30,14 @@ query GetExpense($id: String!) {
             url
             mimeType
             filename
+        }
+        attachmentFiles {
+            url
+            mimeType
+            filename
+            key
+            size
+            urlExpire
         }
         auditor {
             id
@@ -75,6 +84,7 @@ query GetExpenses(
         installments
         expenseDate
         observations
+        administrativeNotes
         task {
             id
             taskNumber
@@ -175,6 +185,28 @@ mutation CreateExpense($taskId: String, $expenseData: ExpenseInput!) {
             observations
             expenseNumber
             status
+        }
+    }
+}
+
+mutation UpdateExpenseAdministrative(
+    $id: String!
+    $input: UpdateExpenseAdministrativeInput!
+) {
+    updateExpenseAdministrative(id: $id, input: $input) {
+        success
+        message
+        expense {
+            id
+            administrativeNotes
+            attachmentFiles {
+                filename
+                url
+                mimeType
+                key
+                size
+                urlExpire
+            }
         }
     }
 }
