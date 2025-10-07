@@ -20,6 +20,16 @@ export type Scalars = {
     JSON: any;
 };
 
+export type AttachmentFile = {
+    __typename?: 'AttachmentFile';
+    filename: Scalars['String'];
+    key: Scalars['String'];
+    mimeType: Scalars['String'];
+    size: Scalars['Int'];
+    url: Scalars['String'];
+    urlExpire: Maybe<Scalars['DateTime']>;
+};
+
 export const AccountType = {
     CajaDeAhorro: 'CajaDeAhorro',
     CuentaCorriente: 'CuentaCorriente',
@@ -410,7 +420,9 @@ export type DownloadTaskPhotosResult = {
 
 export type Expense = {
     __typename?: 'Expense';
+    administrativeNotes: Maybe<Scalars['String']>;
     amount: Scalars['Float'];
+    attachmentFiles: Array<AttachmentFile>;
     auditor: Maybe<User>;
     cityName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
@@ -423,6 +435,7 @@ export type Expense = {
     id: Scalars['ID'];
     images: Array<Image>;
     installments: Maybe<Scalars['Int']>;
+    invoiceType: ExpenseInvoiceType;
     observations: Maybe<Scalars['String']>;
     paySource: ExpensePaySource;
     paySourceBank: Maybe<ExpensePaySourceBank>;
@@ -448,6 +461,7 @@ export type ExpenseInput = {
     filenames: InputMaybe<Array<Scalars['String']>>;
     imageKeys: InputMaybe<Array<Scalars['String']>>;
     installments: Scalars['Int'];
+    invoiceType: ExpenseInvoiceType;
     mimeTypes: InputMaybe<Array<Scalars['String']>>;
     observations: InputMaybe<Scalars['String']>;
     paySource: ExpensePaySource;
@@ -455,6 +469,15 @@ export type ExpenseInput = {
     sizes: InputMaybe<Array<Scalars['Int']>>;
 };
 
+export const ExpenseInvoiceType = {
+    FacturaElectronicaAdjunta: 'FacturaElectronicaAdjunta',
+    FacturaPapel: 'FacturaPapel',
+    FacturaViaMailOWhatsapp: 'FacturaViaMailOWhatsapp',
+    SinFactura: 'SinFactura',
+} as const;
+
+export type ExpenseInvoiceType =
+    (typeof ExpenseInvoiceType)[keyof typeof ExpenseInvoiceType];
 export const ExpensePaySource = {
     Credito: 'Credito',
     Debito: 'Debito',
@@ -525,6 +548,13 @@ export type FileInput = {
     mimeType: Scalars['String'];
     size: Scalars['Int'];
     url: Scalars['String'];
+};
+
+export type GeneratePresignedUrlsResponse = {
+    __typename?: 'GeneratePresignedUrlsResponse';
+    message: Maybe<Scalars['String']>;
+    presignedUrls: Array<PresignedUrlInfo>;
+    success: Scalars['Boolean'];
 };
 
 export type GmailMessage = {
@@ -633,6 +663,7 @@ export type Mutation = {
     finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
+    generatePresignedUrls: GeneratePresignedUrlsResponse;
     generateUploadUrls: PresignedUrlResponse;
     login: LoginUserResult;
     logout: AuthResult;
@@ -647,6 +678,7 @@ export type Mutation = {
     updateBusiness: BusinessResult;
     updateCity: CityCrudRef;
     updateClient: ClientResult;
+    updateExpenseAdministrative: ExpenseCrudResult;
     updateExpenseDiscountAmount: ExpenseCrudResult;
     updateExpenseStatus: ExpenseCrudResult;
     updateMyAssignedTask: TaskCrudResult;
@@ -817,6 +849,12 @@ export type MutationGenerateApprovedTasksReportArgs = {
     startDate: Scalars['DateTime'];
 };
 
+export type MutationGeneratePresignedUrlsArgs = {
+    fileCount: Scalars['Int'];
+    mimeTypes: Array<Scalars['String']>;
+    prefix: Scalars['String'];
+};
+
 export type MutationGenerateUploadUrlsArgs = {
     fileCount: Scalars['Int'];
     mimeTypes: Array<Scalars['String']>;
@@ -881,6 +919,11 @@ export type MutationUpdateClientArgs = {
     id: Scalars['String'];
 };
 
+export type MutationUpdateExpenseAdministrativeArgs = {
+    id: Scalars['String'];
+    input: UpdateExpenseAdministrativeInput;
+};
+
 export type MutationUpdateExpenseDiscountAmountArgs = {
     discountAmount: InputMaybe<Scalars['Float']>;
     expenseId: Scalars['String'];
@@ -940,6 +983,13 @@ export type MyTaskInput = {
     startedAt: InputMaybe<Scalars['DateTime']>;
     taskType: TaskType;
     useMaterials: Scalars['Boolean'];
+};
+
+export type PresignedUrlInfo = {
+    __typename?: 'PresignedUrlInfo';
+    expiresIn: Scalars['Int'];
+    key: Scalars['String'];
+    url: Scalars['String'];
 };
 
 export type PresignedUrlResponse = {
@@ -1597,6 +1647,14 @@ export const TaskType = {
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
+export type UpdateExpenseAdministrativeInput = {
+    administrativeNotes: InputMaybe<Scalars['String']>;
+    fileKeys: InputMaybe<Array<Scalars['String']>>;
+    filenames: InputMaybe<Array<Scalars['String']>>;
+    mimeTypes: InputMaybe<Array<Scalars['String']>>;
+    sizes: InputMaybe<Array<Scalars['Int']>>;
+};
+
 export type UpdateBillingProfileInput = {
     CUIT: InputMaybe<Scalars['String']>;
     IVACondition: InputMaybe<IvaCondition>;
@@ -2588,9 +2646,11 @@ export type GetExpenseQuery = {
         cityName: string | null;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
+        invoiceType: ExpenseInvoiceType;
         status: ExpenseStatus;
         doneBy: string;
         observations: string | null;
+        administrativeNotes: string | null;
         installments: number | null;
         expenseDate: any | null;
         createdAt: any;
@@ -2603,6 +2663,15 @@ export type GetExpenseQuery = {
             url: string;
             mimeType: string;
             filename: string;
+        }>;
+        attachmentFiles: Array<{
+            __typename?: 'AttachmentFile';
+            url: string;
+            mimeType: string;
+            filename: string;
+            key: string;
+            size: number;
+            urlExpire: any | null;
         }>;
         auditor: { __typename?: 'User'; id: string; fullName: string } | null;
     } | null;
@@ -2633,9 +2702,11 @@ export type GetExpensesQuery = {
         expenseType: ExpenseType;
         paySource: ExpensePaySource;
         paySourceBank: ExpensePaySourceBank | null;
+        invoiceType: ExpenseInvoiceType;
         installments: number | null;
         expenseDate: any | null;
         observations: string | null;
+        administrativeNotes: string | null;
         doneBy: string;
         status: ExpenseStatus;
         task: {
@@ -2762,6 +2833,34 @@ export type CreateExpenseMutation = {
     };
 };
 
+export type UpdateExpenseAdministrativeMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: UpdateExpenseAdministrativeInput;
+}>;
+
+export type UpdateExpenseAdministrativeMutation = {
+    __typename?: 'Mutation';
+    updateExpenseAdministrative: {
+        __typename?: 'ExpenseCrudResult';
+        success: boolean;
+        message: string | null;
+        expense: {
+            __typename?: 'Expense';
+            id: string;
+            administrativeNotes: string | null;
+            attachmentFiles: Array<{
+                __typename?: 'AttachmentFile';
+                filename: string;
+                url: string;
+                mimeType: string;
+                key: string;
+                size: number;
+                urlExpire: any | null;
+            }>;
+        } | null;
+    };
+};
+
 export type GenerateUploadUrlsMutationVariables = Exact<{
     fileCount: Scalars['Int'];
     prefix: Scalars['String'];
@@ -2779,6 +2878,27 @@ export type GenerateUploadUrlsMutation = {
             url: string;
             key: string;
             urlExpire: string;
+        }>;
+    };
+};
+
+export type GeneratePresignedUrlsMutationVariables = Exact<{
+    fileCount: Scalars['Int'];
+    prefix: Scalars['String'];
+    mimeTypes: Array<Scalars['String']>;
+}>;
+
+export type GeneratePresignedUrlsMutation = {
+    __typename?: 'Mutation';
+    generatePresignedUrls: {
+        __typename?: 'GeneratePresignedUrlsResponse';
+        success: boolean;
+        message: string | null;
+        presignedUrls: Array<{
+            __typename?: 'PresignedUrlInfo';
+            url: string;
+            key: string;
+            expiresIn: number;
         }>;
     };
 };
@@ -8639,6 +8759,10 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'invoiceType' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'status' },
                                 },
                                 {
@@ -8688,6 +8812,10 @@ export const GetExpenseDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'administrativeNotes' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'images' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -8724,6 +8852,42 @@ export const GetExpenseDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'filename' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachmentFiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mimeType' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'filename' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'size' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'urlExpire',
+                                                },
                                             },
                                         ],
                                     },
@@ -9008,6 +9172,10 @@ export const GetExpensesDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'invoiceType' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'installments' },
                                 },
                                 {
@@ -9017,6 +9185,10 @@ export const GetExpensesDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'administrativeNotes' },
                                 },
                                 {
                                     kind: 'Field',
@@ -9792,6 +9964,163 @@ export const CreateExpenseDocument = {
         },
     ],
 } as unknown as DocumentNode<CreateExpenseMutation, CreateExpenseMutationVariables>;
+export const UpdateExpenseAdministrativeDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateExpenseAdministrative' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: {
+                                kind: 'Name',
+                                value: 'UpdateExpenseAdministrativeInput',
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateExpenseAdministrative' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expense' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'administrativeNotes',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'attachmentFiles',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'filename',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'url',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'mimeType',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'key',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'size',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'urlExpire',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    UpdateExpenseAdministrativeMutation,
+    UpdateExpenseAdministrativeMutationVariables
+>;
 export const GenerateUploadUrlsDocument = {
     kind: 'Document',
     definitions: [
@@ -9923,6 +10252,138 @@ export const GenerateUploadUrlsDocument = {
 } as unknown as DocumentNode<
     GenerateUploadUrlsMutation,
     GenerateUploadUrlsMutationVariables
+>;
+export const GeneratePresignedUrlsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GeneratePresignedUrls' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'fileCount' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'prefix' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'mimeTypes' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'ListType',
+                            type: {
+                                kind: 'NonNullType',
+                                type: {
+                                    kind: 'NamedType',
+                                    name: { kind: 'Name', value: 'String' },
+                                },
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'generatePresignedUrls' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fileCount' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fileCount' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'prefix' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'prefix' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'mimeTypes' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'mimeTypes' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'presignedUrls' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expiresIn',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GeneratePresignedUrlsMutation,
+    GeneratePresignedUrlsMutationVariables
 >;
 export const GetPreventivesDocument = {
     kind: 'Document',

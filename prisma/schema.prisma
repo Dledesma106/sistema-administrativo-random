@@ -156,6 +156,13 @@ enum ExpenseStatus {
   Rechazado
 }
 
+enum ExpenseInvoiceType {
+  FacturaPapel
+  FacturaElectronicaAdjunta
+  FacturaViaMailOWhatsapp
+  SinFactura
+}
+
 model File {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime  @default(now()) @db.Date
@@ -187,16 +194,19 @@ model Expense {
   amount         Float
   discountAmount Float?
 
-  installments  Int?
-  observations  String?
-  cityName      String?
-  deleted       Boolean               @default(false)
-  deletedAt     DateTime?             @db.Date
-  expenseDate   DateTime?             @db.Date
-  expenseType   ExpenseType
-  paySource     ExpensePaySource
-  paySourceBank ExpensePaySourceBank?
-  status        ExpenseStatus
+  installments        Int?
+  observations        String?
+  administrativeNotes String?
+  cityName            String?
+  deleted             Boolean               @default(false)
+  deletedAt           DateTime?             @db.Date
+  expenseDate         DateTime?             @db.Date
+  expenseType         ExpenseType
+  paySource           ExpensePaySource
+  paySourceBank       ExpensePaySourceBank?
+  status              ExpenseStatus
+  invoiceType         ExpenseInvoiceType
+  attachmentFiles     AttachmentFile[]
 
   taskId String? @map("task") @db.ObjectId
   task   Task?   @relation(fields: [taskId], references: [id])
@@ -422,6 +432,16 @@ model ExpoToken {
   user      User     @relation(fields: [userId], references: [id])
 
   @@map("expo_tokens")
+}
+
+type AttachmentFile {
+  key      String
+  filename String
+  mimeType String
+  size     Int
+
+  url       String
+  urlExpire DateTime?
 }
 
 model BillingProfile {

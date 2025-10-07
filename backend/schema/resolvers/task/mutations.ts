@@ -450,6 +450,7 @@ builder.mutationFields((t) => ({
                                               expenseDate: expenseData.expenseDate,
                                               observations: expenseData.observations,
                                               doneBy: expenseData.doneBy,
+                                              invoiceType: expenseData.invoiceType,
                                               status: ExpenseStatus.Enviado,
                                               cityName: expenseData.cityName,
                                               registeredBy: {
@@ -926,6 +927,7 @@ builder.mutationFields((t) => ({
                                   expenseDate: expenseData.expenseDate,
                                   observations: expenseData.observations,
                                   doneBy: expenseData.doneBy,
+                                  invoiceType: expenseData.invoiceType,
                                   status: ExpenseStatus.Enviado,
                                   cityName: expenseData.cityName,
                                   registeredBy: {

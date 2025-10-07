@@ -32,7 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { routesBuilder } from '@/lib/routes';
-import { getCleanErrorMessage } from '@/lib/utils';
+import { getCleanErrorMessage, pascalCaseToSpaces } from '@/lib/utils';
 
 type FormValues = {
     client?: string | null;
@@ -490,7 +490,7 @@ const CreateOrUpdateTaskForm: React.FC<Props> = ({
                                             onChange={field.onChange}
                                             items={Object.entries(TaskType).map(
                                                 ([key, value]) => ({
-                                                    label: key,
+                                                    label: pascalCaseToSpaces(key),
                                                     value: value,
                                                 }),
                                             )}
