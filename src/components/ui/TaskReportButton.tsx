@@ -12,10 +12,7 @@ export function TaskReportButton() {
                 Generar Reporte de Tareas
             </Button>
 
-            <TaskReportModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-            />
+            <TaskReportModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>
     );
 }

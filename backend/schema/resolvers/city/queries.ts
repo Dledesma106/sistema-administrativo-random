@@ -15,10 +15,9 @@ export const CityQueries = builder.queryFields((t) => ({
             rules: ['IsAuthenticated'],
         },
         resolve: async (query, _parent, { search, skip, take, provinceId }) => {
-            return prisma.city.findMany({
+            return prisma.city.findManyUndeleted({
                 ...query,
                 where: {
-                    deleted: false,
                     ...(search && {
                         name: {
                             contains: search,

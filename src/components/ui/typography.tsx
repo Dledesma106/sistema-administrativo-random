@@ -37,3 +37,15 @@ export function TypographyH2({ children, className, asChild }: Props) {
         </Comp>
     );
 }
+
+export function TypographyH3({ children, className, asChild }: Props) {
+    const Comp = asChild ? Slot : 'h3';
+
+    return (
+        <Comp
+            className={cn('scroll-m-20 text-2xl font-semibold tracking-tight', className)}
+        >
+            {children}
+        </Comp>
+    );
+}

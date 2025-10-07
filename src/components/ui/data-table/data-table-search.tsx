@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
-import { useEffect, useState, KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, KeyboardEvent } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -15,10 +16,21 @@ export function DataTableSearch({
     placeholder = 'Buscar...',
 }: DataTableSearchProps) {
     const [inputValue, setInputValue] = useState(searchTerm);
+    const debouncedValue = useDebounce(inputValue, 400);
+    const lastEmittedRef = useRef(searchTerm);
 
     useEffect(() => {
         setInputValue(searchTerm);
+        lastEmittedRef.current = searchTerm;
     }, [searchTerm]);
+
+    // Trigger search automatically after user stops typing
+    useEffect(() => {
+        if (debouncedValue !== lastEmittedRef.current) {
+            lastEmittedRef.current = debouncedValue;
+            onSearch(debouncedValue);
+        }
+    }, [debouncedValue, onSearch]);
 
     const handleSearch = () => {
         onSearch(inputValue);

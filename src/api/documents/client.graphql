@@ -55,6 +55,22 @@ query GetClientsWithBranches {
     }
 }
 
+query GetClientsByBusiness($businessId: String!, $search: String = null) {
+    clientsByBusiness(businessId: $businessId, search: $search) {
+        id
+        name
+        branches {
+            id
+            number
+            name
+            city {
+                id
+                name
+            }
+        }
+    }
+}
+
 mutation DeleteClient($id: String!) {
     deleteClient(id: $id) {
         success
@@ -64,4 +80,4 @@ mutation DeleteClient($id: String!) {
             name
         }
     }
-} 
+}

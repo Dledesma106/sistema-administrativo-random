@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura {{billType}} {{billLetter}} - {{billNumber}}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    .container { width: 700px; margin: 0 auto; padding: 24px; border: 1px solid #ccc; }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .company, .client { width: 48%; }
+    .title { text-align: center; font-size: 2em; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    .totals { margin-top: 24px; text-align: right; }
+    .qr { margin-top: 24px; text-align: right; }
+    .footer { margin-top: 32px; font-size: 0.9em; color: #666; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="company">
+        <strong>{{company.name}}</strong><br>
+        CUIT: {{company.cuit}}<br>
+        {{company.address}}<br>
+        {{company.grossIncome}}<br>
+        {{company.ivaCondition}}
+      </div>
+      <div class="client">
+        <strong>Cliente:</strong> {{client.name}}<br>
+        CUIT: {{client.cuit}}<br>
+        {{client.address}}<br>
+        {{client.ivaCondition}}
+      </div>
+    </div>
+    <div class="title">Factura {{billType}} {{billLetter}}</div>
+    <div><strong>N°:</strong> {{billNumber}} &nbsp; <strong>Fecha:</strong> {{billDate}}</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th>Cantidad</th>
+          <th>Precio Unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each items}}
+        <tr>
+          <td>{{description}}</td>
+          <td>{{quantity}}</td>
+          <td>{{unitPrice}}</td>
+          <td>{{subtotal}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    <div class="totals">
+      <strong>Total:</strong> {{total}}<br>
+      <strong>CAE:</strong> {{cae}}<br>
+      <strong>Vto. CAE:</strong> {{caeDueDate}}
+    </div>
+    <div class="qr">
+      {{#if qrDataUrl}}
+        <img src="{{qrDataUrl}}" alt="QR AFIP" width="120" height="120" />
+      {{/if}}
+    </div>
+    <div class="footer">
+      Comprobante autorizado por AFIP. Para verificar autenticidad, escanee el QR.<br>
+      {{footerText}}
+    </div>
+  </div>
+</body>
+</html> 

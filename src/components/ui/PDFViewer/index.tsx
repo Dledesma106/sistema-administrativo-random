@@ -13,7 +13,7 @@ export const PDFViewer = ({
     url,
     filename = 'Documento PDF',
     showPreviewButton = true,
-    className = 'h-[600px] w-full max-w-3xl',
+    className = 'h-[400px] w-full max-w-3xl',
 }: PDFViewerProps) => {
     if (showPreviewButton) {
         return (
@@ -30,12 +30,12 @@ export const PDFViewer = ({
                         </Button>
                     </DialogTrigger>
                     <DialogContent
-                        className="max-w-4xl border-accent"
+                        className="max-h-[90vh] max-w-6xl border-accent"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <iframe
                             src={url}
-                            className={className}
+                            className="h-[80vh] w-full"
                             title={filename}
                             loading="lazy"
                             referrerPolicy="no-referrer"
@@ -47,14 +47,40 @@ export const PDFViewer = ({
         );
     }
 
+    // Cuando showPreviewButton=false, mostrar PDF con botón para modal
     return (
-        <iframe
-            src={url}
-            className={className}
-            title={filename}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            allow="fullscreen"
-        />
+        <div className="space-y-2">
+            <iframe
+                src={url}
+                className={className}
+                title={filename}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                allow="fullscreen"
+            />
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <DownloadIcon className="mr-2 h-4 w-4" />
+                        Ver en pantalla completa
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] max-w-6xl border-accent">
+                    <iframe
+                        src={url}
+                        className="h-[80vh] w-full"
+                        title={filename}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        allow="fullscreen"
+                    />
+                </DialogContent>
+            </Dialog>
+        </div>
     );
 };

@@ -1,13 +1,7 @@
 import clsx from 'clsx';
 
 import { Badge } from './badge';
-
-export enum BudgetStatus {
-    Enviado = 'Enviado',
-    Recibido = 'Recibido',
-    Aprobado = 'Aprobado',
-    Rechazado = 'Rechazado',
-}
+import { BudgetStatus } from '@/api/graphql';
 
 type Props = {
     status: BudgetStatus;
@@ -16,8 +10,9 @@ type Props = {
 const BudgetStatusBadge = ({ status }: Props) => {
     const contentStyle = clsx({
         'h-2 w-2 rounded-full bg-yellow-500': status === BudgetStatus.Enviado,
-        'h-2 w-2 rounded-full bg-blue-500': status === BudgetStatus.Recibido,
+        'h-2 w-2 rounded-full bg-blue-500': status === BudgetStatus.Borrador,
         'h-2 w-2 rounded-full bg-green-500': status === BudgetStatus.Aprobado,
+        'h-2 w-2 rounded-full bg-purple-500': status === BudgetStatus.Expirado,
         'h-2 w-2 rounded-full bg-red-500': status === BudgetStatus.Rechazado,
     });
 

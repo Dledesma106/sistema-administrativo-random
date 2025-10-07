@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { ExpenseStatus } from '@prisma/client';
+import { ExpenseStatus, ExpenseInvoiceType } from '@prisma/client';
 import { format } from 'date-fns';
 import ExcelJS from 'exceljs';
 
@@ -8,6 +8,7 @@ import {
     ExpenseCrudResultPothosRef,
     ExpenseInputType,
     ExpenseStatusPothosRef,
+    UpdateExpenseAdministrativeInput,
 } from './refs';
 
 import { createImageSignedUrlAsync, getFileSignedUrl } from 'backend/s3Client';
@@ -87,7 +88,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     expense: deletedExpense,
                 };
             } catch (error) {
-                console.error('Error al eliminar el gasto:', error);
                 return {
                     message: `Error al eliminar el gasto: ${
                         error instanceof Error ? error.message : 'Error desconocido'
@@ -281,6 +281,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         paySource: expenseData.paySource,
                         doneBy: expenseData.doneBy,
                         paySourceBank: expenseData.paySourceBank,
+                        invoiceType: expenseData.invoiceType,
                         installments: expenseData.installments,
                         expenseDate: expenseDate,
                         observations: expenseData.observations,
@@ -305,7 +306,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                     expense: newExpense,
                 };
             } catch (error) {
-                console.error(error);
                 return {
                     success: false,
                     message: `Error al crear el gasto: ${
@@ -395,7 +395,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
             ],
         },
         resolve: async (root, { startDate, endDate }) => {
-            console.log(startDate, endDate);
             if (startDate) {
                 startDate.setHours(0, 0, 0, 0);
             }
@@ -485,8 +484,24 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         width: 15,
                     },
                     {
+                        header: 'Tipo de factura',
+                        key: 'invoiceType',
+                        width: 25,
+                    },
+                    {
                         header: 'Factura recibida',
                         key: 'status',
+                        width: 15,
+                    },
+                    {
+                        header: 'Anotaciones',
+                        key: 'administrativeNotes',
+                        width: 40,
+                        style: { alignment: { wrapText: true } },
+                    },
+                    {
+                        header: 'Archivos Adjuntos',
+                        key: 'hasAttachments',
                         width: 15,
                     },
                 ];
@@ -524,6 +539,25 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                             statusText = expense.status;
                     }
 
+                    // Mapear tipo de factura a texto legible
+                    let invoiceTypeText;
+                    switch (expense.invoiceType as ExpenseInvoiceType) {
+                        case ExpenseInvoiceType.FacturaPapel:
+                            invoiceTypeText = 'Factura Papel';
+                            break;
+                        case ExpenseInvoiceType.FacturaElectronicaAdjunta:
+                            invoiceTypeText = 'Factura Electrónica Adjunta';
+                            break;
+                        case ExpenseInvoiceType.FacturaViaMailOWhatsapp:
+                            invoiceTypeText = 'Factura vía Mail o WhatsApp';
+                            break;
+                        case ExpenseInvoiceType.SinFactura:
+                            invoiceTypeText = 'Sin Factura';
+                            break;
+                        default:
+                            invoiceTypeText = expense.invoiceType as unknown as string;
+                    }
+
                     worksheet.addRow({
                         expenseNumber: `#${expense.expenseNumber}`,
                         cityName: expense.cityName ?? '-',
@@ -533,13 +567,20 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         ),
                         expenseType: expense.expenseType,
                         observations: expense.observations || '-',
+                        administrativeNotes: expense.administrativeNotes || '-',
+                        hasAttachments:
+                            expense.attachmentFiles && expense.attachmentFiles.length > 0
+                                ? 'Sí'
+                                : 'No',
                         amount: finalAmount.toLocaleString('es-AR', {
                             style: 'currency',
                             currency: 'ARS',
                         }),
                         doneBy: expense.doneBy,
                         paySource: expense.paySource,
-                        paySourceBank: ['Credito', 'Debito'].includes(expense.paySource)
+                        paySourceBank: ['Credito', 'Debito', 'Transferencia'].includes(
+                            expense.paySource,
+                        )
                             ? expense.paySourceBank || '-'
                             : '-',
                         installments: expense.installments || '-',
@@ -549,6 +590,7 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                                   currency: 'ARS',
                               })
                             : '-',
+                        invoiceType: invoiceTypeText,
                         status: statusText,
                     });
 
@@ -602,7 +644,6 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
 
                 return await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
             } catch (error) {
-                console.error('Error generating expenses report:', error);
                 throw new Error('Error al generar el reporte de gastos');
             }
         },
@@ -660,6 +701,111 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 return {
                     success: false,
                     message: `Error al actualizar el monto con descuento: ${error}`,
+                };
+            }
+        },
+    }),
+
+    updateExpenseAdministrative: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            id: t.arg.string({ required: true }),
+            input: t.arg({
+                type: UpdateExpenseAdministrativeInput,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id, input } = args;
+
+                // Verificar que el gasto existe
+                const existingExpense = await prisma.expense.findUnique({
+                    where: { id },
+                });
+
+                if (!existingExpense) {
+                    return {
+                        success: false,
+                        message: 'Gasto no encontrado',
+                    };
+                }
+
+                // Preparar datos para actualizar
+                const updateData: any = {};
+
+                if (input.administrativeNotes !== undefined) {
+                    updateData.administrativeNotes = input.administrativeNotes;
+                }
+
+                // Si hay archivos nuevos, procesarlos
+                if (input.fileKeys && input.fileKeys.length > 0) {
+                    const attachmentFiles = await Promise.all(
+                        input.fileKeys.map(async (key, index) => {
+                            // Generar URL presignada para S3
+                            const s3Client = new S3Client({
+                                region: process.env.AWS_REGION,
+                                credentials: {
+                                    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                                },
+                            });
+
+                            const command = new GetObjectCommand({
+                                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                                Key: key,
+                            });
+
+                            const url = await getSignedUrl(s3Client, command, {
+                                expiresIn: 3600, // 1 hora
+                            });
+
+                            return {
+                                key,
+                                filename: input.filenames?.[index] || '',
+                                mimeType: input.mimeTypes?.[index] || '',
+                                size: input.sizes?.[index] || 0,
+                                url,
+                                urlExpire: new Date(Date.now() + 3600 * 1000), // 1 hora desde ahora
+                            };
+                        }),
+                    );
+
+                    updateData.attachmentFiles = attachmentFiles;
+                }
+
+                // Actualizar el gasto
+                const updatedExpense = await prisma.expense.update({
+                    where: { id },
+                    data: updateData,
+                    include: {
+                        files: {
+                            where: { deleted: false },
+                        },
+                        images: {
+                            where: { deleted: false },
+                        },
+                        registeredBy: true,
+                        auditor: true,
+                        task: true,
+                    },
+                });
+
+                return {
+                    success: true,
+                    expense: updatedExpense,
+                    message: 'Anotaciones administrativas actualizadas correctamente',
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Error al actualizar las anotaciones administrativas: ${error}`,
                 };
             }
         },

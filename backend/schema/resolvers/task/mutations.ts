@@ -252,6 +252,7 @@ builder.mutationFields((t) => ({
                             set: participantNames, // Inicializar con nombres de asignados
                         },
                         movitecTicket: input.movitecTicket,
+                        serviceOrderId: input.serviceOrderId,
                     },
                 });
 
@@ -449,6 +450,7 @@ builder.mutationFields((t) => ({
                                               expenseDate: expenseData.expenseDate,
                                               observations: expenseData.observations,
                                               doneBy: expenseData.doneBy,
+                                              invoiceType: expenseData.invoiceType,
                                               status: ExpenseStatus.Enviado,
                                               cityName: expenseData.cityName,
                                               registeredBy: {
@@ -925,6 +927,7 @@ builder.mutationFields((t) => ({
                                   expenseDate: expenseData.expenseDate,
                                   observations: expenseData.observations,
                                   doneBy: expenseData.doneBy,
+                                  invoiceType: expenseData.invoiceType,
                                   status: ExpenseStatus.Enviado,
                                   cityName: expenseData.cityName,
                                   registeredBy: {
