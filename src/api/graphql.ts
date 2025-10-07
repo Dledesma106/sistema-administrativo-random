@@ -20,16 +20,6 @@ export type Scalars = {
     JSON: any;
 };
 
-export type AttachmentFile = {
-    __typename?: 'AttachmentFile';
-    filename: Scalars['String'];
-    key: Scalars['String'];
-    mimeType: Scalars['String'];
-    size: Scalars['Int'];
-    url: Scalars['String'];
-    urlExpire: Maybe<Scalars['DateTime']>;
-};
-
 export const AccountType = {
     CajaDeAhorro: 'CajaDeAhorro',
     CuentaCorriente: 'CuentaCorriente',
@@ -46,6 +36,16 @@ export const AlicuotaIva = {
 } as const;
 
 export type AlicuotaIva = (typeof AlicuotaIva)[keyof typeof AlicuotaIva];
+export type AttachmentFile = {
+    __typename?: 'AttachmentFile';
+    filename: Scalars['String'];
+    key: Scalars['String'];
+    mimeType: Scalars['String'];
+    size: Scalars['Int'];
+    url: Scalars['String'];
+    urlExpire: Maybe<Scalars['DateTime']>;
+};
+
 export type AuthResult = {
     __typename?: 'AuthResult';
     message: Maybe<Scalars['String']>;
@@ -1647,14 +1647,6 @@ export const TaskType = {
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
-export type UpdateExpenseAdministrativeInput = {
-    administrativeNotes: InputMaybe<Scalars['String']>;
-    fileKeys: InputMaybe<Array<Scalars['String']>>;
-    filenames: InputMaybe<Array<Scalars['String']>>;
-    mimeTypes: InputMaybe<Array<Scalars['String']>>;
-    sizes: InputMaybe<Array<Scalars['Int']>>;
-};
-
 export type UpdateBillingProfileInput = {
     CUIT: InputMaybe<Scalars['String']>;
     IVACondition: InputMaybe<IvaCondition>;
@@ -1675,6 +1667,14 @@ export type UpdateBudgetInput = {
 
 export type UpdateBudgetStatusInput = {
     status: BudgetStatus;
+};
+
+export type UpdateExpenseAdministrativeInput = {
+    administrativeNotes: InputMaybe<Scalars['String']>;
+    fileKeys: InputMaybe<Array<Scalars['String']>>;
+    filenames: InputMaybe<Array<Scalars['String']>>;
+    mimeTypes: InputMaybe<Array<Scalars['String']>>;
+    sizes: InputMaybe<Array<Scalars['Int']>>;
 };
 
 export type UpdateMyTaskInput = {
