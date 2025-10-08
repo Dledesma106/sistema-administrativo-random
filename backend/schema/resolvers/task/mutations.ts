@@ -12,6 +12,7 @@ import {
     MyTaskInputPothosRef,
     TaskStatusPothosRef,
     DownloadTaskPhotosResultPothosRef,
+    UpdateTaskAdministrativeInput,
 } from './refs';
 
 import { createImageSignedUrlAsync, getFileSignedUrl } from 'backend/s3Client';
@@ -1183,6 +1184,17 @@ builder.mutationFields((t) => ({
                         key: 'observations',
                         width: 40,
                     },
+                    {
+                        header: 'Anotaciones',
+                        key: 'administrativeNotes',
+                        width: 40,
+                        style: { alignment: { wrapText: true } },
+                    },
+                    {
+                        header: 'Archivos Adjuntos',
+                        key: 'hasAttachments',
+                        width: 15,
+                    },
                 ];
 
                 // Estilo para el encabezado
@@ -1240,6 +1252,11 @@ builder.mutationFields((t) => ({
                         }),
                         expenseCount: task.expenses.length,
                         observations: task.observations || '',
+                        administrativeNotes: task.administrativeNotes || '',
+                        hasAttachments:
+                            task.attachmentFiles && task.attachmentFiles.length > 0
+                                ? 'Sí'
+                                : 'No',
                     });
                 });
 
@@ -1557,6 +1574,113 @@ builder.mutationFields((t) => ({
                 return {
                     success: false,
                     message: `Error al procesar la solicitud: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                };
+            }
+        },
+    }),
+
+    updateTaskAdministrative: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            id: t.arg.string({ required: true }),
+            input: t.arg({
+                type: UpdateTaskAdministrativeInput,
+                required: true,
+            }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id, input } = args;
+
+                // Verificar que la tarea existe
+                const existingTask = await prisma.task.findUnique({
+                    where: { id },
+                });
+
+                if (!existingTask) {
+                    return {
+                        success: false,
+                        message: 'Tarea no encontrada',
+                    };
+                }
+
+                const updateData: any = {};
+
+                // Actualizar anotaciones administrativas si se proporcionan
+                if (input.administrativeNotes !== undefined) {
+                    updateData.administrativeNotes = input.administrativeNotes;
+                }
+
+                // Si hay archivos nuevos, procesarlos
+                if (input.fileKeys && input.fileKeys.length > 0) {
+                    const attachmentFiles = await Promise.all(
+                        input.fileKeys.map(async (key, index) => {
+                            // Generar URL presignada para S3
+                            const s3Client = new S3Client({
+                                region: process.env.AWS_REGION,
+                                credentials: {
+                                    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                                },
+                            });
+
+                            const command = new GetObjectCommand({
+                                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                                Key: key,
+                            });
+
+                            const url = await getSignedUrl(s3Client, command, {
+                                expiresIn: 3600, // 1 hora
+                            });
+
+                            return {
+                                key,
+                                filename: input.filenames?.[index] || '',
+                                mimeType: input.mimeTypes?.[index] || '',
+                                size: input.sizes?.[index] || 0,
+                                url,
+                                urlExpire: new Date(Date.now() + 3600 * 1000), // 1 hora desde ahora
+                            };
+                        }),
+                    );
+
+                    updateData.attachmentFiles = attachmentFiles;
+                }
+
+                // Actualizar la tarea
+                const updatedTask = await prisma.task.update({
+                    where: { id },
+                    data: updateData,
+                    include: {
+                        assigned: true,
+                        auditor: true,
+                        createdBy: true,
+                        branch: true,
+                        business: true,
+                        preventive: true,
+                        serviceOrder: true,
+                        images: {
+                            where: { deleted: false },
+                        },
+                    },
+                });
+
+                return {
+                    success: true,
+                    task: updatedTask,
+                    message: 'Anotaciones administrativas actualizadas correctamente',
+                };
+            } catch (error) {
+                console.error('Error updating task administrative:', error);
+                return {
+                    success: false,
+                    message: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,
                 };
             }
         },

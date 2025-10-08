@@ -117,6 +117,9 @@ const Content: React.FC<Props> = ({ expense }) => {
                     sizes: fileInfo.map((f) => f.size),
                 },
             });
+
+            // Limpiar la lista de archivos después de subirlos exitosamente
+            files.forEach((_, index) => removeFile(index));
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Error uploading files:', error);

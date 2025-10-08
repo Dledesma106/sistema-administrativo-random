@@ -1,10 +1,12 @@
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Task, TaskStatus, TaskType } from '@prisma/client';
 
 import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
-import { ExpenseInputType, ExpensePothosRef } from '../expense/refs';
+import { AttachmentFileRef, ExpenseInputType, ExpensePothosRef } from '../expense/refs';
 import { UserPothosRef } from '../users/refs';
 
 export const TaskTypePothosRef = builder.enumType('TaskType', {
@@ -142,6 +144,55 @@ export const TaskPothosRef = builder.prismaObject('Task', {
         observations: t.exposeString('observations', {
             nullable: true,
         }),
+        administrativeNotes: t.exposeString('administrativeNotes', {
+            nullable: true,
+        }),
+        attachmentFiles: t.field({
+            type: [AttachmentFileRef],
+            resolve: async (root) => {
+                if (!root.attachmentFiles || root.attachmentFiles.length === 0) {
+                    return [];
+                }
+
+                // Regenerar URLs si han expirado
+                const s3Client = new S3Client({
+                    region: process.env.AWS_REGION,
+                    credentials: {
+                        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                    },
+                });
+
+                return Promise.all(
+                    root.attachmentFiles.map(async (file: any) => {
+                        const now = new Date();
+                        const urlExpire = file.urlExpire
+                            ? new Date(file.urlExpire)
+                            : null;
+
+                        // Si la URL ha expirado o no existe, generar una nueva
+                        if (!urlExpire || urlExpire <= now) {
+                            const command = new GetObjectCommand({
+                                Bucket: process.env.AWS_S3_BUCKET_NAME,
+                                Key: file.key,
+                            });
+
+                            const url = await getSignedUrl(s3Client, command, {
+                                expiresIn: 3600, // 1 hora
+                            });
+
+                            return {
+                                ...file,
+                                url,
+                                urlExpire: new Date(Date.now() + 3600 * 1000),
+                            };
+                        }
+
+                        return file;
+                    }),
+                );
+            },
+        }),
         participants: t.field({
             type: ['String'],
             nullable: false,
@@ -267,3 +318,16 @@ export const TaskCrudResultPothosRef = builder
             }),
         }),
     });
+
+export const UpdateTaskAdministrativeInput = builder.inputType(
+    'UpdateTaskAdministrativeInput',
+    {
+        fields: (t) => ({
+            administrativeNotes: t.string({ required: false }),
+            fileKeys: t.stringList({ required: false }),
+            filenames: t.stringList({ required: false }),
+            mimeTypes: t.stringList({ required: false }),
+            sizes: t.intList({ required: false }),
+        }),
+    },
+);
