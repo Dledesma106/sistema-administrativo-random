@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+    S3Client,
+    PutObjectCommand,
+    GetObjectCommand,
+    DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpenseStatus, TaskStatus, Task, PreventiveStatus } from '@prisma/client';
 import { format } from 'date-fns';
@@ -1681,6 +1686,96 @@ builder.mutationFields((t) => ({
                 return {
                     success: false,
                     message: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+                };
+            }
+        },
+    }),
+
+    removeTaskAttachment: t.field({
+        type: TaskCrudResultPothosRef,
+        args: {
+            id: t.arg.string({ required: true }),
+            fileKey: t.arg.string({ required: true }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id, fileKey } = args;
+
+                // Obtener la tarea actual para acceder a los archivos adjuntos
+                const task = await prisma.task.findUnique({
+                    where: { id },
+                    select: { attachmentFiles: true },
+                });
+
+                if (!task) {
+                    return {
+                        success: false,
+                        message: 'Tarea no encontrada',
+                    };
+                }
+
+                // Filtrar el archivo a eliminar
+                const updatedAttachmentFiles = (task.attachmentFiles as any[]).filter(
+                    (file: any) => file.key !== fileKey,
+                );
+
+                // Actualizar la base de datos
+                const updatedTask = await prisma.task.update({
+                    where: { id },
+                    data: {
+                        attachmentFiles: updatedAttachmentFiles,
+                    },
+                    include: {
+                        assigned: true,
+                        auditor: true,
+                        createdBy: true,
+                        branch: true,
+                        business: true,
+                        preventive: true,
+                        serviceOrder: true,
+                        images: { where: { deleted: false } },
+                    },
+                });
+
+                // Eliminar el archivo de S3
+                try {
+                    const s3Client = new S3Client({
+                        region: process.env.AWS_REGION,
+                        credentials: {
+                            accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                        },
+                    });
+
+                    const deleteCommand = new DeleteObjectCommand({
+                        Bucket: process.env.AWS_S3_BUCKET_NAME,
+                        Key: fileKey,
+                    });
+
+                    await s3Client.send(deleteCommand);
+                } catch (s3Error) {
+                    // eslint-disable-next-line no-console
+                    console.error('Error deleting file from S3:', s3Error);
+                    // No fallar la operación si S3 falla, ya que el archivo ya se eliminó de la BD
+                }
+
+                return {
+                    success: true,
+                    task: updatedTask,
+                    message: 'Archivo adjunto eliminado correctamente',
+                };
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('Error removing task attachment:', error);
+                return {
+                    success: false,
+                    message: 'Error al eliminar archivo adjunto',
                 };
             }
         },

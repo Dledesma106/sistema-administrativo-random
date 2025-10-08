@@ -4,12 +4,14 @@ import { useRouter } from 'next/router';
 
 import { DownloadIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
 import { expenseColumns } from './columns';
 
 import { GetTaskQuery, TaskStatus, TaskType } from '@/api/graphql';
+import Modal from '@/components/Modal';
 import { Badge } from '@/components/ui/Badges/badge';
 import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
 import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
@@ -23,6 +25,7 @@ import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useFileUpload } from '@/hooks/api/file/useFileUpload';
 import { useGetTask } from '@/hooks/api/tasks/useGetTask';
+import { useRemoveTaskAttachment } from '@/hooks/api/tasks/useRemoveTaskAttachment';
 import { useUpdateTaskAdministrative } from '@/hooks/api/tasks/useUpdateTaskAdministrative';
 import { useUpdateTaskStatus } from '@/hooks/api/tasks/useUpdateTaskStatus';
 import { routesBuilder } from '@/lib/routes';
@@ -39,13 +42,17 @@ const Content: React.FC<Props> = ({ task }) => {
     const { user } = useUserContext();
     const { mutateAsync: updateTaskStatus } = useUpdateTaskStatus();
     const { mutateAsync: updateTaskAdministrative } = useUpdateTaskAdministrative();
-    const { files, isUploading, uploadFiles, addFiles, removeFile } = useFileUpload();
+    const { mutateAsync: removeTaskAttachment } = useRemoveTaskAttachment();
+    const { files, isUploading, uploadFiles, addFiles, removeFile, clearFiles } =
+        useFileUpload();
     const router = useRouter();
 
     const [administrativeNotes, setAdministrativeNotes] = useState<string>(
         task.administrativeNotes || '',
     );
     const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
     const handleAdministrativeNotesUpdate = async () => {
         await updateTaskAdministrative({
@@ -65,8 +72,12 @@ const Content: React.FC<Props> = ({ task }) => {
         if (!event.target.files || event.target.files.length === 0) {
             return;
         }
+
         const newFiles = Array.from(event.target.files);
         addFiles(newFiles);
+
+        // Resetear el input para permitir seleccionar el mismo archivo
+        event.target.value = '';
     };
 
     const handleSaveFiles = async () => {
@@ -89,10 +100,33 @@ const Content: React.FC<Props> = ({ task }) => {
             });
 
             // Limpiar la lista de archivos después de subirlos exitosamente
-            files.forEach((_, index) => removeFile(index));
+            clearFiles();
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Error uploading files:', error);
+        }
+    };
+
+    const handleRemoveAttachment = (fileKey: string) => {
+        setFileToDelete(fileKey);
+        setDeleteModal(true);
+    };
+
+    const confirmDeleteAttachment = async () => {
+        if (!fileToDelete) {
+            return;
+        }
+
+        try {
+            await removeTaskAttachment({
+                id: task.id,
+                fileKey: fileToDelete,
+            });
+            setDeleteModal(false);
+            setFileToDelete(null);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error removing attachment:', error);
         }
     };
 
@@ -408,54 +442,88 @@ const Content: React.FC<Props> = ({ task }) => {
                 </section>
 
                 {/* Archivos adjuntos administrativos existentes */}
-                {task.attachmentFiles && task.attachmentFiles.length > 0 && (
-                    <section>
-                        <Title>Archivos adjuntos</Title>
-                        <div className="flex flex-wrap gap-4">
-                            {task.attachmentFiles.map((file: any) => (
-                                <div key={file.key}>
-                                    {file.mimeType &&
-                                    file.mimeType.startsWith('image/') ? (
-                                        <ImageViewer
-                                            src={file.url}
-                                            alt={file.filename || ''}
-                                            filename={file.filename || ''}
-                                            showPreviewButton={true}
-                                            className="aspect-square object-contain transition-all duration-300"
-                                            previewClassName="group relative aspect-square overflow-hidden rounded-md border border-accent"
-                                        />
-                                    ) : file.mimeType &&
-                                      file.mimeType.startsWith('application/pdf') ? (
-                                        <div className="h-[600px] w-full">
+                {user.roles.includes('AdministrativoContable') &&
+                    task.attachmentFiles &&
+                    task.attachmentFiles.length > 0 && (
+                        <section>
+                            <Title>Archivos adjuntos</Title>
+                            <div className="flex flex-wrap gap-4">
+                                {task.attachmentFiles.map((file: any) => (
+                                    <div key={file.key} className="group relative">
+                                        {file.mimeType &&
+                                        file.mimeType.startsWith('image/') ? (
+                                            <div className="relative">
+                                                <ImageViewer
+                                                    src={file.url}
+                                                    alt={file.filename || ''}
+                                                    filename={file.filename || ''}
+                                                    showPreviewButton={true}
+                                                    className="aspect-square object-contain transition-all duration-300"
+                                                    previewClassName="group relative aspect-square overflow-hidden rounded-md border border-accent"
+                                                />
+                                                {user?.roles?.includes(
+                                                    'AdministrativoContable',
+                                                ) && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="absolute left-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+                                                        onClick={() =>
+                                                            handleRemoveAttachment(
+                                                                file.key,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ) : file.mimeType &&
+                                          file.mimeType.startsWith('application/pdf') ? (
                                             <PDFViewer
                                                 url={file.url}
                                                 filename={file.filename || ''}
                                                 showPreviewButton={false}
+                                                className="h-[600px] w-full"
+                                                deletable={user?.roles?.includes(
+                                                    'AdministrativoContable',
+                                                )}
+                                                onDelete={() =>
+                                                    handleRemoveAttachment(file.key)
+                                                }
                                             />
-                                        </div>
-                                    ) : (
-                                        <Button
-                                            className="w-full"
-                                            variant="outline"
-                                            asChild
-                                        >
-                                            <a
-                                                className="inline-flex items-center gap-2"
-                                                href={file.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                <DownloadIcon className="size-5" />
-                                                {file.filename}
-                                            </a>
-                                        </Button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                                        ) : (
+                                            <div className="relative">
+                                                <Button
+                                                    className="w-full"
+                                                    variant="outline"
+                                                    asChild
+                                                >
+                                                    <a
+                                                        className="inline-flex items-center gap-2"
+                                                        href={file.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        <DownloadIcon className="size-5" />
+                                                        {file.filename}
+                                                    </a>
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
             </div>
+
+            <Modal
+                openModal={deleteModal}
+                handleToggleModal={() => setDeleteModal(false)}
+                action={confirmDeleteAttachment}
+                msg="¿Seguro que quiere eliminar este archivo adjunto?"
+            />
         </main>
     );
 };

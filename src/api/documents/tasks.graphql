@@ -265,3 +265,21 @@ mutation UpdateTaskAdministrative($id: String!, $input: UpdateTaskAdministrative
         }
     }
 }
+
+mutation RemoveTaskAttachment($id: String!, $fileKey: String!) {
+    removeTaskAttachment(id: $id, fileKey: $fileKey) {
+        success
+        message
+        task {
+            id
+            attachmentFiles {
+                key
+                filename
+                url
+                mimeType
+                size
+                urlExpire
+            }
+        }
+    }
+}
