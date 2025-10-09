@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import dayjs from 'dayjs';
-import { Eye } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { GetExpenseQuery, ExpenseStatus } from '@/api/graphql';
+import Modal from '@/components/Modal';
 import ExpenseInvoiceTypeBadge from '@/components/ui/Badges/ExpenseInvoiceTypeBadge';
 import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge';
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
@@ -17,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
 import { useGetExpense } from '@/hooks/api/expenses/useGetExpense';
+import { useRemoveExpenseAttachment } from '@/hooks/api/expenses/useRemoveExpenseAttachment';
 import { useUpdateExpenseAdministrative } from '@/hooks/api/expenses/useUpdateExpenseAdministrative';
 import { useUpdateExpenseDiscountAmount } from '@/hooks/api/expenses/useUpdateExpenseDiscountAmount';
 import { useUpdateExpenseStatus } from '@/hooks/api/expenses/useUpdateExpenseStatus';
@@ -37,7 +39,9 @@ const Content: React.FC<Props> = ({ expense }) => {
     const { mutateAsync: updateExpenseStatus } = useUpdateExpenseStatus();
     const { mutateAsync: updateExpenseDiscountAmount } = useUpdateExpenseDiscountAmount();
     const { mutateAsync: updateExpenseAdministrative } = useUpdateExpenseAdministrative();
-    const { files, isUploading, uploadFiles, addFiles, removeFile } = useFileUpload();
+    const { mutateAsync: removeExpenseAttachment } = useRemoveExpenseAttachment();
+    const { files, isUploading, uploadFiles, addFiles, removeFile, clearFiles } =
+        useFileUpload();
 
     const [discountAmount, setDiscountAmount] = useState<string>(
         expense.discountAmount ? expense.discountAmount.toString() : '',
@@ -47,6 +51,8 @@ const Content: React.FC<Props> = ({ expense }) => {
         expense.administrativeNotes || '',
     );
     const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState<string | null>(null);
 
     const handleStatusUpdate = async (status: ExpenseStatus) => {
         await updateExpenseStatus({
@@ -96,6 +102,9 @@ const Content: React.FC<Props> = ({ expense }) => {
 
         const newFiles = Array.from(event.target.files);
         addFiles(newFiles);
+
+        // Resetear el input para permitir seleccionar el mismo archivo
+        event.target.value = '';
     };
 
     const handleSaveFiles = async () => {
@@ -117,9 +126,35 @@ const Content: React.FC<Props> = ({ expense }) => {
                     sizes: fileInfo.map((f) => f.size),
                 },
             });
+
+            // Limpiar la lista de archivos después de subirlos exitosamente
+            clearFiles();
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error('Error uploading files:', error);
+        }
+    };
+
+    const handleRemoveAttachment = (fileKey: string) => {
+        setFileToDelete(fileKey);
+        setDeleteModal(true);
+    };
+
+    const confirmDeleteAttachment = async () => {
+        if (!fileToDelete) {
+            return;
+        }
+
+        try {
+            await removeExpenseAttachment({
+                id: expense.id,
+                fileKey: fileToDelete,
+            });
+            setDeleteModal(false);
+            setFileToDelete(null);
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error removing attachment:', error);
         }
     };
 
@@ -282,11 +317,13 @@ const Content: React.FC<Props> = ({ expense }) => {
                                 {expense.files.map((file) => (
                                     <div key={file.id}>
                                         {file.mimeType &&
-                                        file.mimeType.startsWith('image/') ? (
-                                            <ImageViewer
-                                                src={file.url}
-                                                alt={file.filename}
-                                                className="size-32 rounded-lg object-cover"
+                                        file.mimeType.startsWith('application/pdf') ? (
+                                            <PDFViewer
+                                                url={file.url}
+                                                filename={file.filename}
+                                                showPreviewButton={false}
+                                                className="size-[200px]"
+                                                deletable={false}
                                             />
                                         ) : (
                                             <Button
@@ -433,42 +470,83 @@ const Content: React.FC<Props> = ({ expense }) => {
                             <Title>Archivos adjuntos</Title>
                             <div className="flex flex-wrap gap-4">
                                 {expense.attachmentFiles.map((file: any) => (
-                                    <div key={file.key}>
+                                    <div key={file.key} className="group relative">
                                         {file.mimeType &&
                                         file.mimeType.startsWith('image/') ? (
-                                            <ImageViewer
-                                                src={file.url}
-                                                alt={file.filename || ''}
-                                                filename={file.filename || ''}
-                                                showPreviewButton={true}
-                                                className="aspect-square object-contain transition-all duration-300"
-                                                previewClassName="group relative aspect-square overflow-hidden rounded-md border border-accent"
-                                            />
+                                            <div className="relative">
+                                                <ImageViewer
+                                                    src={file.url}
+                                                    alt={file.filename || ''}
+                                                    filename={file.filename || ''}
+                                                    showPreviewButton={true}
+                                                    className="aspect-square object-contain transition-all duration-300"
+                                                    previewClassName="group relative aspect-square overflow-hidden rounded-md border border-accent"
+                                                />
+                                                {user?.roles?.includes(
+                                                    'AdministrativoContable',
+                                                ) && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="absolute left-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+                                                        onClick={() =>
+                                                            handleRemoveAttachment(
+                                                                file.key,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         ) : file.mimeType &&
                                           file.mimeType.startsWith('application/pdf') ? (
-                                            <div className="h-[600px] w-full">
-                                                <PDFViewer
-                                                    url={file.url}
-                                                    filename={file.filename || ''}
-                                                    showPreviewButton={false}
-                                                />
-                                            </div>
+                                            <PDFViewer
+                                                url={file.url}
+                                                filename={file.filename || ''}
+                                                showPreviewButton={false}
+                                                className="h-[600px] w-full"
+                                                deletable={user?.roles?.includes(
+                                                    'AdministrativoContable',
+                                                )}
+                                                onDelete={() =>
+                                                    handleRemoveAttachment(file.key)
+                                                }
+                                            />
                                         ) : (
-                                            <Button
-                                                className="w-full"
-                                                variant="outline"
-                                                asChild
-                                            >
-                                                <a
-                                                    className="inline-flex items-center gap-2"
-                                                    href={file.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                            <div className="relative">
+                                                <Button
+                                                    className="w-full"
+                                                    variant="outline"
+                                                    asChild
                                                 >
-                                                    <Eye className="size-5" />
-                                                    {file.filename}
-                                                </a>
-                                            </Button>
+                                                    <a
+                                                        className="inline-flex items-center gap-2"
+                                                        href={file.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        <Eye className="size-5" />
+                                                        {file.filename}
+                                                    </a>
+                                                </Button>
+                                                {user?.roles?.includes(
+                                                    'AdministrativoContable',
+                                                ) && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="absolute left-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+                                                        onClick={() =>
+                                                            handleRemoveAttachment(
+                                                                file.key,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 ))}
@@ -477,6 +555,13 @@ const Content: React.FC<Props> = ({ expense }) => {
                     )}
                 </section>
             </div>
+
+            <Modal
+                openModal={deleteModal}
+                handleToggleModal={() => setDeleteModal(false)}
+                action={confirmDeleteAttachment}
+                msg="¿Seguro que quiere eliminar este archivo adjunto?"
+            />
         </main>
     );
 };

@@ -94,6 +94,15 @@ query GetTask($id: String!) {
         description
         actNumber
         observations
+        administrativeNotes
+        attachmentFiles {
+            url
+            mimeType
+            filename
+            key
+            size
+            urlExpire
+        }
         clientName
         businessName
         preventive {
@@ -235,5 +244,42 @@ mutation DownloadTaskPhotos(
         success
         url
         message
+    }
+}
+
+mutation UpdateTaskAdministrative($id: String!, $input: UpdateTaskAdministrativeInput!) {
+    updateTaskAdministrative(id: $id, input: $input) {
+        success
+        message
+        task {
+            id
+            administrativeNotes
+            attachmentFiles {
+                url
+                mimeType
+                filename
+                key
+                size
+                urlExpire
+            }
+        }
+    }
+}
+
+mutation RemoveTaskAttachment($id: String!, $fileKey: String!) {
+    removeTaskAttachment(id: $id, fileKey: $fileKey) {
+        success
+        message
+        task {
+            id
+            attachmentFiles {
+                key
+                filename
+                url
+                mimeType
+                size
+                urlExpire
+            }
+        }
     }
 }

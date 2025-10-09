@@ -210,3 +210,21 @@ mutation UpdateExpenseAdministrative(
         }
     }
 }
+
+mutation RemoveExpenseAttachment($id: String!, $fileKey: String!) {
+    removeExpenseAttachment(id: $id, fileKey: $fileKey) {
+        success
+        message
+        expense {
+            id
+            attachmentFiles {
+                key
+                filename
+                url
+                mimeType
+                size
+                urlExpire
+            }
+        }
+    }
+}
