@@ -521,6 +521,7 @@ enum ServiceOrderStatus {
   Pendiente
   EnProgreso
   Finalizada
+  ParaFacturar
 }
 
 model ServiceOrder {
