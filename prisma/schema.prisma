@@ -474,6 +474,23 @@ type Contact {
   notes    String
 }
 
+type ExpectedExpense {
+  type      ExpenseType
+  unitPrice Float?
+  quantity  Float?
+  amount    Float?
+}
+
+type BudgetBranch {
+  name String?
+  number Int?
+}
+
+type Manpower {
+  technician String
+  payAmount   Float
+}
+
 enum BudgetStatus {
   Borrador
   Enviado
@@ -490,12 +507,18 @@ model Budget {
   deletedAt DateTime? @db.Date
 
   // Información básica del presupuesto
+  budgetNumber Int @unique
   subject     String // Asunto
   description String? // Descripción
   price       Float // Precio
   status      BudgetStatus @default(Borrador)
   clientName  String? // Nombre del cliente
-
+  expectedExpenses ExpectedExpense[]
+  manpower Manpower[]
+  markup Float?
+  budgetBranch BudgetBranch?
+  totalExpectedExpenses Float
+  
   // Integración con Gmail
   gmailThreadId String? // ID de la cadena de mail
 

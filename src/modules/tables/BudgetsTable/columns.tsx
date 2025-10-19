@@ -24,9 +24,9 @@ export const useBudgetsTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 h-4 w-4" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="ml-1 h-4 w-4" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -86,9 +86,9 @@ export const useBudgetsTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 h-4 w-4" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="ml-1 h-4 w-4" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -136,9 +136,9 @@ export const useBudgetsTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 h-4 w-4" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="ml-1 h-4 w-4" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -155,6 +155,20 @@ export const useBudgetsTableColumns = () => [
         },
         enableSorting: true,
     }),
+    columnHelper.accessor('totalExpectedExpenses', {
+        id: 'totalExpectedExpenses',
+        header: () => <span>Total Gastos Estimados</span>,
+        cell: (info) => {
+            const totalExpectedExpenses = info.getValue();
+            const totalManpower = info.row.original.manpower.reduce(
+                (sum, worker) => sum + worker.payAmount,
+                0,
+            );
+            const total = totalExpectedExpenses + totalManpower;
+            return <span className="font-medium">${total.toLocaleString('es-AR')}</span>;
+        },
+        enableSorting: true,
+    }),
     columnHelper.accessor('price', {
         id: 'price',
         header: ({ column }) => {
@@ -167,9 +181,9 @@ export const useBudgetsTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 h-4 w-4" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="ml-1 h-4 w-4" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}
@@ -201,9 +215,9 @@ export const useBudgetsTableColumns = () => [
                     {column.getIsSorted() && (
                         <span>
                             {column.getIsSorted() === 'asc' ? (
-                                <ArrowUp className="ml-1 h-4 w-4" />
+                                <ArrowUp className="ml-1 size-4" />
                             ) : (
-                                <ArrowDown className="ml-1 h-4 w-4" />
+                                <ArrowDown className="ml-1 size-4" />
                             )}
                         </span>
                     )}

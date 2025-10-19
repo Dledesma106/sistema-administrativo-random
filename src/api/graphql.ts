@@ -20,16 +20,6 @@ export type Scalars = {
     JSON: any;
 };
 
-export type AttachmentFile = {
-    __typename?: 'AttachmentFile';
-    filename: Scalars['String'];
-    key: Scalars['String'];
-    mimeType: Scalars['String'];
-    size: Scalars['Int'];
-    url: Scalars['String'];
-    urlExpire: Maybe<Scalars['DateTime']>;
-};
-
 export const AccountType = {
     CajaDeAhorro: 'CajaDeAhorro',
     CuentaCorriente: 'CuentaCorriente',
@@ -46,6 +36,16 @@ export const AlicuotaIva = {
 } as const;
 
 export type AlicuotaIva = (typeof AlicuotaIva)[keyof typeof AlicuotaIva];
+export type AttachmentFile = {
+    __typename?: 'AttachmentFile';
+    filename: Scalars['String'];
+    key: Scalars['String'];
+    mimeType: Scalars['String'];
+    size: Scalars['Int'];
+    url: Scalars['String'];
+    urlExpire: Maybe<Scalars['DateTime']>;
+};
+
 export type AuthResult = {
     __typename?: 'AuthResult';
     message: Maybe<Scalars['String']>;
@@ -249,6 +249,8 @@ export type Budget = {
     __typename?: 'Budget';
     billingProfile: BillingProfile;
     branch: Maybe<Branch>;
+    budgetBranch: Maybe<BudgetBranch>;
+    budgetNumber: Scalars['Int'];
     client: Maybe<Client>;
     clientName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
@@ -256,11 +258,26 @@ export type Budget = {
     deleted: Scalars['Boolean'];
     deletedAt: Maybe<Scalars['DateTime']>;
     description: Maybe<Scalars['String']>;
+    expectedExpenses: Array<ExpectedExpense>;
     id: Scalars['ID'];
+    manpower: Array<Manpower>;
+    markup: Maybe<Scalars['Float']>;
     price: Scalars['Float'];
     status: BudgetStatus;
     subject: Scalars['String'];
+    totalExpectedExpenses: Scalars['Float'];
     updatedAt: Scalars['DateTime'];
+};
+
+export type BudgetBranch = {
+    __typename?: 'BudgetBranch';
+    name: Maybe<Scalars['String']>;
+    number: Maybe<Scalars['Int']>;
+};
+
+export type BudgetBranchInput = {
+    name: InputMaybe<Scalars['String']>;
+    number: InputMaybe<Scalars['Int']>;
 };
 
 export type BudgetCrudResult = {
@@ -273,9 +290,13 @@ export type BudgetCrudResult = {
 export type BudgetInput = {
     billingProfileId: Scalars['String'];
     branchId: InputMaybe<Scalars['String']>;
+    budgetBranch: InputMaybe<BudgetBranchInput>;
     clientId: InputMaybe<Scalars['String']>;
     clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
+    expectedExpenses: InputMaybe<Array<ExpectedExpenseInput>>;
+    manpower: InputMaybe<Array<ManpowerInput>>;
+    markup: InputMaybe<Scalars['Float']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -396,6 +417,7 @@ export type ContactInput = {
 export type CreateBudgetWithBillingProfileInput = {
     billingProfileId: InputMaybe<Scalars['String']>;
     branchId: InputMaybe<Scalars['String']>;
+    budgetBranch: InputMaybe<BudgetBranchInput>;
     businessBillingEmail: InputMaybe<Scalars['String']>;
     businessCUIT: InputMaybe<Scalars['String']>;
     businessComercialAddress: InputMaybe<Scalars['String']>;
@@ -407,6 +429,9 @@ export type CreateBudgetWithBillingProfileInput = {
     clientName: InputMaybe<Scalars['String']>;
     contacts: InputMaybe<Array<ContactInput>>;
     description: InputMaybe<Scalars['String']>;
+    expectedExpenses: InputMaybe<Array<ExpectedExpenseInput>>;
+    manpower: InputMaybe<Array<ManpowerInput>>;
+    markup: InputMaybe<Scalars['Float']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -416,6 +441,21 @@ export type DownloadTaskPhotosResult = {
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     url: Maybe<Scalars['String']>;
+};
+
+export type ExpectedExpense = {
+    __typename?: 'ExpectedExpense';
+    amount: Scalars['Float'];
+    quantity: Scalars['Int'];
+    type: ExpenseType;
+    unitPrice: Scalars['Float'];
+};
+
+export type ExpectedExpenseInput = {
+    amount: Scalars['Float'];
+    quantity: InputMaybe<Scalars['Int']>;
+    type: ExpenseType;
+    unitPrice: Scalars['Float'];
 };
 
 export type Expense = {
@@ -622,6 +662,17 @@ export type LoginUserResult = {
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     user: Maybe<User>;
+};
+
+export type Manpower = {
+    __typename?: 'Manpower';
+    payAmount: Scalars['Float'];
+    technician: Scalars['String'];
+};
+
+export type ManpowerInput = {
+    payAmount: Scalars['Float'];
+    technician: Scalars['String'];
 };
 
 export type Mutation = {
@@ -1537,6 +1588,7 @@ export type ServiceOrderCrudResult = {
 export const ServiceOrderStatus = {
     EnProgreso: 'EnProgreso',
     Finalizada: 'Finalizada',
+    ParaFacturar: 'ParaFacturar',
     Pendiente: 'Pendiente',
 } as const;
 
@@ -1647,14 +1699,6 @@ export const TaskType = {
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
-export type UpdateExpenseAdministrativeInput = {
-    administrativeNotes: InputMaybe<Scalars['String']>;
-    fileKeys: InputMaybe<Array<Scalars['String']>>;
-    filenames: InputMaybe<Array<Scalars['String']>>;
-    mimeTypes: InputMaybe<Array<Scalars['String']>>;
-    sizes: InputMaybe<Array<Scalars['Int']>>;
-};
-
 export type UpdateBillingProfileInput = {
     CUIT: InputMaybe<Scalars['String']>;
     IVACondition: InputMaybe<IvaCondition>;
@@ -1666,15 +1710,27 @@ export type UpdateBillingProfileInput = {
 
 export type UpdateBudgetInput = {
     branchId: InputMaybe<Scalars['String']>;
+    budgetBranch: InputMaybe<BudgetBranchInput>;
     clientId: InputMaybe<Scalars['String']>;
     clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
+    expectedExpenses: InputMaybe<Array<ExpectedExpenseInput>>;
+    manpower: InputMaybe<Array<ManpowerInput>>;
+    markup: InputMaybe<Scalars['Float']>;
     price: InputMaybe<Scalars['Float']>;
     subject: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateBudgetStatusInput = {
     status: BudgetStatus;
+};
+
+export type UpdateExpenseAdministrativeInput = {
+    administrativeNotes: InputMaybe<Scalars['String']>;
+    fileKeys: InputMaybe<Array<Scalars['String']>>;
+    filenames: InputMaybe<Array<Scalars['String']>>;
+    mimeTypes: InputMaybe<Array<Scalars['String']>>;
+    sizes: InputMaybe<Array<Scalars['Int']>>;
 };
 
 export type UpdateMyTaskInput = {
@@ -2094,6 +2150,20 @@ export type GetBudgetsQuery = {
         clientName: string | null;
         createdAt: any;
         updatedAt: any;
+        markup: number | null;
+        totalExpectedExpenses: number;
+        expectedExpenses: Array<{
+            __typename?: 'ExpectedExpense';
+            type: ExpenseType;
+            unitPrice: number;
+            quantity: number;
+            amount: number;
+        }>;
+        manpower: Array<{
+            __typename?: 'Manpower';
+            technician: string;
+            payAmount: number;
+        }>;
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
@@ -2119,6 +2189,7 @@ export type GetBudgetByIdQuery = {
     budgetById: {
         __typename?: 'Budget';
         id: string;
+        budgetNumber: number;
         subject: string;
         description: string | null;
         price: number;
@@ -2126,6 +2197,25 @@ export type GetBudgetByIdQuery = {
         clientName: string | null;
         createdAt: any;
         updatedAt: any;
+        markup: number | null;
+        totalExpectedExpenses: number;
+        expectedExpenses: Array<{
+            __typename?: 'ExpectedExpense';
+            type: ExpenseType;
+            unitPrice: number;
+            quantity: number;
+            amount: number;
+        }>;
+        manpower: Array<{
+            __typename?: 'Manpower';
+            technician: string;
+            payAmount: number;
+        }>;
+        budgetBranch: {
+            __typename?: 'BudgetBranch';
+            name: string | null;
+            number: number | null;
+        } | null;
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
@@ -5607,6 +5697,68 @@ export const GetBudgetsDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'expectedExpenses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'type' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'unitPrice',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'quantity' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'manpower' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'technician',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'payAmount',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'markup' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: {
+                                        kind: 'Name',
+                                        value: 'totalExpectedExpenses',
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'billingProfile' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -5760,6 +5912,10 @@ export const GetBudgetByIdDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'budgetNumber' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'subject' },
                                 },
                                 {
@@ -5782,6 +5938,85 @@ export const GetBudgetByIdDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expectedExpenses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'type' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'unitPrice',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'quantity' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'manpower' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'technician',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'payAmount',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'markup' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'budgetBranch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'number' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: {
+                                        kind: 'Name',
+                                        value: 'totalExpectedExpenses',
+                                    },
                                 },
                                 {
                                     kind: 'Field',

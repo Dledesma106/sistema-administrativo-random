@@ -32,6 +32,13 @@ export default function EditBudget(): JSX.Element {
         subject: budget.subject,
         description: budget.description!,
         price: budget.price,
+        expectedExpenses: budget.expectedExpenses,
+        manpower: budget.manpower,
+        markup: budget.markup ?? 0,
+        budgetBranch: budget.budgetBranch ?? {
+            name: '',
+            number: null,
+        },
         billingProfile: {
             business: budget.billingProfile.business.id,
             businessName: budget.billingProfile.business.name,
