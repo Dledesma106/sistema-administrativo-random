@@ -1,17 +1,24 @@
 import { useRouter } from 'next/navigation';
 
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 
 import BillingProfileDisplay from './BillingProfileDisplay';
 import CreateOrUpdateBillingProfileForm, {
     FormValues as BillingProfileFormValues,
 } from './CreateOrUpdateBillingProfileForm';
 
-import { GetBusinessesQuery } from '@/api/graphql';
+import {
+    GetBusinessesQuery,
+    ExpectedExpense,
+    Manpower,
+    BudgetBranch,
+    ExpenseType,
+} from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
+// import { Checkbox } from '@/components/ui/checkbox';
 import {
     Form,
     FormControl,
@@ -28,8 +35,10 @@ import { useGetBillingProfileByBusinessId } from '@/hooks/api/billingProfile';
 import { useCreateBudget } from '@/hooks/api/budget/useCreateBudget';
 import { useCreateBudgetWithBillingProfile } from '@/hooks/api/budget/useCreateBudgetWithBillingProfile';
 import { useUpdateBudget } from '@/hooks/api/budget/useUpdateBudget';
+// import { useGetCities } from '@/hooks/api/city/useGetCities';
 import { useGetClientsByBusiness } from '@/hooks/api/client/useGetClientsByBusiness';
-import { getCleanErrorMessage } from '@/lib/utils';
+import { useGetTechnicians } from '@/hooks/api/user/useGetTechnicians';
+import { getCleanErrorMessage, pascalCaseToSpaces } from '@/lib/utils';
 
 type FormValues = {
     client?: string | null;
@@ -40,6 +49,15 @@ type FormValues = {
     subject?: string;
     price?: number;
     billingProfile?: BillingProfileFormValues;
+    expectedExpenses?: ExpectedExpense[];
+    manpower?: Manpower[];
+    markup?: number;
+    budgetBranch?: BudgetBranch;
+    createBranch?: boolean;
+    createClient?: boolean;
+    branchCityId?: string;
+    // Campos dinámicos para field arrays
+    [key: string]: any;
 };
 
 type Props = {
@@ -64,7 +82,17 @@ const CreateOrUpdateBudgetForm = ({
             clientName: '',
             subject: '',
             description: '',
-            price: 0,
+            price: undefined,
+            expectedExpenses: [],
+            manpower: [],
+            markup: undefined,
+            budgetBranch: {
+                name: '',
+                number: undefined,
+            },
+            createBranch: false,
+            createClient: false,
+            branchCityId: '',
             billingProfile: {
                 businessName: '',
                 cuit: '',
@@ -97,18 +125,164 @@ const CreateOrUpdateBudgetForm = ({
     // Usar clientes filtrados por empresa si hay una empresa seleccionada, sino usar todos los clientes
     const availableClients = clientsByBusinessData?.clientsByBusiness;
 
+    // Obtener técnicos y ciudades
+    const { data: techniciansData } = useGetTechnicians({});
+    // const { data: citiesData } = useGetCities({});
+
+    // Configurar field arrays para gastos estimados y mano de obra
+    const {
+        fields: expectedExpensesFields,
+        append: appendExpectedExpense,
+        remove: removeExpectedExpense,
+    } = useFieldArray({
+        control: form.control,
+        name: 'expectedExpenses',
+    });
+
+    const {
+        fields: manpowerFields,
+        append: appendManpower,
+        remove: removeManpower,
+    } = useFieldArray({
+        control: form.control,
+        name: 'manpower',
+    });
+
+    // Tipos de gastos disponibles
+    const expenseTypes: { value: string; label: string }[] = Object.values(
+        ExpenseType,
+    ).map((type) => ({
+        value: type,
+        label: pascalCaseToSpaces(type),
+    }));
+
+    // Calcular totales
+    const expectedExpenses = form.watch('expectedExpenses') || [];
+    const manpower = form.watch('manpower') || [];
+    const markup = form.watch('markup') || 0;
+
+    const totalExpectedExpenses = expectedExpenses.reduce(
+        (sum, expense) => sum + (expense.amount || 0),
+        0,
+    );
+    const totalManpower = manpower.reduce(
+        (sum, worker) => sum + (worker.payAmount || 0),
+        0,
+    );
+    const subtotal = totalExpectedExpenses + totalManpower;
+    const finalPrice = subtotal * (1 + (markup || 0) / 100);
+
+    // Función para calcular el monto de un gasto estimado
+    const calculateExpenseAmount = (
+        unitPrice: number,
+        quantity: number,
+        type: string,
+    ) => {
+        if (type === 'Combustible') {
+            return unitPrice; // Para combustible no se multiplica por cantidad
+        }
+        return unitPrice * quantity;
+    };
+
+    // Función para agregar un gasto estimado
+    const addExpectedExpense = () => {
+        appendExpectedExpense({
+            type: 'Combustible',
+            unitPrice: 0,
+            quantity: 1,
+            amount: 0,
+        });
+    };
+
+    // Función para agregar mano de obra
+    const addManpower = () => {
+        appendManpower({
+            technician: 'other',
+            payAmount: 0,
+        });
+    };
+
+    // Actualizar precio automáticamente
+    useEffect(() => {
+        form.setValue('price', finalPrice);
+    }, [finalPrice, form]);
+
+    // Flag para evitar múltiples ejecuciones
+    const [hasInitialized, setHasInitialized] = useState(false);
+
     // Establecer valores por defecto cuando se carguen los datos
     useEffect(() => {
-        if (defaultValues) {
-            form.reset(defaultValues);
+        if (defaultValues && !hasInitialized && techniciansData) {
+            // Usar setTimeout para evitar problemas de focus
+            setTimeout(() => {
+                form.reset(defaultValues);
 
-            // Si hay un clientName, significa que es un cliente externo
-            // Establecer automáticamente "Otro" en el dropdown de cliente
-            if (defaultValues.clientName && !defaultValues.client) {
-                form.setValue('client', 'other');
-            }
+                // Si hay un clientName, significa que es un cliente externo
+                // Establecer automáticamente "Otro" en el dropdown de cliente
+                if (defaultValues.clientName && !defaultValues.client) {
+                    form.setValue('client', 'other');
+                }
+
+                // Cargar gastos estimados si existen
+                if (
+                    defaultValues.expectedExpenses &&
+                    defaultValues.expectedExpenses.length > 0
+                ) {
+                    // Limpiar los field arrays existentes primero
+                    const currentExpensesLength = expectedExpensesFields.length;
+                    for (let i = currentExpensesLength - 1; i >= 0; i--) {
+                        removeExpectedExpense(i);
+                    }
+                    // Agregar los gastos estimados
+                    defaultValues.expectedExpenses.forEach((expense) => {
+                        appendExpectedExpense(expense);
+                    });
+                }
+
+                // Cargar mano de obra si existe
+                if (defaultValues.manpower && defaultValues.manpower.length > 0) {
+                    // Limpiar los field arrays existentes primero
+                    const currentManpowerLength = manpowerFields.length;
+                    for (let i = currentManpowerLength - 1; i >= 0; i--) {
+                        removeManpower(i);
+                    }
+                    // Agregar la mano de obra con lógica de selección de técnico
+                    defaultValues.manpower.forEach((worker) => {
+                        // Buscar si el técnico existe en la lista de técnicos
+                        const technicianInList = techniciansData?.technicians?.find(
+                            (tech) => tech.fullName === worker.technician,
+                        );
+
+                        if (technicianInList) {
+                            // Si se encuentra, usar el ID del técnico
+                            appendManpower({
+                                technician: technicianInList.id,
+                                payAmount: worker.payAmount,
+                            });
+                        } else {
+                            // Si no se encuentra, usar "Otro" y poner el nombre
+                            appendManpower({
+                                technician: 'other',
+                                payAmount: worker.payAmount,
+                                technicianName: worker.technician, // Campo adicional para el nombre
+                            } as any);
+                        }
+                    });
+                }
+
+                setHasInitialized(true);
+            }, 0);
         }
-    }, [defaultValues, form]);
+    }, [
+        defaultValues,
+        hasInitialized,
+        form,
+        appendExpectedExpense,
+        appendManpower,
+        removeExpectedExpense,
+        removeManpower,
+        techniciansData,
+    ]);
 
     // Limpiar cliente seleccionado cuando cambie la empresa (solo si no estamos en modo edición)
     useEffect(() => {
@@ -128,6 +302,38 @@ const CreateOrUpdateBudgetForm = ({
                 throw new Error('Debe seleccionar una empresa');
             }
 
+            // Procesar gastos estimados - filtrar los que tienen valor 0
+            const processedExpectedExpenses = (formData.expectedExpenses || [])
+                .filter((expense) => expense.amount && expense.amount > 0)
+                .map((expense) => ({
+                    type: expense.type,
+                    unitPrice: expense.unitPrice || 0,
+                    quantity: expense.quantity || 1,
+                    amount: expense.amount || 0,
+                }));
+
+            // Procesar mano de obra para manejar técnicos "Otro"
+            const processedManpower = (formData.manpower || [])
+                .filter((worker) => worker.payAmount && worker.payAmount > 0)
+                .map((worker) => {
+                    if (worker.technician === 'other') {
+                        // Si es "Otro", usar el nombre del técnico ingresado
+                        const technicianName = (worker as any).technicianName;
+                        return {
+                            technician: technicianName || 'Técnico no especificado',
+                            payAmount: worker.payAmount || 0,
+                        };
+                    }
+                    // Si es un técnico de la base de datos, buscar su nombre
+                    const technician = techniciansData?.technicians?.find(
+                        (tech) => tech.id === worker.technician,
+                    );
+                    return {
+                        technician: technician?.fullName || worker.technician,
+                        payAmount: worker.payAmount || 0,
+                    };
+                });
+
             if (budgetIdToUpdate) {
                 // Para actualizar, usar la mutación normal
                 const billingProfileId =
@@ -144,6 +350,10 @@ const CreateOrUpdateBudgetForm = ({
                     clientId:
                         formData.client === 'other' ? null : formData.client || null,
                     branchId: formData.branch || null,
+                    markup: formData.markup || 0,
+                    expectedExpenses: processedExpectedExpenses,
+                    manpower: processedManpower,
+                    budgetBranch: formData.budgetBranch || null,
                 };
 
                 const result = await updateBudget.mutateAsync({
@@ -179,6 +389,10 @@ const CreateOrUpdateBudgetForm = ({
                         clientId:
                             formData.client === 'other' ? null : formData.client || null,
                         branchId: formData.branch || null,
+                        markup: formData.markup || 0,
+                        expectedExpenses: processedExpectedExpenses,
+                        manpower: processedManpower,
+                        budgetBranch: formData.budgetBranch || null,
                     };
 
                     const result = await createBudget.mutateAsync({ input });
@@ -225,6 +439,10 @@ const CreateOrUpdateBudgetForm = ({
                         clientId:
                             formData.client === 'other' ? null : formData.client || null,
                         branchId: formData.branch || null,
+                        markup: formData.markup || 0,
+                        expectedExpenses: processedExpectedExpenses,
+                        manpower: processedManpower,
+                        budgetBranch: formData.budgetBranch || null,
                     };
 
                     const result = await createBudgetWithBillingProfile.mutateAsync({
@@ -295,69 +513,73 @@ const CreateOrUpdateBudgetForm = ({
                     />
 
                     {/* Formulario de Perfil de Facturación - Siempre visible */}
-                    <div className="space-y-4 rounded-lg border border-accent p-4">
-                        <div className="flex items-center justify-between">
-                            <TypographyH3>Perfil de Facturación</TypographyH3>
-                            {existingBillingProfile?.billingProfileByBusinessId && (
-                                <span className="text-sm text-muted-foreground">
-                                    Datos de la empresa seleccionada
-                                </span>
+                    {watchBusiness && (
+                        <div className="space-y-4 rounded-lg border border-accent p-4">
+                            <div className="flex items-center justify-between">
+                                <TypographyH3>Perfil de Facturación</TypographyH3>
+                                {existingBillingProfile?.billingProfileByBusinessId && (
+                                    <span className="text-sm text-muted-foreground">
+                                        Datos de la empresa seleccionada
+                                    </span>
+                                )}
+                            </div>
+
+                            {existingBillingProfile?.billingProfileByBusinessId ? (
+                                <BillingProfileDisplay
+                                    billingProfile={
+                                        existingBillingProfile.billingProfileByBusinessId
+                                    }
+                                    businessName={
+                                        businesses.find((b) => b.id === watchBusiness)
+                                            ?.name || 'Empresa'
+                                    }
+                                />
+                            ) : (
+                                <CreateOrUpdateBillingProfileForm
+                                    isEmbedded={true}
+                                    businessId={
+                                        !isNewBusiness ? watchBusiness : undefined
+                                    }
+                                    selectedBusiness={watchBusiness}
+                                    onSubmit={(billingData) => {
+                                        form.setValue(
+                                            'billingProfile.businessName',
+                                            billingData.businessName,
+                                        );
+                                        form.setValue(
+                                            'billingProfile.cuit',
+                                            billingData.cuit,
+                                        );
+                                        form.setValue(
+                                            'billingProfile.contacts',
+                                            billingData.contacts?.map((contact) => ({
+                                                name: contact.name,
+                                                email: contact.email,
+                                                phone: contact.phone,
+                                                notes: contact.notes,
+                                            })),
+                                        );
+                                        form.setValue(
+                                            'billingProfile.legalName',
+                                            billingData.legalName,
+                                        );
+                                        form.setValue(
+                                            'billingProfile.taxCondition',
+                                            billingData.taxCondition,
+                                        );
+                                        form.setValue(
+                                            'billingProfile.billingAddress',
+                                            billingData.billingAddress,
+                                        );
+                                        form.setValue(
+                                            'billingProfile.billingEmail',
+                                            billingData.billingEmail,
+                                        );
+                                    }}
+                                />
                             )}
                         </div>
-
-                        {existingBillingProfile?.billingProfileByBusinessId ? (
-                            <BillingProfileDisplay
-                                billingProfile={
-                                    existingBillingProfile.billingProfileByBusinessId
-                                }
-                                businessName={
-                                    businesses.find((b) => b.id === watchBusiness)
-                                        ?.name || 'Empresa'
-                                }
-                            />
-                        ) : (
-                            <CreateOrUpdateBillingProfileForm
-                                isEmbedded={true}
-                                businessId={!isNewBusiness ? watchBusiness : undefined}
-                                selectedBusiness={watchBusiness}
-                                onSubmit={(billingData) => {
-                                    form.setValue(
-                                        'billingProfile.businessName',
-                                        billingData.businessName,
-                                    );
-                                    form.setValue(
-                                        'billingProfile.cuit',
-                                        billingData.cuit,
-                                    );
-                                    form.setValue(
-                                        'billingProfile.contacts',
-                                        billingData.contacts?.map((contact) => ({
-                                            name: contact.name,
-                                            email: contact.email,
-                                            phone: contact.phone,
-                                            notes: contact.notes,
-                                        })),
-                                    );
-                                    form.setValue(
-                                        'billingProfile.legalName',
-                                        billingData.legalName,
-                                    );
-                                    form.setValue(
-                                        'billingProfile.taxCondition',
-                                        billingData.taxCondition,
-                                    );
-                                    form.setValue(
-                                        'billingProfile.billingAddress',
-                                        billingData.billingAddress,
-                                    );
-                                    form.setValue(
-                                        'billingProfile.billingEmail',
-                                        billingData.billingEmail,
-                                    );
-                                }}
-                            />
-                        )}
-                    </div>
+                    )}
 
                     {watchBusiness && (
                         <FormField
@@ -443,10 +665,16 @@ const CreateOrUpdateBudgetForm = ({
                                                 searchPlaceholder="Buscar sucursal"
                                                 value={field.value || ''}
                                                 onChange={field.onChange}
-                                                items={clientBranches?.map((branch) => ({
-                                                    label: `${branch.number ? `#${branch.number}, ` : ''}${branch.name ? `${branch.name} - ` : ''}${branch.city.name}`,
-                                                    value: branch.id,
-                                                }))}
+                                                items={[
+                                                    {
+                                                        label: 'Otro',
+                                                        value: 'other',
+                                                    },
+                                                    ...(clientBranches?.map((branch) => ({
+                                                        label: `${branch.number ? `#${branch.number}, ` : ''}${branch.name ? `${branch.name} - ` : ''}${branch.city.name}`,
+                                                        value: branch.id,
+                                                    })) || []),
+                                                ]}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -454,6 +682,155 @@ const CreateOrUpdateBudgetForm = ({
                                 )}
                             />
                         )}
+
+                    {/* Campos para sucursal "Otro" */}
+                    {form.watch('branch') === 'other' && (
+                        <div className="space-y-4 rounded-lg border border-accent p-4">
+                            <TypographyH3>Información de Sucursal</TypographyH3>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <FormField
+                                    name="budgetBranch.name"
+                                    control={form.control}
+                                    rules={{
+                                        validate: (value) => {
+                                            const number =
+                                                form.getValues('budgetBranch.number');
+                                            if (!value && !number) {
+                                                return 'Debe proporcionar al menos un nombre o número';
+                                            }
+                                            return true;
+                                        },
+                                    }}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Nombre de la Sucursal</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Nombre de la sucursal"
+                                                    {...field}
+                                                    value={field.value || ''}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    name="budgetBranch.number"
+                                    control={form.control}
+                                    rules={{
+                                        validate: (value) => {
+                                            const name =
+                                                form.getValues('budgetBranch.name');
+                                            if (!value && !name) {
+                                                return 'Debe proporcionar al menos un nombre o número';
+                                            }
+                                            return true;
+                                        },
+                                    }}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Número de la Sucursal</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="Número de la sucursal"
+                                                    {...field}
+                                                    value={field.value || ''}
+                                                    className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            parseInt(e.target.value) ||
+                                                            undefined;
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            {/* <FormField
+                                name="createBranch"
+                                control={form.control}
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>
+                                                Crear sucursal en la base de datos
+                                            </FormLabel>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            /> */}
+
+                            {/* {form.watch('createBranch') && (
+                                <FormField
+                                    name="branchCityId"
+                                    control={form.control}
+                                    rules={{
+                                        required: form.watch('createBranch')
+                                            ? 'Este campo es requerido'
+                                            : false,
+                                    }}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Ciudad</FormLabel>
+                                            <FormControl>
+                                                <Combobox
+                                                    selectPlaceholder="Seleccionar ciudad"
+                                                    searchPlaceholder="Buscar ciudad"
+                                                    value={field.value || ''}
+                                                    onChange={field.onChange}
+                                                    items={
+                                                        citiesData?.cities?.map(
+                                                            (city) => ({
+                                                                label: `${city.name} - ${city.province.name}`,
+                                                                value: city.id,
+                                                            }),
+                                                        ) || []
+                                                    }
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )} */}
+                        </div>
+                    )}
+
+                    {/* Checkbox para crear cliente - solo si se selecciona "Otro" */}
+                    {/* {form.watch('client') === 'other' && (
+                        <FormField
+                            name="createClient"
+                            control={form.control}
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                        />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                            Crear cliente en la base de datos
+                                        </FormLabel>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                    )} */}
 
                     <FormField
                         name="subject"
@@ -502,36 +879,323 @@ const CreateOrUpdateBudgetForm = ({
                         )}
                     />
 
-                    <FormField
-                        name="price"
-                        control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                            min: {
-                                value: 0,
-                                message: 'El precio debe ser mayor a 0',
-                            },
-                        }}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Precio</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Precio"
-                                        type="number"
-                                        {...field}
-                                        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                        onChange={(e) => {
-                                            const value = Number(e.target.value);
-                                            field.onChange(value);
-                                        }}
-                                        value={field.value || ''}
+                    {/* Gastos Estimados */}
+                    <div className="space-y-4 rounded-lg border border-accent p-4">
+                        <div className="flex items-center justify-between">
+                            <TypographyH3>Gastos Estimados</TypographyH3>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={addExpectedExpense}
+                            >
+                                Agregar Gasto
+                            </Button>
+                        </div>
+
+                        {expectedExpensesFields.map((field, index) => (
+                            <div
+                                key={field.id}
+                                className="grid grid-cols-1 items-end gap-4 md:grid-cols-5"
+                            >
+                                <FormField
+                                    name={`expectedExpenses.${index}.type`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Tipo</FormLabel>
+                                            <FormControl>
+                                                <Combobox
+                                                    selectPlaceholder="Seleccionar tipo"
+                                                    searchPlaceholder="Buscar tipo"
+                                                    value={field.value || ''}
+                                                    onChange={field.onChange}
+                                                    items={expenseTypes}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    name={`expectedExpenses.${index}.unitPrice`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Precio Unitario</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="0.00"
+                                                    {...field}
+                                                    className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            parseFloat(e.target.value) ||
+                                                            undefined;
+                                                        field.onChange(value);
+                                                        const quantity =
+                                                            form.getValues(
+                                                                `expectedExpenses.${index}.quantity`,
+                                                            ) || 1;
+                                                        const type =
+                                                            form.getValues(
+                                                                `expectedExpenses.${index}.type`,
+                                                            ) || '';
+                                                        const amount =
+                                                            calculateExpenseAmount(
+                                                                value || 0,
+                                                                quantity || 1,
+                                                                type,
+                                                            );
+                                                        form.setValue(
+                                                            `expectedExpenses.${index}.amount`,
+                                                            amount,
+                                                        );
+                                                    }}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    name={`expectedExpenses.${index}.quantity`}
+                                    control={form.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Cantidad</FormLabel>
+                                            <FormControl>
+                                                {form.watch(
+                                                    `expectedExpenses.${index}.type`,
+                                                ) === 'Combustible' ? (
+                                                    <Input
+                                                        type="number"
+                                                        min="1"
+                                                        placeholder="N/A"
+                                                        value=""
+                                                        disabled
+                                                        className="opacity-50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        type="number"
+                                                        min="1"
+                                                        placeholder="1"
+                                                        {...field}
+                                                        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                        onChange={(e) => {
+                                                            const value =
+                                                                parseInt(
+                                                                    e.target.value,
+                                                                ) || undefined;
+                                                            field.onChange(value);
+                                                            const unitPrice =
+                                                                form.getValues(
+                                                                    `expectedExpenses.${index}.unitPrice`,
+                                                                ) || 0;
+                                                            const type =
+                                                                form.getValues(
+                                                                    `expectedExpenses.${index}.type`,
+                                                                ) || '';
+                                                            const amount =
+                                                                calculateExpenseAmount(
+                                                                    unitPrice || 0,
+                                                                    value || 1,
+                                                                    type,
+                                                                );
+                                                            form.setValue(
+                                                                `expectedExpenses.${index}.amount`,
+                                                                amount,
+                                                            );
+                                                        }}
+                                                    />
+                                                )}
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <div className="flex items-center justify-center rounded-md bg-muted p-2">
+                                    <span className="font-medium">
+                                        $
+                                        {form.watch(`expectedExpenses.${index}.amount`) ||
+                                            0}
+                                    </span>
+                                </div>
+
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() => removeExpectedExpense(index)}
+                                >
+                                    Eliminar
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Mano de Obra */}
+                    <div className="space-y-4 rounded-lg border border-accent p-4">
+                        <div className="flex items-center justify-between">
+                            <TypographyH3>Mano de Obra</TypographyH3>
+                            <Button type="button" variant="outline" onClick={addManpower}>
+                                Agregar Técnico
+                            </Button>
+                        </div>
+
+                        {manpowerFields.map((field, index) => (
+                            <div
+                                key={field.id}
+                                className="space-y-4 rounded-lg border border-accent p-4"
+                            >
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <FormField
+                                        name={`manpower.${index}.technician`}
+                                        control={form.control}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Técnico</FormLabel>
+                                                <FormControl>
+                                                    <Combobox
+                                                        selectPlaceholder="Seleccionar técnico"
+                                                        searchPlaceholder="Buscar técnico"
+                                                        value={field.value || ''}
+                                                        onChange={field.onChange}
+                                                        items={[
+                                                            {
+                                                                label: 'Otro',
+                                                                value: 'other',
+                                                            },
+                                                            ...(techniciansData?.technicians?.map(
+                                                                (tech) => ({
+                                                                    label: tech.fullName,
+                                                                    value: tech.id,
+                                                                }),
+                                                            ) || []),
+                                                        ]}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
                                     />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+
+                                    <FormField
+                                        name={`manpower.${index}.payAmount`}
+                                        control={form.control}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Paga</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        placeholder="0.00"
+                                                        {...field}
+                                                        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                        onChange={(e) => {
+                                                            const value =
+                                                                parseFloat(
+                                                                    e.target.value,
+                                                                ) || undefined;
+                                                            field.onChange(value);
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                {form.watch(`manpower.${index}.technician`) ===
+                                    'other' && (
+                                    <FormField
+                                        name={`manpower.${index}.technicianName` as any}
+                                        control={form.control}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Nombre del Técnico</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="Nombre del técnico"
+                                                        {...field}
+                                                        value={field.value || ''}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                )}
+
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={() => removeManpower(index)}
+                                    >
+                                        Eliminar
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Markup y Cálculos */}
+                    <div className="space-y-4 rounded-lg border border-accent p-4">
+                        <TypographyH3>Configuración de Precio</TypographyH3>
+
+                        <FormField
+                            name="markup"
+                            control={form.control}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Markup (%)</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="0"
+                                            {...field}
+                                            className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                            onChange={(e) => {
+                                                const value =
+                                                    parseFloat(e.target.value) ||
+                                                    undefined;
+                                                field.onChange(value);
+                                            }}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <div className="flex justify-between">
+                                    <span>Total Gastos Estimados:</span>
+                                    <span>${totalExpectedExpenses.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Total Mano de Obra:</span>
+                                    <span>${totalManpower.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between font-medium">
+                                    <span>Subtotal:</span>
+                                    <span>${subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Markup ({markup || 0}%):</span>
+                                    <span>
+                                        ${(subtotal * ((markup || 0) / 100)).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-lg font-bold">
+                                    <span>Precio Final:</span>
+                                    <span>${finalPrice.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="flex flex-row justify-end gap-4">
                         <Button
