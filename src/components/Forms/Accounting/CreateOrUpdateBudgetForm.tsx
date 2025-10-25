@@ -74,6 +74,10 @@ const CreateOrUpdateBudgetForm = ({
     const router = useRouter();
     const { triggerAlert } = useAlert();
 
+    // Estados para manejar contactos y emails del perfil de facturación
+    const [billingContacts, setBillingContacts] = useState<any[]>([]);
+    const [billingEmails, setBillingEmails] = useState<string[]>([]);
+
     const form = useForm<FormValues>({
         defaultValues: defaultValues || {
             business: '',
@@ -95,11 +99,12 @@ const CreateOrUpdateBudgetForm = ({
             branchCityId: '',
             billingProfile: {
                 businessName: '',
-                cuit: '',
+                numeroDocumento: '',
+                tipoDocumento: undefined,
                 legalName: '',
                 taxCondition: undefined,
                 billingAddress: '',
-                billingEmail: '',
+                billingEmails: [],
                 contacts: [],
             },
         },
@@ -221,6 +226,15 @@ const CreateOrUpdateBudgetForm = ({
                 // Establecer automáticamente "Otro" en el dropdown de cliente
                 if (defaultValues.clientName && !defaultValues.client) {
                     form.setValue('client', 'other');
+                }
+
+                // Si hay un budgetBranch, significa que se usó una sucursal específica del presupuesto
+                // Establecer automáticamente "Otro" en el dropdown de sucursal
+                if (
+                    defaultValues.budgetBranch &&
+                    (defaultValues.budgetBranch.name || defaultValues.budgetBranch.number)
+                ) {
+                    form.setValue('branch', 'other');
                 }
 
                 // Cargar gastos estimados si existen
@@ -349,7 +363,8 @@ const CreateOrUpdateBudgetForm = ({
                     clientName: formData.clientName || '',
                     clientId:
                         formData.client === 'other' ? null : formData.client || null,
-                    branchId: formData.branch || null,
+                    branchId:
+                        formData.branch === 'other' ? null : formData.branch || null,
                     markup: formData.markup || 0,
                     expectedExpenses: processedExpectedExpenses,
                     manpower: processedManpower,
@@ -388,7 +403,8 @@ const CreateOrUpdateBudgetForm = ({
                         billingProfileId,
                         clientId:
                             formData.client === 'other' ? null : formData.client || null,
-                        branchId: formData.branch || null,
+                        branchId:
+                            formData.branch === 'other' ? null : formData.branch || null,
                         markup: formData.markup || 0,
                         expectedExpenses: processedExpectedExpenses,
                         manpower: processedManpower,
@@ -415,6 +431,9 @@ const CreateOrUpdateBudgetForm = ({
                         throw new Error('Datos del perfil de facturación requeridos');
                     }
 
+                    console.log('Sending billing emails:', billingEmails);
+                    console.log('Sending contacts:', billingContacts);
+
                     const input = {
                         subject: formData.subject || '',
                         description: formData.description || '',
@@ -424,21 +443,22 @@ const CreateOrUpdateBudgetForm = ({
                         businessId:
                             formData.business !== 'other' ? formData.business : null,
                         businessName: formData.billingProfile.businessName!,
-                        businessCUIT: formData.billingProfile.cuit!,
-                        businessBillingEmail: formData.billingProfile.billingEmail!,
+                        businessNumeroDocumento: formData.billingProfile.numeroDocumento!,
+                        businessTipoDocumento: formData.billingProfile.tipoDocumento!,
+                        businessBillingEmails: billingEmails,
                         businessComercialAddress: formData.billingProfile.billingAddress!,
                         businessLegalName: formData.billingProfile.legalName!,
                         businessIVACondition: formData.billingProfile.taxCondition!,
-                        contacts:
-                            formData.billingProfile.contacts?.map((contact) => ({
-                                fullName: contact.name,
-                                email: contact.email,
-                                phone: contact.phone,
-                                notes: contact.notes,
-                            })) || [],
+                        contacts: billingContacts.map((contact) => ({
+                            fullName: contact.name,
+                            email: contact.email,
+                            phone: contact.phone,
+                            notes: contact.notes,
+                        })),
                         clientId:
                             formData.client === 'other' ? null : formData.client || null,
-                        branchId: formData.branch || null,
+                        branchId:
+                            formData.branch === 'other' ? null : formData.branch || null,
                         markup: formData.markup || 0,
                         expectedExpenses: processedExpectedExpenses,
                         manpower: processedManpower,
@@ -547,17 +567,12 @@ const CreateOrUpdateBudgetForm = ({
                                             billingData.businessName,
                                         );
                                         form.setValue(
-                                            'billingProfile.cuit',
-                                            billingData.cuit,
+                                            'billingProfile.numeroDocumento',
+                                            billingData.numeroDocumento,
                                         );
                                         form.setValue(
-                                            'billingProfile.contacts',
-                                            billingData.contacts?.map((contact) => ({
-                                                name: contact.name,
-                                                email: contact.email,
-                                                phone: contact.phone,
-                                                notes: contact.notes,
-                                            })),
+                                            'billingProfile.tipoDocumento',
+                                            billingData.tipoDocumento,
                                         );
                                         form.setValue(
                                             'billingProfile.legalName',
@@ -571,10 +586,19 @@ const CreateOrUpdateBudgetForm = ({
                                             'billingProfile.billingAddress',
                                             billingData.billingAddress,
                                         );
-                                        form.setValue(
-                                            'billingProfile.billingEmail',
-                                            billingData.billingEmail,
+
+                                        // Actualizar estados locales
+                                        console.log(
+                                            'Billing data received:',
+                                            billingData,
                                         );
+                                        console.log('Contacts:', billingData.contacts);
+                                        console.log(
+                                            'Billing emails:',
+                                            billingData.billingEmails,
+                                        );
+                                        setBillingContacts(billingData.contacts || []);
+                                        setBillingEmails(billingData.billingEmails || []);
                                     }}
                                 />
                             )}
@@ -640,48 +664,46 @@ const CreateOrUpdateBudgetForm = ({
                         />
                     )}
 
-                    {form.watch('client') !== 'other' &&
-                        form.watch('client') &&
-                        clientBranches && (
-                            <FormField
-                                name="branch"
-                                control={form.control}
-                                rules={{
-                                    required: 'Este campo es requerido',
-                                }}
-                                disabled={!form.watch('client')}
-                                render={({ field }) => (
-                                    <FormItem
-                                        className={
-                                            field.disabled
-                                                ? 'pointer-events-none opacity-30'
-                                                : ''
-                                        }
-                                    >
-                                        <FormLabel>Sucursal</FormLabel>
-                                        <FormControl>
-                                            <Combobox
-                                                selectPlaceholder="Seleccione una sucursal"
-                                                searchPlaceholder="Buscar sucursal"
-                                                value={field.value || ''}
-                                                onChange={field.onChange}
-                                                items={[
-                                                    {
-                                                        label: 'Otro',
-                                                        value: 'other',
-                                                    },
-                                                    ...(clientBranches?.map((branch) => ({
-                                                        label: `${branch.number ? `#${branch.number}, ` : ''}${branch.name ? `${branch.name} - ` : ''}${branch.city.name}`,
-                                                        value: branch.id,
-                                                    })) || []),
-                                                ]}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
+                    {form.watch('client') && (
+                        <FormField
+                            name="branch"
+                            control={form.control}
+                            rules={{
+                                required: 'Este campo es requerido',
+                            }}
+                            disabled={!form.watch('client')}
+                            render={({ field }) => (
+                                <FormItem
+                                    className={
+                                        field.disabled
+                                            ? 'pointer-events-none opacity-30'
+                                            : ''
+                                    }
+                                >
+                                    <FormLabel>Sucursal</FormLabel>
+                                    <FormControl>
+                                        <Combobox
+                                            selectPlaceholder="Seleccione una sucursal"
+                                            searchPlaceholder="Buscar sucursal"
+                                            value={field.value || ''}
+                                            onChange={field.onChange}
+                                            items={[
+                                                {
+                                                    label: 'Otro',
+                                                    value: 'other',
+                                                },
+                                                ...(clientBranches?.map((branch) => ({
+                                                    label: `${branch.number ? `#${branch.number}, ` : ''}${branch.name ? `${branch.name} - ` : ''}${branch.city.name}`,
+                                                    value: branch.id,
+                                                })) || []),
+                                            ]}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
 
                     {/* Campos para sucursal "Otro" */}
                     {form.watch('branch') === 'other' && (

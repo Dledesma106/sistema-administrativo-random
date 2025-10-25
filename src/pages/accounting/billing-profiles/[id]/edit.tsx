@@ -28,11 +28,12 @@ export default function EditBillingProfile(): JSX.Element {
             defaultValues={{
                 business: billingProfile.business.id,
                 businessName: billingProfile.business.name,
-                cuit: billingProfile.CUIT,
+                numeroDocumento: billingProfile.numeroDocumento,
+                tipoDocumento: billingProfile.tipoDocumento,
                 legalName: billingProfile.legalName,
                 taxCondition: billingProfile.IVACondition,
                 billingAddress: billingProfile.comercialAddress,
-                billingEmail: billingProfile.billingEmail,
+                billingEmails: billingProfile.billingEmails,
                 contacts: billingProfile.contacts.map((contact) => ({
                     name: contact.fullName,
                     email: contact.email,

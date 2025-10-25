@@ -89,11 +89,12 @@ builder.mutationFields((t) => ({
                 // Crear el perfil de facturación
                 const billingProfile = await prisma.billingProfile.create({
                     data: {
-                        CUIT: input.CUIT,
+                        numeroDocumento: input.numeroDocumento,
+                        tipoDocumento: input.tipoDocumento,
                         legalName: input.legalName,
                         IVACondition: input.IVACondition,
                         comercialAddress: input.comercialAddress,
-                        billingEmail: input.billingEmail,
+                        billingEmails: input.billingEmails,
                         contacts: input.contacts || [],
                         business: {
                             connect: { id: businessId! },
@@ -159,13 +160,20 @@ builder.mutationFields((t) => ({
                 const billingProfile = await prisma.billingProfile.update({
                     where: { id },
                     data: {
-                        ...(input.CUIT && { CUIT: input.CUIT }),
+                        ...(input.numeroDocumento && {
+                            numeroDocumento: input.numeroDocumento,
+                        }),
+                        ...(input.tipoDocumento && {
+                            tipoDocumento: input.tipoDocumento,
+                        }),
                         ...(input.legalName && { legalName: input.legalName }),
                         ...(input.IVACondition && { IVACondition: input.IVACondition }),
                         ...(input.comercialAddress && {
                             comercialAddress: input.comercialAddress,
                         }),
-                        ...(input.billingEmail && { billingEmail: input.billingEmail }),
+                        ...(input.billingEmails && {
+                            billingEmails: input.billingEmails,
+                        }),
                         ...(input.contacts && { contacts: input.contacts }),
                     },
                     include: {

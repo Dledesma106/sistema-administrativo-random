@@ -91,7 +91,9 @@ export const BudgetDetail = ({ id }: { id: string }) => {
     return (
         <main className="rounded-lg border border-accent bg-background-primary p-4">
             <div className="flex justify-between">
-                <TypographyH1 className="mb-2">Presupuesto #{id}</TypographyH1>
+                <TypographyH1 className="mb-2">
+                    Presupuesto #{budget.budgetNumber}
+                </TypographyH1>
                 <div className="flex space-x-2">
                     <Button
                         variant="outline"
@@ -151,12 +153,27 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                     </p>
                 </div>
 
-                {budget.branch && (
+                {(budget.branch || budget.budgetBranch) && (
                     <div>
                         <Title>Sucursal</Title>
                         <p className="mb-1">
-                            {budget.branch.number && `Sucursal #${budget.branch.number}`}
-                            {budget.branch.name && ` - ${budget.branch.name}`}
+                            {budget.branch && (
+                                <>
+                                    {budget.branch.number && `#${budget.branch.number}`}
+                                    {budget.branch.name && ` - ${budget.branch.name}`}
+                                </>
+                            )}
+                            {budget.branch && budget.budgetBranch && ' - '}
+                            {budget.budgetBranch && (
+                                <>
+                                    {budget.budgetBranch.number &&
+                                        `#${budget.budgetBranch.number}`}
+                                    {budget.budgetBranch.name &&
+                                        budget.budgetBranch.number &&
+                                        ' - '}
+                                    {budget.budgetBranch.name && budget.budgetBranch.name}
+                                </>
+                            )}
                         </p>
                     </div>
                 )}

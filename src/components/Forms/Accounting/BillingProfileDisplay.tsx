@@ -1,10 +1,12 @@
 import { TypographyH3 } from '@/components/ui/typography';
+import { pascalCaseToSpaces } from '@/lib/utils';
 
 interface BillingProfileDisplayProps {
     billingProfile: {
         legalName?: string | null;
-        CUIT?: string | null;
-        billingEmail?: string | null;
+        numeroDocumento?: string | null;
+        tipoDocumento?: string | null;
+        billingEmails?: string[] | null;
         comercialAddress?: string | null;
         IVACondition?: string | null;
         contacts?: Array<{
@@ -42,9 +44,11 @@ const BillingProfileDisplay = ({
 
                 <div>
                     <label className="text-sm font-medium text-muted-foreground">
-                        CUIT
+                        {billingProfile.tipoDocumento || 'Documento'}
                     </label>
-                    <p className="text-sm">{billingProfile.CUIT || 'No especificado'}</p>
+                    <p className="text-sm">
+                        {billingProfile.numeroDocumento || 'No especificado'}
+                    </p>
                 </div>
 
                 <div>
@@ -52,17 +56,34 @@ const BillingProfileDisplay = ({
                         Condición IVA
                     </label>
                     <p className="text-sm">
-                        {billingProfile.IVACondition || 'No especificado'}
+                        {pascalCaseToSpaces(billingProfile.IVACondition || '') ||
+                            'No especificado'}
                     </p>
                 </div>
 
-                <div>
+                <div className="md:col-span-2">
                     <label className="text-sm font-medium text-muted-foreground">
-                        Email de Facturación
+                        Emails de Facturación
                     </label>
-                    <p className="text-sm">
-                        {billingProfile.billingEmail || 'No especificado'}
-                    </p>
+                    <div className="mt-1 space-y-1">
+                        {billingProfile.billingEmails &&
+                        billingProfile.billingEmails.length > 0 ? (
+                            billingProfile.billingEmails.map((email, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    <a
+                                        href={`mailto:${email}`}
+                                        className="text-sm text-blue-600 underline hover:text-blue-800"
+                                    >
+                                        {email}
+                                    </a>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                No especificado
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 <div className="md:col-span-2">

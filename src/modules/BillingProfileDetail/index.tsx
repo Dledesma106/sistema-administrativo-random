@@ -30,7 +30,9 @@ export const BillingProfileDetail = ({ id }: { id: string }) => {
     return (
         <div className="rounded-lg border border-accent bg-background-primary p-4">
             <div className="flex justify-between">
-                <TypographyH1 className="mb-2">Perfil de Facturación #{id}</TypographyH1>
+                <TypographyH1 className="mb-2">
+                    Perfil de Facturación - {billingProfile.business?.name}
+                </TypographyH1>
                 <div className="flex space-x-2">
                     <Button
                         variant="outline"
@@ -52,13 +54,8 @@ export const BillingProfileDetail = ({ id }: { id: string }) => {
 
             <div className="space-y-4 pt-4">
                 <div>
-                    <Title>Empresa</Title>
-                    <p className="mb-1">{billingProfile.business?.name}</p>
-                </div>
-
-                <div>
-                    <Title>CUIT</Title>
-                    <p className="mb-1">{billingProfile.CUIT}</p>
+                    <Title>{billingProfile.tipoDocumento || 'Documento'}</Title>
+                    <p className="mb-1">{billingProfile.numeroDocumento}</p>
                 </div>
 
                 <div>
@@ -81,8 +78,24 @@ export const BillingProfileDetail = ({ id }: { id: string }) => {
                 </div>
 
                 <div>
-                    <Title>Email de Facturación</Title>
-                    <p className="mb-1">{billingProfile.billingEmail}</p>
+                    <Title>Emails de Facturación</Title>
+                    <div className="space-y-1">
+                        {billingProfile.billingEmails &&
+                        billingProfile.billingEmails.length > 0 ? (
+                            billingProfile.billingEmails.map((email, index) => (
+                                <div key={index}>
+                                    <a
+                                        href={`mailto:${email}`}
+                                        className="text-blue-600 underline hover:text-blue-800"
+                                    >
+                                        {email}
+                                    </a>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-muted-foreground">No especificado</p>
+                        )}
+                    </div>
                 </div>
 
                 <div>

@@ -269,10 +269,13 @@ export const CreateBudgetWithBillingProfileInputPothosRef = builder.inputType(
             businessName: t.string({
                 required: false,
             }),
-            businessCUIT: t.string({
+            businessNumeroDocumento: t.string({
                 required: false,
             }),
-            businessBillingEmail: t.string({
+            businessTipoDocumento: t.string({
+                required: false,
+            }),
+            businessBillingEmails: t.stringList({
                 required: false,
             }),
             businessLegalName: t.string({
