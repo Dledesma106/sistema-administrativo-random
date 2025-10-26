@@ -1,6 +1,11 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+    DeleteObjectCommand,
+    GetObjectCommand,
+    PutObjectCommand,
+    S3Client,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { ExpenseStatus, ExpenseInvoiceType } from '@prisma/client';
+import { ExpenseStatus, ExpenseInvoiceType, AttachmentFile } from '@prisma/client';
 import { format } from 'date-fns';
 import ExcelJS from 'exceljs';
 
@@ -806,6 +811,92 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                 return {
                     success: false,
                     message: `Error al actualizar las anotaciones administrativas: ${error}`,
+                };
+            }
+        },
+    }),
+
+    removeExpenseAttachment: t.field({
+        type: ExpenseCrudResultPothosRef,
+        args: {
+            id: t.arg.string({ required: true }),
+            fileKey: t.arg.string({ required: true }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (root, args, _context, _info) => {
+            try {
+                const { id, fileKey } = args;
+
+                // Obtener el gasto actual para acceder a los archivos adjuntos
+                const expense = await prisma.expense.findUnique({
+                    where: { id },
+                    select: { attachmentFiles: true },
+                });
+
+                if (!expense) {
+                    return {
+                        success: false,
+                        message: 'Gasto no encontrado',
+                    };
+                }
+
+                // Filtrar el archivo a eliminar
+                const updatedAttachmentFiles = (
+                    expense.attachmentFiles as AttachmentFile[]
+                ).filter((file: AttachmentFile) => file.key !== fileKey);
+
+                // Actualizar la base de datos
+                const updatedExpense = await prisma.expense.update({
+                    where: { id },
+                    data: {
+                        attachmentFiles: updatedAttachmentFiles,
+                    },
+                    include: {
+                        images: { where: { deleted: false } },
+                        registeredBy: true,
+                        auditor: true,
+                        task: true,
+                    },
+                });
+
+                // Eliminar el archivo de S3
+                try {
+                    const s3Client = new S3Client({
+                        region: process.env.AWS_REGION,
+                        credentials: {
+                            accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+                            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+                        },
+                    });
+
+                    const deleteCommand = new DeleteObjectCommand({
+                        Bucket: process.env.AWS_S3_BUCKET_NAME,
+                        Key: fileKey,
+                    });
+
+                    await s3Client.send(deleteCommand);
+                } catch (s3Error) {
+                    // eslint-disable-next-line no-console
+                    console.error('Error deleting file from S3:', s3Error);
+                    // No fallar la operación si S3 falla, ya que el archivo ya se eliminó de la BD
+                }
+
+                return {
+                    success: true,
+                    expense: updatedExpense,
+                    message: 'Archivo adjunto eliminado correctamente',
+                };
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('Error removing expense attachment:', error);
+                return {
+                    success: false,
+                    message: 'Error al eliminar archivo adjunto',
                 };
             }
         },

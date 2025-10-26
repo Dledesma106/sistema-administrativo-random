@@ -722,6 +722,8 @@ export type Mutation = {
     login: LoginUserResult;
     logout: AuthResult;
     registerExpoToken: Scalars['Boolean'];
+    removeExpenseAttachment: ExpenseCrudResult;
+    removeTaskAttachment: TaskCrudResult;
     sendNewUserRandomPassword: UserCrudPothosRef;
     updateBankAccount: BankAccountCrudResult;
     updateBill: BillCrudResult;
@@ -739,6 +741,7 @@ export type Mutation = {
     updatePreventive: PreventiveCrudRef;
     updateProvince: ProvinceCrudResult;
     updateTask: TaskCrudResult;
+    updateTaskAdministrative: TaskCrudResult;
     updateTaskPrice: TaskPriceCrudResult;
     updateTaskStatus: TaskCrudResult;
     updateUser: UserCrudPothosRef;
@@ -924,6 +927,16 @@ export type MutationRegisterExpoTokenArgs = {
     token: Scalars['String'];
 };
 
+export type MutationRemoveExpenseAttachmentArgs = {
+    fileKey: Scalars['String'];
+    id: Scalars['String'];
+};
+
+export type MutationRemoveTaskAttachmentArgs = {
+    fileKey: Scalars['String'];
+    id: Scalars['String'];
+};
+
 export type MutationSendNewUserRandomPasswordArgs = {
     id: Scalars['String'];
 };
@@ -1005,6 +1018,11 @@ export type MutationUpdateProvinceArgs = {
 export type MutationUpdateTaskArgs = {
     id: Scalars['String'];
     input: TaskInput;
+};
+
+export type MutationUpdateTaskAdministrativeArgs = {
+    id: Scalars['String'];
+    input: UpdateTaskAdministrativeInput;
 };
 
 export type MutationUpdateTaskPriceArgs = {
@@ -1600,7 +1618,9 @@ export type ServiceOrderStatus =
 export type Task = {
     __typename?: 'Task';
     actNumber: Maybe<Scalars['Int']>;
+    administrativeNotes: Maybe<Scalars['String']>;
     assigned: Array<User>;
+    attachmentFiles: Array<AttachmentFile>;
     auditor: Maybe<User>;
     branch: Maybe<Branch>;
     business: Maybe<Business>;
@@ -1759,6 +1779,14 @@ export type UpdateMyTaskInput = {
     participants: InputMaybe<Array<Scalars['String']>>;
     startedAt: InputMaybe<Scalars['DateTime']>;
     useMaterials: Scalars['Boolean'];
+};
+
+export type UpdateTaskAdministrativeInput = {
+    administrativeNotes: InputMaybe<Scalars['String']>;
+    fileKeys: InputMaybe<Array<Scalars['String']>>;
+    filenames: InputMaybe<Array<Scalars['String']>>;
+    mimeTypes: InputMaybe<Array<Scalars['String']>>;
+    sizes: InputMaybe<Array<Scalars['Int']>>;
 };
 
 export type UploadUrlInfo = {
@@ -2974,6 +3002,33 @@ export type UpdateExpenseAdministrativeMutation = {
     };
 };
 
+export type RemoveExpenseAttachmentMutationVariables = Exact<{
+    id: Scalars['String'];
+    fileKey: Scalars['String'];
+}>;
+
+export type RemoveExpenseAttachmentMutation = {
+    __typename?: 'Mutation';
+    removeExpenseAttachment: {
+        __typename?: 'ExpenseCrudResult';
+        success: boolean;
+        message: string | null;
+        expense: {
+            __typename?: 'Expense';
+            id: string;
+            attachmentFiles: Array<{
+                __typename?: 'AttachmentFile';
+                key: string;
+                filename: string;
+                url: string;
+                mimeType: string;
+                size: number;
+                urlExpire: any | null;
+            }>;
+        } | null;
+    };
+};
+
 export type GenerateUploadUrlsMutationVariables = Exact<{
     fileCount: Scalars['Int'];
     prefix: Scalars['String'];
@@ -3272,12 +3327,22 @@ export type GetTaskQuery = {
         description: string;
         actNumber: number | null;
         observations: string | null;
+        administrativeNotes: string | null;
         clientName: string | null;
         businessName: string | null;
         participants: Array<string>;
         taskType: TaskType;
         status: TaskStatus;
         movitecTicket: string | null;
+        attachmentFiles: Array<{
+            __typename?: 'AttachmentFile';
+            url: string;
+            mimeType: string;
+            filename: string;
+            key: string;
+            size: number;
+            urlExpire: any | null;
+        }>;
         preventive: {
             __typename?: 'Preventive';
             id: string;
@@ -3432,6 +3497,61 @@ export type DownloadTaskPhotosMutation = {
         success: boolean;
         url: string | null;
         message: string | null;
+    };
+};
+
+export type UpdateTaskAdministrativeMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: UpdateTaskAdministrativeInput;
+}>;
+
+export type UpdateTaskAdministrativeMutation = {
+    __typename?: 'Mutation';
+    updateTaskAdministrative: {
+        __typename?: 'TaskCrudResult';
+        success: boolean;
+        message: string | null;
+        task: {
+            __typename?: 'Task';
+            id: string;
+            administrativeNotes: string | null;
+            attachmentFiles: Array<{
+                __typename?: 'AttachmentFile';
+                url: string;
+                mimeType: string;
+                filename: string;
+                key: string;
+                size: number;
+                urlExpire: any | null;
+            }>;
+        } | null;
+    };
+};
+
+export type RemoveTaskAttachmentMutationVariables = Exact<{
+    id: Scalars['String'];
+    fileKey: Scalars['String'];
+}>;
+
+export type RemoveTaskAttachmentMutation = {
+    __typename?: 'Mutation';
+    removeTaskAttachment: {
+        __typename?: 'TaskCrudResult';
+        success: boolean;
+        message: string | null;
+        task: {
+            __typename?: 'Task';
+            id: string;
+            attachmentFiles: Array<{
+                __typename?: 'AttachmentFile';
+                key: string;
+                filename: string;
+                url: string;
+                mimeType: string;
+                size: number;
+                urlExpire: any | null;
+            }>;
+        } | null;
     };
 };
 
@@ -10454,6 +10574,153 @@ export const UpdateExpenseAdministrativeDocument = {
     UpdateExpenseAdministrativeMutation,
     UpdateExpenseAdministrativeMutationVariables
 >;
+export const RemoveExpenseAttachmentDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'RemoveExpenseAttachment' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'fileKey' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'removeExpenseAttachment' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fileKey' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fileKey' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expense' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'attachmentFiles',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'key',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'filename',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'url',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'mimeType',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'size',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'urlExpire',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    RemoveExpenseAttachmentMutation,
+    RemoveExpenseAttachmentMutationVariables
+>;
 export const GenerateUploadUrlsDocument = {
     kind: 'Document',
     definitions: [
@@ -12580,6 +12847,46 @@ export const GetTaskDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'administrativeNotes' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachmentFiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'mimeType' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'filename' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'size' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'urlExpire',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'clientName' },
                                 },
                                 {
@@ -13545,6 +13852,310 @@ export const DownloadTaskPhotosDocument = {
 } as unknown as DocumentNode<
     DownloadTaskPhotosMutation,
     DownloadTaskPhotosMutationVariables
+>;
+export const UpdateTaskAdministrativeDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateTaskAdministrative' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: {
+                                kind: 'Name',
+                                value: 'UpdateTaskAdministrativeInput',
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateTaskAdministrative' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'task' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'administrativeNotes',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'attachmentFiles',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'url',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'mimeType',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'filename',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'key',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'size',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'urlExpire',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    UpdateTaskAdministrativeMutation,
+    UpdateTaskAdministrativeMutationVariables
+>;
+export const RemoveTaskAttachmentDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'RemoveTaskAttachment' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'fileKey' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'removeTaskAttachment' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fileKey' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fileKey' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'task' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'attachmentFiles',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'key',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'filename',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'url',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'mimeType',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'size',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'urlExpire',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    RemoveTaskAttachmentMutation,
+    RemoveTaskAttachmentMutationVariables
 >;
 export const GetUsersDocument = {
     kind: 'Document',

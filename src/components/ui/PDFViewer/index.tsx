@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { DownloadIcon } from '@radix-ui/react-icons';
+import { DownloadIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Button } from '../button';
 
 interface PDFViewerProps {
@@ -7,6 +7,8 @@ interface PDFViewerProps {
     filename?: string;
     showPreviewButton?: boolean;
     className?: string;
+    deletable?: boolean;
+    onDelete?: () => void;
 }
 
 export const PDFViewer = ({
@@ -14,6 +16,8 @@ export const PDFViewer = ({
     filename = 'Documento PDF',
     showPreviewButton = true,
     className = 'h-[400px] w-full max-w-3xl',
+    deletable = false,
+    onDelete,
 }: PDFViewerProps) => {
     if (showPreviewButton) {
         return (
@@ -49,7 +53,7 @@ export const PDFViewer = ({
 
     // Cuando showPreviewButton=false, mostrar PDF con botón para modal
     return (
-        <div className="space-y-2">
+        <div className="group relative">
             <iframe
                 src={url}
                 className={className}
@@ -58,6 +62,19 @@ export const PDFViewer = ({
                 referrerPolicy="no-referrer"
                 allow="fullscreen"
             />
+            {deletable && onDelete && (
+                <Button
+                    size="sm"
+                    variant="destructive"
+                    className="absolute left-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete();
+                    }}
+                >
+                    <TrashIcon className="size-4" />
+                </Button>
+            )}
             <Dialog>
                 <DialogTrigger asChild>
                     <Button

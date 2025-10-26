@@ -314,9 +314,11 @@ model Task {
 
   expenses Expense[]
 
-  observations String?
-  User         User?   @relation(fields: [userId], references: [id])
-  userId       String? @db.ObjectId
+  observations        String?
+  administrativeNotes String?
+  attachmentFiles     AttachmentFile[]
+  User                User?            @relation(fields: [userId], references: [id])
+  userId              String?          @db.ObjectId
 
   preventiveId String?     @map("preventive") @db.ObjectId
   preventive   Preventive? @relation(fields: [preventiveId], references: [id])
