@@ -1,9 +1,13 @@
-import { BillingProfile, IVACondition } from '@prisma/client';
+import { BillingProfile, IVACondition, TipoDocumento } from '@prisma/client';
 
 import { builder } from '../../builder';
 
 export const IVAConditionPothosRef = builder.enumType('IVACondition', {
     values: Object.values(IVACondition),
+});
+
+export const TipoDocumentoPothosRef = builder.enumType('TipoDocumento', {
+    values: Object.values(TipoDocumento),
 });
 
 export const ContactPothosRef = builder
@@ -33,14 +37,18 @@ export const ContactPothosRef = builder
 export const BillingProfilePothosRef = builder.prismaObject('BillingProfile', {
     fields: (t) => ({
         id: t.exposeID('id'),
-        CUIT: t.exposeString('CUIT'),
+        numeroDocumento: t.exposeString('numeroDocumento'),
+        tipoDocumento: t.field({
+            type: TipoDocumentoPothosRef,
+            resolve: (root) => root.tipoDocumento as TipoDocumento,
+        }),
         legalName: t.exposeString('legalName'),
         IVACondition: t.field({
             type: IVAConditionPothosRef,
             resolve: (root) => root.IVACondition as IVACondition,
         }),
         comercialAddress: t.exposeString('comercialAddress'),
-        billingEmail: t.exposeString('billingEmail'),
+        billingEmails: t.exposeStringList('billingEmails'),
         createdAt: t.field({
             type: 'DateTime',
             resolve: (root) => root.createdAt,
@@ -90,7 +98,11 @@ export const ContactInputPothosRef = builder.inputType('ContactInput', {
 
 export const BillingProfileInputPothosRef = builder.inputType('BillingProfileInput', {
     fields: (t) => ({
-        CUIT: t.string({
+        numeroDocumento: t.string({
+            required: true,
+        }),
+        tipoDocumento: t.field({
+            type: TipoDocumentoPothosRef,
             required: true,
         }),
         legalName: t.string({
@@ -103,7 +115,7 @@ export const BillingProfileInputPothosRef = builder.inputType('BillingProfileInp
         comercialAddress: t.string({
             required: true,
         }),
-        billingEmail: t.string({
+        billingEmails: t.stringList({
             required: true,
         }),
         businessId: t.string({
@@ -123,7 +135,11 @@ export const UpdateBillingProfileInputPothosRef = builder.inputType(
     'UpdateBillingProfileInput',
     {
         fields: (t) => ({
-            CUIT: t.string({
+            numeroDocumento: t.string({
+                required: false,
+            }),
+            tipoDocumento: t.field({
+                type: TipoDocumentoPothosRef,
                 required: false,
             }),
             legalName: t.string({
@@ -136,7 +152,7 @@ export const UpdateBillingProfileInputPothosRef = builder.inputType(
             comercialAddress: t.string({
                 required: false,
             }),
-            billingEmail: t.string({
+            billingEmails: t.stringList({
                 required: false,
             }),
             contacts: t.field({

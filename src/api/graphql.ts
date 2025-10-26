@@ -186,9 +186,8 @@ export const BillStatus = {
 export type BillStatus = (typeof BillStatus)[keyof typeof BillStatus];
 export type BillingProfile = {
     __typename?: 'BillingProfile';
-    CUIT: Scalars['String'];
     IVACondition: IvaCondition;
-    billingEmail: Scalars['String'];
+    billingEmails: Array<Scalars['String']>;
     bills: Array<Bill>;
     business: Business;
     comercialAddress: Scalars['String'];
@@ -199,6 +198,8 @@ export type BillingProfile = {
     firstContact: Maybe<Contact>;
     id: Scalars['ID'];
     legalName: Scalars['String'];
+    numeroDocumento: Scalars['String'];
+    tipoDocumento: TipoDocumento;
     updatedAt: Scalars['DateTime'];
 };
 
@@ -210,14 +211,15 @@ export type BillingProfileCrudResult = {
 };
 
 export type BillingProfileInput = {
-    CUIT: Scalars['String'];
     IVACondition: IvaCondition;
-    billingEmail: Scalars['String'];
+    billingEmails: Array<Scalars['String']>;
     businessId: InputMaybe<Scalars['String']>;
     businessName: InputMaybe<Scalars['String']>;
     comercialAddress: Scalars['String'];
     contacts: InputMaybe<Array<ContactInput>>;
     legalName: Scalars['String'];
+    numeroDocumento: Scalars['String'];
+    tipoDocumento: TipoDocumento;
 };
 
 export type Branch = {
@@ -249,6 +251,8 @@ export type Budget = {
     __typename?: 'Budget';
     billingProfile: BillingProfile;
     branch: Maybe<Branch>;
+    budgetBranch: Maybe<BudgetBranch>;
+    budgetNumber: Scalars['Int'];
     client: Maybe<Client>;
     clientName: Maybe<Scalars['String']>;
     createdAt: Scalars['DateTime'];
@@ -256,11 +260,26 @@ export type Budget = {
     deleted: Scalars['Boolean'];
     deletedAt: Maybe<Scalars['DateTime']>;
     description: Maybe<Scalars['String']>;
+    expectedExpenses: Array<ExpectedExpense>;
     id: Scalars['ID'];
+    manpower: Array<Manpower>;
+    markup: Maybe<Scalars['Float']>;
     price: Scalars['Float'];
     status: BudgetStatus;
     subject: Scalars['String'];
+    totalExpectedExpenses: Scalars['Float'];
     updatedAt: Scalars['DateTime'];
+};
+
+export type BudgetBranch = {
+    __typename?: 'BudgetBranch';
+    name: Maybe<Scalars['String']>;
+    number: Maybe<Scalars['Int']>;
+};
+
+export type BudgetBranchInput = {
+    name: InputMaybe<Scalars['String']>;
+    number: InputMaybe<Scalars['Int']>;
 };
 
 export type BudgetCrudResult = {
@@ -273,9 +292,13 @@ export type BudgetCrudResult = {
 export type BudgetInput = {
     billingProfileId: Scalars['String'];
     branchId: InputMaybe<Scalars['String']>;
+    budgetBranch: InputMaybe<BudgetBranchInput>;
     clientId: InputMaybe<Scalars['String']>;
     clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
+    expectedExpenses: InputMaybe<Array<ExpectedExpenseInput>>;
+    manpower: InputMaybe<Array<ManpowerInput>>;
+    markup: InputMaybe<Scalars['Float']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -396,17 +419,22 @@ export type ContactInput = {
 export type CreateBudgetWithBillingProfileInput = {
     billingProfileId: InputMaybe<Scalars['String']>;
     branchId: InputMaybe<Scalars['String']>;
-    businessBillingEmail: InputMaybe<Scalars['String']>;
-    businessCUIT: InputMaybe<Scalars['String']>;
+    budgetBranch: InputMaybe<BudgetBranchInput>;
+    businessBillingEmails: InputMaybe<Array<Scalars['String']>>;
     businessComercialAddress: InputMaybe<Scalars['String']>;
     businessIVACondition: InputMaybe<Scalars['String']>;
     businessId: InputMaybe<Scalars['String']>;
     businessLegalName: InputMaybe<Scalars['String']>;
     businessName: InputMaybe<Scalars['String']>;
+    businessNumeroDocumento: InputMaybe<Scalars['String']>;
+    businessTipoDocumento: InputMaybe<Scalars['String']>;
     clientId: InputMaybe<Scalars['String']>;
     clientName: InputMaybe<Scalars['String']>;
     contacts: InputMaybe<Array<ContactInput>>;
     description: InputMaybe<Scalars['String']>;
+    expectedExpenses: InputMaybe<Array<ExpectedExpenseInput>>;
+    manpower: InputMaybe<Array<ManpowerInput>>;
+    markup: InputMaybe<Scalars['Float']>;
     price: Scalars['Float'];
     subject: Scalars['String'];
 };
@@ -416,6 +444,21 @@ export type DownloadTaskPhotosResult = {
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     url: Maybe<Scalars['String']>;
+};
+
+export type ExpectedExpense = {
+    __typename?: 'ExpectedExpense';
+    amount: Scalars['Float'];
+    quantity: Scalars['Int'];
+    type: ExpenseType;
+    unitPrice: Scalars['Float'];
+};
+
+export type ExpectedExpenseInput = {
+    amount: Scalars['Float'];
+    quantity: InputMaybe<Scalars['Int']>;
+    type: ExpenseType;
+    unitPrice: Scalars['Float'];
 };
 
 export type Expense = {
@@ -622,6 +665,17 @@ export type LoginUserResult = {
     message: Maybe<Scalars['String']>;
     success: Scalars['Boolean'];
     user: Maybe<User>;
+};
+
+export type Manpower = {
+    __typename?: 'Manpower';
+    payAmount: Scalars['Float'];
+    technician: Scalars['String'];
+};
+
+export type ManpowerInput = {
+    payAmount: Scalars['Float'];
+    technician: Scalars['String'];
 };
 
 export type Mutation = {
@@ -1555,6 +1609,7 @@ export type ServiceOrderCrudResult = {
 export const ServiceOrderStatus = {
     EnProgreso: 'EnProgreso',
     Finalizada: 'Finalizada',
+    ParaFacturar: 'ParaFacturar',
     Pendiente: 'Pendiente',
 } as const;
 
@@ -1667,20 +1722,35 @@ export const TaskType = {
 } as const;
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
+export const TipoDocumento = {
+    Cdi: 'CDI',
+    Cuil: 'CUIL',
+    Cuit: 'CUIT',
+    Dni: 'DNI',
+    Otro: 'Otro',
+    Pasaporte: 'Pasaporte',
+} as const;
+
+export type TipoDocumento = (typeof TipoDocumento)[keyof typeof TipoDocumento];
 export type UpdateBillingProfileInput = {
-    CUIT: InputMaybe<Scalars['String']>;
     IVACondition: InputMaybe<IvaCondition>;
-    billingEmail: InputMaybe<Scalars['String']>;
+    billingEmails: InputMaybe<Array<Scalars['String']>>;
     comercialAddress: InputMaybe<Scalars['String']>;
     contacts: InputMaybe<Array<ContactInput>>;
     legalName: InputMaybe<Scalars['String']>;
+    numeroDocumento: InputMaybe<Scalars['String']>;
+    tipoDocumento: InputMaybe<TipoDocumento>;
 };
 
 export type UpdateBudgetInput = {
     branchId: InputMaybe<Scalars['String']>;
+    budgetBranch: InputMaybe<BudgetBranchInput>;
     clientId: InputMaybe<Scalars['String']>;
     clientName: InputMaybe<Scalars['String']>;
     description: InputMaybe<Scalars['String']>;
+    expectedExpenses: InputMaybe<Array<ExpectedExpenseInput>>;
+    manpower: InputMaybe<Array<ManpowerInput>>;
+    markup: InputMaybe<Scalars['Float']>;
     price: InputMaybe<Scalars['Float']>;
     subject: InputMaybe<Scalars['String']>;
 };
@@ -1808,11 +1878,12 @@ export type CreateBillingProfileMutation = {
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
-            CUIT: string;
+            tipoDocumento: TipoDocumento;
+            numeroDocumento: string;
             legalName: string;
             IVACondition: IvaCondition;
             comercialAddress: string;
-            billingEmail: string;
+            billingEmails: Array<string>;
             createdAt: any;
             updatedAt: any;
             business: { __typename?: 'Business'; id: string; name: string };
@@ -1835,11 +1906,12 @@ export type UpdateBillingProfileMutation = {
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
-            CUIT: string;
+            tipoDocumento: TipoDocumento;
+            numeroDocumento: string;
             legalName: string;
             IVACondition: IvaCondition;
             comercialAddress: string;
-            billingEmail: string;
+            billingEmails: Array<string>;
             createdAt: any;
             updatedAt: any;
             business: { __typename?: 'Business'; id: string; name: string };
@@ -1861,11 +1933,12 @@ export type DeleteBillingProfileMutation = {
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
-            CUIT: string;
+            tipoDocumento: TipoDocumento;
+            numeroDocumento: string;
             legalName: string;
             IVACondition: IvaCondition;
             comercialAddress: string;
-            billingEmail: string;
+            billingEmails: Array<string>;
             createdAt: any;
             updatedAt: any;
             business: { __typename?: 'Business'; id: string; name: string };
@@ -1888,11 +1961,12 @@ export type GetBillingProfilesQuery = {
     billingProfiles: Array<{
         __typename?: 'BillingProfile';
         id: string;
-        CUIT: string;
+        tipoDocumento: TipoDocumento;
+        numeroDocumento: string;
         legalName: string;
         IVACondition: IvaCondition;
         comercialAddress: string;
-        billingEmail: string;
+        billingEmails: Array<string>;
         createdAt: any;
         updatedAt: any;
         business: { __typename?: 'Business'; id: string; name: string };
@@ -1922,11 +1996,12 @@ export type GetBillingProfileByIdQuery = {
     billingProfileById: {
         __typename?: 'BillingProfile';
         id: string;
-        CUIT: string;
+        tipoDocumento: TipoDocumento;
+        numeroDocumento: string;
         legalName: string;
         IVACondition: IvaCondition;
         comercialAddress: string;
-        billingEmail: string;
+        billingEmails: Array<string>;
         createdAt: any;
         updatedAt: any;
         business: { __typename?: 'Business'; id: string; name: string };
@@ -1965,11 +2040,12 @@ export type GetBillingProfileByBusinessIdQuery = {
     billingProfileByBusinessId: {
         __typename?: 'BillingProfile';
         id: string;
-        CUIT: string;
+        tipoDocumento: TipoDocumento;
+        numeroDocumento: string;
         legalName: string;
         IVACondition: IvaCondition;
         comercialAddress: string;
-        billingEmail: string;
+        billingEmails: Array<string>;
         createdAt: any;
         updatedAt: any;
         business: { __typename?: 'Business'; id: string; name: string };
@@ -2115,6 +2191,7 @@ export type GetBudgetsQuery = {
     budgets: Array<{
         __typename?: 'Budget';
         id: string;
+        budgetNumber: number;
         subject: string;
         description: string | null;
         price: number;
@@ -2122,6 +2199,20 @@ export type GetBudgetsQuery = {
         clientName: string | null;
         createdAt: any;
         updatedAt: any;
+        markup: number | null;
+        totalExpectedExpenses: number;
+        expectedExpenses: Array<{
+            __typename?: 'ExpectedExpense';
+            type: ExpenseType;
+            unitPrice: number;
+            quantity: number;
+            amount: number;
+        }>;
+        manpower: Array<{
+            __typename?: 'Manpower';
+            technician: string;
+            payAmount: number;
+        }>;
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
@@ -2147,6 +2238,7 @@ export type GetBudgetByIdQuery = {
     budgetById: {
         __typename?: 'Budget';
         id: string;
+        budgetNumber: number;
         subject: string;
         description: string | null;
         price: number;
@@ -2154,14 +2246,34 @@ export type GetBudgetByIdQuery = {
         clientName: string | null;
         createdAt: any;
         updatedAt: any;
+        markup: number | null;
+        totalExpectedExpenses: number;
+        expectedExpenses: Array<{
+            __typename?: 'ExpectedExpense';
+            type: ExpenseType;
+            unitPrice: number;
+            quantity: number;
+            amount: number;
+        }>;
+        manpower: Array<{
+            __typename?: 'Manpower';
+            technician: string;
+            payAmount: number;
+        }>;
+        budgetBranch: {
+            __typename?: 'BudgetBranch';
+            name: string | null;
+            number: number | null;
+        } | null;
         billingProfile: {
             __typename?: 'BillingProfile';
             id: string;
             legalName: string;
-            CUIT: string;
+            tipoDocumento: TipoDocumento;
+            numeroDocumento: string;
             IVACondition: IvaCondition;
             comercialAddress: string;
-            billingEmail: string;
+            billingEmails: Array<string>;
             contacts: Array<{
                 __typename?: 'Contact';
                 email: string;
@@ -2225,9 +2337,10 @@ export type GetBusinessesWithBillingProfilesQuery = {
             __typename?: 'BillingProfile';
             id: string;
             legalName: string;
-            CUIT: string;
+            tipoDocumento: TipoDocumento;
+            numeroDocumento: string;
             IVACondition: IvaCondition;
-            billingEmail: string;
+            billingEmails: Array<string>;
             comercialAddress: string;
         };
     }>;
@@ -3831,7 +3944,17 @@ export const CreateBillingProfileDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'CUIT' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'tipoDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'numeroDocumento',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -3858,7 +3981,7 @@ export const CreateBillingProfileDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'billingEmail',
+                                                    value: 'billingEmails',
                                                 },
                                             },
                                             {
@@ -4016,7 +4139,17 @@ export const UpdateBillingProfileDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'CUIT' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'tipoDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'numeroDocumento',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -4043,7 +4176,7 @@ export const UpdateBillingProfileDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'billingEmail',
+                                                    value: 'billingEmails',
                                                 },
                                             },
                                             {
@@ -4179,7 +4312,17 @@ export const DeleteBillingProfileDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'CUIT' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'tipoDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'numeroDocumento',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -4206,7 +4349,7 @@ export const DeleteBillingProfileDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'billingEmail',
+                                                    value: 'billingEmails',
                                                 },
                                             },
                                             {
@@ -4392,7 +4535,14 @@ export const GetBillingProfilesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tipoDocumento' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'numeroDocumento' },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'legalName' },
@@ -4407,7 +4557,7 @@ export const GetBillingProfilesDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'billingEmail' },
+                                    name: { kind: 'Name', value: 'billingEmails' },
                                 },
                                 {
                                     kind: 'Field',
@@ -4546,7 +4696,14 @@ export const GetBillingProfileByIdDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tipoDocumento' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'numeroDocumento' },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'legalName' },
@@ -4561,7 +4718,7 @@ export const GetBillingProfileByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'billingEmail' },
+                                    name: { kind: 'Name', value: 'billingEmails' },
                                 },
                                 {
                                     kind: 'Field',
@@ -4755,7 +4912,14 @@ export const GetBillingProfileByBusinessIdDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tipoDocumento' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'numeroDocumento' },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'legalName' },
@@ -4770,7 +4934,7 @@ export const GetBillingProfileByBusinessIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'billingEmail' },
+                                    name: { kind: 'Name', value: 'billingEmails' },
                                 },
                                 {
                                     kind: 'Field',
@@ -5702,6 +5866,10 @@ export const GetBudgetsDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'budgetNumber' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'subject' },
                                 },
                                 {
@@ -5724,6 +5892,68 @@ export const GetBudgetsDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'expectedExpenses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'type' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'unitPrice',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'quantity' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'manpower' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'technician',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'payAmount',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'markup' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: {
+                                        kind: 'Name',
+                                        value: 'totalExpectedExpenses',
+                                    },
                                 },
                                 {
                                     kind: 'Field',
@@ -5880,6 +6110,10 @@ export const GetBudgetByIdDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'budgetNumber' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'subject' },
                                 },
                                 {
@@ -5905,6 +6139,85 @@ export const GetBudgetByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'expectedExpenses' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'type' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'unitPrice',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'quantity' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'amount' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'manpower' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'technician',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'payAmount',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'markup' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'budgetBranch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'number' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: {
+                                        kind: 'Name',
+                                        value: 'totalExpectedExpenses',
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'billingProfile' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -5922,7 +6235,17 @@ export const GetBudgetByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'CUIT' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'tipoDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'numeroDocumento',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -5942,7 +6265,7 @@ export const GetBudgetByIdDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'billingEmail',
+                                                    value: 'billingEmails',
                                                 },
                                             },
                                             {
@@ -6271,7 +6594,17 @@ export const GetBusinessesWithBillingProfilesDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'CUIT' },
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'tipoDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'numeroDocumento',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -6284,7 +6617,7 @@ export const GetBusinessesWithBillingProfilesDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'billingEmail',
+                                                    value: 'billingEmails',
                                                 },
                                             },
                                             {

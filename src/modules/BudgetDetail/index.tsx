@@ -7,7 +7,7 @@ import Combobox from '@/components/Combobox';
 import BudgetStatusBadge from '@/components/ui/Badges/BudgetStatusBadge';
 import { Button } from '@/components/ui/button';
 import { TableSkeleton } from '@/components/ui/skeleton';
-import { TypographyH1 } from '@/components/ui/typography';
+import { TypographyH1, TypographyH3 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { useGetBudgetById } from '@/hooks/api/budget/useGetBudgetById';
 import { useUpdateBudgetStatus } from '@/hooks/api/budget/useUpdateBudgetStatus';
@@ -91,7 +91,9 @@ export const BudgetDetail = ({ id }: { id: string }) => {
     return (
         <main className="rounded-lg border border-accent bg-background-primary p-4">
             <div className="flex justify-between">
-                <TypographyH1 className="mb-2">Presupuesto #{id}</TypographyH1>
+                <TypographyH1 className="mb-2">
+                    Presupuesto #{budget.budgetNumber}
+                </TypographyH1>
                 <div className="flex space-x-2">
                     <Button
                         variant="outline"
@@ -151,12 +153,27 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                     </p>
                 </div>
 
-                {budget.branch && (
+                {(budget.branch || budget.budgetBranch) && (
                     <div>
                         <Title>Sucursal</Title>
                         <p className="mb-1">
-                            {budget.branch.number && `Sucursal #${budget.branch.number}`}
-                            {budget.branch.name && ` - ${budget.branch.name}`}
+                            {budget.branch && (
+                                <>
+                                    {budget.branch.number && `#${budget.branch.number}`}
+                                    {budget.branch.name && ` - ${budget.branch.name}`}
+                                </>
+                            )}
+                            {budget.branch && budget.budgetBranch && ' - '}
+                            {budget.budgetBranch && (
+                                <>
+                                    {budget.budgetBranch.number &&
+                                        `#${budget.budgetBranch.number}`}
+                                    {budget.budgetBranch.name &&
+                                        budget.budgetBranch.number &&
+                                        ' - '}
+                                    {budget.budgetBranch.name && budget.budgetBranch.name}
+                                </>
+                            )}
                         </p>
                     </div>
                 )}
@@ -186,6 +203,167 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                 <div>
                     <Title>Creado por</Title>
                     <p className="mb-1">{budget.createdBy.fullName}</p>
+                </div>
+
+                {/* Gastos Estimados */}
+                {budget.expectedExpenses && budget.expectedExpenses.length > 0 && (
+                    <div className="rounded-lg border border-accent p-4">
+                        <TypographyH3 className="mb-4">Gastos Estimados</TypographyH3>
+                        <div className="space-y-3">
+                            {budget.expectedExpenses.map((expense, index) => (
+                                <div
+                                    key={index}
+                                    className="grid grid-cols-1 gap-4 rounded-md bg-muted p-3 md:grid-cols-5"
+                                >
+                                    <div>
+                                        <Title>Tipo</Title>
+                                        <p className="text-sm">
+                                            {pascalCaseToSpaces(expense.type)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <Title>Precio Unitario</Title>
+                                        <p className="text-sm">
+                                            ${expense.unitPrice.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <Title>Cantidad</Title>
+                                        <p className="text-sm">
+                                            {expense.type === 'Combustible'
+                                                ? 'N/A'
+                                                : expense.quantity}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <Title>Subtotal</Title>
+                                        <p className="text-sm font-medium">
+                                            ${expense.amount.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center justify-end">
+                                        <span className="text-xs text-muted-foreground">
+                                            #{index + 1}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <div className="rounded-md bg-background p-2">
+                                <span className="font-medium">
+                                    Total Gastos Estimados: $
+                                    {budget.totalExpectedExpenses.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Mano de Obra */}
+                {budget.manpower && budget.manpower.length > 0 && (
+                    <div className="rounded-lg border border-accent p-4">
+                        <TypographyH3 className="mb-4">Mano de Obra</TypographyH3>
+                        <div className="space-y-3">
+                            {budget.manpower.map((worker, index) => (
+                                <div
+                                    key={index}
+                                    className="grid grid-cols-1 gap-4 rounded-md bg-muted p-3 md:grid-cols-3"
+                                >
+                                    <div>
+                                        <Title>Técnico</Title>
+                                        <p className="text-sm">{worker.technician}</p>
+                                    </div>
+                                    <div>
+                                        <Title>Paga</Title>
+                                        <p className="text-sm font-medium">
+                                            ${worker.payAmount.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center justify-end">
+                                        <span className="text-xs text-muted-foreground">
+                                            #{index + 1}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <div className="rounded-md bg-background p-2">
+                                <span className="font-medium">
+                                    Total Mano de Obra: $
+                                    {budget.manpower
+                                        .reduce(
+                                            (sum, worker) => sum + worker.payAmount,
+                                            0,
+                                        )
+                                        .toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Resumen de Cálculos */}
+                <div className="rounded-lg border border-accent p-4">
+                    <TypographyH3 className="mb-4">Resumen de Cálculos</TypographyH3>
+                    <div className="space-y-2">
+                        <div className="flex justify-between">
+                            <span>Total Gastos Estimados:</span>
+                            <span>${budget.totalExpectedExpenses.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Total Mano de Obra:</span>
+                            <span>
+                                $
+                                {budget.manpower
+                                    ?.reduce((sum, worker) => sum + worker.payAmount, 0)
+                                    .toFixed(2) || '0.00'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between font-medium">
+                            <span>Subtotal:</span>
+                            <span>
+                                $
+                                {(
+                                    budget.totalExpectedExpenses +
+                                    (budget.manpower?.reduce(
+                                        (sum, worker) => sum + worker.payAmount,
+                                        0,
+                                    ) || 0)
+                                ).toFixed(2)}
+                            </span>
+                        </div>
+                        {budget.markup && budget.markup > 0 && (
+                            <>
+                                <div className="flex justify-between">
+                                    <span>Markup ({budget.markup}%):</span>
+                                    <span>
+                                        $
+                                        {(
+                                            (budget.totalExpectedExpenses +
+                                                (budget.manpower?.reduce(
+                                                    (sum, worker) =>
+                                                        sum + worker.payAmount,
+                                                    0,
+                                                ) || 0)) *
+                                            (budget.markup / 100)
+                                        ).toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-lg font-bold">
+                                    <span>Precio Final:</span>
+                                    <span>${budget.price.toFixed(2)}</span>
+                                </div>
+                            </>
+                        )}
+                        {(!budget.markup || budget.markup === 0) && (
+                            <div className="flex justify-between text-lg font-bold">
+                                <span>Precio Final:</span>
+                                <span>${budget.price.toFixed(2)}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </main>

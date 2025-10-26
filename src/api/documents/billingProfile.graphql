@@ -6,11 +6,12 @@ mutation CreateBillingProfile($input: BillingProfileInput!) {
         message
         billingProfile {
             id
-            CUIT
+            tipoDocumento
+            numeroDocumento
             legalName
             IVACondition
             comercialAddress
-            billingEmail
+            billingEmails
             createdAt
             updatedAt
             business {
@@ -31,11 +32,12 @@ mutation UpdateBillingProfile($id: String!, $input: UpdateBillingProfileInput!) 
         message
         billingProfile {
             id
-            CUIT
+            tipoDocumento
+            numeroDocumento
             legalName
             IVACondition
             comercialAddress
-            billingEmail
+            billingEmails
             createdAt
             updatedAt
             business {
@@ -56,11 +58,12 @@ mutation DeleteBillingProfile($id: String!) {
         message
         billingProfile {
             id
-            CUIT
+            tipoDocumento
+            numeroDocumento
             legalName
             IVACondition
             comercialAddress
-            billingEmail
+            billingEmails
             createdAt
             updatedAt
             business {
@@ -92,11 +95,12 @@ query GetBillingProfiles(
         orderDirection: $orderDirection
     ) {
         id
-        CUIT
+        tipoDocumento
+        numeroDocumento
         legalName
         IVACondition
         comercialAddress
-        billingEmail
+        billingEmails
         createdAt
         updatedAt
         business {
@@ -122,11 +126,12 @@ query GetBillingProfiles(
 query GetBillingProfileById($id: String!) {
     billingProfileById(id: $id) {
         id
-        CUIT
+        tipoDocumento
+        numeroDocumento
         legalName
         IVACondition
         comercialAddress
-        billingEmail
+        billingEmails
         createdAt
         updatedAt
         business {
@@ -161,11 +166,12 @@ query GetBillingProfileById($id: String!) {
 query GetBillingProfileByBusinessId($businessId: String!) {
     billingProfileByBusinessId(businessId: $businessId) {
         id
-        CUIT
+        tipoDocumento
+        numeroDocumento
         legalName
         IVACondition
         comercialAddress
-        billingEmail
+        billingEmails
         createdAt
         updatedAt
         business {

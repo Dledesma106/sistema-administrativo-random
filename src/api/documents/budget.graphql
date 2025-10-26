@@ -18,6 +18,7 @@ query GetBudgets(
         orderDirection: $orderDirection
     ) {
         id
+        budgetNumber
         subject
         description
         price
@@ -25,6 +26,18 @@ query GetBudgets(
         clientName
         createdAt
         updatedAt
+        expectedExpenses {
+            type
+            unitPrice
+            quantity
+            amount
+        }
+        manpower {
+            technician
+            payAmount
+        }
+        markup
+        totalExpectedExpenses
         billingProfile {
             id
             business {
@@ -52,6 +65,7 @@ query GetBudgets(
 query GetBudgetById($id: String!) {
     budgetById(id: $id) {
         id
+        budgetNumber
         subject
         description
         price
@@ -59,13 +73,30 @@ query GetBudgetById($id: String!) {
         clientName
         createdAt
         updatedAt
+        expectedExpenses {
+            type
+            unitPrice
+            quantity
+            amount
+        }
+        manpower {
+            technician
+            payAmount
+        }
+        markup
+        budgetBranch {
+            name
+            number
+        }
+        totalExpectedExpenses
         billingProfile {
             id
             legalName
-            CUIT
+            tipoDocumento
+            numeroDocumento
             IVACondition
             comercialAddress
-            billingEmail
+            billingEmails
             contacts {
                 email
                 fullName
@@ -121,9 +152,10 @@ query GetBusinessesWithBillingProfiles($search: String, $skip: Int, $take: Int) 
         billingProfile {
             id
             legalName
-            CUIT
+            tipoDocumento
+            numeroDocumento
             IVACondition
-            billingEmail
+            billingEmails
             comercialAddress
         }
     }

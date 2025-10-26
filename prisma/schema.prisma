@@ -150,6 +150,15 @@ enum IVACondition {
   ConsumidorFinal
 }
 
+enum TipoDocumento {
+  CUIT
+  CUIL
+  DNI
+  CDI
+  Pasaporte
+  Otro
+}
+
 enum ExpenseStatus {
   Enviado
   Aprobado
@@ -175,7 +184,7 @@ model File {
   mimeType String
   size     Int
 
-  url       String    @unique(map: "url_1")
+  url       String?
   urlExpire DateTime?
 
   expenseIDs String[]  @db.ObjectId
@@ -236,7 +245,7 @@ model Image {
   deletedAt DateTime? @db.Date
   key       String
 
-  url       String    @unique(map: "url_1")
+  url       String?
   urlExpire DateTime?
 
   expenseIDs String[]  @db.ObjectId
@@ -447,16 +456,17 @@ type AttachmentFile {
 }
 
 model BillingProfile {
-  id               String       @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt        DateTime     @default(now()) @db.Date
-  updatedAt        DateTime     @updatedAt
-  deleted          Boolean      @default(false)
-  deletedAt        DateTime?    @db.Date
-  CUIT             String
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt        DateTime      @default(now()) @db.Date
+  updatedAt        DateTime      @updatedAt
+  deleted          Boolean       @default(false)
+  deletedAt        DateTime?     @db.Date
+  numeroDocumento  String
+  tipoDocumento    TipoDocumento
   legalName        String
   IVACondition     IVACondition
   comercialAddress String
-  billingEmail     String
+  billingEmails    String[]
   contacts         Contact[]
 
   businessId String   @unique @map("business") @db.ObjectId
@@ -476,6 +486,23 @@ type Contact {
   notes    String
 }
 
+type ExpectedExpense {
+  type      ExpenseType
+  unitPrice Float?
+  quantity  Float?
+  amount    Float?
+}
+
+type BudgetBranch {
+  name   String?
+  number Int?
+}
+
+type Manpower {
+  technician String
+  payAmount  Float
+}
+
 enum BudgetStatus {
   Borrador
   Enviado
@@ -492,11 +519,17 @@ model Budget {
   deletedAt DateTime? @db.Date
 
   // Información básica del presupuesto
-  subject     String // Asunto
-  description String? // Descripción
-  price       Float // Precio
-  status      BudgetStatus @default(Borrador)
-  clientName  String? // Nombre del cliente
+  budgetNumber          Int               @unique
+  subject               String // Asunto
+  description           String? // Descripción
+  price                 Float // Precio
+  status                BudgetStatus      @default(Borrador)
+  clientName            String? // Nombre del cliente
+  expectedExpenses      ExpectedExpense[]
+  manpower              Manpower[]
+  markup                Float?
+  budgetBranch          BudgetBranch?
+  totalExpectedExpenses Float
 
   // Integración con Gmail
   gmailThreadId String? // ID de la cadena de mail
@@ -523,6 +556,7 @@ enum ServiceOrderStatus {
   Pendiente
   EnProgreso
   Finalizada
+  ParaFacturar
 }
 
 model ServiceOrder {
