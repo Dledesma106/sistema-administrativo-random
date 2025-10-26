@@ -1,4 +1,9 @@
-import { BudgetStatus, IVACondition, ServiceOrderStatus } from '@prisma/client';
+import {
+    BudgetStatus,
+    IVACondition,
+    ServiceOrderStatus,
+    TipoDocumento,
+} from '@prisma/client';
 
 import {
     BudgetCrudResultPothosRef,
@@ -200,7 +205,7 @@ builder.mutationFields((t) => ({
                 const { input } = args;
 
                 // Validar que se proporcione o billingProfileId o datos para crear uno nuevo
-                if (!input.billingProfileId && !input.businessCUIT) {
+                if (!input.billingProfileId && !input.businessNumeroDocumento) {
                     return {
                         success: false,
                         message:
@@ -254,11 +259,12 @@ builder.mutationFields((t) => ({
                 // Crear el nuevo perfil de facturación
                 const newBillingProfile = await prisma.billingProfile.create({
                     data: {
-                        CUIT: input.businessCUIT!,
+                        numeroDocumento: input.businessNumeroDocumento!,
+                        tipoDocumento: input.businessTipoDocumento as TipoDocumento,
                         legalName: input.businessLegalName!,
                         IVACondition: input.businessIVACondition as IVACondition,
                         comercialAddress: input.businessComercialAddress!,
-                        billingEmail: input.businessBillingEmail!,
+                        billingEmails: input.businessBillingEmails || [],
                         business: {
                             connect: { id: businessId! },
                         },

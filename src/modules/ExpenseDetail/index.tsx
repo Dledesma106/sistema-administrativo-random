@@ -258,18 +258,19 @@ const Content: React.FC<Props> = ({ expense }) => {
                     {expense.images && expense.images.length > 0 && (
                         <div>
                             <Title>Imágenes</Title>
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                            <div className="flex flex-wrap gap-4">
                                 {expense.images.map((image) => (
-                                    <ImageViewer
-                                        key={image.id}
-                                        src={image.url}
-                                        alt=""
-                                        filename={`Imagen ${image.id}`}
-                                        showPreviewButton={true}
-                                        className="max-h-32 w-auto object-contain"
-                                        previewClassName="group overflow-hidden rounded-md border border-accent"
-                                        modalClassName="max-w-6xl border-accent"
-                                    />
+                                    <div key={image.id} className="size-32 shrink-0">
+                                        <ImageViewer
+                                            src={image.url}
+                                            alt=""
+                                            filename={`Imagen ${image.id}`}
+                                            showPreviewButton={true}
+                                            className="size-full object-cover"
+                                            previewClassName="group h-full w-full overflow-hidden rounded-md border border-accent"
+                                            modalClassName="max-w-6xl border-accent"
+                                        />
+                                    </div>
                                 ))}
                             </div>
                         </div>

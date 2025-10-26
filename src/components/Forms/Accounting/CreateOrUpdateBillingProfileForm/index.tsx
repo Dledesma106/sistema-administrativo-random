@@ -7,7 +7,11 @@ import { useForm } from 'react-hook-form';
 import { ContactForm, ContactFormValues } from './ContactForm';
 import { ContactItem } from './ContactItem';
 
-import { GetBusinessesWithoutBillingProfileQuery, IvaCondition } from '@/api/graphql';
+import {
+    GetBusinessesWithoutBillingProfileQuery,
+    IvaCondition,
+    TipoDocumento,
+} from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
@@ -43,9 +47,10 @@ export type FormValues = {
     business: string;
     businessName?: string;
     legalName: string;
-    cuit: string;
+    numeroDocumento: string;
+    tipoDocumento: TipoDocumento;
     contacts: ContactFormValues[];
-    billingEmail: string;
+    billingEmails: string[];
     billingAddress: string;
     taxCondition: IvaCondition;
 };
@@ -79,32 +84,60 @@ const CreateOrUpdateBillingProfileForm = ({
     const [contacts, setContacts] = useState<ContactFormValues[]>(
         defaultValues?.contacts || [],
     );
+    const [billingEmails, setBillingEmails] = useState<string[]>(
+        defaultValues?.billingEmails || [],
+    );
+    const [emailInput, setEmailInput] = useState('');
     const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
     const [editingContact, setEditingContact] = useState<ContactFormValues | null>(null);
 
     const form = useForm<FormValues>({
         defaultValues: defaultValues || {
-            cuit: '',
+            numeroDocumento: '',
             legalName: '',
-            billingEmail: '',
+            tipoDocumento: undefined,
+            billingEmails: [],
             billingAddress: '',
             taxCondition: '' as FormValues['taxCondition'],
+            contacts: [],
         },
     });
 
     useEffect(() => {
         if (isEmbedded && onSubmit) {
-            const subscription = form.watch((value) => onSubmit(value as FormValues));
+            const subscription = form.watch((value) => {
+                const formData = value as FormValues;
+                onSubmit({
+                    ...formData,
+                    contacts,
+                    billingEmails,
+                });
+            });
             return () => subscription.unsubscribe();
         }
-    }, [form, isEmbedded, onSubmit]);
+    }, [form, isEmbedded, onSubmit, contacts, billingEmails]);
+
+    // Sincronizar estados cuando cambien los contactos o emails
+    useEffect(() => {
+        if (isEmbedded && onSubmit) {
+            const formData = form.getValues();
+            onSubmit({
+                ...formData,
+                contacts,
+                billingEmails,
+            });
+        }
+    }, [contacts, billingEmails, isEmbedded, onSubmit, form]);
 
     // Actualizar formulario cuando se obtenga el perfil de facturación existente
     useEffect(() => {
         if (businessId && !profileIdToUpdate) {
             form.setValue('legalName', defaultValues?.legalName || '');
-            form.setValue('cuit', defaultValues?.cuit || '');
-            form.setValue('billingEmail', defaultValues?.billingEmail || '');
+            form.setValue('numeroDocumento', defaultValues?.numeroDocumento || '');
+            form.setValue(
+                'tipoDocumento',
+                defaultValues?.tipoDocumento || TipoDocumento.Cuit,
+            );
             form.setValue('billingAddress', defaultValues?.billingAddress || '');
             form.setValue(
                 'taxCondition',
@@ -120,6 +153,11 @@ const CreateOrUpdateBillingProfileForm = ({
                     notes: contact.notes,
                 }));
                 setContacts(formattedContacts);
+            }
+
+            // Actualizar emails de facturación si existen
+            if (defaultValues?.billingEmails && defaultValues.billingEmails.length > 0) {
+                setBillingEmails(defaultValues.billingEmails);
             }
         }
     }, [defaultValues, businessId, profileIdToUpdate, form]);
@@ -139,12 +177,15 @@ const CreateOrUpdateBillingProfileForm = ({
                     throw new Error('Debe seleccionar una empresa');
                 }
 
+                console.log('Submitting with billingEmails:', billingEmails);
+                console.log('Submitting with contacts:', contacts);
                 const input = {
-                    CUIT: formData.cuit,
+                    numeroDocumento: formData.numeroDocumento,
+                    tipoDocumento: formData.tipoDocumento!,
                     legalName: formData.legalName,
                     IVACondition: formData.taxCondition,
                     comercialAddress: formData.billingAddress,
-                    billingEmail: formData.billingEmail,
+                    billingEmails: billingEmails,
                     contacts: contacts.map((contact) => ({
                         email: contact.email,
                         fullName: contact.name,
@@ -167,12 +208,15 @@ const CreateOrUpdateBillingProfileForm = ({
                     throw new Error('Debe seleccionar una empresa');
                 }
 
+                console.log('Creating with billingEmails:', billingEmails);
+                console.log('Creating with contacts:', contacts);
                 const input = {
-                    CUIT: formData.cuit,
+                    numeroDocumento: formData.numeroDocumento,
+                    tipoDocumento: formData.tipoDocumento,
                     legalName: formData.legalName,
                     IVACondition: formData.taxCondition,
                     comercialAddress: formData.billingAddress,
-                    billingEmail: formData.billingEmail,
+                    billingEmails: billingEmails,
                     businessId: formData.business === 'other' ? null : formData.business,
                     businessName: formData.businessName ?? null,
                     contacts: contacts.map((contact) => ({
@@ -220,6 +264,23 @@ const CreateOrUpdateBillingProfileForm = ({
 
     const handleDeleteContact = (contactToDelete: ContactFormValues) => {
         setContacts((prev) => prev.filter((contact) => contact !== contactToDelete));
+    };
+
+    const handleAddEmail = () => {
+        if (emailInput.trim() && !billingEmails.includes(emailInput.trim())) {
+            console.log('Adding email:', emailInput.trim());
+            console.log('Current emails before:', billingEmails);
+            setBillingEmails((prev) => {
+                const newEmails = [...prev, emailInput.trim()];
+                console.log('New emails after:', newEmails);
+                return newEmails;
+            });
+            setEmailInput('');
+        }
+    };
+
+    const handleRemoveEmail = (emailToRemove: string) => {
+        setBillingEmails((prev) => prev.filter((email) => email !== emailToRemove));
     };
 
     const formContent = (
@@ -288,31 +349,60 @@ const CreateOrUpdateBillingProfileForm = ({
 
                 {/* Solo mostrar otros campos si no es showOnlyName */}
                 <>
-                    <FormField
-                        name="cuit"
-                        control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                            pattern: {
-                                value: /^[0-9]{11}$/,
-                                message: 'El CUIT debe tener 11 dígitos',
-                            },
-                        }}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>CUIT</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="CUIT sin guiones"
-                                        type="number"
-                                        className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormField
+                            name="tipoDocumento"
+                            control={form.control}
+                            rules={{ required: 'Este campo es requerido' }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tipo de Documento</FormLabel>
+                                    <FormControl>
+                                        <Combobox
+                                            selectPlaceholder="Seleccione tipo de documento"
+                                            searchPlaceholder="Buscar tipo"
+                                            value={field.value ?? ''}
+                                            onChange={field.onChange}
+                                            items={Object.values(TipoDocumento).map(
+                                                (value) => ({
+                                                    label: pascalCaseToSpaces(value),
+                                                    value,
+                                                }),
+                                            )}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            name="numeroDocumento"
+                            control={form.control}
+                            rules={{
+                                required: 'Este campo es requerido',
+                                pattern: {
+                                    value: /^[0-9]{7,11}$/,
+                                    message:
+                                        'El número de documento debe tener entre 7 y 11 dígitos',
+                                },
+                            }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Número de Documento</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Número sin guiones"
+                                            type="number"
+                                            className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
                     <FormField
                         name="legalName"
@@ -375,30 +465,58 @@ const CreateOrUpdateBillingProfileForm = ({
                         )}
                     />
 
-                    <FormField
-                        name="billingEmail"
-                        control={form.control}
-                        rules={{
-                            required: 'Este campo es requerido',
-                            pattern: {
-                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                message: 'Email inválido',
-                            },
-                        }}
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email de Facturación</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        placeholder="Email de facturación"
-                                        type="email"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-medium">Emails de Facturación</h3>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <Input
+                                placeholder="Email de facturación"
+                                type="email"
+                                value={emailInput}
+                                onChange={(e) => setEmailInput(e.target.value)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddEmail();
+                                    }
+                                }}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleAddEmail}
+                                disabled={
+                                    !emailInput.trim() ||
+                                    billingEmails.includes(emailInput.trim())
+                                }
+                            >
+                                <Plus className="size-4" />
+                            </Button>
+                        </div>
+
+                        {billingEmails.length > 0 && (
+                            <div className="space-y-2">
+                                {billingEmails.map((email, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center justify-between rounded-md border p-2"
+                                    >
+                                        <span className="text-sm">{email}</span>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleRemoveEmail(email)}
+                                        >
+                                            ×
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
                         )}
-                    />
+                    </div>
 
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -414,7 +532,7 @@ const CreateOrUpdateBillingProfileForm = ({
                                         size="sm"
                                         onClick={() => setEditingContact(null)}
                                     >
-                                        <Plus className="mr-2 h-4 w-4" />
+                                        <Plus className="mr-2 size-4" />
                                         Agregar contacto
                                     </Button>
                                 </DialogTrigger>

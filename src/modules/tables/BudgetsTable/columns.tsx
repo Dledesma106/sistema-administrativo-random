@@ -12,6 +12,33 @@ type Budget = NonNullable<GetBudgetsQuery['budgets']>[number];
 const columnHelper = createColumnHelper<Budget>();
 
 export const useBudgetsTableColumns = () => [
+    columnHelper.accessor((row) => (row as any).budgetNumber || 'N/A', {
+        id: 'budgetNumber',
+        header: ({ column }) => {
+            return (
+                <button
+                    className="flex w-full justify-between gap-1 text-left"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                >
+                    <span>Número</span>
+                    {column.getIsSorted() && (
+                        <span>
+                            {column.getIsSorted() === 'asc' ? (
+                                <ArrowUp className="ml-1 size-4" />
+                            ) : (
+                                <ArrowDown className="ml-1 size-4" />
+                            )}
+                        </span>
+                    )}
+                </button>
+            );
+        },
+        cell: (info) => {
+            const budgetNumber = info.getValue();
+            return <span className="font-medium">#{budgetNumber}</span>;
+        },
+        enableSorting: true,
+    }),
     columnHelper.accessor('billingProfile.business.name', {
         id: 'business',
         header: ({ column }) => {

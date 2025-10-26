@@ -40,5 +40,8 @@ next-env.d.ts
 # ejemplos facturas
 /ejemplos-facturas
 
+#scripts
+/scripts
+
 # bun
 bun.lock

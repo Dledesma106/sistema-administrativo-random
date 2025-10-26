@@ -42,11 +42,12 @@ export default function EditBudget(): JSX.Element {
         billingProfile: {
             business: budget.billingProfile.business.id,
             businessName: budget.billingProfile.business.name,
-            cuit: budget.billingProfile.CUIT,
+            numeroDocumento: budget.billingProfile.numeroDocumento,
+            tipoDocumento: budget.billingProfile.tipoDocumento,
             legalName: budget.billingProfile.legalName,
             taxCondition: budget.billingProfile.IVACondition,
             billingAddress: budget.billingProfile.comercialAddress,
-            billingEmail: budget.billingProfile.billingEmail,
+            billingEmails: budget.billingProfile.billingEmails,
             contacts: budget.billingProfile.contacts.map((contact) => ({
                 name: contact.fullName,
                 email: contact.email,

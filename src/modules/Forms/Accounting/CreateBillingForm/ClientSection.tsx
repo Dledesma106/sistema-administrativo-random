@@ -28,7 +28,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
                 );
                 if (selectedProfile) {
                     form.setValue('legalName', selectedProfile.legalName);
-                    form.setValue('cuit', selectedProfile.CUIT);
+                    form.setValue('cuit', selectedProfile.numeroDocumento);
                     form.setValue('businessAddress', selectedProfile.comercialAddress);
                     form.setValue('ivaCondition', selectedProfile.IVACondition);
                 }

@@ -15,8 +15,11 @@ export const useBillingProfilesTableColumns = () => [
     columnHelper.accessor('business.name', {
         header: 'Empresa',
     }),
-    columnHelper.accessor('CUIT', {
-        header: 'CUIT',
+    columnHelper.accessor('numeroDocumento', {
+        header: 'Número de Documento',
+    }),
+    columnHelper.accessor('tipoDocumento', {
+        header: 'Tipo de Documento',
     }),
     columnHelper.accessor('firstContact.fullName', {
         header: 'Contacto',
@@ -34,18 +37,24 @@ export const useBillingProfilesTableColumns = () => [
             </a>
         ),
     }),
-    columnHelper.accessor('billingEmail', {
+    columnHelper.accessor('billingEmails', {
         header: 'Email de facturación',
-        cell: (info) => (
-            <a
-                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${info.getValue()}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-            >
-                {info.getValue()}
-            </a>
-        ),
+        cell: (info) => {
+            const emails = info.getValue();
+            const firstEmail = emails && emails.length > 0 ? emails[0] : null;
+            return firstEmail ? (
+                <a
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${firstEmail}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                >
+                    {firstEmail}
+                </a>
+            ) : (
+                <span className="text-muted-foreground">No especificado</span>
+            );
+        },
     }),
     columnHelper.display({
         id: 'actions',

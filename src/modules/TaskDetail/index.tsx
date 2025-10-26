@@ -1,8 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { DownloadIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
 import { BsPlus } from 'react-icons/bs';
 
@@ -14,6 +12,7 @@ import { TaskStatusBadge } from '@/components/ui/Badges/TaskStatusBadge';
 import { TaskTypeBadge } from '@/components/ui/Badges/TaskTypeBadge';
 import { Button } from '@/components/ui/button';
 import { DataList } from '@/components/ui/data-list';
+import { ImageViewer } from '@/components/ui/ImageViewer';
 import { FormSkeleton } from '@/components/ui/skeleton';
 import { TypographyH1 } from '@/components/ui/typography';
 import { useUserContext } from '@/context/userContext/UserProvider';
@@ -169,28 +168,18 @@ const Content: React.FC<Props> = ({ task }) => {
                     {task.images.length === 0 ? (
                         <p className="text-muted-foreground">No hay imágenes</p>
                     ) : (
-                        <div className="grid grid-cols-6 gap-4">
+                        <div className="flex flex-wrap gap-4">
                             {task.images.map((image) => (
-                                <div key={image.id}>
-                                    <a
-                                        className="group relative inline-block overflow-hidden rounded-md border border-accent"
-                                        download={image.id}
-                                        href={image.url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        <Image
-                                            src={image.url}
-                                            width={640}
-                                            height={1252}
-                                            alt=""
-                                            className="z-0"
-                                        />
-
-                                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 transition-colors duration-200 group-hover:bg-background/90">
-                                            <DownloadIcon />
-                                        </div>
-                                    </a>
+                                <div key={image.id} className="size-32 shrink-0">
+                                    <ImageViewer
+                                        src={image.url}
+                                        alt=""
+                                        filename={`Imagen ${image.id}`}
+                                        showPreviewButton={true}
+                                        className="size-full object-cover"
+                                        previewClassName="group h-full w-full overflow-hidden rounded-md border border-accent"
+                                        modalClassName="max-w-6xl border-accent"
+                                    />
                                 </div>
                             ))}
                         </div>

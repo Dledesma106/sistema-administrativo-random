@@ -1641,22 +1641,6 @@
                 "isOneOf": null,
                 "fields": [
                     {
-                        "name": "CUIT",
-                        "description": null,
-                        "args": [],
-                        "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "String",
-                                "ofType": null
-                            }
-                        },
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
-                    {
                         "name": "IVACondition",
                         "description": null,
                         "args": [],
@@ -1673,16 +1657,24 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "billingEmail",
+                        "name": "billingEmails",
                         "description": null,
                         "args": [],
                         "type": {
                             "kind": "NON_NULL",
                             "name": null,
                             "ofType": {
-                                "kind": "SCALAR",
-                                "name": "String",
-                                "ofType": null
+                                "kind": "LIST",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String",
+                                        "ofType": null
+                                    }
+                                }
                             }
                         },
                         "isDeprecated": false,
@@ -1857,6 +1849,38 @@
                         "deprecationReason": null
                     },
                     {
+                        "name": "numeroDocumento",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "String",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "tipoDocumento",
+                        "description": null,
+                        "args": [],
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "ENUM",
+                                "name": "TipoDocumento",
+                                "ofType": null
+                            }
+                        },
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
                         "name": "updatedAt",
                         "description": null,
                         "args": [],
@@ -1938,22 +1962,6 @@
                 "fields": null,
                 "inputFields": [
                     {
-                        "name": "CUIT",
-                        "description": null,
-                        "type": {
-                            "kind": "NON_NULL",
-                            "name": null,
-                            "ofType": {
-                                "kind": "SCALAR",
-                                "name": "String",
-                                "ofType": null
-                            }
-                        },
-                        "defaultValue": null,
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
-                    {
                         "name": "IVACondition",
                         "description": null,
                         "type": {
@@ -1970,15 +1978,23 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "billingEmail",
+                        "name": "billingEmails",
                         "description": null,
                         "type": {
                             "kind": "NON_NULL",
                             "name": null,
                             "ofType": {
-                                "kind": "SCALAR",
-                                "name": "String",
-                                "ofType": null
+                                "kind": "LIST",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "NON_NULL",
+                                    "name": null,
+                                    "ofType": {
+                                        "kind": "SCALAR",
+                                        "name": "String",
+                                        "ofType": null
+                                    }
+                                }
                             }
                         },
                         "defaultValue": null,
@@ -2054,6 +2070,38 @@
                             "ofType": {
                                 "kind": "SCALAR",
                                 "name": "String",
+                                "ofType": null
+                            }
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "numeroDocumento",
+                        "description": null,
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "SCALAR",
+                                "name": "String",
+                                "ofType": null
+                            }
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "tipoDocumento",
+                        "description": null,
+                        "type": {
+                            "kind": "NON_NULL",
+                            "name": null,
+                            "ofType": {
+                                "kind": "ENUM",
+                                "name": "TipoDocumento",
                                 "ofType": null
                             }
                         },
@@ -3915,24 +3963,20 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "businessBillingEmail",
+                        "name": "businessBillingEmails",
                         "description": null,
                         "type": {
-                            "kind": "SCALAR",
-                            "name": "String",
-                            "ofType": null
-                        },
-                        "defaultValue": null,
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
-                    {
-                        "name": "businessCUIT",
-                        "description": null,
-                        "type": {
-                            "kind": "SCALAR",
-                            "name": "String",
-                            "ofType": null
+                            "kind": "LIST",
+                            "name": null,
+                            "ofType": {
+                                "kind": "NON_NULL",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "SCALAR",
+                                    "name": "String",
+                                    "ofType": null
+                                }
+                            }
                         },
                         "defaultValue": null,
                         "isDeprecated": false,
@@ -3988,6 +4032,30 @@
                     },
                     {
                         "name": "businessName",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "businessNumeroDocumento",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "businessTipoDocumento",
                         "description": null,
                         "type": {
                             "kind": "SCALAR",
@@ -15370,24 +15438,60 @@
                 "possibleTypes": null
             },
             {
+                "kind": "ENUM",
+                "name": "TipoDocumento",
+                "description": null,
+                "isOneOf": null,
+                "fields": null,
+                "inputFields": null,
+                "interfaces": null,
+                "enumValues": [
+                    {
+                        "name": "CDI",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "CUIL",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "CUIT",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "DNI",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Otro",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "Pasaporte",
+                        "description": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    }
+                ],
+                "possibleTypes": null
+            },
+            {
                 "kind": "INPUT_OBJECT",
                 "name": "UpdateBillingProfileInput",
                 "description": null,
                 "isOneOf": false,
                 "fields": null,
                 "inputFields": [
-                    {
-                        "name": "CUIT",
-                        "description": null,
-                        "type": {
-                            "kind": "SCALAR",
-                            "name": "String",
-                            "ofType": null
-                        },
-                        "defaultValue": null,
-                        "isDeprecated": false,
-                        "deprecationReason": null
-                    },
                     {
                         "name": "IVACondition",
                         "description": null,
@@ -15401,12 +15505,20 @@
                         "deprecationReason": null
                     },
                     {
-                        "name": "billingEmail",
+                        "name": "billingEmails",
                         "description": null,
                         "type": {
-                            "kind": "SCALAR",
-                            "name": "String",
-                            "ofType": null
+                            "kind": "LIST",
+                            "name": null,
+                            "ofType": {
+                                "kind": "NON_NULL",
+                                "name": null,
+                                "ofType": {
+                                    "kind": "SCALAR",
+                                    "name": "String",
+                                    "ofType": null
+                                }
+                            }
                         },
                         "defaultValue": null,
                         "isDeprecated": false,
@@ -15450,6 +15562,30 @@
                         "type": {
                             "kind": "SCALAR",
                             "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "numeroDocumento",
+                        "description": null,
+                        "type": {
+                            "kind": "SCALAR",
+                            "name": "String",
+                            "ofType": null
+                        },
+                        "defaultValue": null,
+                        "isDeprecated": false,
+                        "deprecationReason": null
+                    },
+                    {
+                        "name": "tipoDocumento",
+                        "description": null,
+                        "type": {
+                            "kind": "ENUM",
+                            "name": "TipoDocumento",
                             "ofType": null
                         },
                         "defaultValue": null,

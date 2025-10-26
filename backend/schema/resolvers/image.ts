@@ -10,7 +10,7 @@ export const ImagePothosRef = builder.prismaObject('Image', {
         url: t.string({
             resolve: async (parent) => {
                 if (parent.urlExpire && new Date(parent.urlExpire) > new Date()) {
-                    return parent.url;
+                    return parent.url ?? '';
                 }
                 const { url, urlExpire } = await createImageSignedUrlAsync(parent.key);
                 await prisma.image.update({
@@ -20,7 +20,7 @@ export const ImagePothosRef = builder.prismaObject('Image', {
                         urlExpire,
                     },
                 });
-                return url;
+                return url ?? '';
             },
         }),
         urlExpire: t.field({

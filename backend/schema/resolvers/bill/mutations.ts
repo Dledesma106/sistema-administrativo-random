@@ -41,7 +41,7 @@ builder.mutationFields((t) => ({
                         businessId: billingProfile.businessId,
                         billingProfileId: input.billingProfileId,
                         legalName: billingProfile.legalName,
-                        CUIT: billingProfile.CUIT,
+                        CUIT: billingProfile.numeroDocumento,
                         billingAddress: billingProfile.comercialAddress,
                         IVACondition: billingProfile.IVACondition,
                         status: input.status,
