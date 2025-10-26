@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 import { DownloadIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
 
@@ -8,6 +6,7 @@ import ExpensePaySourceBadge from '@/components/ui/Badges/ExpensePaySourceBadge'
 import ExpenseTypeBadge from '@/components/ui/Badges/ExpenseTypeBadge';
 import { Button } from '@/components/ui/button';
 import { Column } from '@/components/ui/data-list';
+import { ImageViewer } from '@/components/ui/ImageViewer';
 import { PDFViewer } from '@/components/ui/PDFViewer';
 
 type Expense = NonNullable<GetTaskQuery['taskById']>['expenses'][number];
@@ -63,27 +62,21 @@ export const expenseColumns: Column<Expense>[] = [
         header: 'Imágenes',
         cell: (expense) =>
             expense.images && expense.images.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+                <div
+                    className="flex flex-wrap gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     {expense.images.map((image) => (
-                        <a
+                        <ImageViewer
                             key={image.id}
-                            className="group relative inline-block h-14 w-20 overflow-hidden rounded-md border border-accent"
-                            download={image.id}
-                            href={image.url}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            <Image
-                                src={image.url}
-                                width={40}
-                                height={40}
-                                alt=""
-                                className="size-full object-cover"
-                            />
-                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                                <DownloadIcon className="size-4" />
-                            </div>
-                        </a>
+                            src={image.url}
+                            alt={`Imagen ${image.id}`}
+                            filename={`Imagen ${image.id}`}
+                            showPreviewButton={true}
+                            className="h-14 w-20 object-cover"
+                            previewClassName="group h-14 w-20 overflow-hidden rounded-md border border-accent"
+                            modalClassName="max-w-6xl border-accent"
+                        />
                     ))}
                 </div>
             ) : (
@@ -95,7 +88,10 @@ export const expenseColumns: Column<Expense>[] = [
         header: 'Archivos',
         cell: (expense) =>
             expense.files && expense.files.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+                <div
+                    className="flex flex-wrap gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     {expense.files.map((file) =>
                         file.mimeType.includes('pdf') ? (
                             <PDFViewer
