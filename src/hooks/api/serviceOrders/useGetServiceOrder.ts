@@ -1,11 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchClient } from '@/api/fetch-client';
-import {
-    ServiceOrderDocument,
-    type ServiceOrderQuery,
-    type ServiceOrderQueryVariables,
-} from '@/api/graphql';
+import { ServiceOrderDocument, type ServiceOrderQuery } from '@/api/graphql';
 
 export const SERVICE_ORDER_QUERY_KEY = ['serviceOrder'] as const;
 
@@ -19,4 +15,3 @@ export const useGetServiceOrder = (id: string) => {
         enabled: !!id,
     });
 };
-
