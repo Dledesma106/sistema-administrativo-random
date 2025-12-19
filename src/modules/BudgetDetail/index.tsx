@@ -34,27 +34,35 @@ export const BudgetDetail = ({ id }: { id: string }) => {
         }
 
         try {
-            await updateBudgetStatus.mutateAsync({
+            const result = await updateBudgetStatus.mutateAsync({
                 id,
                 input: {
                     status: newStatus as BudgetStatus,
                 },
             });
 
-            triggerAlert({
-                type: 'Success',
-                message: 'Estado del presupuesto actualizado correctamente',
-            });
-
-            // Si el estado cambia a aprobado, crear orden de servicio
-            if (newStatus === BudgetStatus.Aprobado) {
-                // TODO: Implementar creación de orden de servicio
-                // console.log('Crear orden de servicio para el presupuesto:', id);
+            // Verificar si la operación fue exitosa en el servidor
+            if (result.updateBudgetStatus.success) {
+                triggerAlert({
+                    type: 'Success',
+                    message: 'Estado del presupuesto actualizado correctamente',
+                });
+            } else {
+                // El servidor devolvió success: false
+                triggerAlert({
+                    type: 'Failure',
+                    message:
+                        result.updateBudgetStatus.message ||
+                        'Error al actualizar el estado del presupuesto',
+                });
             }
         } catch (error) {
             triggerAlert({
                 type: 'Failure',
-                message: 'Error al actualizar el estado del presupuesto',
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : 'Error al actualizar el estado del presupuesto',
             });
         }
     };
@@ -134,6 +142,28 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                     </div>
                 </div>
 
+                {budget.serviceOrder && budget.serviceOrder.length > 0 && (
+                    <div>
+                        <Title>Orden de Servicio</Title>
+                        <button
+                            onClick={() =>
+                                router.push(
+                                    routesBuilder.serviceOrders.details(
+                                        budget.serviceOrder[0].id,
+                                    ),
+                                )
+                            }
+                            className="text-primary underline-offset-4 hover:underline"
+                        >
+                            OS-
+                            {String(budget.serviceOrder[0].serviceOrderNumber).padStart(
+                                3,
+                                '0',
+                            )}
+                        </button>
+                    </div>
+                )}
+
                 <div>
                     <Title>Asunto</Title>
                     <p className="mb-1">{budget.subject}</p>
@@ -153,26 +183,27 @@ export const BudgetDetail = ({ id }: { id: string }) => {
                     </p>
                 </div>
 
-                {(budget.branch || budget.budgetBranch) && (
+                {(budget.branch || budget.customBranch) && (
                     <div>
                         <Title>Sucursal</Title>
                         <p className="mb-1">
-                            {budget.branch && (
+                            {budget.customBranch ? (
                                 <>
-                                    {budget.branch.number && `#${budget.branch.number}`}
-                                    {budget.branch.name && ` - ${budget.branch.name}`}
-                                </>
-                            )}
-                            {budget.branch && budget.budgetBranch && ' - '}
-                            {budget.budgetBranch && (
-                                <>
-                                    {budget.budgetBranch.number &&
-                                        `#${budget.budgetBranch.number}`}
-                                    {budget.budgetBranch.name &&
-                                        budget.budgetBranch.number &&
+                                    {budget.customBranch.number &&
+                                        `#${budget.customBranch.number}`}
+                                    {budget.customBranch.number &&
+                                        budget.customBranch.name &&
                                         ' - '}
-                                    {budget.budgetBranch.name && budget.budgetBranch.name}
+                                    {budget.customBranch.name}
                                 </>
+                            ) : (
+                                budget.branch && (
+                                    <>
+                                        {budget.branch.number &&
+                                            `#${budget.branch.number}`}
+                                        {budget.branch.name && ` - ${budget.branch.name}`}
+                                    </>
+                                )
                             )}
                         </p>
                     </div>

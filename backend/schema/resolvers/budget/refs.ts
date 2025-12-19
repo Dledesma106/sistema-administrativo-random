@@ -1,8 +1,11 @@
 import { Budget, BudgetStatus, ExpenseType } from '@prisma/client';
 
+import { prisma } from 'lib/prisma';
+
 import { builder } from '../../builder';
 import { ContactInputPothosRef } from '../billingProfile/refs';
 import { ExpenseTypePothosRef } from '../expense/refs';
+import { UserPothosRef } from '../users/refs';
 
 // Tipos para gasto calculado y mano de obra
 export const ExpectedExpensePothosRef = builder
@@ -36,11 +39,11 @@ export const ManpowerPothosRef = builder
         }),
     });
 
-export const BudgetBranchPothosRef = builder
+export const CustomBranchPothosRef = builder
     .objectRef<{
         name: string | null;
         number: number | null;
-    }>('BudgetBranch')
+    }>('CustomBranch')
     .implement({
         fields: (t) => ({
             name: t.exposeString('name', { nullable: true }),
@@ -74,10 +77,10 @@ export const BudgetPothosRef = builder.prismaObject('Budget', {
             type: [ManpowerPothosRef],
             resolve: (root) => root.manpower as any,
         }),
-        budgetBranch: t.field({
-            type: BudgetBranchPothosRef,
+        customBranch: t.field({
+            type: CustomBranchPothosRef,
             nullable: true,
-            resolve: (root) => root.budgetBranch as any,
+            resolve: (root) => root.customBranch as any,
         }),
         createdAt: t.field({
             type: 'DateTime',
@@ -99,6 +102,21 @@ export const BudgetPothosRef = builder.prismaObject('Budget', {
         client: t.relation('client', { nullable: true }),
         branch: t.relation('branch', { nullable: true }),
         createdBy: t.relation('createdBy'),
+        assignedTechnicians: t.field({
+            type: [UserPothosRef],
+            resolve: async (root: Budget) => {
+                const assigned = await prisma.user.findManyUndeleted({
+                    where: {
+                        id: {
+                            in: root.assignedTechnicianIDs,
+                        },
+                        deleted: false,
+                    },
+                });
+                return assigned;
+            },
+        }),
+        serviceOrder: t.relation('serviceOrder'),
     }),
 });
 
@@ -122,7 +140,7 @@ export const ManpowerInputPothosRef = builder.inputType('ManpowerInput', {
     }),
 });
 
-export const BudgetBranchInputPothosRef = builder.inputType('BudgetBranchInput', {
+export const CustomBranchInputPothosRef = builder.inputType('CustomBranchInput', {
     fields: (t) => ({
         name: t.string({ required: false }),
         number: t.int({ required: false }),
@@ -163,8 +181,8 @@ export const BudgetInputPothosRef = builder.inputType('BudgetInput', {
             type: [ManpowerInputPothosRef],
             required: false,
         }),
-        budgetBranch: t.field({
-            type: BudgetBranchInputPothosRef,
+        customBranch: t.field({
+            type: CustomBranchInputPothosRef,
             required: false,
         }),
     }),
@@ -201,8 +219,8 @@ export const UpdateBudgetInputPothosRef = builder.inputType('UpdateBudgetInput',
             type: [ManpowerInputPothosRef],
             required: false,
         }),
-        budgetBranch: t.field({
-            type: BudgetBranchInputPothosRef,
+        customBranch: t.field({
+            type: CustomBranchInputPothosRef,
             required: false,
         }),
     }),
@@ -254,8 +272,8 @@ export const CreateBudgetWithBillingProfileInputPothosRef = builder.inputType(
                 type: [ManpowerInputPothosRef],
                 required: false,
             }),
-            budgetBranch: t.field({
-                type: BudgetBranchInputPothosRef,
+            customBranch: t.field({
+                type: CustomBranchInputPothosRef,
                 required: false,
             }),
             // Datos del perfil de facturación (opcional si ya existe)

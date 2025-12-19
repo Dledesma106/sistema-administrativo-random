@@ -59,7 +59,7 @@ export function ServiceOrdersTableRowActions({ serviceOrder }: Props) {
                 openModal={modal}
                 handleToggleModal={() => setModal(false)}
                 action={handleDelete}
-                msg={`¿Seguro que quiere eliminar la orden de servicio #${serviceOrder.orderNumber}?`}
+                msg={`¿Seguro que quiere eliminar la orden de servicio OS-${String(serviceOrder.serviceOrderNumber).padStart(3, '0')}?`}
             />
         </>
     );

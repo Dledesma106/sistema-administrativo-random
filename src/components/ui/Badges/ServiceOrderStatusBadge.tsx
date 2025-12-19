@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { Badge } from '@/components/ui/Badges/badge';
 import { capitalizeFirstLetter, pascalCaseToSpaces } from '@/lib/utils';
 
-export type ServiceOrderStatus = 'Pendiente' | 'EnProgreso' | 'Finalizado';
+import { ServiceOrderStatus } from '@/api/graphql';
 
 interface ServiceOrderStatusBadgeProps {
     status: ServiceOrderStatus;
@@ -11,9 +11,10 @@ interface ServiceOrderStatusBadgeProps {
 
 export function ServiceOrderStatusBadge({ status }: ServiceOrderStatusBadgeProps) {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-success': status === 'EnProgreso',
-        'h-2 w-2 rounded-full bg-yellow-500': status === 'Pendiente',
-        'h-2 w-2 rounded-full bg-blue-400': status === 'Finalizado',
+        'h-2 w-2 rounded-full bg-success': status === ServiceOrderStatus.EnProgreso,
+        'h-2 w-2 rounded-full bg-yellow-500': status === ServiceOrderStatus.Pendiente,
+        'h-2 w-2 rounded-full bg-blue-400': status === ServiceOrderStatus.Finalizada,
+        'h-2 w-2 rounded-full bg-orange-500': status === ServiceOrderStatus.ParaFacturar,
     });
 
     return (

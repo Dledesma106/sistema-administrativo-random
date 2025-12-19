@@ -52,14 +52,20 @@ export const useTasksTableColumns = () => [
                 <>
                     <strong>{task.branch?.client.name ?? task.clientName}</strong> -{' '}
                     {task.business?.name ?? task.businessName}
-                    {task.branch && (
+                    {task.branch ? (
                         <p className="text-xs">
                             {task.branch.number && `#${task.branch.number}`}
                             {task.branch.name && task.branch.number && ' - '}
                             {task.branch.name && task.branch.name} -{' '}
                             {task.branch.city.name}, {task.branch.city.province.name}
                         </p>
-                    )}
+                    ) : task.customBranch ? (
+                        <p className="text-xs">
+                            {task.customBranch.number && `#${task.customBranch.number}`}
+                            {task.customBranch.name && task.customBranch.number && ' - '}
+                            {task.customBranch.name}
+                        </p>
+                    ) : null}
                 </>
             );
         },
@@ -229,7 +235,7 @@ export const useTasksTableColumns = () => [
         },
         enableSorting: true,
     }),
-    columnHelper.accessor((row) => format(new Date(row.createdAt), 'dd/MM/yyyy'), {
+    columnHelper.accessor((row) => format(new Date(row.openedAt), 'dd/MM/yyyy'), {
         id: 'openedAt',
         header: ({ column }) => {
             return (

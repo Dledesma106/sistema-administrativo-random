@@ -7,6 +7,7 @@ import {
     TaskType,
 } from '@prisma/client';
 
+import { generateTaskNumber } from '../../../../backend/services/taskService';
 import { prisma } from '../../../../lib/prisma';
 
 export const config = {
@@ -244,14 +245,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         participantNames = assignedUsers.map((user) => user.fullName);
                     }
 
-                    const maxTaskNumber = await prisma.task.findFirst({
-                        orderBy: { taskNumber: 'desc' },
-                        select: { taskNumber: true },
-                    });
+                    // Generar número de tarea usando la función del servicio
+                    const taskNumber = await generateTaskNumber(null);
 
                     await prisma.task.create({
                         data: {
-                            taskNumber: (maxTaskNumber?.taskNumber ?? 0) + 1,
+                            taskNumber,
                             participants: participantNames,
                             taskType: TaskType.Preventivo,
                             status: TaskStatus.Pendiente,

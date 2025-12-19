@@ -35,7 +35,7 @@ export default function EditBudget(): JSX.Element {
         expectedExpenses: budget.expectedExpenses,
         manpower: budget.manpower,
         markup: budget.markup ?? 0,
-        budgetBranch: budget.budgetBranch ?? {
+        budgetBranch: budget.customBranch ?? {
             name: '',
             number: null,
         },

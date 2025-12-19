@@ -1,0 +1,127 @@
+query serviceOrders(
+    $skip: Int
+    $take: Int
+    $clientId: String
+    $businessId: String
+    $status: String
+    $orderBy: String
+    $orderDirection: String
+) {
+    serviceOrders(
+        skip: $skip
+        take: $take
+        clientId: $clientId
+        businessId: $businessId
+        status: $status
+        orderBy: $orderBy
+        orderDirection: $orderDirection
+    ) {
+        id
+        serviceOrderNumber
+        status
+        description
+        subject
+        clientName
+        customBranch {
+            name
+            number
+        }
+        createdAt
+        updatedAt
+        business {
+            id
+            name
+        }
+        client {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            name
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+        }
+        assignedTechnicians {
+            id
+            fullName
+            firstName
+            lastName
+            email
+        }
+        participants
+    }
+    serviceOrdersCount(clientId: $clientId, businessId: $businessId, status: $status)
+}
+
+query serviceOrder($id: String!) {
+    serviceOrder(id: $id) {
+        id
+        serviceOrderNumber
+        status
+        description
+        subject
+        clientName
+        customBranch {
+            name
+            number
+        }
+        createdAt
+        updatedAt
+        business {
+            id
+            name
+        }
+        client {
+            id
+            name
+        }
+        branch {
+            id
+            number
+            name
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+        }
+        assignedTechnicians {
+            id
+            fullName
+            firstName
+            lastName
+            email
+        }
+        participants
+        tasks {
+            id
+            taskNumber
+            status
+            description
+            taskType
+            createdAt
+            startedAt
+            closedAt
+            participants
+            assigned {
+                id
+                fullName
+            }
+            expenses {
+                id
+                amount
+            }
+        }
+    }
+}

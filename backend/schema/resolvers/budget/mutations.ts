@@ -17,6 +17,11 @@ import { builder } from 'backend/schema/builder';
 import { prisma } from 'lib/prisma';
 
 import Mailer from '../../../../lib/nodemailer';
+import {
+    extractParticipantsFromManpower,
+    processParticipantsAndAssigned,
+    convertManpowerIdsToNames,
+} from '../../../services/participantService';
 
 // Función auxiliar para generar el próximo número de presupuesto
 async function getNextBudgetNumber(): Promise<number> {
@@ -132,6 +137,20 @@ builder.mutationFields((t) => ({
                 // Generar número de presupuesto
                 const budgetNumber = await getNextBudgetNumber();
 
+                // Extraer participantes desde manpower (puede contener IDs o nombres)
+                const participantsFromManpower = extractParticipantsFromManpower(
+                    input.manpower,
+                );
+
+                // Procesar participantes y asignados
+                const { updatedAssignedIDs } = await processParticipantsAndAssigned(
+                    participantsFromManpower,
+                    [], // No hay asignados iniciales
+                );
+
+                // Convertir IDs a nombres en manpower antes de guardar
+                const processedManpower = await convertManpowerIdsToNames(input.manpower);
+
                 // Crear el presupuesto
                 const budget = await prisma.budget.create({
                     data: {
@@ -142,13 +161,16 @@ builder.mutationFields((t) => ({
                         clientName: input.clientName,
                         markup: input.markup,
                         expectedExpenses: input.expectedExpenses || [],
-                        manpower: input.manpower || [],
-                        budgetBranch: input.budgetBranch,
+                        manpower: processedManpower || [],
+                        customBranch: input.customBranch,
                         totalExpectedExpenses:
                             input.expectedExpenses?.reduce(
                                 (sum, expense) => sum + expense.amount,
                                 0,
                             ) || 0,
+                        assignedTechnicians: {
+                            connect: updatedAssignedIDs.map((id) => ({ id })),
+                        },
                         billingProfile: {
                             connect: { id: input.billingProfileId },
                         },
@@ -295,6 +317,20 @@ builder.mutationFields((t) => ({
                 // Generar número de presupuesto
                 const budgetNumber = await getNextBudgetNumber();
 
+                // Extraer participantes desde manpower (puede contener IDs o nombres)
+                const participantsFromManpower = extractParticipantsFromManpower(
+                    input.manpower,
+                );
+
+                // Procesar participantes y asignados
+                const { updatedAssignedIDs } = await processParticipantsAndAssigned(
+                    participantsFromManpower,
+                    [], // No hay asignados iniciales
+                );
+
+                // Convertir IDs a nombres en manpower antes de guardar
+                const processedManpower = await convertManpowerIdsToNames(input.manpower);
+
                 // Crear el presupuesto
                 const budget = await prisma.budget.create({
                     data: {
@@ -305,13 +341,16 @@ builder.mutationFields((t) => ({
                         clientName: input.clientName,
                         markup: input.markup,
                         expectedExpenses: input.expectedExpenses || [],
-                        manpower: input.manpower || [],
-                        budgetBranch: input.budgetBranch,
+                        manpower: processedManpower || [],
+                        customBranch: input.customBranch,
                         totalExpectedExpenses:
                             input.expectedExpenses?.reduce(
                                 (sum, expense) => sum + expense.amount,
                                 0,
                             ) || 0,
+                        assignedTechnicians: {
+                            connect: updatedAssignedIDs.map((id) => ({ id })),
+                        },
                         billingProfile: {
                             connect: { id: billingProfileId! },
                         },
@@ -373,6 +412,9 @@ builder.mutationFields((t) => ({
                 // Verificar que el presupuesto existe
                 const existingBudget = await prisma.budget.findUniqueUndeleted({
                     where: { id },
+                    select: {
+                        assignedTechnicianIDs: true,
+                    },
                 });
 
                 if (!existingBudget) {
@@ -420,10 +462,29 @@ builder.mutationFields((t) => ({
                     );
                 }
                 if (input.manpower !== undefined) {
-                    updateData.manpower = input.manpower;
+                    // Extraer participantes desde manpower (puede contener IDs o nombres)
+                    const participantsFromManpower = extractParticipantsFromManpower(
+                        input.manpower,
+                    );
+
+                    // Procesar participantes y asignados usando los asignados existentes como base
+                    const { updatedAssignedIDs } = await processParticipantsAndAssigned(
+                        participantsFromManpower,
+                        existingBudget.assignedTechnicianIDs || [],
+                    );
+
+                    // Convertir IDs a nombres en manpower antes de guardar
+                    const processedManpower = await convertManpowerIdsToNames(
+                        input.manpower,
+                    );
+
+                    updateData.manpower = processedManpower;
+                    updateData.assignedTechnicians = {
+                        set: updatedAssignedIDs.map((id) => ({ id })),
+                    };
                 }
-                if (input.budgetBranch !== undefined) {
-                    updateData.budgetBranch = input.budgetBranch;
+                if (input.customBranch !== undefined) {
+                    updateData.customBranch = input.customBranch;
                 }
 
                 // Manejar relaciones
@@ -465,19 +526,38 @@ builder.mutationFields((t) => ({
                     });
 
                     if (serviceOrder) {
+                        // Preparar datos de actualización para la orden de servicio
+                        const serviceOrderUpdateData: any = {
+                            clientId: budget.clientId!,
+                            businessId: budget.billingProfile.businessId,
+                            branchId: budget.branchId!,
+                            description: budget.description,
+                            subject: budget.subject,
+                            participants:
+                                budget.manpower?.map((manpower) => manpower.technician) ||
+                                [],
+                        };
+
+                        // Actualizar campos opcionales solo si tienen valor
+                        if (budget.clientName || budget.client?.name) {
+                            serviceOrderUpdateData.clientName =
+                                budget.clientName || budget.client?.name;
+                        }
+                        if (budget.customBranch) {
+                            serviceOrderUpdateData.customBranch = budget.customBranch;
+                        }
+
+                        // Actualizar técnicos asignados si se modificó manpower
+                        if (input.manpower !== undefined) {
+                            serviceOrderUpdateData.assignedTechnicians = {
+                                set: budget.assignedTechnicianIDs.map((id) => ({ id })),
+                            };
+                        }
+
                         // Actualizar orden de servicio con los nuevos datos
                         await prisma.serviceOrder.update({
                             where: { id: serviceOrder.id },
-                            data: {
-                                clientId: budget.clientId!,
-                                businessId: budget.billingProfile.businessId,
-                                branchId: budget.branchId!,
-                                description: budget.description,
-                                // assignedTechnicians:
-                                //     budget.manpower?.map(
-                                //         (manpower) => manpower.technician,
-                                //     ) || [],
-                            },
+                            data: serviceOrderUpdateData,
                         });
 
                         // Obtener usuarios administrativos técnicos para notificación
@@ -555,7 +635,11 @@ builder.mutationFields((t) => ({
                 // Verificar que el presupuesto existe
                 const existingBudget = await prisma.budget.findUniqueUndeleted({
                     where: { id },
-                    include: { billingProfile: { include: { business: true } } },
+                    include: {
+                        billingProfile: { include: { business: true } },
+                        branch: true,
+                        client: true,
+                    },
                 });
 
                 if (!existingBudget) {
@@ -564,14 +648,6 @@ builder.mutationFields((t) => ({
                         message: 'El presupuesto no existe',
                     };
                 }
-
-                // Actualizar el estado del presupuesto
-                const budget = await prisma.budget.update({
-                    where: { id },
-                    data: {
-                        status: input.status,
-                    },
-                });
 
                 // Si el estado cambió a aprobado, crear orden de servicio
                 if (input.status === BudgetStatus.Aprobado) {
@@ -590,64 +666,175 @@ builder.mutationFields((t) => ({
                         });
                         const nextNumber = (maxOrder?.serviceOrderNumber ?? 0) + 1;
 
-                        // Crear orden de servicio con técnicos asignados
-                        const serviceOrder = await prisma.serviceOrder.create({
-                            data: {
-                                serviceOrderNumber: nextNumber,
-                                status: ServiceOrderStatus.Pendiente,
-                                clientId: existingBudget.clientId!,
-                                businessId: existingBudget.billingProfile.businessId!,
-                                branchId: existingBudget.branchId!,
-                                description: existingBudget.description ?? undefined,
-                                budgetId: existingBudget.id,
-                                // Agregar técnicos asignados desde la mano de obra del presupuesto
-                                // assignedTechnicians:
-                                //     existingBudget.manpower?.map(
-                                //         (manpower) => manpower.technician,
-                                //     ) || [],
-                            },
-                        });
-
-                        // Obtener usuarios administrativos técnicos para notificación
-                        const adminUsers = await prisma.user.findMany({
-                            where: {
-                                roles: {
-                                    has: 'AdministrativoTecnico',
+                        // Preparar datos para crear la orden de servicio
+                        const serviceOrderData: any = {
+                            serviceOrderNumber: nextNumber,
+                            status: ServiceOrderStatus.Pendiente,
+                            business: {
+                                connect: {
+                                    id: existingBudget.billingProfile.businessId!,
                                 },
                             },
-                            select: { id: true },
-                        });
+                            budget: {
+                                connect: { id: existingBudget.id },
+                            },
+                            // Heredar campos del presupuesto
+                            subject: existingBudget.subject,
+                            // Heredar técnicos asignados (IDs)
+                            assignedTechnicians: {
+                                connect: existingBudget.assignedTechnicianIDs.map(
+                                    (id) => ({
+                                        id,
+                                    }),
+                                ),
+                            },
+                            // Heredar participantes (nombres desde manpower)
+                            participants:
+                                existingBudget.manpower?.map(
+                                    (manpower) => manpower.technician,
+                                ) || [],
+                        };
 
-                        // Enviar notificación por email
-                        if (adminUsers.length > 0) {
-                            const message = `
-                                <h3>Nueva Orden de Servicio Creada</h3>
-                                <p><strong>Número de Orden:</strong> ${serviceOrder.serviceOrderNumber}</p>
-                                <p><strong>Presupuesto:</strong> ${existingBudget.subject}</p>
-                                <p><strong>Cliente:</strong> ${existingBudget.clientName || 'No especificado'}</p>
-                                <p><strong>Empresa:</strong> ${existingBudget.billingProfile.business?.name || 'No especificada'}</p>
-                                <p><strong>Técnicos Asignados:</strong> ${existingBudget.manpower?.map((manpower) => manpower.technician).join(', ') || 'No especificados'}</p>
-                                <p><strong>Descripción:</strong> ${existingBudget.description || 'No especificada'}</p>
-                            `;
-                            await Mailer.sendEmailNotification(
-                                adminUsers.map((user) => user.id),
-                                `Nueva Orden de Servicio #${serviceOrder.serviceOrderNumber}`,
-                                message,
+                        // Agregar branch solo si existe
+                        if (existingBudget.branchId) {
+                            serviceOrderData.branch = {
+                                connect: { id: existingBudget.branchId },
+                            };
+                        }
+
+                        // Agregar campos opcionales
+                        if (existingBudget.description) {
+                            serviceOrderData.description = existingBudget.description;
+                        }
+                        if (existingBudget.clientName) {
+                            serviceOrderData.clientName = existingBudget.clientName;
+                        }
+                        if (existingBudget.client) {
+                            serviceOrderData.client = {
+                                connect: { id: existingBudget.clientId! },
+                            };
+                        }
+                        if (existingBudget.customBranch) {
+                            serviceOrderData.customBranch = existingBudget.customBranch;
+                        }
+
+                        // Crear orden de servicio con técnicos asignados y participantes
+                        let serviceOrder;
+                        try {
+                            serviceOrder = await prisma.serviceOrder.create({
+                                data: serviceOrderData,
+                            });
+                        } catch (serviceOrderError) {
+                            console.error(
+                                'Error al crear orden de servicio:',
+                                serviceOrderError,
+                            );
+                            return {
+                                success: false,
+                                message:
+                                    'No se pudo crear la orden de servicio. Verifique que el presupuesto tenga todos los datos requeridos (empresa, asunto).',
+                            };
+                        }
+
+                        // Enviar notificación por email (no bloquea si falla)
+                        try {
+                            const adminUsers = await prisma.user.findMany({
+                                where: {
+                                    roles: {
+                                        has: 'AdministrativoTecnico',
+                                    },
+                                },
+                                select: { id: true },
+                            });
+
+                            if (adminUsers.length > 0) {
+                                const clientName =
+                                    existingBudget.clientName ||
+                                    existingBudget.client?.name ||
+                                    'No especificado';
+                                const businessName =
+                                    existingBudget.billingProfile.business?.name ||
+                                    'No especificada';
+                                const technicians =
+                                    existingBudget.manpower
+                                        ?.map((m) => m.technician)
+                                        .join(', ') || 'No especificados';
+
+                                const message = `
+                                    <h3>Nueva Orden de Servicio Creada</h3>
+                                    <p><strong>Número de Orden:</strong> ${serviceOrder.serviceOrderNumber}</p>
+                                    <p><strong>Asunto:</strong> ${existingBudget.subject}</p>
+                                    <p><strong>Cliente:</strong> ${clientName}</p>
+                                    <p><strong>Empresa:</strong> ${businessName}</p>
+                                    <p><strong>Técnicos Asignados:</strong> ${technicians}</p>
+                                    <p><strong>Descripción:</strong> ${existingBudget.description || 'No especificada'}</p>
+                                `;
+                                await Mailer.sendEmailNotification(
+                                    adminUsers.map((user) => user.id),
+                                    `Nueva Orden de Servicio #${serviceOrder.serviceOrderNumber}`,
+                                    message,
+                                );
+                            }
+                        } catch (emailError) {
+                            // Log del error pero no bloquear la operación
+                            console.error(
+                                'Error al enviar notificación de orden de servicio:',
+                                emailError,
                             );
                         }
                     }
                 }
+
+                // Actualizar el estado del presupuesto
+                const budget = await prisma.budget.update({
+                    where: { id },
+                    data: {
+                        status: input.status,
+                    },
+                });
 
                 return {
                     success: true,
                     budget,
                 };
             } catch (error) {
+                // Log del error técnico para debugging
+                console.error('Error en updateBudgetStatus:', error);
+
+                // Determinar mensaje amigable según el tipo de error
+                let userMessage =
+                    'Ocurrió un error al actualizar el estado del presupuesto';
+
+                if (error instanceof Error) {
+                    const errorMsg = error.message.toLowerCase();
+
+                    if (errorMsg.includes('client') || errorMsg.includes('clientid')) {
+                        userMessage =
+                            'El presupuesto no tiene un cliente válido asignado. Por favor, edite el presupuesto y asigne un cliente.';
+                    } else if (
+                        errorMsg.includes('business') ||
+                        errorMsg.includes('billingprofile')
+                    ) {
+                        userMessage =
+                            'El presupuesto no tiene una empresa o perfil de facturación válido.';
+                    } else if (errorMsg.includes('branch')) {
+                        userMessage =
+                            'Hubo un problema con la sucursal asignada al presupuesto.';
+                    } else if (
+                        errorMsg.includes('connect') ||
+                        errorMsg.includes('database')
+                    ) {
+                        userMessage =
+                            'Error de conexión con la base de datos. Por favor, intente nuevamente.';
+                    } else if (errorMsg.includes('email') || errorMsg.includes('smtp')) {
+                        userMessage =
+                            'La orden de servicio se creó correctamente, pero hubo un problema al enviar las notificaciones por email.';
+                    }
+                }
+
                 return {
                     success: false,
-                    message: `Error al actualizar el estado del presupuesto: ${
-                        error instanceof Error ? error.message : 'Error desconocido'
-                    }`,
+                    message: userMessage,
                 };
             }
         },

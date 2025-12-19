@@ -13,57 +13,12 @@ import {
 import { useState } from 'react';
 
 import { useServiceOrdersTableColumns } from './columns';
-import type { ServiceOrder } from './columns';
 import { getServiceOrdersTableToolbarConfig } from './toolbar-config';
 
-import { GetClientsQuery, GetBusinessesQuery } from '@/api/graphql';
+import type { GetClientsQuery, GetBusinessesQuery, ServiceOrder } from '@/api/graphql';
 import { DataTable } from '@/components/ui/data-table';
+import { useGetServiceOrders } from '@/hooks/api/serviceOrders/useGetServiceOrders';
 import { routesBuilder } from '@/lib/routes';
-
-const mockData: ServiceOrder[] = [
-    {
-        id: '1',
-        orderNumber: 'OS-001',
-        businessName: 'Empresa A',
-        clientName: 'Cliente X',
-        branch: {
-            number: '001',
-            city: {
-                name: 'Buenos Aires',
-                province: {
-                    name: 'Buenos Aires',
-                },
-            },
-        },
-        description: 'Instalación de equipos de aire acondicionado',
-        status: 'Pendiente',
-    },
-    {
-        id: '2',
-        orderNumber: 'OS-002',
-        businessName: 'Empresa B',
-        clientName: 'Cliente Y',
-        description: 'Mantenimiento preventivo de sistemas de refrigeración',
-        status: 'EnProgreso',
-    },
-    {
-        id: '3',
-        orderNumber: 'OS-003',
-        businessName: 'Empresa C',
-        clientName: 'Cliente Z',
-        branch: {
-            number: '002',
-            city: {
-                name: 'Córdoba',
-                province: {
-                    name: 'Córdoba',
-                },
-            },
-        },
-        description: 'Reparación de sistema de ventilación',
-        status: 'Finalizado',
-    },
-];
 
 type Props = {
     clients: NonNullable<GetClientsQuery['clients']>;
@@ -77,10 +32,39 @@ export default function ServiceOrdersDataTable({ clients, businesses }: Props) {
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
 
+    // Extraer filtros de las columnas
+    const businessFilter = columnFilters.find((f) => f.id === 'businessName')?.value as
+        | string
+        | undefined;
+    const clientFilter = columnFilters.find((f) => f.id === 'clientName')?.value as
+        | string
+        | undefined;
+    const statusFilter = columnFilters.find((f) => f.id === 'status')?.value as
+        | string
+        | undefined;
+
+    // Extraer ordenamiento
+    const orderBy = sorting[0]?.id;
+    const orderDirection = sorting[0]?.desc ? 'desc' : 'asc';
+
+    // Obtener datos con el hook
+    const { data } = useGetServiceOrders({
+        skip: page * pageSize,
+        take: pageSize,
+        ...(businessFilter && { businessId: businessFilter }),
+        ...(clientFilter && { clientId: clientFilter }),
+        ...(statusFilter && { status: statusFilter }),
+        ...(orderBy && { orderBy }),
+        ...(orderDirection && { orderDirection }),
+    });
+
+    // Usar directamente los datos de GraphQL
+    const serviceOrders = (data?.serviceOrders || []) as ServiceOrder[];
+
     const columns = useServiceOrdersTableColumns();
 
     const table = useReactTable({
-        data: mockData,
+        data: serviceOrders,
         columns,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
@@ -89,6 +73,10 @@ export default function ServiceOrdersDataTable({ clients, businesses }: Props) {
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
+        manualPagination: true,
+        manualSorting: true,
+        manualFiltering: true,
+        pageCount: Math.ceil((data?.serviceOrdersCount || 0) / pageSize),
         state: {
             sorting,
             columnFilters,
@@ -104,7 +92,7 @@ export default function ServiceOrdersDataTable({ clients, businesses }: Props) {
             table={table}
             title="Órdenes de Servicio"
             toolbarConfig={getServiceOrdersTableToolbarConfig(businesses, clients)}
-            totalCount={mockData.length}
+            totalCount={data?.serviceOrdersCount || 0}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}

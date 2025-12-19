@@ -14,7 +14,7 @@ import { routesBuilder } from '@/lib/routes';
 
 type Task = {
     id: string;
-    taskNumber: number;
+    taskNumber: string;
     createdAt: Date | string;
     closedAt: Date | string | null;
     status: TaskStatus;

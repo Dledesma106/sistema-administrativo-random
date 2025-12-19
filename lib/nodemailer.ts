@@ -24,7 +24,13 @@ class TransporterProvider {
     }
 
     private static async createTransporter() {
-        if (process.env.NODE_ENV === 'development') {
+        // En development usar mock, a menos que FORCE_REAL_EMAILS esté habilitado
+        const useMock =
+            process.env.NODE_ENV === 'development' &&
+            process.env.FORCE_REAL_EMAILS !== 'true';
+
+        if (useMock) {
+            console.log('Using mock email transport');
             const nodemailerMock = await import('nodemailer-mock');
             return nodemailerMock.createTransport({
                 host: 'smtp.gmail.com',
@@ -124,7 +130,7 @@ const Mailer = {
         }
 
         try {
-            // Obtener usuarios por IDs (sin filtro de roles)
+            // Obtener usuarios por IDs
             const users = await prisma.user.findMany({
                 where: {
                     id: { in: userIds },
