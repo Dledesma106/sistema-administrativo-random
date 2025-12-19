@@ -12,7 +12,7 @@ import {
     GetBusinessesQuery,
     ExpectedExpense,
     Manpower,
-    BudgetBranch,
+    CustomBranch,
     ExpenseType,
 } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
@@ -32,6 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { TypographyH2, TypographyH3 } from '@/components/ui/typography';
 import useAlert from '@/context/alertContext/useAlert';
 import { useGetBillingProfileByBusinessId } from '@/hooks/api/billingProfile';
+import { useGetClientBranchesByBusiness } from '@/hooks/api/branch/useGetClientBranchesByBusiness';
 import { useCreateBudget } from '@/hooks/api/budget/useCreateBudget';
 import { useCreateBudgetWithBillingProfile } from '@/hooks/api/budget/useCreateBudgetWithBillingProfile';
 import { useUpdateBudget } from '@/hooks/api/budget/useUpdateBudget';
@@ -52,7 +53,7 @@ type FormValues = {
     expectedExpenses?: ExpectedExpense[];
     manpower?: Manpower[];
     markup?: number;
-    budgetBranch?: BudgetBranch;
+    customBranch?: CustomBranch;
     createBranch?: boolean;
     createClient?: boolean;
     branchCityId?: string;
@@ -90,7 +91,7 @@ const CreateOrUpdateBudgetForm = ({
             expectedExpenses: [],
             manpower: [],
             markup: undefined,
-            budgetBranch: {
+            customBranch: {
                 name: '',
                 number: undefined,
             },
@@ -111,7 +112,9 @@ const CreateOrUpdateBudgetForm = ({
     });
 
     const watchBusiness = form.watch('business');
+    const watchClient = form.watch('client');
     const isNewBusiness = watchBusiness === 'other';
+    const isNewClient = watchClient === 'other';
 
     // Obtener perfil de facturación si se selecciona una empresa existente
     const { data: existingBillingProfile } = useGetBillingProfileByBusinessId(
@@ -123,9 +126,13 @@ const CreateOrUpdateBudgetForm = ({
         businessId: !isNewBusiness && watchBusiness ? watchBusiness : '',
         search: null,
     });
-    const clientBranches = clientsByBusinessData?.clientsByBusiness?.find(
-        (client) => client.id === form.watch('client'),
-    )?.branches;
+
+    // Obtener sucursales del cliente que trabajen con la empresa seleccionada
+    const { data: clientBranchesData } = useGetClientBranchesByBusiness({
+        clientId: !isNewClient && watchClient ? watchClient : '',
+        businessId: !isNewBusiness && watchBusiness ? watchBusiness : '',
+    });
+    const clientBranches = clientBranchesData?.clientBranchesByBusiness;
 
     // Usar clientes filtrados por empresa si hay una empresa seleccionada, sino usar todos los clientes
     const availableClients = clientsByBusinessData?.clientsByBusiness;
@@ -228,11 +235,11 @@ const CreateOrUpdateBudgetForm = ({
                     form.setValue('client', 'other');
                 }
 
-                // Si hay un budgetBranch, significa que se usó una sucursal específica del presupuesto
+                // Si hay un customBranch, significa que se usó una sucursal específica del presupuesto
                 // Establecer automáticamente "Otro" en el dropdown de sucursal
                 if (
-                    defaultValues.budgetBranch &&
-                    (defaultValues.budgetBranch.name || defaultValues.budgetBranch.number)
+                    defaultValues.customBranch &&
+                    (defaultValues.customBranch.name || defaultValues.customBranch.number)
                 ) {
                     form.setValue('branch', 'other');
                 }
@@ -306,6 +313,16 @@ const CreateOrUpdateBudgetForm = ({
         }
     }, [watchBusiness, form, budgetIdToUpdate]);
 
+    // Establecer branch = 'other' automáticamente cuando client = 'other'
+    useEffect(() => {
+        if (watchClient === 'other') {
+            form.setValue('branch', 'other');
+        } else if (watchClient !== null && watchClient !== undefined) {
+            // Si cambia a un cliente real, limpiar la sucursal
+            form.setValue('branch', null);
+        }
+    }, [watchClient, form]);
+
     const createBudget = useCreateBudget();
     const createBudgetWithBillingProfile = useCreateBudgetWithBillingProfile();
     const updateBudget = useUpdateBudget();
@@ -327,6 +344,8 @@ const CreateOrUpdateBudgetForm = ({
                 }));
 
             // Procesar mano de obra para manejar técnicos "Otro"
+            // Enviamos IDs directamente cuando es técnico del sistema, y nombres cuando es "Otro"
+            // Esto permite que el backend procese correctamente con processParticipantsAndAssigned
             const processedManpower = (formData.manpower || [])
                 .filter((worker) => worker.payAmount && worker.payAmount > 0)
                 .map((worker) => {
@@ -338,12 +357,10 @@ const CreateOrUpdateBudgetForm = ({
                             payAmount: worker.payAmount || 0,
                         };
                     }
-                    // Si es un técnico de la base de datos, buscar su nombre
-                    const technician = techniciansData?.technicians?.find(
-                        (tech) => tech.id === worker.technician,
-                    );
+                    // Si es un técnico de la base de datos, enviar el ID directamente
+                    // El backend procesará el ID y lo convertirá a nombre automáticamente
                     return {
-                        technician: technician?.fullName || worker.technician,
+                        technician: worker.technician, // ID del técnico
                         payAmount: worker.payAmount || 0,
                     };
                 });
@@ -368,7 +385,7 @@ const CreateOrUpdateBudgetForm = ({
                     markup: formData.markup || 0,
                     expectedExpenses: processedExpectedExpenses,
                     manpower: processedManpower,
-                    budgetBranch: formData.budgetBranch || null,
+                    customBranch: formData.customBranch || null,
                 };
 
                 const result = await updateBudget.mutateAsync({
@@ -408,7 +425,10 @@ const CreateOrUpdateBudgetForm = ({
                         markup: formData.markup || 0,
                         expectedExpenses: processedExpectedExpenses,
                         manpower: processedManpower,
-                        budgetBranch: formData.budgetBranch || null,
+                        customBranch: formData.customBranch || {
+                            number: null,
+                            name: null,
+                        },
                     };
 
                     const result = await createBudget.mutateAsync({ input });
@@ -462,7 +482,7 @@ const CreateOrUpdateBudgetForm = ({
                         markup: formData.markup || 0,
                         expectedExpenses: processedExpectedExpenses,
                         manpower: processedManpower,
-                        budgetBranch: formData.budgetBranch || null,
+                        customBranch: formData.customBranch || null,
                     };
 
                     const result = await createBudgetWithBillingProfile.mutateAsync({
@@ -664,7 +684,7 @@ const CreateOrUpdateBudgetForm = ({
                         />
                     )}
 
-                    {form.watch('client') && (
+                    {form.watch('client') && form.watch('client') !== 'other' && (
                         <FormField
                             name="branch"
                             control={form.control}
@@ -711,12 +731,12 @@ const CreateOrUpdateBudgetForm = ({
                             <TypographyH3>Información de Sucursal</TypographyH3>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <FormField
-                                    name="budgetBranch.name"
+                                    name="customBranch.name"
                                     control={form.control}
                                     rules={{
                                         validate: (value) => {
                                             const number =
-                                                form.getValues('budgetBranch.number');
+                                                form.getValues('customBranch.number');
                                             if (!value && !number) {
                                                 return 'Debe proporcionar al menos un nombre o número';
                                             }
@@ -739,12 +759,12 @@ const CreateOrUpdateBudgetForm = ({
                                 />
 
                                 <FormField
-                                    name="budgetBranch.number"
+                                    name="customBranch.number"
                                     control={form.control}
                                     rules={{
                                         validate: (value) => {
                                             const name =
-                                                form.getValues('budgetBranch.name');
+                                                form.getValues('customBranch.name');
                                             if (!value && !name) {
                                                 return 'Debe proporcionar al menos un nombre o número';
                                             }

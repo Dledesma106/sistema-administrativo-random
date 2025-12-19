@@ -5,7 +5,20 @@ import { cn } from '@/lib/utils';
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-    ({ className, type, ...props }, ref) => {
+    ({ className, type, onWheel, ...props }, ref) => {
+        // Para inputs numéricos, desactivar el cambio de valor con scroll
+        const handleWheel = React.useCallback(
+            (e: React.WheelEvent<HTMLInputElement>) => {
+                if (type === 'number') {
+                    // Quitar el focus para evitar que el scroll cambie el valor
+                    e.currentTarget.blur();
+                }
+                // Llamar al onWheel original si existe
+                onWheel?.(e);
+            },
+            [type, onWheel],
+        );
+
         return (
             <input
                 type={type}
@@ -18,6 +31,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     className,
                 )}
                 ref={ref}
+                onWheel={handleWheel}
                 {...props}
             />
         );

@@ -6,7 +6,6 @@ import {
     getCoreRowModel,
     useReactTable,
     SortingState,
-    getSortedRowModel,
 } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
@@ -133,7 +132,7 @@ export default function TasksDataTable(props: Props): JSX.Element {
         data: data?.tasks || [],
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
+        manualSorting: true, // El ordenamiento se hace en el servidor
         onColumnFiltersChange: (filters) => {
             setColumnFilters(filters);
             setPage(0);

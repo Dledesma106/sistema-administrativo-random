@@ -274,15 +274,15 @@ enum TaskStatus {
 }
 
 model Task {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  taskNumber    Int        @unique
-  createdAt     DateTime   @default(now()) @db.Date
-  updatedAt     DateTime   @updatedAt
-  closedAt      DateTime?  @db.Date
-  openedAt      DateTime   @default(now()) @db.Date
-  startedAt     DateTime?  @db.Date
-  deleted       Boolean    @default(false)
-  deletedAt     DateTime?  @db.Date
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  taskNumber    String        @unique
+  createdAt     DateTime      @default(now()) @db.Date
+  updatedAt     DateTime      @updatedAt
+  closedAt      DateTime?     @db.Date
+  openedAt      DateTime      @default(now()) @db.Date
+  startedAt     DateTime?     @db.Date
+  deleted       Boolean       @default(false)
+  deletedAt     DateTime?     @db.Date
   description   String
   status        TaskStatus
   taskType      TaskType
@@ -290,7 +290,8 @@ model Task {
   movitecTicket String?
   clientName    String?
   businessName  String?
-  useMaterials  Boolean?   @default(false)
+  customBranch  CustomBranch? // Datos personalizados de sucursal (opcional)
+  useMaterials  Boolean?      @default(false)
 
   participants String[]
 
@@ -429,6 +430,12 @@ model User {
   Task               Task[]
   createdBudgets     Budget[]  @relation("createdBudgets")
 
+  budgetsAssignedIDs String[] @db.ObjectId
+  budgetsAssigned    Budget[] @relation("budgetTechnicians", fields: [budgetsAssignedIDs], references: [id])
+
+  serviceOrdersAssignedIDs String[]       @db.ObjectId
+  serviceOrdersAssigned    ServiceOrder[] @relation("serviceOrderTechnicians", fields: [serviceOrdersAssignedIDs], references: [id])
+
   expoTokens ExpoToken[]
 
   @@map("users")
@@ -493,7 +500,7 @@ type ExpectedExpense {
   amount    Float?
 }
 
-type BudgetBranch {
+type CustomBranch {
   name   String?
   number Int?
 }
@@ -519,16 +526,20 @@ model Budget {
   deletedAt DateTime? @db.Date
 
   // Información básica del presupuesto
-  budgetNumber          Int               @unique
-  subject               String // Asunto
-  description           String? // Descripción
-  price                 Float // Precio
-  status                BudgetStatus      @default(Borrador)
-  clientName            String? // Nombre del cliente
-  expectedExpenses      ExpectedExpense[]
-  manpower              Manpower[]
-  markup                Float?
-  budgetBranch          BudgetBranch?
+  budgetNumber     Int               @unique
+  subject          String // Asunto
+  description      String? // Descripción
+  price            Float // Precio
+  status           BudgetStatus      @default(Borrador)
+  clientName       String? // Nombre del cliente
+  expectedExpenses ExpectedExpense[]
+  manpower         Manpower[] // Mapea la paga de cada técnico (por nombre)
+  markup           Float?
+
+  // Listado de técnicos asignados (por ID)
+  assignedTechnicianIDs String[]      @db.ObjectId
+  assignedTechnicians   User[]        @relation("budgetTechnicians", fields: [assignedTechnicianIDs], references: [id])
+  customBranch          CustomBranch?
   totalExpectedExpenses Float
 
   // Integración con Gmail
@@ -567,14 +578,26 @@ model ServiceOrder {
   status             ServiceOrderStatus
   description        String?
 
-  clientId String @map("client") @db.ObjectId
-  client   Client @relation(fields: [clientId], references: [id])
+  // Campos heredados del presupuesto
+  subject      String? // Asunto
+  clientName   String? // Nombre del cliente (opcional)
+  customBranch CustomBranch? // Datos personalizados de sucursal (opcional)
+
+  // Listado de técnicos asignados (igual que Task)
+  assignedTechnicianIDs String[] @db.ObjectId
+  assignedTechnicians   User[]   @relation("serviceOrderTechnicians", fields: [assignedTechnicianIDs], references: [id])
+
+  // Listado de nombres de participantes (incluye técnicos del sistema y externos)
+  participants String[] // Array de nombres de participantes
+
+  clientId String? @map("client") @db.ObjectId
+  client   Client? @relation(fields: [clientId], references: [id])
 
   businessId String   @map("business") @db.ObjectId
   business   Business @relation(fields: [businessId], references: [id])
 
-  branchId String @map("branch") @db.ObjectId
-  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId String? @map("branch") @db.ObjectId
+  branch   Branch? @relation(fields: [branchId], references: [id])
 
   tasks Task[]
 

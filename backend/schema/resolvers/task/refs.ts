@@ -6,6 +6,7 @@ import { updateImageSignedUrlAsync } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
+import { CustomBranchInputPothosRef, CustomBranchPothosRef } from '../budget/refs';
 import { AttachmentFileRef, ExpenseInputType, ExpensePothosRef } from '../expense/refs';
 import { UserPothosRef } from '../users/refs';
 
@@ -30,7 +31,7 @@ export const DownloadTaskPhotosResultPothosRef = builder.objectRef<{
 export const TaskPothosRef = builder.prismaObject('Task', {
     fields: (t) => ({
         id: t.exposeID('id'),
-        taskNumber: t.exposeInt('taskNumber', { nullable: false }),
+        taskNumber: t.exposeString('taskNumber', { nullable: false }),
         description: t.exposeString('description'),
         useMaterials: t.exposeBoolean('useMaterials', { nullable: true }),
         clientName: t.field({
@@ -198,6 +199,12 @@ export const TaskPothosRef = builder.prismaObject('Task', {
             nullable: false,
             resolve: (task) => task.participants || [],
         }),
+        customBranch: t.field({
+            type: CustomBranchPothosRef,
+            nullable: true,
+            resolve: (task) => task.customBranch as any,
+        }),
+        serviceOrder: t.relation('serviceOrder', { nullable: true }),
     }),
 });
 
@@ -235,6 +242,10 @@ export const TaskInputPothosRef = builder.inputType('TaskInput', {
             required: false,
         }),
         serviceOrderId: t.string({
+            required: false,
+        }),
+        customBranch: t.field({
+            type: CustomBranchInputPothosRef,
             required: false,
         }),
     }),

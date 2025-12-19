@@ -142,7 +142,16 @@ const Content: React.FC<Props> = ({ task }) => {
                     <div className="flex gap-2">
                         {task.status !== TaskStatus.Aprobada && (
                             <Button asChild>
-                                <Link href={routesBuilder.tasks.edit(task.id)}>
+                                <Link
+                                    href={
+                                        task.serviceOrder
+                                            ? routesBuilder.serviceOrders.tasks.edit(
+                                                  task.serviceOrder.id,
+                                                  task.id,
+                                              )
+                                            : routesBuilder.tasks.edit(task.id)
+                                    }
+                                >
                                     Editar
                                 </Link>
                             </Button>
@@ -194,25 +203,66 @@ const Content: React.FC<Props> = ({ task }) => {
                     />
                 </div>
 
-                {task.branch ? (
+                {task.serviceOrder && (
                     <div>
-                        <Title>Sucursal</Title>
+                        <Title>Orden de Servicio</Title>
+                        <Link
+                            href={routesBuilder.serviceOrders.details(
+                                task.serviceOrder.id,
+                            )}
+                            className="text-primary hover:underline"
+                        >
+                            OS-
+                            {String(task.serviceOrder.serviceOrderNumber).padStart(
+                                3,
+                                '0',
+                            )}
+                        </Link>
+                    </div>
+                )}
 
-                        <p className="mb-1">
-                            {task.branch.number && `#${task.branch.number}`}
-                            {task.branch.name && task.branch.number && ' - '}
-                            {task.branch.name && task.branch.name} -{' '}
-                            {task.branch.city.name} - {task.branch.city.province.name}
-                        </p>
-                    </div>
-                ) : (
-                    <div>
-                        <Title>Cliente y Empresa</Title>
-                        <p className="mb-1">
-                            {task.clientName}
-                            {task.businessName && ` - ${task.businessName}`}
-                        </p>
-                    </div>
+                <div>
+                    <Title>Empresa</Title>
+                    {task.businessName && <p className="mb-1">{task.businessName}</p>}
+                    {task.business?.name && <p className="mb-1">{task.business?.name}</p>}
+                </div>
+
+                {task.branch && (
+                    <>
+                        <div>
+                            <Title>Cliente</Title>
+                            <p className="mb-1">{task.branch.client?.name}</p>
+                        </div>
+                        <div>
+                            <Title>Sucursal</Title>
+                            <p className="mb-1">
+                                {task.branch.number && `#${task.branch.number}`}
+                                {task.branch.name && task.branch.number && ' - '}
+                                {task.branch.name && task.branch.name} -{' '}
+                                {task.branch.city.name} - {task.branch.city.province.name}
+                            </p>
+                        </div>
+                    </>
+                )}
+
+                {task.customBranch && (
+                    <>
+                        <div>
+                            <Title>Cliente</Title>
+                            <p className="mb-1">{task.clientName}</p>
+                        </div>
+                        <div>
+                            <Title>Sucursal</Title>
+                            <p className="mb-1">
+                                {task.customBranch.number &&
+                                    `#${task.customBranch.number}`}
+                                {task.customBranch.name &&
+                                    task.customBranch.number &&
+                                    ' - '}
+                                {task.customBranch.name}
+                            </p>
+                        </div>
+                    </>
                 )}
 
                 {task.business?.name === 'GIASA' && (

@@ -62,6 +62,29 @@ builder.queryFields((t) => ({
             });
         },
     }),
+    serviceOrdersCount: t.int({
+        args: {
+            clientId: t.arg.string({ required: false }),
+            businessId: t.arg.string({ required: false }),
+            status: t.arg.string({ required: false }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (_root, args, _ctx, _info) => {
+            const { clientId, businessId, status } = args;
+            return prisma.serviceOrder.count({
+                where: {
+                    ...(clientId && { clientId }),
+                    ...(businessId && { businessId }),
+                    ...(status && { status: status as ServiceOrderStatus }),
+                },
+            });
+        },
+    }),
     serviceOrder: t.field({
         type: ServiceOrderPothosRef,
         nullable: true,

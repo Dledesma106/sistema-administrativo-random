@@ -26,119 +26,70 @@ import { removeDeleted } from 'backend/schema/utils';
 import { prisma } from 'lib/prisma';
 
 import { sendPushNotification } from '../../../services/notifications';
+import { processParticipantsAndAssigned } from '../../../services/participantService';
 
 /**
- * Genera un nuevo número de tarea basado en el último número existente
+ * Genera un nuevo número de tarea
+ * Si está asociada a una orden de servicio: "serviceOrderNumber-taskSequence"
+ * Si no: número secuencial simple
+ * @param serviceOrderId ID de la orden de servicio (opcional)
  * @returns Número de tarea generado
  */
-async function generateTaskNumber(): Promise<number> {
-    const maxTaskNumber = await prisma.task.findFirst({
-        orderBy: { taskNumber: 'desc' },
-        select: { taskNumber: true },
-    });
-    return (maxTaskNumber?.taskNumber ?? 0) + 1;
-}
-
-/**
- * Procesa los participantes y asignados de una tarea y los devuelve en dos arreglos, uno con los IDs de los usuarios asignados y otro con los nombres de los participantes
- * @param participants - Array de participantes (IDs o nombres)
- * @param assignedIDs - Array de IDs de usuarios asignados
- * @param currentUserId - ID del usuario actual (opcional)
- * @returns Objeto con los arrays actualizados de asignados y nombres de participantes
- */
-async function processParticipantsAndAssigned(
-    participants: string[] | undefined,
-    assignedIDs: string[],
-    currentUserId?: string,
-): Promise<{ updatedAssignedIDs: string[]; participantNames: string[] }> {
-    let updatedAssignedIDs = [...assignedIDs];
-    let participantNames: string[] = [];
-    const validUserIds = new Set<string>();
-    const idToNameMap = new Map<string, string>();
-
-    // Obtener nombres de todos los asignados
-    const assignedUsers = await prisma.user.findMany({
-        where: {
-            id: { in: updatedAssignedIDs },
-            deleted: false,
-        },
-        select: {
-            id: true,
-            fullName: true,
-        },
-    });
-
-    // Mapear IDs a nombres de todos los asignados
-    assignedUsers.forEach((user) => {
-        idToNameMap.set(user.id, user.fullName);
-    });
-
-    if (currentUserId) {
-        if (!updatedAssignedIDs.includes(currentUserId)) {
-            updatedAssignedIDs.push(currentUserId);
-        }
-        const currentUser = await prisma.user.findUnique({
-            where: { id: currentUserId },
-            select: { fullName: true },
+async function generateTaskNumber(serviceOrderId?: string | null): Promise<string> {
+    if (serviceOrderId) {
+        // Obtener la orden de servicio para su número
+        const serviceOrder = await prisma.serviceOrder.findUnique({
+            where: { id: serviceOrderId },
+            select: { serviceOrderNumber: true },
         });
-        if (currentUser) {
-            idToNameMap.set(currentUserId, currentUser.fullName);
+
+        if (!serviceOrder) {
+            throw new Error('Orden de servicio no encontrada');
         }
-    }
 
-    if (participants && participants.length > 0) {
-        const potentialUserIds = participants.filter((p) => /^[0-9a-fA-F]{24}$/.test(p));
+        // Contar cuántas tareas tiene esta orden de servicio
+        const taskCount = await prisma.task.count({
+            where: { serviceOrderId },
+        });
 
-        if (potentialUserIds.length > 0) {
-            const existingUsers = await prisma.user.findMany({
-                where: {
-                    id: { in: potentialUserIds },
-                    deleted: false,
-                },
-                select: {
-                    id: true,
-                    fullName: true,
-                },
-            });
+        // Formato: "serviceOrderNumber-taskSequence"
+        return `${serviceOrder.serviceOrderNumber}-${taskCount + 1}`;
+    } else {
+        // Para tareas sin orden de servicio, usar número secuencial simple
+        // Estrategia: traer todas las tareas sin serviceOrder y filtrar en JavaScript
+        // Esto es más seguro que usar regex con tipos mixtos
+        const tasksWithoutServiceOrder = await prisma.task.findMany({
+            where: {
+                serviceOrderId: null,
+                deleted: false,
+            },
+            select: { taskNumber: true },
+            // No ordenamos aquí porque el orden alfabético de strings no funciona para números
+        });
 
-            existingUsers.forEach((user) => {
-                validUserIds.add(user.id);
-                idToNameMap.set(user.id, user.fullName);
-                if (!updatedAssignedIDs.includes(user.id)) {
-                    updatedAssignedIDs.push(user.id);
+        // Si no hay tareas, empezar desde 1000
+        if (tasksWithoutServiceOrder.length === 0) {
+            return '1000';
+        }
+
+        // Encontrar el número máximo entre tareas con números puros (sin guiones)
+        let maxNumber = 999;
+
+        for (const task of tasksWithoutServiceOrder) {
+            // Asegurar que es string
+            const taskNumberStr = String(task.taskNumber);
+
+            // Solo considerar números puros (sin guiones)
+            if (!taskNumberStr.includes('-')) {
+                const currentNumber = parseInt(taskNumberStr, 10);
+                if (!isNaN(currentNumber) && currentNumber > maxNumber) {
+                    maxNumber = currentNumber;
                 }
-            });
-        }
-
-        participantNames = participants.map((participant) => {
-            if (/^[0-9a-fA-F]{24}$/.test(participant) && idToNameMap.has(participant)) {
-                return idToNameMap.get(participant)!;
             }
-            return participant;
-        });
-
-        // Solo filtrar asignados si no están ni por ID ni por nombre en participantes
-        updatedAssignedIDs = updatedAssignedIDs.filter((id) => {
-            const userName = idToNameMap.get(id);
-            return (
-                validUserIds.has(id) ||
-                participantNames.includes(userName!) ||
-                (currentUserId && id === currentUserId)
-            );
-        });
-    }
-
-    if (currentUserId && idToNameMap.has(currentUserId)) {
-        const currentUserName = idToNameMap.get(currentUserId)!;
-        if (!participantNames.includes(currentUserName)) {
-            participantNames.push(currentUserName);
         }
-    }
 
-    return {
-        updatedAssignedIDs,
-        participantNames,
-    };
+        return String(maxNumber + 1);
+    }
 }
 
 function calculateMaxRowHeight(row: ExcelJS.Row, worksheet: ExcelJS.Worksheet): number {
@@ -216,28 +167,11 @@ builder.mutationFields((t) => ({
         resolve: async (root, args, _context, _info) => {
             try {
                 const { input } = args;
-                const taskNumber = await generateTaskNumber();
+                const taskNumber = await generateTaskNumber(input.serviceOrderId);
 
-                // Obtener nombres completos de los técnicos asignados para inicializar participantes
-                let participantNames: string[] = [];
-                let assignedUserIds: string[] = []; // Store assigned user IDs for notification
-
-                if (input.assigned && input.assigned.length > 0) {
-                    assignedUserIds = [...input.assigned]; // Save IDs for notifications
-                    const assignedUsers = await prisma.user.findMany({
-                        where: {
-                            id: {
-                                in: input.assigned,
-                            },
-                            deleted: false,
-                        },
-                        select: {
-                            fullName: true,
-                        },
-                    });
-
-                    participantNames = assignedUsers.map((user) => user.fullName);
-                }
+                // Procesar participantes y asignados (puede incluir IDs de usuarios y nombres de técnicos externos)
+                const { updatedAssignedIDs, participantNames } =
+                    await processParticipantsAndAssigned(input.assigned || [], []);
 
                 const task = await prisma.task.create({
                     data: {
@@ -252,13 +186,14 @@ builder.mutationFields((t) => ({
                         status: TaskStatus.Pendiente,
                         taskType: input.taskType,
                         assignedIDs: {
-                            set: input.assigned,
+                            set: updatedAssignedIDs,
                         },
                         participants: {
-                            set: participantNames, // Inicializar con nombres de asignados
+                            set: participantNames,
                         },
                         movitecTicket: input.movitecTicket,
                         serviceOrderId: input.serviceOrderId,
+                        customBranch: input.customBranch,
                     },
                 });
 
@@ -292,8 +227,8 @@ builder.mutationFields((t) => ({
                         : ''
                 }`;
                 // Enviar notificación push si hay usuarios asignados
-                if (assignedUserIds.length > 0) {
-                    await sendPushNotification(assignedUserIds, {
+                if (updatedAssignedIDs.length > 0) {
+                    await sendPushNotification(updatedAssignedIDs, {
                         title: `Nueva Tarea Asignada! ${
                             taskForNotification?.branch
                                 ? `En ${branchIdentifier} de`
@@ -315,6 +250,9 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 return {
                     success: false,
+                    message: `Error al crear la tarea: ${
+                        error instanceof Error ? error.message : 'Unknown error'
+                    }`,
                 };
             }
         },
@@ -341,8 +279,8 @@ builder.mutationFields((t) => ({
             try {
                 const { input } = args;
 
-                // Generar número de tarea
-                const taskNumber = await generateTaskNumber();
+                // Generar número de tarea (las tareas de la app móvil no suelen tener serviceOrderId)
+                const taskNumber = await generateTaskNumber(null);
 
                 // Procesar participantes
                 const initialAssignedIDs = input.assigned ? [...input.assigned] : [];
@@ -571,6 +509,7 @@ builder.mutationFields((t) => ({
                         set: input.assigned,
                     },
                     movitecTicket: input.movitecTicket ?? undefined,
+                    customBranch: input.customBranch,
                 };
 
                 const task = await prisma.task.update({
@@ -587,6 +526,9 @@ builder.mutationFields((t) => ({
             } catch (error) {
                 return {
                     success: false,
+                    message: `Error al actualizar la tarea: ${
+                        error instanceof Error ? error.message : 'Unknown error'
+                    }`,
                 };
             }
         },

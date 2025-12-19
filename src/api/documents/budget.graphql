@@ -84,7 +84,7 @@ query GetBudgetById($id: String!) {
             payAmount
         }
         markup
-        budgetBranch {
+        customBranch {
             name
             number
         }
@@ -120,6 +120,11 @@ query GetBudgetById($id: String!) {
         createdBy {
             id
             fullName
+        }
+        serviceOrder {
+            id
+            serviceOrderNumber
+            status
         }
     }
 }
