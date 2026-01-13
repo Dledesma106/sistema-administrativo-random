@@ -10,6 +10,7 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { pascalCaseToSpaces } from '@/lib/utils';
 import { ColumnBillingProfile } from '@/modules/tables/BillingProfilesTable/columns';
 
 type Props = {
@@ -115,7 +116,11 @@ export const ClientSection = ({ billingProfiles }: Props) => {
                         <FormItem>
                             <FormLabel>Condición IVA</FormLabel>
                             <FormControl>
-                                <Input {...field} readOnly />
+                                <Input
+                                    {...field}
+                                    value={pascalCaseToSpaces(field.value)}
+                                    readOnly
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

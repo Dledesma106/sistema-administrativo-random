@@ -152,8 +152,11 @@ query GetBillingProfileById($id: String!) {
             dueDate
             status
             pointOfSale
+            comprobanteNumber
             caeData {
-                comprobanteNumber
+                code
+                expirationDate
+                status
             }
             details {
                 quantity

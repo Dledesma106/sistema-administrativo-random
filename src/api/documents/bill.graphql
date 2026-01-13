@@ -1,0 +1,588 @@
+# ============================================================================
+# QUERIES PARA FACTURAS
+# ============================================================================
+
+# Lista de facturas con filtros y paginación
+query GetBills(
+    $businessId: String = null
+    $status: BillStatus = null
+    $skip: Int = null
+    $take: Int = null
+    $orderBy: String = null
+    $orderDirection: String = null
+) {
+    bills(
+        businessId: $businessId
+        status: $status
+        skip: $skip
+        take: $take
+        orderBy: $orderBy
+        orderDirection: $orderDirection
+    ) {
+        id
+        createdAt
+        updatedAt
+        legalName
+        CUIT
+        billingAddress
+        IVACondition
+        status
+        description
+        comprobanteType
+        saleCondition
+        punctualService
+        serviceDate
+        startDate
+        endDate
+        dueDate
+        pointOfSale
+        comprobanteNumber
+        emissionDate
+        totalAmount
+        nonTaxableNetAmount
+        taxableNetAmount
+        exemptAmount
+        ivaAmount
+        tributesAmount
+        concepto
+        observations
+        withholdingAmount
+        serviceOrder {
+            id
+            serviceOrderNumber
+        }
+        business {
+            id
+            name
+        }
+        billingProfile {
+            id
+            legalName
+        }
+        caeData {
+            code
+            expirationDate
+            status
+        }
+        details {
+            description
+            quantity
+            unitPrice
+            alicuotaIVA
+            taskId
+        }
+    }
+    billsCount(businessId: $businessId, status: $status)
+}
+
+# Obtener factura por ID
+query GetBillById($id: String!) {
+    bill(id: $id) {
+        id
+        createdAt
+        updatedAt
+        legalName
+        CUIT
+        billingAddress
+        IVACondition
+        status
+        description
+        comprobanteType
+        saleCondition
+        punctualService
+        serviceDate
+        startDate
+        endDate
+        dueDate
+        pointOfSale
+        comprobanteNumber
+        emissionDate
+        totalAmount
+        nonTaxableNetAmount
+        taxableNetAmount
+        exemptAmount
+        ivaAmount
+        tributesAmount
+        concepto
+        observations
+        withholdingAmount
+        serviceOrder {
+            id
+            serviceOrderNumber
+            status
+            description
+            business {
+                id
+                name
+            }
+            client {
+                id
+                name
+            }
+        }
+        business {
+            id
+            name
+        }
+        billingProfile {
+            id
+            legalName
+            tipoDocumento
+            numeroDocumento
+            IVACondition
+            comercialAddress
+            billingEmails
+            contacts {
+                fullName
+                email
+                phone
+            }
+        }
+        caeData {
+            code
+            expirationDate
+            status
+        }
+        details {
+            description
+            quantity
+            unitPrice
+            alicuotaIVA
+            taskId
+            task {
+                id
+                taskNumber
+                description
+                status
+            }
+        }
+        tasks {
+            id
+            taskNumber
+            description
+            status
+            branch {
+                id
+                name
+                number
+                client {
+                    id
+                    name
+                }
+            }
+        }
+    }
+}
+
+# ============================================================================
+# QUERIES PARA TAREAS SIN FACTURA
+# ============================================================================
+
+# Tareas disponibles para facturar (sin factura asociada)
+query GetTasksWithoutBill(
+    $businessId: String = null
+    $clientId: String = null
+    $branchId: String = null
+    $status: String = null
+    $skip: Int = null
+    $take: Int = null
+) {
+    tasksWithoutBill(
+        businessId: $businessId
+        clientId: $clientId
+        branchId: $branchId
+        status: $status
+        skip: $skip
+        take: $take
+    ) {
+        id
+        taskNumber
+        createdAt
+        closedAt
+        description
+        status
+        taskType
+        businessName
+        clientName
+        business {
+            id
+            name
+        }
+        branch {
+            id
+            name
+            number
+            client {
+                id
+                name
+            }
+            city {
+                id
+                name
+                province {
+                    id
+                    name
+                }
+            }
+        }
+        customBranch {
+            name
+            number
+        }
+        assigned {
+            id
+            fullName
+        }
+    }
+    tasksWithoutBillCount(
+        businessId: $businessId
+        clientId: $clientId
+        branchId: $branchId
+        status: $status
+    )
+}
+
+# ============================================================================
+# QUERIES PARA ÓRDENES DE SERVICIO FACTURADAS
+# ============================================================================
+
+# OTs facturadas con filtros y paginación
+query GetBilledServiceOrders(
+    $businessId: String = null
+    $clientId: String = null
+    $status: String = null
+    $fromDate: DateTime = null
+    $toDate: DateTime = null
+    $skip: Int = null
+    $take: Int = null
+    $orderBy: String = null
+    $orderDirection: String = null
+) {
+    billedServiceOrders(
+        businessId: $businessId
+        clientId: $clientId
+        status: $status
+        fromDate: $fromDate
+        toDate: $toDate
+        skip: $skip
+        take: $take
+        orderBy: $orderBy
+        orderDirection: $orderDirection
+    ) {
+        id
+        serviceOrderNumber
+        status
+        createdAt
+        description
+        business {
+            id
+            name
+        }
+        client {
+            id
+            name
+        }
+        branch {
+            id
+            name
+            number
+        }
+        tasks {
+            id
+            taskNumber
+            status
+        }
+    }
+    billedServiceOrdersCount(
+        businessId: $businessId
+        clientId: $clientId
+        status: $status
+        fromDate: $fromDate
+        toDate: $toDate
+    )
+}
+
+# Facturas asociadas a una tarea
+query GetBillsByTask($taskId: String!) {
+    billsByTask(taskId: $taskId) {
+        id
+        comprobanteNumber
+        status
+        totalAmount
+        createdAt
+        emissionDate
+        caeData {
+            code
+            status
+        }
+    }
+}
+
+# Facturas asociadas a una orden de servicio
+query GetBillsByServiceOrder($serviceOrderId: String!) {
+    billsByServiceOrder(serviceOrderId: $serviceOrderId) {
+        id
+        comprobanteNumber
+        status
+        totalAmount
+        createdAt
+        emissionDate
+        caeData {
+            code
+            status
+        }
+    }
+}
+
+# ============================================================================
+# QUERIES DE CONFIGURACIÓN AFIP
+# ============================================================================
+
+# Tipos de comprobante AFIP
+query GetAfipComprobanteTypes {
+    afipComprobanteTypes {
+        code
+        label
+    }
+}
+
+# Puntos de venta AFIP
+query GetAfipSalesPoints {
+    afipSalesPoints {
+        number
+        type
+        blocked
+    }
+}
+
+# Conceptos AFIP
+query GetAfipConceptos {
+    afipConceptos {
+        code
+        label
+    }
+}
+
+# Tipos de documento AFIP
+query GetAfipDocumentoTypes {
+    afipDocumentoTypes {
+        code
+        label
+    }
+}
+
+# Alícuotas de IVA AFIP
+query GetAfipAlicuotasIVA {
+    afipAlicuotasIVA {
+        code
+        label
+    }
+}
+
+# Condiciones de IVA AFIP
+query GetAfipIVAConditions {
+    afipIVAConditions {
+        code
+        label
+    }
+}
+
+# Monedas AFIP
+query GetAfipMonedas {
+    afipMonedas {
+        code
+        label
+    }
+}
+
+# Último número de comprobante
+query GetAfipLastVoucherNumber($pointOfSale: Int!, $comprobanteType: ComprobanteType!) {
+    afipLastVoucherNumber(pointOfSale: $pointOfSale, comprobanteType: $comprobanteType)
+}
+
+# Próximo número de comprobante
+query GetAfipNextVoucherNumber($pointOfSale: Int!, $comprobanteType: ComprobanteType!) {
+    afipNextVoucherNumber(pointOfSale: $pointOfSale, comprobanteType: $comprobanteType)
+}
+
+# ============================================================================
+# MUTATIONS PARA FACTURAS
+# ============================================================================
+
+# Crear factura
+mutation CreateBill($input: BillInput!) {
+    createBill(input: $input) {
+        success
+        message
+        bill {
+            id
+            status
+            comprobanteNumber
+            totalAmount
+            caeData {
+                code
+                expirationDate
+                status
+            }
+        }
+    }
+}
+
+# Actualizar factura
+mutation UpdateBill($id: String!, $input: BillInput!) {
+    updateBill(id: $id, input: $input) {
+        success
+        message
+        bill {
+            id
+            status
+            comprobanteNumber
+            totalAmount
+            caeData {
+                code
+                expirationDate
+                status
+            }
+        }
+    }
+}
+
+# Eliminar factura
+mutation DeleteBill($id: String!) {
+    deleteBill(id: $id) {
+        success
+        message
+        bill {
+            id
+        }
+    }
+}
+
+# Actualizar estado de factura
+mutation UpdateBillStatus($id: String!, $status: BillStatus!) {
+    updateBillStatus(id: $id, status: $status) {
+        success
+        message
+        bill {
+            id
+            status
+        }
+    }
+}
+
+# Emitir factura electrónica
+mutation EmitBill($id: String!) {
+    emitBill(id: $id) {
+        success
+        message
+        bill {
+            id
+            status
+            comprobanteNumber
+            emissionDate
+            totalAmount
+            taxableNetAmount
+            ivaAmount
+            caeData {
+                code
+                expirationDate
+                status
+            }
+        }
+    }
+}
+
+# ============================================================================
+# MUTATIONS PARA ASOCIACIÓN DE TAREAS
+# ============================================================================
+
+# Asociar tarea a factura (sin detalle específico)
+mutation AssociateTaskToBill($billId: String!, $taskId: String!) {
+    associateTaskToBill(billId: $billId, taskId: $taskId) {
+        success
+        message
+        bill {
+            id
+            tasks {
+                id
+                taskNumber
+            }
+        }
+    }
+}
+
+# Asociar múltiples tareas a factura
+mutation AssociateTasksToBill($billId: String!, $taskIds: [String!]!) {
+    associateTasksToBill(billId: $billId, taskIds: $taskIds) {
+        success
+        message
+        bill {
+            id
+            tasks {
+                id
+                taskNumber
+            }
+        }
+    }
+}
+
+# Desasociar tarea de factura
+mutation DissociateTaskFromBill($billId: String!, $taskId: String!) {
+    dissociateTaskFromBill(billId: $billId, taskId: $taskId) {
+        success
+        message
+        bill {
+            id
+            tasks {
+                id
+                taskNumber
+            }
+        }
+    }
+}
+
+# Asociar tarea a detalle de factura
+mutation AssociateTaskToBillDetail(
+    $billId: String!
+    $detailIndex: Int!
+    $taskId: String!
+) {
+    associateTaskToBillDetail(
+        billId: $billId
+        detailIndex: $detailIndex
+        taskId: $taskId
+    ) {
+        success
+        message
+        bill {
+            id
+            details {
+                description
+                taskId
+            }
+        }
+    }
+}
+
+# Desasociar tarea de detalle de factura
+mutation DissociateTaskFromBillDetail(
+    $billId: String!
+    $detailIndex: Int!
+    $taskId: String!
+) {
+    dissociateTaskFromBillDetail(
+        billId: $billId
+        detailIndex: $detailIndex
+        taskId: $taskId
+    ) {
+        success
+        message
+        bill {
+            id
+            details {
+                description
+                taskId
+            }
+        }
+    }
+}

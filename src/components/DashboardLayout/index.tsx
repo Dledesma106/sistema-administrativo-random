@@ -64,10 +64,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
     function Main(): JSX.Element {
         return (
-            <div className={cn('flex h-screen flex-col overflow-hidden')}>
+            <div className={cn('absolute inset-0 flex flex-col overflow-hidden')}>
                 <NavBar />
 
-                <div className="flex flex-1 flex-col overflow-y-scroll px-20">
+                <div className="flex flex-1 flex-col overflow-auto px-20">
                     <main className={cn('flex-1 px-4 py-3.5', className)}>
                         <LoadingWrapper isLoading={isLoading}>{children}</LoadingWrapper>
                     </main>

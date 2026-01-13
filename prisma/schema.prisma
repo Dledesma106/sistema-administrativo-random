@@ -148,6 +148,7 @@ enum IVACondition {
   Monotributo
   Exento
   ConsumidorFinal
+  NoResponsable // IVA No Responsable (código AFIP: 7)
 }
 
 enum TipoDocumento {
@@ -156,6 +157,12 @@ enum TipoDocumento {
   DNI
   CDI
   Pasaporte
+  LE              // Libreta de Enrolamiento
+  LC              // Libreta Cívica
+  CIExtranjera    // CI Extranjera
+  EnTramite       // Documento en Trámite
+  ActaNacimiento  // Acta de Nacimiento
+  SinIdentificar  // Consumidor Final sin identificar (código AFIP: 99)
   Otro
 }
 
@@ -328,6 +335,10 @@ model Task {
   serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
 
   priceHistory TaskPriceHistory[]
+
+  // Factura asociada a esta tarea (una tarea solo puede pertenecer a una factura)
+  billId String? @db.ObjectId
+  bill   Bill?   @relation("BillTasks", fields: [billId], references: [id])
 
   @@map("tasks")
 }
@@ -604,12 +615,16 @@ model ServiceOrder {
   budgetId String? @map("budget") @db.ObjectId
   budget   Budget? @relation(fields: [budgetId], references: [id])
 
+  // Facturas asociadas a esta orden de servicio
+  bills Bill[] @relation("BillServiceOrder")
+
   @@map("service_orders")
 }
 
 enum BillStatus {
   Borrador
   Pendiente
+  Emitida
   Vencida
   Pagada
 }
@@ -621,10 +636,14 @@ enum CAEStatus {
 }
 
 enum AlicuotaIVA {
-  IVA_21
-  IVA_10_5
-  IVA_27
-  IVA_0
+  NoGravado  // No Gravado (código AFIP: 1)
+  Exento     // Exento (código AFIP: 2)
+  IVA_0      // IVA 0% (código AFIP: 3)
+  IVA_10_5   // IVA 10.5% (código AFIP: 4)
+  IVA_21     // IVA 21% (código AFIP: 5)
+  IVA_27     // IVA 27% (código AFIP: 6)
+  IVA_5      // IVA 5% (código AFIP: 8)
+  IVA_2_5    // IVA 2.5% (código AFIP: 9)
 }
 
 enum AccountType {
@@ -635,9 +654,33 @@ enum AccountType {
 }
 
 enum ComprobanteType {
-  A
-  B
-  C
+  // Facturas
+  FacturaA        // Factura A (código AFIP: 1)
+  FacturaB        // Factura B (código AFIP: 6)
+  FacturaC        // Factura C (código AFIP: 11)
+  // Notas de Débito
+  NotaDebitoA     // Nota de Débito A (código AFIP: 2)
+  NotaDebitoB     // Nota de Débito B (código AFIP: 7)
+  NotaDebitoC     // Nota de Débito C (código AFIP: 12)
+  // Notas de Crédito
+  NotaCreditoA    // Nota de Crédito A (código AFIP: 3)
+  NotaCreditoB    // Nota de Crédito B (código AFIP: 8)
+  NotaCreditoC    // Nota de Crédito C (código AFIP: 13)
+  // Facturas M (para operaciones especiales)
+  FacturaM        // Factura M (código AFIP: 51)
+  NotaDebitoM     // Nota de Débito M (código AFIP: 52)
+  NotaCreditoM    // Nota de Crédito M (código AFIP: 53)
+  // Exportación
+  FacturaE        // Factura E - Exportación (código AFIP: 19)
+  NotaDebitoE     // Nota de Débito E (código AFIP: 20)
+  NotaCreditoE    // Nota de Crédito E (código AFIP: 21)
+}
+
+// Concepto AFIP: 1=Productos, 2=Servicios, 3=Productos y Servicios
+enum BillConcepto {
+  Productos
+  Servicios
+  ProductosYServicios
 }
 
 type BillDetail {
@@ -645,13 +688,14 @@ type BillDetail {
   quantity    Int
   unitPrice   Float
   alicuotaIVA AlicuotaIVA
+  // Tarea asociada a este detalle específico (opcional, una sola tarea por detalle)
+  taskId String?
 }
 
 type CAEData {
-  code              String
-  expirationDate    DateTime
-  comprobanteNumber String
-  status            CAEStatus
+  code           String
+  expirationDate DateTime
+  status         CAEStatus
 }
 
 model Bill {
@@ -681,11 +725,38 @@ model Bill {
   dueDate         DateTime?       @db.Date
   pointOfSale     Int? // Punto de venta (4 dígitos asignado por AFIP)
 
+  // Número de comprobante (formato: PPPP-NNNNNNNN)
+  comprobanteNumber String?
+
+  // Fecha de emisión del comprobante
+  emissionDate DateTime? @db.Date
+
+  // Importes calculados de AFIP
+  totalAmount         Float? // Importe total
+  nonTaxableNetAmount Float? // Importe neto no gravado (ImpTotConc)
+  taxableNetAmount    Float? // Importe neto gravado (ImpNeto)
+  exemptAmount        Float? // Importe exento (ImpOpEx)
+  ivaAmount           Float? // Importe IVA (ImpIVA)
+  tributesAmount      Float? // Importe tributos (ImpTrib)
+
+  // Concepto AFIP
+  concepto BillConcepto?
+
+  // Observaciones
+  observations String?
+
   caeData           CAEData?
   details           BillDetail[]
   withholdingAmount Float?
   pdfId             String?      @db.ObjectId
   pdf               File?        @relation(fields: [pdfId], references: [id])
+
+  // Orden de servicio asociada a la factura (opcional, máximo una)
+  serviceOrderId String?       @db.ObjectId
+  serviceOrder   ServiceOrder? @relation("BillServiceOrder", fields: [serviceOrderId], references: [id])
+
+  // Tareas asociadas a la factura (relación inversa, una factura puede tener múltiples tareas)
+  tasks Task[] @relation("BillTasks")
 
   @@map("bills")
 }

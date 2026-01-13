@@ -10,7 +10,7 @@ export default function Document(): JSX.Element {
                 />
                 <link rel="icon" href="/logo.png" />
             </Head>
-            <body>
+            <body className="overflow-hidden">
                 <Main />
                 <NextScript />
             </body>
