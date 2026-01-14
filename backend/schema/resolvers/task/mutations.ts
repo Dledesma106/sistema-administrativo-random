@@ -1068,7 +1068,8 @@ builder.mutationFields((t) => ({
                 // Construir la cláusula where
                 const whereClause = {
                     deleted: false,
-                    status: TaskStatus.Aprobada, // Solo tareas aprobadas
+                    // Incluir tareas Aprobada y Finalizada
+                    status: { in: [TaskStatus.Aprobada, TaskStatus.Finalizada] },
                     closedAt: {
                         gte: startDate,
                         lte: endDate,
