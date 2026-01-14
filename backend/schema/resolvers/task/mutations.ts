@@ -1186,6 +1186,11 @@ builder.mutationFields((t) => ({
                         width: 15,
                     },
                     {
+                        header: 'Estado',
+                        key: 'status',
+                        width: 15,
+                    },
+                    {
                         header: 'Observaciones',
                         key: 'observations',
                         width: 40,
@@ -1257,6 +1262,7 @@ builder.mutationFields((t) => ({
                             currency: 'ARS',
                         }),
                         expenseCount: task.expenses.length,
+                        status: task.status,
                         observations: task.observations || '',
                         administrativeNotes: task.administrativeNotes || '',
                         hasAttachments:
