@@ -207,13 +207,21 @@ export type BillDetailInput = {
 };
 
 export type BillInput = {
+    CUIT: InputMaybe<Scalars['String']>;
+    IVACondition: InputMaybe<IvaCondition>;
+    billingAddress: InputMaybe<Scalars['String']>;
     billingProfileId: Scalars['String'];
+    businessId: Scalars['String'];
     comprobanteType: ComprobanteType;
     concepto: InputMaybe<BillConcepto>;
     description: InputMaybe<Scalars['String']>;
     details: Array<BillDetailInput>;
     dueDate: InputMaybe<Scalars['DateTime']>;
     endDate: InputMaybe<Scalars['DateTime']>;
+    exemptAmount: InputMaybe<Scalars['Float']>;
+    ivaAmount: InputMaybe<Scalars['Float']>;
+    legalName: InputMaybe<Scalars['String']>;
+    nonTaxableNetAmount: InputMaybe<Scalars['Float']>;
     observations: InputMaybe<Scalars['String']>;
     pointOfSale: InputMaybe<Scalars['Int']>;
     punctualService: Scalars['Boolean'];
@@ -222,6 +230,10 @@ export type BillInput = {
     serviceOrderId: InputMaybe<Scalars['String']>;
     startDate: InputMaybe<Scalars['DateTime']>;
     status: BillStatus;
+    taskIds: InputMaybe<Array<Scalars['String']>>;
+    taxableNetAmount: InputMaybe<Scalars['Float']>;
+    totalAmount: InputMaybe<Scalars['Float']>;
+    tributesAmount: InputMaybe<Scalars['Float']>;
     withholdingAmount: InputMaybe<Scalars['Float']>;
 };
 
@@ -2082,54 +2094,24 @@ export type GetBillsQuery = {
     bills: Array<{
         __typename?: 'Bill';
         id: string;
+        description: string | null;
         createdAt: any;
         updatedAt: any;
-        legalName: string;
-        CUIT: string;
-        billingAddress: string;
-        IVACondition: IvaCondition;
         status: BillStatus;
-        description: string | null;
-        comprobanteType: ComprobanteType;
-        saleCondition: string;
-        punctualService: boolean;
-        serviceDate: any | null;
-        startDate: any | null;
-        endDate: any | null;
-        dueDate: any | null;
-        pointOfSale: number | null;
-        comprobanteNumber: string | null;
-        emissionDate: any | null;
         totalAmount: number | null;
-        nonTaxableNetAmount: number | null;
-        taxableNetAmount: number | null;
-        exemptAmount: number | null;
-        ivaAmount: number | null;
-        tributesAmount: number | null;
-        concepto: BillConcepto | null;
         observations: string | null;
-        withholdingAmount: number | null;
-        serviceOrder: {
-            __typename?: 'ServiceOrder';
-            id: string;
-            serviceOrderNumber: number;
-        } | null;
         business: { __typename?: 'Business'; id: string; name: string };
-        billingProfile: { __typename?: 'BillingProfile'; id: string; legalName: string };
-        caeData: {
-            __typename?: 'CAEData';
-            code: string;
-            expirationDate: any;
-            status: CaeStatus;
-        } | null;
-        details: Array<{
-            __typename?: 'BillDetail';
-            description: string;
-            quantity: number;
-            unitPrice: number;
-            alicuotaIVA: AlicuotaIva;
-            taskId: string | null;
-        }>;
+        billingProfile: {
+            __typename?: 'BillingProfile';
+            id: string;
+            legalName: string;
+            billingEmails: Array<string>;
+            firstContact: {
+                __typename?: 'Contact';
+                fullName: string;
+                email: string;
+            } | null;
+        };
     }>;
 };
 
@@ -2188,6 +2170,12 @@ export type GetBillByIdQuery = {
             IVACondition: IvaCondition;
             comercialAddress: string;
             billingEmails: Array<string>;
+            firstContact: {
+                __typename?: 'Contact';
+                fullName: string;
+                email: string;
+                phone: string;
+            } | null;
             contacts: Array<{
                 __typename?: 'Contact';
                 fullName: string;
@@ -2221,7 +2209,14 @@ export type GetBillByIdQuery = {
             id: string;
             taskNumber: string;
             description: string;
+            closedAt: any | null;
             status: TaskStatus;
+            business: { __typename?: 'Business'; name: string } | null;
+            customBranch: {
+                __typename?: 'CustomBranch';
+                name: string | null;
+                number: number | null;
+            } | null;
             branch: {
                 __typename?: 'Branch';
                 id: string;
@@ -2811,12 +2806,11 @@ export type GetBillingProfileByIdQuery = {
             __typename?: 'Bill';
             id: string;
             description: string | null;
-            serviceDate: any | null;
-            startDate: any | null;
             dueDate: any | null;
             status: BillStatus;
+            totalAmount: number | null;
             pointOfSale: number | null;
-            comprobanteNumber: string | null;
+            emissionDate: any | null;
             caeData: {
                 __typename?: 'CAEData';
                 code: string;
@@ -4943,24 +4937,15 @@ export const GetBillsDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'createdAt' },
                                 },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'updatedAt' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalName' },
-                                },
-                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'billingAddress' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'IVACondition' },
                                 },
                                 {
                                     kind: 'Field',
@@ -4972,99 +4957,11 @@ export const GetBillsDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'comprobanteType' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'saleCondition' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'punctualService' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'serviceDate' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'startDate' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'endDate' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'dueDate' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'pointOfSale' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'comprobanteNumber' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'emissionDate' },
-                                },
-                                {
-                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'totalAmount' },
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'nonTaxableNetAmount' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'taxableNetAmount' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'exemptAmount' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'ivaAmount' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'tributesAmount' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'concepto' },
-                                },
-                                {
-                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'observations' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'withholdingAmount' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'serviceOrder' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'serviceOrderNumber',
-                                                },
-                                            },
-                                        ],
-                                    },
                                 },
                                 {
                                     kind: 'Field',
@@ -5100,67 +4997,38 @@ export const GetBillsDocument = {
                                                     value: 'legalName',
                                                 },
                                             },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'caeData' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'code' },
-                                            },
                                             {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'expirationDate',
+                                                    value: 'firstContact',
                                                 },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'status' },
-                                            },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'details' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'description',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'quantity' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'unitPrice',
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                    ],
                                                 },
                                             },
                                             {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'alicuotaIVA',
+                                                    value: 'billingEmails',
                                                 },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'taskId' },
                                             },
                                         ],
                                     },
@@ -5488,6 +5356,39 @@ export const GetBillByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'firstContact',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'phone',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'contacts' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
@@ -5640,6 +5541,52 @@ export const GetBillByIdDocument = {
                                                 name: {
                                                     kind: 'Name',
                                                     value: 'description',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'closedAt' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'customBranch',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'number',
+                                                            },
+                                                        },
+                                                    ],
                                                 },
                                             },
                                             {
@@ -8991,25 +8938,18 @@ export const GetBillingProfileByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'serviceDate',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'startDate',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'dueDate' },
                                             },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'totalAmount',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -9022,7 +8962,7 @@ export const GetBillingProfileByIdDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
-                                                    value: 'comprobanteNumber',
+                                                    value: 'emissionDate',
                                                 },
                                             },
                                             {

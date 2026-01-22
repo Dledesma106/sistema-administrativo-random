@@ -10,14 +10,14 @@ interface TaskStatusBadgeProps {
 
 export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-success': status === TaskStatus.Aprobada,
-        'h-2 w-2 rounded-full bg-yellow-500': status === TaskStatus.Pendiente,
-        'h-2 w-2 rounded-full bg-blue-400': status === TaskStatus.Finalizada,
-        'h-2 w-2 rounded-full bg-destructive': status === TaskStatus.SinAsignar,
+        'bg-success': status === TaskStatus.Aprobada,
+        'bg-yellow-500': status === TaskStatus.Pendiente,
+        'bg-blue-400': status === TaskStatus.Finalizada,
+        'bg-destructive': status === TaskStatus.SinAsignar,
     });
 
     return (
-        <Badge className="gap-2" variant="default">
+        <Badge className={contentStyle} variant="default">
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(status))}</span>
         </Badge>

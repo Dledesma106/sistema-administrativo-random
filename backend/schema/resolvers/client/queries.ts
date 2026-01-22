@@ -13,7 +13,7 @@ export const ClientQueries = builder.queryFields((t) => ({
         },
         resolve: async (query, _parent, { id }) => {
             const client = await prisma.client.findUniqueUndeleted({
-                ...query,
+                ...(query as any),
                 where: { id },
             });
 
@@ -36,7 +36,7 @@ export const ClientQueries = builder.queryFields((t) => ({
         },
         resolve: async (query, _parent, { search, skip, take }) => {
             return prisma.client.findMany({
-                ...query,
+                ...(query as any),
                 where: {
                     deleted: false,
                     ...(search && {
@@ -91,7 +91,7 @@ export const ClientQueries = builder.queryFields((t) => ({
         },
         resolve: async (query, _parent, { businessId, search }) => {
             return prisma.client.findMany({
-                ...query,
+                ...(query as any),
                 where: {
                     deleted: false,
                     branch: {

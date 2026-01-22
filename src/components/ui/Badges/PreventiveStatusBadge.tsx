@@ -10,12 +10,12 @@ interface PreventiveStatusBadgeProps {
 
 export function PreventiveStatusBadge({ status }: PreventiveStatusBadgeProps) {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-success': status === PreventiveStatus.AlDia,
-        'h-2 w-2 rounded-full bg-yellow-500': status === PreventiveStatus.Pendiente,
+        'bg-success': status === PreventiveStatus.AlDia,
+        'bg-yellow-500': status === PreventiveStatus.Pendiente,
     });
 
     return (
-        <Badge className="min-w-[75px] gap-2" variant="default">
+        <Badge className={contentStyle} variant="default">
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(status))}</span>
         </Badge>

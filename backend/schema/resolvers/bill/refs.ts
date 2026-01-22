@@ -266,7 +266,16 @@ export const BillDetailInputPothosRef = builder.inputType('BillDetailInput', {
 
 export const BillInputPothosRef = builder.inputType('BillInput', {
     fields: (t) => ({
+        // Identificador de la empresa y datos del perfil de facturación
+        businessId: t.string({ required: true }),
         billingProfileId: t.string({ required: true }),
+        legalName: t.string({ required: false }),
+        CUIT: t.string({ required: false }),
+        billingAddress: t.string({ required: false }),
+        IVACondition: t.field({
+            type: IVAConditionPothosRef,
+            required: false,
+        }),
         comprobanteType: t.field({
             type: ComprobanteTypePothosRef,
             required: true,
@@ -308,5 +317,14 @@ export const BillInputPothosRef = builder.inputType('BillInput', {
         observations: t.string({ required: false }),
         // ID de orden de servicio asociada (opcional)
         serviceOrderId: t.string({ required: false }),
+        // IDs de tareas asociadas a la factura (opcional)
+        taskIds: t.stringList({ required: false }),
+        // Importes calculados (opcionales en el input, se pueden enviar desde el frontend)
+        totalAmount: t.float({ required: false }),
+        taxableNetAmount: t.float({ required: false }),
+        nonTaxableNetAmount: t.float({ required: false }),
+        exemptAmount: t.float({ required: false }),
+        ivaAmount: t.float({ required: false }),
+        tributesAmount: t.float({ required: false }),
     }),
 });

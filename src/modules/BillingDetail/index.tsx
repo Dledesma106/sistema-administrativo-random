@@ -1,54 +1,57 @@
 import { useRouter } from 'next/router';
 
+import { BillStatus } from '@prisma/client';
+import { useState } from 'react';
 import { RiDownloadLine } from 'react-icons/ri';
 
+import { billDetailColumns } from './columns';
+
+import { BillStatusBadge } from '@/components/ui/Badges/BillStatusBadge';
 import { Button } from '@/components/ui/button';
+import { DataList } from '@/components/ui/data-list';
 import { TypographyH1 } from '@/components/ui/typography';
+import { useGetBillById, useEmitBill } from '@/hooks/api/bill';
 import { routesBuilder } from '@/lib/routes';
+import { pascalCaseToSpaces } from '@/lib/utils';
 
 const Title = ({ children }: { children: React.ReactNode }) => (
     <h2 className="mb-2 text-sm font-bold text-primary-foreground">{children}</h2>
 );
 
-// Mock data - Reemplazar con datos reales de la API
-const mockBill = {
-    id: '1',
-    business: {
-        name: 'Empresa A',
-        cuit: '30-12345678-9',
-        legalName: 'Empresa A S.A.',
-        ivaCondition: 'Responsable Inscripto',
-        billingAddress: 'Av. Siempreviva 742, Springfield',
-    },
-    details: [
-        {
-            id: '1',
-            description: 'Servicios de mantenimiento preventivo - Marzo 2024',
-            amount: 150000,
-        },
-        {
-            id: '2',
-            description: 'Instalación de equipos nuevos',
-            amount: 280000,
-        },
-    ],
-    contactName: 'Juan Pérez',
-    contactEmail: 'juan.perez@empresaa.com',
-    billingEmail: 'facturacion@empresaa.com',
-    description: 'Facturación servicios técnicos Marzo 2024',
-    totalAmount: 430000,
-    pdfUrl: '/facturas/factura-1.pdf', // Mock URL
-};
-
-const calculateIVA = (amount: number) => amount * 0.21;
-const calculateTotal = (amount: number) => amount + calculateIVA(amount);
-
 export const BillingDetail = ({ id }: { id: string }) => {
     const router = useRouter();
+    const emitBillMutation = useEmitBill();
+    const [isEmitting, setIsEmitting] = useState(false);
+
+    const { data: billData } = useGetBillById(id);
+
+    if (!billData?.bill) {
+        return <div>Factura no encontrada</div>;
+    }
 
     const handleDownloadPDF = () => {
         // TODO: Implementar descarga real del PDF
         console.log('Descargando PDF de factura:', id);
+    };
+
+    // Emitir factura
+
+    const handleEmit = async () => {
+        const confirm = window.confirm(
+            '¿Estás seguro que deseas emitir esta factura? Esta acción enviará la factura a AFIP y no se puede deshacer.',
+        );
+        if (!confirm) {
+            return;
+        }
+
+        try {
+            setIsEmitting(true);
+            await emitBillMutation.mutateAsync({ id });
+        } catch (error) {
+            console.error('Error emitiendo factura:', error);
+        } finally {
+            setIsEmitting(false);
+        }
     };
 
     return (
@@ -64,100 +67,97 @@ export const BillingDetail = ({ id }: { id: string }) => {
                     >
                         Volver
                     </Button>
+                    {billData?.bill?.status === BillStatus.Pendiente && (
+                        <Button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2"
+                        >
+                            <RiDownloadLine />
+                            Descargar PDF
+                        </Button>
+                    )}
                     <Button
-                        onClick={handleDownloadPDF}
-                        className="flex items-center gap-2"
+                        onClick={() =>
+                            router.push(routesBuilder.accounting.billing.edit(id))
+                        }
                     >
-                        <RiDownloadLine />
-                        Descargar PDF
+                        Editar
                     </Button>
+
+                    {billData?.bill?.status === 'Borrador' && (
+                        <Button
+                            onClick={handleEmit}
+                            disabled={isEmitting}
+                            className="bg-primary text-primary-foreground"
+                        >
+                            {isEmitting ? 'Emitiendo...' : 'Emitir factura'}
+                        </Button>
+                    )}
                 </div>
             </div>
 
             <div className="space-y-4 pt-4">
-                <section>
+                <section className="rounded-lg border border-accent p-4">
                     <Title>Datos de la empresa</Title>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <p className="font-semibold">Empresa</p>
                             <p className="text-muted-foreground">
-                                {mockBill.business.name}
+                                {billData.bill.business.name}
                             </p>
                         </div>
                         <div>
-                            <p className="font-semibold">CUIT</p>
+                            <p className="font-semibold">
+                                {billData.bill.billingProfile.tipoDocumento ||
+                                    'Numero de documento'}
+                            </p>
                             <p className="text-muted-foreground">
-                                {mockBill.business.cuit}
+                                {billData.bill.billingProfile.numeroDocumento}
                             </p>
                         </div>
                         <div>
                             <p className="font-semibold">Razón Social</p>
                             <p className="text-muted-foreground">
-                                {mockBill.business.legalName}
+                                {billData.bill.billingProfile.legalName}
                             </p>
                         </div>
                         <div>
                             <p className="font-semibold">Condición IVA</p>
                             <p className="text-muted-foreground">
-                                {mockBill.business.ivaCondition}
+                                {pascalCaseToSpaces(billData.bill.IVACondition)}
                             </p>
                         </div>
                         <div className="col-span-2">
                             <p className="font-semibold">Dirección de facturación</p>
                             <p className="text-muted-foreground">
-                                {mockBill.business.billingAddress}
+                                {billData.bill.billingProfile.comercialAddress}
                             </p>
                         </div>
                     </div>
                 </section>
 
-                <section>
-                    <Title>Descripción</Title>
-                    <p className="text-muted-foreground">{mockBill.description}</p>
+                <section className="flex flex-col gap-4">
+                    <div>
+                        <Title>Descripción</Title>
+                        <p className="text-muted-foreground">
+                            {billData.bill.description}
+                        </p>
+                    </div>
+
+                    <div>
+                        <Title>Estado</Title>
+                        <BillStatusBadge status={billData.bill.status} />
+                    </div>
                 </section>
 
                 <section>
                     <Title>Detalles de facturación</Title>
                     <div className="space-y-2">
-                        {mockBill.details.map((detail) => (
-                            <div
-                                key={detail.id}
-                                className="flex flex-col rounded-lg border border-accent p-3"
-                            >
-                                <div className="flex justify-between">
-                                    <p>{detail.description}</p>
-                                </div>
-                                <div className="mt-2 flex flex-col items-end text-sm">
-                                    <p className="text-muted-foreground">
-                                        Subtotal:{' '}
-                                        {detail.amount.toLocaleString('es-AR', {
-                                            style: 'currency',
-                                            currency: 'ARS',
-                                        })}
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        IVA (21%):{' '}
-                                        {calculateIVA(detail.amount).toLocaleString(
-                                            'es-AR',
-                                            {
-                                                style: 'currency',
-                                                currency: 'ARS',
-                                            },
-                                        )}
-                                    </p>
-                                    <p className="font-semibold">
-                                        Total:{' '}
-                                        {calculateTotal(detail.amount).toLocaleString(
-                                            'es-AR',
-                                            {
-                                                style: 'currency',
-                                                currency: 'ARS',
-                                            },
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                        <DataList
+                            data={billData.bill.details || []}
+                            columns={billDetailColumns}
+                            emptyMessage="No hay detalles"
+                        />
                     </div>
                 </section>
 
@@ -166,7 +166,7 @@ export const BillingDetail = ({ id }: { id: string }) => {
                         <div className="flex justify-between text-sm">
                             <p>Subtotal</p>
                             <p>
-                                {mockBill.totalAmount.toLocaleString('es-AR', {
+                                {billData.bill.taxableNetAmount?.toLocaleString('es-AR', {
                                     style: 'currency',
                                     currency: 'ARS',
                                 })}
@@ -175,25 +175,19 @@ export const BillingDetail = ({ id }: { id: string }) => {
                         <div className="flex justify-between text-sm">
                             <p>IVA (21%)</p>
                             <p>
-                                {calculateIVA(mockBill.totalAmount).toLocaleString(
-                                    'es-AR',
-                                    {
-                                        style: 'currency',
-                                        currency: 'ARS',
-                                    },
-                                )}
+                                {billData.bill.ivaAmount?.toLocaleString('es-AR', {
+                                    style: 'currency',
+                                    currency: 'ARS',
+                                })}
                             </p>
                         </div>
                         <div className="flex justify-between border-t border-border pt-1">
                             <Title>Total</Title>
                             <p className="text-xl font-bold">
-                                {calculateTotal(mockBill.totalAmount).toLocaleString(
-                                    'es-AR',
-                                    {
-                                        style: 'currency',
-                                        currency: 'ARS',
-                                    },
-                                )}
+                                {billData.bill.totalAmount?.toLocaleString('es-AR', {
+                                    style: 'currency',
+                                    currency: 'ARS',
+                                })}
                             </p>
                         </div>
                     </div>
@@ -205,26 +199,33 @@ export const BillingDetail = ({ id }: { id: string }) => {
                         <div>
                             <p className="font-semibold">Nombre de contacto</p>
                             <p className="text-muted-foreground">
-                                {mockBill.contactName}
+                                {billData.bill.billingProfile.firstContact?.fullName}
                             </p>
                         </div>
                         <div>
                             <p className="font-semibold">Email de contacto</p>
                             <a
-                                href={`mailto:${mockBill.contactEmail}`}
+                                href={`mailto:${billData.bill.billingProfile.firstContact?.email}`}
                                 className="text-primary hover:underline"
                             >
-                                {mockBill.contactEmail}
+                                {billData.bill.billingProfile.firstContact?.email}
                             </a>
                         </div>
                         <div>
-                            <p className="font-semibold">Email de facturación</p>
-                            <a
-                                href={`mailto:${mockBill.billingEmail}`}
-                                className="text-primary hover:underline"
-                            >
-                                {mockBill.billingEmail}
-                            </a>
+                            <p className="font-semibold">Emails de facturación</p>
+                            <div className="flex flex-col gap-0">
+                                {billData.bill.billingProfile.billingEmails.map(
+                                    (email) => (
+                                        <a
+                                            key={email}
+                                            href={`mailto:${email}`}
+                                            className="text-primary hover:underline"
+                                        >
+                                            {email}
+                                        </a>
+                                    ),
+                                )}
+                            </div>
                         </div>
                     </div>
                 </section>

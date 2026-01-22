@@ -1,3 +1,4 @@
+import { AlicuotaIVA } from '@prisma/client';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -45,4 +46,50 @@ export function pascalCaseToSpaces(input: string): string {
 
 export function capitalizeFirstLetter(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
+}
+
+export function AlicuotaIVALabel(alicuota: AlicuotaIVA): string {
+    switch (alicuota) {
+        case AlicuotaIVA.Exento:
+            return 'Exento';
+        case AlicuotaIVA.NoGravado:
+            return 'No Gravado';
+        case AlicuotaIVA.IVA_0:
+            return '0%';
+        case AlicuotaIVA.IVA_10_5:
+            return '10.5%';
+        case AlicuotaIVA.IVA_21:
+            return '21%';
+        case AlicuotaIVA.IVA_2_5:
+            return '2.5%';
+        case AlicuotaIVA.IVA_5:
+            return '5%';
+        case AlicuotaIVA.IVA_27:
+            return '27%';
+        default:
+            return 'Desconocido';
+    }
+}
+
+export function calculateIVAAmount(ammount: number, alicuotaIVA: AlicuotaIVA): number {
+    switch (alicuotaIVA) {
+        case AlicuotaIVA.Exento:
+            return ammount;
+        case AlicuotaIVA.NoGravado:
+            return ammount;
+        case AlicuotaIVA.IVA_0:
+            return ammount;
+        case AlicuotaIVA.IVA_10_5:
+            return ammount * 0.15;
+        case AlicuotaIVA.IVA_21:
+            return ammount * 0.21;
+        case AlicuotaIVA.IVA_2_5:
+            return ammount * 0.025;
+        case AlicuotaIVA.IVA_5:
+            return ammount * 0.05;
+        case AlicuotaIVA.IVA_27:
+            return ammount * 0.27;
+        default:
+            return ammount;
+    }
 }

@@ -70,11 +70,17 @@ builder.mutationFields((t) => ({
                         concepto: input.concepto,
                         observations: input.observations,
                         serviceOrderId: input.serviceOrderId || null,
+                        totalAmount: input.totalAmount,
+                        taxableNetAmount: input.taxableNetAmount,
+                        nonTaxableNetAmount: input.nonTaxableNetAmount,
+                        exemptAmount: input.exemptAmount,
+                        ivaAmount: input.ivaAmount,
+                        tributesAmount: input.tributesAmount,
                     },
                 });
 
                 // Si el estado es Emitida, emitir la factura electrónica
-                if (input.status === 'Pendiente') {
+                if (input.status === BillStatus.Pendiente) {
                     try {
                         const billEmitida = await emitirFacturaElectronica(bill.id);
                         return {
@@ -164,11 +170,22 @@ builder.mutationFields((t) => ({
                         concepto: input.concepto,
                         observations: input.observations,
                         serviceOrderId: input.serviceOrderId || null,
+                        // Totales y montos calculados
+                        totalAmount: input.totalAmount ?? null,
+                        taxableNetAmount: input.taxableNetAmount ?? null,
+                        nonTaxableNetAmount: input.nonTaxableNetAmount ?? null,
+                        exemptAmount: input.exemptAmount ?? null,
+                        ivaAmount: input.ivaAmount ?? null,
+                        tributesAmount: input.tributesAmount ?? null,
+                        withholdingAmount: input.withholdingAmount ?? null,
                     },
                 });
 
                 // Si el estado cambió a Emitida, emitir la factura electrónica
-                if (input.status === 'Pendiente' && bill.status !== 'Pendiente') {
+                if (
+                    input.status === BillStatus.Pendiente &&
+                    bill.status === BillStatus.Borrador
+                ) {
                     try {
                         const billEmitida = await emitirFacturaElectronica(id);
                         return {
@@ -282,11 +299,14 @@ builder.mutationFields((t) => ({
                 }
 
                 // No permitir cambios si la factura ya fue emitida
-                if (bill.status === BillStatus.Emitida && status !== BillStatus.Emitida) {
+                if (
+                    bill.status === BillStatus.Pendiente &&
+                    status === BillStatus.Borrador
+                ) {
                     return {
                         success: false,
                         message:
-                            'No se puede cambiar el estado de una factura ya emitida',
+                            'No se puede cambiar el estado de una factura ya emitida a borrador nuevamente',
                     };
                 }
 
@@ -334,7 +354,7 @@ builder.mutationFields((t) => ({
                 }
 
                 // Solo se pueden emitir facturas en borrador o pendiente
-                if (bill.status === BillStatus.Emitida) {
+                if (bill.status === BillStatus.Pendiente) {
                     return {
                         success: false,
                         message: 'La factura ya fue emitida',

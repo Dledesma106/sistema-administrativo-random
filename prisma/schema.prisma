@@ -157,12 +157,12 @@ enum TipoDocumento {
   DNI
   CDI
   Pasaporte
-  LE              // Libreta de Enrolamiento
-  LC              // Libreta Cívica
-  CIExtranjera    // CI Extranjera
-  EnTramite       // Documento en Trámite
-  ActaNacimiento  // Acta de Nacimiento
-  SinIdentificar  // Consumidor Final sin identificar (código AFIP: 99)
+  LE // Libreta de Enrolamiento
+  LC // Libreta Cívica
+  CIExtranjera // CI Extranjera
+  EnTramite // Documento en Trámite
+  ActaNacimiento // Acta de Nacimiento
+  SinIdentificar // Consumidor Final sin identificar (código AFIP: 99)
   Otro
 }
 
@@ -624,7 +624,6 @@ model ServiceOrder {
 enum BillStatus {
   Borrador
   Pendiente
-  Emitida
   Vencida
   Pagada
 }
@@ -636,14 +635,14 @@ enum CAEStatus {
 }
 
 enum AlicuotaIVA {
-  NoGravado  // No Gravado (código AFIP: 1)
-  Exento     // Exento (código AFIP: 2)
-  IVA_0      // IVA 0% (código AFIP: 3)
-  IVA_10_5   // IVA 10.5% (código AFIP: 4)
-  IVA_21     // IVA 21% (código AFIP: 5)
-  IVA_27     // IVA 27% (código AFIP: 6)
-  IVA_5      // IVA 5% (código AFIP: 8)
-  IVA_2_5    // IVA 2.5% (código AFIP: 9)
+  NoGravado // No Gravado (código AFIP: 1)
+  Exento // Exento (código AFIP: 2)
+  IVA_0 // IVA 0% (código AFIP: 3)
+  IVA_10_5 // IVA 10.5% (código AFIP: 4)
+  IVA_21 // IVA 21% (código AFIP: 5)
+  IVA_27 // IVA 27% (código AFIP: 6)
+  IVA_5 // IVA 5% (código AFIP: 8)
+  IVA_2_5 // IVA 2.5% (código AFIP: 9)
 }
 
 enum AccountType {
@@ -655,25 +654,25 @@ enum AccountType {
 
 enum ComprobanteType {
   // Facturas
-  FacturaA        // Factura A (código AFIP: 1)
-  FacturaB        // Factura B (código AFIP: 6)
-  FacturaC        // Factura C (código AFIP: 11)
+  FacturaA // Factura A (código AFIP: 1)
+  FacturaB // Factura B (código AFIP: 6)
+  FacturaC // Factura C (código AFIP: 11)
   // Notas de Débito
-  NotaDebitoA     // Nota de Débito A (código AFIP: 2)
-  NotaDebitoB     // Nota de Débito B (código AFIP: 7)
-  NotaDebitoC     // Nota de Débito C (código AFIP: 12)
+  NotaDebitoA // Nota de Débito A (código AFIP: 2)
+  NotaDebitoB // Nota de Débito B (código AFIP: 7)
+  NotaDebitoC // Nota de Débito C (código AFIP: 12)
   // Notas de Crédito
-  NotaCreditoA    // Nota de Crédito A (código AFIP: 3)
-  NotaCreditoB    // Nota de Crédito B (código AFIP: 8)
-  NotaCreditoC    // Nota de Crédito C (código AFIP: 13)
+  NotaCreditoA // Nota de Crédito A (código AFIP: 3)
+  NotaCreditoB // Nota de Crédito B (código AFIP: 8)
+  NotaCreditoC // Nota de Crédito C (código AFIP: 13)
   // Facturas M (para operaciones especiales)
-  FacturaM        // Factura M (código AFIP: 51)
-  NotaDebitoM     // Nota de Débito M (código AFIP: 52)
-  NotaCreditoM    // Nota de Crédito M (código AFIP: 53)
+  FacturaM // Factura M (código AFIP: 51)
+  NotaDebitoM // Nota de Débito M (código AFIP: 52)
+  NotaCreditoM // Nota de Crédito M (código AFIP: 53)
   // Exportación
-  FacturaE        // Factura E - Exportación (código AFIP: 19)
-  NotaDebitoE     // Nota de Débito E (código AFIP: 20)
-  NotaCreditoE    // Nota de Crédito E (código AFIP: 21)
+  FacturaE // Factura E - Exportación (código AFIP: 19)
+  NotaDebitoE // Nota de Débito E (código AFIP: 20)
+  NotaCreditoE // Nota de Crédito E (código AFIP: 21)
 }
 
 // Concepto AFIP: 1=Productos, 2=Servicios, 3=Productos y Servicios
@@ -688,6 +687,7 @@ type BillDetail {
   quantity    Int
   unitPrice   Float
   alicuotaIVA AlicuotaIVA
+
   // Tarea asociada a este detalle específico (opcional, una sola tarea por detalle)
   taskId String?
 }

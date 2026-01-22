@@ -402,15 +402,6 @@ builder.queryFields((t) => ({
         resolve: async (_root, args, _ctx, _info) => {
             const { businessId, clientId, branchId, status, skip = 0, take = 50 } = args;
 
-            console.log('tasksWithoutBill - args:', {
-                businessId,
-                clientId,
-                branchId,
-                status,
-                skip,
-                take,
-            });
-
             // Buscar tareas que no están en ninguna factura
             // Construir el where clause dinámicamente
             const baseWhere: any = {
@@ -427,7 +418,6 @@ builder.queryFields((t) => ({
 
             // Si hay branchId, filtrar directamente por branch
             if (branchId) {
-                console.log('branchId - branchId:', branchId);
                 const whereClause: any = {
                     ...baseWhere,
                     branchId: branchId,
@@ -459,7 +449,6 @@ builder.queryFields((t) => ({
                     },
                 });
             } else if (businessId) {
-                console.log('businessId - businessId:', businessId);
                 // Buscar tareas con businessId directo
                 // Solo buscamos tareas que tengan un business asociado directamente
                 const whereClause: any = {
@@ -472,7 +461,6 @@ builder.queryFields((t) => ({
                         clientId,
                     };
                 }
-                console.log('whereClause - whereClause:', whereClause);
                 tasks = await prisma.task.findMany({
                     where: whereClause,
                     skip: skip ?? 0,
@@ -489,7 +477,6 @@ builder.queryFields((t) => ({
                     },
                 });
             } else if (clientId) {
-                console.log('clientId - clientId:', clientId);
                 // Solo clientId sin businessId ni branchId
                 const whereClause: any = {
                     ...baseWhere,
@@ -513,7 +500,6 @@ builder.queryFields((t) => ({
                     },
                 });
             } else {
-                console.log('else - else');
                 // Sin filtros específicos, solo baseWhere
                 tasks = await prisma.task.findMany({
                     where: baseWhere,
@@ -531,8 +517,6 @@ builder.queryFields((t) => ({
                     },
                 });
             }
-
-            console.log('tasksWithoutBill - found tasks:', tasks.length);
 
             return tasks;
         },

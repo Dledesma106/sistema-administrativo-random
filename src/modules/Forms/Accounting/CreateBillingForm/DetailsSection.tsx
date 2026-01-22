@@ -6,6 +6,7 @@ import { TaskSelectionModal } from './TaskSelectionModal';
 import { FormValues, SelectedTask, BillingDetail, calculateDetailIva } from './types';
 
 import { AlicuotaIva } from '@/api/graphql';
+import Combobox from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
 import {
     FormControl,
@@ -15,48 +16,17 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { AlicuotaIVALabel } from '@/lib/utils';
 
-const IVA_RATES: { value: AlicuotaIva; label: string }[] = [
-    {
-        value: 'IVA_21',
-        label: '21%',
+const IVA_RATES: { value: AlicuotaIva; label: string }[] = Object.values(AlicuotaIva).map(
+    (value) => {
+        const label = AlicuotaIVALabel(value);
+        return {
+            value,
+            label,
+        };
     },
-    {
-        value: 'IVA_10_5',
-        label: '10.5%',
-    },
-    {
-        value: 'IVA_27',
-        label: '27%',
-    },
-    {
-        value: 'IVA_5',
-        label: '5%',
-    },
-    {
-        value: 'IVA_2_5',
-        label: '2.5%',
-    },
-    {
-        value: 'IVA_0',
-        label: '0%',
-    },
-    {
-        value: 'Exento',
-        label: 'Exento',
-    },
-    {
-        value: 'NoGravado',
-        label: 'No Gravado',
-    },
-];
+);
 
 type Props = {
     businessId?: string;
@@ -320,26 +290,15 @@ export const DetailsSection = ({ businessId }: Props) => {
                                     render={({ field }) => (
                                         <FormItem className="col-span-2">
                                             <FormLabel>Alícuota IVA</FormLabel>
-                                            <Select
-                                                value={field.value}
-                                                onValueChange={field.onChange}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {IVA_RATES.map((rate) => (
-                                                        <SelectItem
-                                                            key={rate.value}
-                                                            value={rate.value}
-                                                        >
-                                                            {rate.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <Combobox
+                                                items={IVA_RATES}
+                                                value={field.value || ''}
+                                                onChange={(value) =>
+                                                    field.onChange(value || undefined)
+                                                }
+                                                selectPlaceholder="Seleccione tipo"
+                                                searchPlaceholder="Buscar tipo"
+                                            />
                                             <FormMessage />
                                         </FormItem>
                                     )}

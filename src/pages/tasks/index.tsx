@@ -26,14 +26,12 @@ export default function TechAdminTasks(): JSX.Element {
     }
 
     return (
-        <main>
-            <TasksDataTable
-                cities={citiesData?.cities || []}
-                provinces={provincesData?.provinces || []}
-                clients={clientsData?.clients || []}
-                businesses={businessesData?.businesses || []}
-                techs={techniciansData?.technicians || []}
-            />
-        </main>
+        <TasksDataTable
+            cities={citiesData?.cities || []}
+            provinces={provincesData?.provinces || []}
+            clients={clientsData?.clients || []}
+            businesses={businessesData?.businesses || []}
+            techs={techniciansData?.technicians || []}
+        />
     );
 }

@@ -109,7 +109,7 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
             <DialogContent className="max-w-md translate-y-[-200px] border-accent">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Download className="h-5 w-5" />
+                        <Download className="size-5" />
                         Descargar Fotos de Tareas
                     </DialogTitle>
                 </DialogHeader>
@@ -250,7 +250,7 @@ export function TaskPhotosModal({ isOpen, onClose, businesses = [] }: Props) {
                         </p>
                         {progress.stage === 'error' && (
                             <div className="flex items-center gap-2 text-sm text-destructive">
-                                <AlertCircle className="h-4 w-4" />
+                                <AlertCircle className="size-4" />
                                 <span>Hubo un error durante la descarga</span>
                             </div>
                         )}

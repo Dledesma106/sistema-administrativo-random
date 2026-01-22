@@ -15,7 +15,14 @@ export const useGetBilledServiceOrders = (
     const { skip = 0, take = 20, orderBy, orderDirection, ...filters } = variables;
 
     return useQuery<GetBilledServiceOrdersQuery>({
-        queryKey: [BILLED_SERVICE_ORDERS_QUERY_KEY, skip, take, orderBy, orderDirection, filters],
+        queryKey: [
+            BILLED_SERVICE_ORDERS_QUERY_KEY,
+            skip,
+            take,
+            orderBy,
+            orderDirection,
+            filters,
+        ],
         queryFn: () =>
             fetchClient(GetBilledServiceOrdersDocument, {
                 skip,
@@ -27,4 +34,3 @@ export const useGetBilledServiceOrders = (
         refetchOnMount: true,
     });
 };
-

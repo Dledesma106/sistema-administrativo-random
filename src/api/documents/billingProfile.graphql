@@ -147,12 +147,11 @@ query GetBillingProfileById($id: String!) {
         bills {
             id
             description
-            serviceDate
-            startDate
             dueDate
             status
+            totalAmount
             pointOfSale
-            comprobanteNumber
+            emissionDate
             caeData {
                 code
                 expirationDate

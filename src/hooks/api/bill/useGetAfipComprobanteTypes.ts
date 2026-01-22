@@ -15,4 +15,3 @@ export const useGetAfipComprobanteTypes = () => {
         staleTime: 1000 * 60 * 60, // 1 hora - no cambia frecuentemente
     });
 };
-

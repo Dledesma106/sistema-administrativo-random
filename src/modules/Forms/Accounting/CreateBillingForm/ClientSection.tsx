@@ -19,6 +19,8 @@ type Props = {
 
 export const ClientSection = ({ billingProfiles }: Props) => {
     const form = useFormContext();
+    const billingProfileId = form.watch('billingProfileId');
+    const selectedProfile = billingProfiles.find((p) => p.id === billingProfileId);
 
     // Efecto para actualizar los campos cuando cambia el perfil
     useEffect(() => {
@@ -86,7 +88,9 @@ export const ClientSection = ({ billingProfiles }: Props) => {
                     name="cuit"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>CUIT</FormLabel>
+                            <FormLabel>
+                                {selectedProfile?.tipoDocumento || 'Número documento'}
+                            </FormLabel>
                             <FormControl>
                                 <Input {...field} readOnly />
                             </FormControl>

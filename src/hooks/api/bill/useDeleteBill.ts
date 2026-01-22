@@ -21,11 +21,17 @@ export const useDeleteBill = () => {
             const serverResponse = data.deleteBill;
             triggerAlert({
                 type: serverResponse.success ? 'Success' : 'Failure',
-                message: serverResponse.message || (serverResponse.success ? 'Factura eliminada correctamente' : 'Error al eliminar la factura'),
+                message:
+                    serverResponse.message ||
+                    (serverResponse.success
+                        ? 'Factura eliminada correctamente'
+                        : 'Error al eliminar la factura'),
             });
             if (serverResponse.success) {
                 queryClient.invalidateQueries({ queryKey: [BILLS_QUERY_KEY] });
-                queryClient.invalidateQueries({ queryKey: [TASKS_WITHOUT_BILL_QUERY_KEY] });
+                queryClient.invalidateQueries({
+                    queryKey: [TASKS_WITHOUT_BILL_QUERY_KEY],
+                });
             }
         },
         onError: (error) => {
@@ -36,4 +42,3 @@ export const useDeleteBill = () => {
         },
     });
 };
-

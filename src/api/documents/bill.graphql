@@ -20,37 +20,13 @@ query GetBills(
         orderDirection: $orderDirection
     ) {
         id
+        description
         createdAt
         updatedAt
-        legalName
-        CUIT
-        billingAddress
-        IVACondition
         status
         description
-        comprobanteType
-        saleCondition
-        punctualService
-        serviceDate
-        startDate
-        endDate
-        dueDate
-        pointOfSale
-        comprobanteNumber
-        emissionDate
         totalAmount
-        nonTaxableNetAmount
-        taxableNetAmount
-        exemptAmount
-        ivaAmount
-        tributesAmount
-        concepto
         observations
-        withholdingAmount
-        serviceOrder {
-            id
-            serviceOrderNumber
-        }
         business {
             id
             name
@@ -58,18 +34,11 @@ query GetBills(
         billingProfile {
             id
             legalName
-        }
-        caeData {
-            code
-            expirationDate
-            status
-        }
-        details {
-            description
-            quantity
-            unitPrice
-            alicuotaIVA
-            taskId
+            firstContact {
+                fullName
+                email
+            }
+            billingEmails
         }
     }
     billsCount(businessId: $businessId, status: $status)
@@ -132,6 +101,11 @@ query GetBillById($id: String!) {
             IVACondition
             comercialAddress
             billingEmails
+            firstContact {
+                fullName
+                email
+                phone
+            }
             contacts {
                 fullName
                 email
@@ -160,6 +134,14 @@ query GetBillById($id: String!) {
             id
             taskNumber
             description
+            closedAt
+            business{
+                name
+            }
+            customBranch{
+                name
+                number
+            }
             status
             branch {
                 id
