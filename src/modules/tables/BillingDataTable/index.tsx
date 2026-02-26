@@ -13,8 +13,7 @@ import {
 import { useState } from 'react';
 import { BsPlus } from 'react-icons/bs';
 
-import { useBillingTableColumns } from './columns';
-import type { Bill } from './columns';
+import { useBillingTableColumns, Bill } from './columns';
 import { getBillingTableToolbarConfig } from './toolbar-config';
 
 import { GetBusinessesQuery } from '@/api/graphql';
@@ -22,44 +21,12 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { routesBuilder } from '@/lib/routes';
 
-const mockData: Bill[] = [
-    {
-        id: '1',
-        businessName: 'Empresa A',
-        contactName: 'Juan Pérez',
-        contactEmail: 'juan.perez@empresaa.com',
-        billingEmail: 'facturacion@empresaa.com',
-        description: 'Servicios de mantenimiento preventivo - Marzo 2024',
-        status: 'Pendiente',
-        amount: 150000,
-    },
-    {
-        id: '2',
-        businessName: 'Empresa B',
-        contactName: 'María González',
-        contactEmail: 'maria.gonzalez@empresab.com',
-        billingEmail: 'administracion@empresab.com',
-        description: 'Instalación de equipos nuevos y configuración',
-        status: 'Borrador',
-        amount: 280000,
-    },
-    {
-        id: '3',
-        businessName: 'Empresa C',
-        contactName: 'Carlos Rodríguez',
-        contactEmail: 'carlos.rodriguez@empresac.com',
-        billingEmail: 'pagos@empresac.com',
-        description: 'Reparaciones emergencia - Febrero 2024',
-        status: 'Pagada',
-        amount: 95000,
-    },
-];
-
 type Props = {
+    data: Bill[];
     businesses: NonNullable<GetBusinessesQuery['businesses']>;
 };
 
-export default function BillingDataTable({ businesses }: Props) {
+export default function BillingDataTable({ data, businesses }: Props) {
     const router = useRouter();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,7 +36,7 @@ export default function BillingDataTable({ businesses }: Props) {
     const columns = useBillingTableColumns();
 
     const table = useReactTable({
-        data: mockData,
+        data,
         columns,
         onSortingChange: setSorting,
         getCoreRowModel: getCoreRowModel(),
@@ -93,7 +60,7 @@ export default function BillingDataTable({ businesses }: Props) {
             table={table}
             title="Facturación"
             toolbarConfig={getBillingTableToolbarConfig(businesses)}
-            totalCount={mockData.length}
+            totalCount={data.length}
             page={page}
             pageSize={pageSize}
             onPageChange={setPage}

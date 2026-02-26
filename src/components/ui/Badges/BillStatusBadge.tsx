@@ -11,10 +11,10 @@ interface BillStatusBadgeProps {
 
 export function BillStatusBadge({ status }: BillStatusBadgeProps) {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-success': status === 'Pagada',
-        'h-2 w-2 rounded-full bg-green-500': status === 'Pendiente',
-        'h-2 w-2 rounded-full bg-blue-400': status === 'Borrador',
-        'h-2 w-2 rounded-full bg-red-500': status === 'Vencida',
+        'bg-success': status === BillStatus.Pagada,
+        'bg-yellow-500': status === BillStatus.Pendiente,
+        'bg-blue-400': status === BillStatus.Borrador,
+        'bg-red-500': status === BillStatus.Vencida,
     });
 
     return (

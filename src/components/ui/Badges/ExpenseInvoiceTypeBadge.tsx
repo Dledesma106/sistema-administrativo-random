@@ -10,17 +10,17 @@ type Props = {
 
 const ExpenseInvoiceTypeBadge = ({ invoiceType }: Props) => {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-blue-500':
+        'bg-blue-500':
             invoiceType === ExpenseInvoiceType.FacturaPapel,
-        'h-2 w-2 rounded-full bg-green-500':
+        'bg-green-500':
             invoiceType === ExpenseInvoiceType.FacturaElectronicaAdjunta,
-        'h-2 w-2 rounded-full bg-purple-500':
+        'bg-purple-500':
             invoiceType === ExpenseInvoiceType.FacturaViaMailOWhatsapp,
-        'h-2 w-2 rounded-full bg-gray-500': invoiceType === ExpenseInvoiceType.SinFactura,
+        'bg-gray-500': invoiceType === ExpenseInvoiceType.SinFactura,
     });
 
     return (
-        <Badge variant="default" className="gap-2">
+        <Badge variant="default" className={contentStyle}>
             <span className={contentStyle}></span>
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(invoiceType))}</span>
         </Badge>

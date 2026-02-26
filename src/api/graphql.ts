@@ -28,11 +28,34 @@ export const AccountType = {
 } as const;
 
 export type AccountType = (typeof AccountType)[keyof typeof AccountType];
+export type AfipConfigItem = {
+    __typename?: 'AfipConfigItem';
+    code: Scalars['Int'];
+    label: Scalars['String'];
+};
+
+export type AfipMonedaItem = {
+    __typename?: 'AfipMonedaItem';
+    code: Scalars['String'];
+    label: Scalars['String'];
+};
+
+export type AfipSalesPoint = {
+    __typename?: 'AfipSalesPoint';
+    blocked: Scalars['Boolean'];
+    number: Scalars['Int'];
+    type: Scalars['String'];
+};
+
 export const AlicuotaIva = {
+    Exento: 'Exento',
     Iva_0: 'IVA_0',
+    Iva_2_5: 'IVA_2_5',
+    Iva_5: 'IVA_5',
     Iva_10_5: 'IVA_10_5',
     Iva_21: 'IVA_21',
     Iva_27: 'IVA_27',
+    NoGravado: 'NoGravado',
 } as const;
 
 export type AlicuotaIva = (typeof AlicuotaIva)[keyof typeof AlicuotaIva];
@@ -115,30 +138,46 @@ export type BankMovementCrudResult = {
 
 export type Bill = {
     __typename?: 'Bill';
-    CUIT: Scalars['String'];
-    IVACondition: IvaCondition;
-    billingAddress: Scalars['String'];
     billingProfile: BillingProfile;
     business: Business;
     caeData: Maybe<CaeData>;
+    comprobanteNumber: Maybe<Scalars['String']>;
     comprobanteType: ComprobanteType;
+    concepto: Maybe<BillConcepto>;
     createdAt: Scalars['DateTime'];
     description: Maybe<Scalars['String']>;
     details: Array<BillDetail>;
     dueDate: Maybe<Scalars['DateTime']>;
+    emissionDate: Maybe<Scalars['DateTime']>;
     endDate: Maybe<Scalars['DateTime']>;
+    exemptAmount: Maybe<Scalars['Float']>;
     id: Scalars['ID'];
-    legalName: Scalars['String'];
+    ivaAmount: Maybe<Scalars['Float']>;
+    nonTaxableNetAmount: Maybe<Scalars['Float']>;
+    observations: Maybe<Scalars['String']>;
+    pdf: Maybe<File>;
     pointOfSale: Maybe<Scalars['Int']>;
     punctualService: Scalars['Boolean'];
     saleCondition: Scalars['String'];
     serviceDate: Maybe<Scalars['DateTime']>;
+    serviceOrder: Maybe<ServiceOrder>;
     startDate: Maybe<Scalars['DateTime']>;
     status: BillStatus;
+    tasks: Array<Task>;
+    taxableNetAmount: Maybe<Scalars['Float']>;
+    totalAmount: Maybe<Scalars['Float']>;
+    tributesAmount: Maybe<Scalars['Float']>;
     updatedAt: Scalars['DateTime'];
     withholdingAmount: Maybe<Scalars['Float']>;
 };
 
+export const BillConcepto = {
+    Productos: 'Productos',
+    ProductosYServicios: 'ProductosYServicios',
+    Servicios: 'Servicios',
+} as const;
+
+export type BillConcepto = (typeof BillConcepto)[keyof typeof BillConcepto];
 export type BillCrudResult = {
     __typename?: 'BillCrudResult';
     bill: Maybe<Bill>;
@@ -150,29 +189,46 @@ export type BillDetail = {
     __typename?: 'BillDetail';
     alicuotaIVA: AlicuotaIva;
     description: Scalars['String'];
+    id: Scalars['ID'];
     quantity: Scalars['Int'];
+    task: Maybe<Task>;
+    taskId: Maybe<Scalars['String']>;
     unitPrice: Scalars['Float'];
 };
 
 export type BillDetailInput = {
     alicuotaIVA: AlicuotaIva;
     description: Scalars['String'];
+    id: InputMaybe<Scalars['String']>;
     quantity: Scalars['Int'];
+    taskId: InputMaybe<Scalars['String']>;
     unitPrice: Scalars['Float'];
 };
 
 export type BillInput = {
     billingProfileId: Scalars['String'];
+    businessId: Scalars['String'];
     comprobanteType: ComprobanteType;
+    concepto: InputMaybe<BillConcepto>;
     description: InputMaybe<Scalars['String']>;
     details: Array<BillDetailInput>;
     dueDate: InputMaybe<Scalars['DateTime']>;
     endDate: InputMaybe<Scalars['DateTime']>;
+    exemptAmount: InputMaybe<Scalars['Float']>;
+    ivaAmount: InputMaybe<Scalars['Float']>;
+    nonTaxableNetAmount: InputMaybe<Scalars['Float']>;
+    observations: InputMaybe<Scalars['String']>;
+    pointOfSale: InputMaybe<Scalars['Int']>;
     punctualService: Scalars['Boolean'];
     saleCondition: Scalars['String'];
     serviceDate: InputMaybe<Scalars['DateTime']>;
+    serviceOrderId: InputMaybe<Scalars['String']>;
     startDate: InputMaybe<Scalars['DateTime']>;
     status: BillStatus;
+    taskIds: InputMaybe<Array<Scalars['String']>>;
+    taxableNetAmount: InputMaybe<Scalars['Float']>;
+    totalAmount: InputMaybe<Scalars['Float']>;
+    tributesAmount: InputMaybe<Scalars['Float']>;
     withholdingAmount: InputMaybe<Scalars['Float']>;
 };
 
@@ -328,7 +384,6 @@ export type BusinessResult = {
 export type CaeData = {
     __typename?: 'CAEData';
     code: Scalars['String'];
-    comprobanteNumber: Scalars['String'];
     expirationDate: Scalars['DateTime'];
     status: CaeStatus;
 };
@@ -386,9 +441,21 @@ export type ClientResult = {
 };
 
 export const ComprobanteType = {
-    A: 'A',
-    B: 'B',
-    C: 'C',
+    FacturaA: 'FacturaA',
+    FacturaB: 'FacturaB',
+    FacturaC: 'FacturaC',
+    FacturaE: 'FacturaE',
+    FacturaM: 'FacturaM',
+    NotaCreditoA: 'NotaCreditoA',
+    NotaCreditoB: 'NotaCreditoB',
+    NotaCreditoC: 'NotaCreditoC',
+    NotaCreditoE: 'NotaCreditoE',
+    NotaCreditoM: 'NotaCreditoM',
+    NotaDebitoA: 'NotaDebitoA',
+    NotaDebitoB: 'NotaDebitoB',
+    NotaDebitoC: 'NotaDebitoC',
+    NotaDebitoE: 'NotaDebitoE',
+    NotaDebitoM: 'NotaDebitoM',
 } as const;
 
 export type ComprobanteType = (typeof ComprobanteType)[keyof typeof ComprobanteType];
@@ -645,10 +712,18 @@ export type GmailThreadsResult = {
 };
 
 export const IvaCondition = {
+    ClienteDelExterior: 'ClienteDelExterior',
     ConsumidorFinal: 'ConsumidorFinal',
-    Exento: 'Exento',
-    Monotributo: 'Monotributo',
+    IvaLiberadoLey19640: 'IvaLiberadoLey19640',
+    IvaNoAlcanzado: 'IvaNoAlcanzado',
+    MonotributistaSocial: 'MonotributistaSocial',
+    MonotributoTrabajadorIndependientePromovido:
+        'MonotributoTrabajadorIndependientePromovido',
+    ProveedorDelExterior: 'ProveedorDelExterior',
     ResponsableInscripto: 'ResponsableInscripto',
+    ResponsableMonotributo: 'ResponsableMonotributo',
+    SujetoExento: 'SujetoExento',
+    SujetoNoCategorizado: 'SujetoNoCategorizado',
 } as const;
 
 export type IvaCondition = (typeof IvaCondition)[keyof typeof IvaCondition];
@@ -702,6 +777,7 @@ export type Mutation = {
     createTaskPrice: TaskPriceCrudResult;
     createUser: UserCrudPothosRef;
     deleteBankAccount: BankAccountCrudResult;
+    deleteBill: BillCrudResult;
     deleteBillingProfile: BillingProfileCrudResult;
     deleteBranch: BranchCrudResult;
     deleteBudget: BudgetCrudResult;
@@ -716,6 +792,7 @@ export type Mutation = {
     deleteTask: TaskCrudResult;
     deleteUser: UserCrudPothosRef;
     downloadTaskPhotos: DownloadTaskPhotosResult;
+    emitBill: BillCrudResult;
     finishTask: TaskCrudResult;
     generateApprovedExpensesReport: Scalars['String'];
     generateApprovedTasksReport: Scalars['String'];
@@ -729,6 +806,7 @@ export type Mutation = {
     sendNewUserRandomPassword: UserCrudPothosRef;
     updateBankAccount: BankAccountCrudResult;
     updateBill: BillCrudResult;
+    updateBillStatus: BillCrudResult;
     updateBillingProfile: BillingProfileCrudResult;
     updateBranch: BranchCrudResult;
     updateBudget: BudgetCrudResult;
@@ -834,6 +912,10 @@ export type MutationDeleteBankAccountArgs = {
     id: Scalars['String'];
 };
 
+export type MutationDeleteBillArgs = {
+    id: Scalars['String'];
+};
+
 export type MutationDeleteBillingProfileArgs = {
     id: Scalars['String'];
 };
@@ -894,6 +976,10 @@ export type MutationDownloadTaskPhotosArgs = {
     startDate: Scalars['DateTime'];
 };
 
+export type MutationEmitBillArgs = {
+    id: Scalars['String'];
+};
+
 export type MutationFinishTaskArgs = {
     id: Scalars['String'];
 };
@@ -951,6 +1037,11 @@ export type MutationUpdateBankAccountArgs = {
 export type MutationUpdateBillArgs = {
     id: Scalars['String'];
     input: BillInput;
+};
+
+export type MutationUpdateBillStatusArgs = {
+    id: Scalars['String'];
+    status: BillStatus;
 };
 
 export type MutationUpdateBillingProfileArgs = {
@@ -1146,6 +1237,15 @@ export type ProvinceInput = {
 
 export type Query = {
     __typename?: 'Query';
+    afipAlicuotasIVA: Array<AfipConfigItem>;
+    afipComprobanteTypes: Array<AfipConfigItem>;
+    afipConceptos: Array<AfipConfigItem>;
+    afipDocumentoTypes: Array<AfipConfigItem>;
+    afipIVAConditions: Array<AfipConfigItem>;
+    afipLastVoucherNumber: Scalars['Int'];
+    afipMonedas: Array<AfipMonedaItem>;
+    afipNextVoucherNumber: Scalars['Int'];
+    afipSalesPoints: Array<AfipSalesPoint>;
     bankAccount: Maybe<BankAccount>;
     bankAccounts: Array<BankAccount>;
     bankAccountsByBillingProfile: Array<BankAccount>;
@@ -1153,11 +1253,15 @@ export type Query = {
     bankMovements: Array<BankMovement>;
     bankMovementsCount: Scalars['Int'];
     bill: Maybe<Bill>;
+    billedServiceOrders: Array<ServiceOrder>;
+    billedServiceOrdersCount: Scalars['Int'];
     billingProfileByBusinessId: Maybe<BillingProfile>;
     billingProfileById: Maybe<BillingProfile>;
     billingProfiles: Array<BillingProfile>;
     billingProfilesCount: Scalars['Int'];
     bills: Array<Bill>;
+    billsByServiceOrder: Array<Bill>;
+    billsByTask: Array<Bill>;
     billsCount: Scalars['Int'];
     branch: Branch;
     branchBusinesses: Array<Business>;
@@ -1178,6 +1282,7 @@ export type Query = {
     clients: Array<Client>;
     clientsByBusiness: Array<Client>;
     clientsCount: Scalars['Int'];
+    downloadBillPdf: Maybe<Scalars['String']>;
     expenseById: Maybe<Expense>;
     expenses: Array<Expense>;
     expensesCount: Scalars['Int'];
@@ -1213,10 +1318,22 @@ export type Query = {
     taskTypes: Array<TaskType>;
     tasks: Array<Task>;
     tasksCount: Scalars['Int'];
+    tasksWithoutBill: Array<Task>;
+    tasksWithoutBillCount: Scalars['Int'];
     technicians: Array<User>;
     user: User;
     users: Array<User>;
     usersCount: Scalars['Int'];
+};
+
+export type QueryAfipLastVoucherNumberArgs = {
+    comprobanteType: ComprobanteType;
+    pointOfSale: Scalars['Int'];
+};
+
+export type QueryAfipNextVoucherNumberArgs = {
+    comprobanteType: ComprobanteType;
+    pointOfSale: Scalars['Int'];
 };
 
 export type QueryBankAccountArgs = {
@@ -1253,6 +1370,26 @@ export type QueryBillArgs = {
     id: Scalars['String'];
 };
 
+export type QueryBilledServiceOrdersArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    clientId: InputMaybe<Scalars['String']>;
+    fromDate: InputMaybe<Scalars['DateTime']>;
+    orderBy: InputMaybe<Scalars['String']>;
+    orderDirection: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<Scalars['String']>;
+    take: InputMaybe<Scalars['Int']>;
+    toDate: InputMaybe<Scalars['DateTime']>;
+};
+
+export type QueryBilledServiceOrdersCountArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    clientId: InputMaybe<Scalars['String']>;
+    fromDate: InputMaybe<Scalars['DateTime']>;
+    status: InputMaybe<Scalars['String']>;
+    toDate: InputMaybe<Scalars['DateTime']>;
+};
+
 export type QueryBillingProfileByBusinessIdArgs = {
     businessId: Scalars['String'];
 };
@@ -1280,6 +1417,14 @@ export type QueryBillsArgs = {
     skip: InputMaybe<Scalars['Int']>;
     status: InputMaybe<BillStatus>;
     take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryBillsByServiceOrderArgs = {
+    serviceOrderId: Scalars['String'];
+};
+
+export type QueryBillsByTaskArgs = {
+    taskId: Scalars['String'];
 };
 
 export type QueryBillsCountArgs = {
@@ -1383,6 +1528,10 @@ export type QueryClientsByBusinessArgs = {
 
 export type QueryClientsCountArgs = {
     search: InputMaybe<Scalars['String']>;
+};
+
+export type QueryDownloadBillPdfArgs = {
+    id: Scalars['String'];
 };
 
 export type QueryExpenseByIdArgs = {
@@ -1559,6 +1708,18 @@ export type QueryTasksCountArgs = {
     startDate: InputMaybe<Scalars['DateTime']>;
     status: InputMaybe<Array<TaskStatus>>;
     taskType: InputMaybe<Array<TaskType>>;
+};
+
+export type QueryTasksWithoutBillArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    skip: InputMaybe<Scalars['Int']>;
+    status: InputMaybe<Scalars['String']>;
+    take: InputMaybe<Scalars['Int']>;
+};
+
+export type QueryTasksWithoutBillCountArgs = {
+    businessId: InputMaybe<Scalars['String']>;
+    status: InputMaybe<Scalars['String']>;
 };
 
 export type QueryUserArgs = {
@@ -1740,12 +1901,18 @@ export const TaskType = {
 
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
 export const TipoDocumento = {
+    ActaNacimiento: 'ActaNacimiento',
     Cdi: 'CDI',
+    CiExtranjera: 'CIExtranjera',
     Cuil: 'CUIL',
     Cuit: 'CUIT',
     Dni: 'DNI',
+    EnTramite: 'EnTramite',
+    Lc: 'LC',
+    Le: 'LE',
     Otro: 'Otro',
     Pasaporte: 'Pasaporte',
+    SinIdentificar: 'SinIdentificar',
 } as const;
 
 export type TipoDocumento = (typeof TipoDocumento)[keyof typeof TipoDocumento];
@@ -1880,6 +2047,495 @@ export type ChangePasswordMutation = {
         success: boolean;
         message: string | null;
     };
+};
+
+export type GetBillsQueryVariables = Exact<{
+    businessId?: InputMaybe<Scalars['String']>;
+    status?: InputMaybe<BillStatus>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+    orderBy?: InputMaybe<Scalars['String']>;
+    orderDirection?: InputMaybe<Scalars['String']>;
+}>;
+
+export type GetBillsQuery = {
+    __typename?: 'Query';
+    billsCount: number;
+    bills: Array<{
+        __typename?: 'Bill';
+        id: string;
+        description: string | null;
+        createdAt: any;
+        updatedAt: any;
+        status: BillStatus;
+        totalAmount: number | null;
+        observations: string | null;
+        business: { __typename?: 'Business'; id: string; name: string };
+        billingProfile: {
+            __typename?: 'BillingProfile';
+            id: string;
+            legalName: string;
+            billingEmails: Array<string>;
+            firstContact: {
+                __typename?: 'Contact';
+                fullName: string;
+                email: string;
+            } | null;
+        };
+    }>;
+};
+
+export type GetBillByIdQueryVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type GetBillByIdQuery = {
+    __typename?: 'Query';
+    bill: {
+        __typename?: 'Bill';
+        id: string;
+        createdAt: any;
+        updatedAt: any;
+        status: BillStatus;
+        description: string | null;
+        comprobanteType: ComprobanteType;
+        saleCondition: string;
+        punctualService: boolean;
+        serviceDate: any | null;
+        startDate: any | null;
+        endDate: any | null;
+        dueDate: any | null;
+        pointOfSale: number | null;
+        comprobanteNumber: string | null;
+        emissionDate: any | null;
+        totalAmount: number | null;
+        nonTaxableNetAmount: number | null;
+        taxableNetAmount: number | null;
+        exemptAmount: number | null;
+        ivaAmount: number | null;
+        tributesAmount: number | null;
+        concepto: BillConcepto | null;
+        observations: string | null;
+        withholdingAmount: number | null;
+        pdf: { __typename?: 'File'; url: string; key: string; filename: string } | null;
+        serviceOrder: {
+            __typename?: 'ServiceOrder';
+            id: string;
+            serviceOrderNumber: number;
+            status: ServiceOrderStatus;
+            description: string | null;
+            business: { __typename?: 'Business'; id: string; name: string };
+            client: { __typename?: 'Client'; id: string; name: string } | null;
+        } | null;
+        business: { __typename?: 'Business'; id: string; name: string };
+        billingProfile: {
+            __typename?: 'BillingProfile';
+            id: string;
+            legalName: string;
+            tipoDocumento: TipoDocumento;
+            numeroDocumento: string;
+            IVACondition: IvaCondition;
+            comercialAddress: string;
+            billingEmails: Array<string>;
+            firstContact: {
+                __typename?: 'Contact';
+                fullName: string;
+                email: string;
+                phone: string;
+            } | null;
+            contacts: Array<{
+                __typename?: 'Contact';
+                fullName: string;
+                email: string;
+                phone: string;
+            }>;
+        };
+        caeData: {
+            __typename?: 'CAEData';
+            code: string;
+            expirationDate: any;
+            status: CaeStatus;
+        } | null;
+        details: Array<{
+            __typename?: 'BillDetail';
+            id: string;
+            description: string;
+            quantity: number;
+            unitPrice: number;
+            alicuotaIVA: AlicuotaIva;
+            task: {
+                __typename?: 'Task';
+                id: string;
+                taskNumber: string;
+                description: string;
+                status: TaskStatus;
+                clientName: string | null;
+                customBranch: {
+                    __typename?: 'CustomBranch';
+                    name: string | null;
+                    number: number | null;
+                } | null;
+                branch: {
+                    __typename?: 'Branch';
+                    id: string;
+                    name: string | null;
+                    number: number | null;
+                    client: { __typename?: 'Client'; id: string; name: string };
+                } | null;
+            } | null;
+        }>;
+        tasks: Array<{
+            __typename?: 'Task';
+            id: string;
+            taskNumber: string;
+            description: string;
+            closedAt: any | null;
+            clientName: string | null;
+            status: TaskStatus;
+            business: { __typename?: 'Business'; name: string } | null;
+            customBranch: {
+                __typename?: 'CustomBranch';
+                name: string | null;
+                number: number | null;
+            } | null;
+            branch: {
+                __typename?: 'Branch';
+                id: string;
+                name: string | null;
+                number: number | null;
+                client: { __typename?: 'Client'; id: string; name: string };
+            } | null;
+        }>;
+    } | null;
+};
+
+export type GetTasksWithoutBillQueryVariables = Exact<{
+    businessId?: InputMaybe<Scalars['String']>;
+    status?: InputMaybe<Scalars['String']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+}>;
+
+export type GetTasksWithoutBillQuery = {
+    __typename?: 'Query';
+    tasksWithoutBillCount: number;
+    tasksWithoutBill: Array<{
+        __typename?: 'Task';
+        id: string;
+        taskNumber: string;
+        createdAt: any;
+        closedAt: any | null;
+        description: string;
+        status: TaskStatus;
+        taskType: TaskType;
+        businessName: string | null;
+        clientName: string | null;
+        business: { __typename?: 'Business'; id: string; name: string } | null;
+        branch: {
+            __typename?: 'Branch';
+            id: string;
+            name: string | null;
+            number: number | null;
+            client: { __typename?: 'Client'; id: string; name: string };
+            city: {
+                __typename?: 'City';
+                id: string;
+                name: string;
+                province: { __typename?: 'Province'; id: string; name: string };
+            };
+        } | null;
+        customBranch: {
+            __typename?: 'CustomBranch';
+            name: string | null;
+            number: number | null;
+        } | null;
+        assigned: Array<{ __typename?: 'User'; id: string; fullName: string }>;
+    }>;
+};
+
+export type GetBilledServiceOrdersQueryVariables = Exact<{
+    businessId?: InputMaybe<Scalars['String']>;
+    clientId?: InputMaybe<Scalars['String']>;
+    status?: InputMaybe<Scalars['String']>;
+    fromDate?: InputMaybe<Scalars['DateTime']>;
+    toDate?: InputMaybe<Scalars['DateTime']>;
+    skip?: InputMaybe<Scalars['Int']>;
+    take?: InputMaybe<Scalars['Int']>;
+    orderBy?: InputMaybe<Scalars['String']>;
+    orderDirection?: InputMaybe<Scalars['String']>;
+}>;
+
+export type GetBilledServiceOrdersQuery = {
+    __typename?: 'Query';
+    billedServiceOrdersCount: number;
+    billedServiceOrders: Array<{
+        __typename?: 'ServiceOrder';
+        id: string;
+        serviceOrderNumber: number;
+        status: ServiceOrderStatus;
+        createdAt: any;
+        description: string | null;
+        business: { __typename?: 'Business'; id: string; name: string };
+        client: { __typename?: 'Client'; id: string; name: string } | null;
+        branch: {
+            __typename?: 'Branch';
+            id: string;
+            name: string | null;
+            number: number | null;
+        } | null;
+        tasks: Array<{
+            __typename?: 'Task';
+            id: string;
+            taskNumber: string;
+            status: TaskStatus;
+        }>;
+    }>;
+};
+
+export type GetBillsByTaskQueryVariables = Exact<{
+    taskId: Scalars['String'];
+}>;
+
+export type GetBillsByTaskQuery = {
+    __typename?: 'Query';
+    billsByTask: Array<{
+        __typename?: 'Bill';
+        id: string;
+        comprobanteNumber: string | null;
+        status: BillStatus;
+        totalAmount: number | null;
+        createdAt: any;
+        emissionDate: any | null;
+        caeData: { __typename?: 'CAEData'; code: string; status: CaeStatus } | null;
+    }>;
+};
+
+export type GetBillsByServiceOrderQueryVariables = Exact<{
+    serviceOrderId: Scalars['String'];
+}>;
+
+export type GetBillsByServiceOrderQuery = {
+    __typename?: 'Query';
+    billsByServiceOrder: Array<{
+        __typename?: 'Bill';
+        id: string;
+        comprobanteNumber: string | null;
+        status: BillStatus;
+        totalAmount: number | null;
+        createdAt: any;
+        emissionDate: any | null;
+        caeData: { __typename?: 'CAEData'; code: string; status: CaeStatus } | null;
+    }>;
+};
+
+export type GetAfipComprobanteTypesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipComprobanteTypesQuery = {
+    __typename?: 'Query';
+    afipComprobanteTypes: Array<{
+        __typename?: 'AfipConfigItem';
+        code: number;
+        label: string;
+    }>;
+};
+
+export type GetAfipSalesPointsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipSalesPointsQuery = {
+    __typename?: 'Query';
+    afipSalesPoints: Array<{
+        __typename?: 'AfipSalesPoint';
+        number: number;
+        type: string;
+        blocked: boolean;
+    }>;
+};
+
+export type GetAfipConceptosQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipConceptosQuery = {
+    __typename?: 'Query';
+    afipConceptos: Array<{ __typename?: 'AfipConfigItem'; code: number; label: string }>;
+};
+
+export type GetAfipDocumentoTypesQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipDocumentoTypesQuery = {
+    __typename?: 'Query';
+    afipDocumentoTypes: Array<{
+        __typename?: 'AfipConfigItem';
+        code: number;
+        label: string;
+    }>;
+};
+
+export type GetAfipAlicuotasIvaQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipAlicuotasIvaQuery = {
+    __typename?: 'Query';
+    afipAlicuotasIVA: Array<{
+        __typename?: 'AfipConfigItem';
+        code: number;
+        label: string;
+    }>;
+};
+
+export type GetAfipIvaConditionsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipIvaConditionsQuery = {
+    __typename?: 'Query';
+    afipIVAConditions: Array<{
+        __typename?: 'AfipConfigItem';
+        code: number;
+        label: string;
+    }>;
+};
+
+export type GetAfipMonedasQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAfipMonedasQuery = {
+    __typename?: 'Query';
+    afipMonedas: Array<{ __typename?: 'AfipMonedaItem'; code: string; label: string }>;
+};
+
+export type GetAfipLastVoucherNumberQueryVariables = Exact<{
+    pointOfSale: Scalars['Int'];
+    comprobanteType: ComprobanteType;
+}>;
+
+export type GetAfipLastVoucherNumberQuery = {
+    __typename?: 'Query';
+    afipLastVoucherNumber: number;
+};
+
+export type GetAfipNextVoucherNumberQueryVariables = Exact<{
+    pointOfSale: Scalars['Int'];
+    comprobanteType: ComprobanteType;
+}>;
+
+export type GetAfipNextVoucherNumberQuery = {
+    __typename?: 'Query';
+    afipNextVoucherNumber: number;
+};
+
+export type CreateBillMutationVariables = Exact<{
+    input: BillInput;
+}>;
+
+export type CreateBillMutation = {
+    __typename?: 'Mutation';
+    createBill: {
+        __typename?: 'BillCrudResult';
+        success: boolean;
+        message: string | null;
+        bill: {
+            __typename?: 'Bill';
+            id: string;
+            status: BillStatus;
+            comprobanteNumber: string | null;
+            totalAmount: number | null;
+            caeData: {
+                __typename?: 'CAEData';
+                code: string;
+                expirationDate: any;
+                status: CaeStatus;
+            } | null;
+        } | null;
+    };
+};
+
+export type UpdateBillMutationVariables = Exact<{
+    id: Scalars['String'];
+    input: BillInput;
+}>;
+
+export type UpdateBillMutation = {
+    __typename?: 'Mutation';
+    updateBill: {
+        __typename?: 'BillCrudResult';
+        success: boolean;
+        message: string | null;
+        bill: {
+            __typename?: 'Bill';
+            id: string;
+            status: BillStatus;
+            comprobanteNumber: string | null;
+            totalAmount: number | null;
+            caeData: {
+                __typename?: 'CAEData';
+                code: string;
+                expirationDate: any;
+                status: CaeStatus;
+            } | null;
+        } | null;
+    };
+};
+
+export type DeleteBillMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DeleteBillMutation = {
+    __typename?: 'Mutation';
+    deleteBill: {
+        __typename?: 'BillCrudResult';
+        success: boolean;
+        message: string | null;
+        bill: { __typename?: 'Bill'; id: string } | null;
+    };
+};
+
+export type UpdateBillStatusMutationVariables = Exact<{
+    id: Scalars['String'];
+    status: BillStatus;
+}>;
+
+export type UpdateBillStatusMutation = {
+    __typename?: 'Mutation';
+    updateBillStatus: {
+        __typename?: 'BillCrudResult';
+        success: boolean;
+        message: string | null;
+        bill: { __typename?: 'Bill'; id: string; status: BillStatus } | null;
+    };
+};
+
+export type EmitBillMutationVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type EmitBillMutation = {
+    __typename?: 'Mutation';
+    emitBill: {
+        __typename?: 'BillCrudResult';
+        success: boolean;
+        message: string | null;
+        bill: {
+            __typename?: 'Bill';
+            id: string;
+            status: BillStatus;
+            comprobanteNumber: string | null;
+            emissionDate: any | null;
+            totalAmount: number | null;
+            taxableNetAmount: number | null;
+            ivaAmount: number | null;
+            caeData: {
+                __typename?: 'CAEData';
+                code: string;
+                expirationDate: any;
+                status: CaeStatus;
+            } | null;
+        } | null;
+    };
+};
+
+export type DownloadBillPdfQueryVariables = Exact<{
+    id: Scalars['String'];
+}>;
+
+export type DownloadBillPdfQuery = {
+    __typename?: 'Query';
+    downloadBillPdf: string | null;
 };
 
 export type CreateBillingProfileMutationVariables = Exact<{
@@ -2033,12 +2689,12 @@ export type GetBillingProfileByIdQuery = {
             __typename?: 'Bill';
             id: string;
             description: string | null;
-            serviceDate: any | null;
-            startDate: any | null;
             dueDate: any | null;
             status: BillStatus;
+            totalAmount: number | null;
             pointOfSale: number | null;
-            caeData: { __typename?: 'CAEData'; comprobanteNumber: string } | null;
+            emissionDate: any | null;
+            comprobanteNumber: string | null;
             details: Array<{
                 __typename?: 'BillDetail';
                 quantity: number;
@@ -4037,6 +4693,2682 @@ export const ChangePasswordDocument = {
         },
     ],
 } as unknown as DocumentNode<ChangePasswordMutation, ChangePasswordMutationVariables>;
+export const GetBillsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBills' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'BillStatus' },
+                    },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderBy' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderDirection' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'bills' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderDirection' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderDirection' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'totalAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingProfile' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'legalName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'firstContact',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'billingEmails',
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billsCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetBillsQuery, GetBillsQueryVariables>;
+export const GetBillByIdDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBillById' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'bill' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'updatedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comprobanteType' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'saleCondition' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'punctualService' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'serviceDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'startDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'endDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'dueDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'pointOfSale' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comprobanteNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'emissionDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'totalAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'nonTaxableNetAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'taxableNetAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'exemptAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'ivaAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tributesAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'concepto' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'observations' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'withholdingAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'pdf' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'filename' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'serviceOrder' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'serviceOrderNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'description',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'client' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'billingProfile' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'legalName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'tipoDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'numeroDocumento',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'IVACondition',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comercialAddress',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'billingEmails',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'firstContact',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'phone',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'contacts' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'fullName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'email',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'phone',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'caeData' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'code' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'expirationDate',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'details' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'description',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'quantity' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'unitPrice',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'alicuotaIVA',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'task' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'taskNumber',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'description',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'status',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'clientName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'customBranch',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'number',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'branch',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'id',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'number',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'client',
+                                                                        },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'id',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'name',
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tasks' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'taskNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'description',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'closedAt' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'clientName',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'business' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'customBranch',
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'number',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'branch' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'number',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'client',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'id',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetBillByIdQuery, GetBillByIdQueryVariables>;
+export const GetTasksWithoutBillDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetTasksWithoutBill' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'tasksWithoutBill' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'taskNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'closedAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'taskType' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'businessName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'clientName' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'branch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'number' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'client' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'city' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'id',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'name',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'province',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'id',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customBranch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'number' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'assigned' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'fullName' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'tasksWithoutBillCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetTasksWithoutBillQuery, GetTasksWithoutBillQueryVariables>;
+export const GetBilledServiceOrdersDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBilledServiceOrders' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'businessId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'clientId' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'fromDate' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'DateTime' },
+                    },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'toDate' },
+                    },
+                    type: {
+                        kind: 'NamedType',
+                        name: { kind: 'Name', value: 'DateTime' },
+                    },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'skip' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'take' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderBy' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'orderDirection' },
+                    },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                    defaultValue: { kind: 'NullValue' },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billedServiceOrders' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'clientId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'clientId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fromDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fromDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'toDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'toDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'skip' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'skip' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'take' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'take' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderBy' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderBy' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'orderDirection' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'orderDirection' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'serviceOrderNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'description' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'business' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'client' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'branch' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'name' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'number' },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'tasks' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'taskNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billedServiceOrdersCount' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'businessId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'businessId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'clientId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'clientId' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'fromDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'fromDate' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'toDate' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'toDate' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetBilledServiceOrdersQuery,
+    GetBilledServiceOrdersQueryVariables
+>;
+export const GetBillsByTaskDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBillsByTask' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'taskId' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billsByTask' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'taskId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'taskId' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comprobanteNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'totalAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'emissionDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'caeData' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'code' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetBillsByTaskQuery, GetBillsByTaskQueryVariables>;
+export const GetBillsByServiceOrderDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetBillsByServiceOrder' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'serviceOrderId' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'billsByServiceOrder' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'serviceOrderId' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'serviceOrderId' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'comprobanteNumber' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'totalAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'createdAt' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'emissionDate' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'caeData' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'code' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetBillsByServiceOrderQuery,
+    GetBillsByServiceOrderQueryVariables
+>;
+export const GetAfipComprobanteTypesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipComprobanteTypes' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipComprobanteTypes' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetAfipComprobanteTypesQuery,
+    GetAfipComprobanteTypesQueryVariables
+>;
+export const GetAfipSalesPointsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipSalesPoints' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipSalesPoints' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'number' },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'blocked' },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetAfipSalesPointsQuery, GetAfipSalesPointsQueryVariables>;
+export const GetAfipConceptosDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipConceptos' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipConceptos' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetAfipConceptosQuery, GetAfipConceptosQueryVariables>;
+export const GetAfipDocumentoTypesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipDocumentoTypes' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipDocumentoTypes' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetAfipDocumentoTypesQuery,
+    GetAfipDocumentoTypesQueryVariables
+>;
+export const GetAfipAlicuotasIvaDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipAlicuotasIVA' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipAlicuotasIVA' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetAfipAlicuotasIvaQuery, GetAfipAlicuotasIvaQueryVariables>;
+export const GetAfipIvaConditionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipIVAConditions' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipIVAConditions' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetAfipIvaConditionsQuery,
+    GetAfipIvaConditionsQueryVariables
+>;
+export const GetAfipMonedasDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipMonedas' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipMonedas' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GetAfipMonedasQuery, GetAfipMonedasQueryVariables>;
+export const GetAfipLastVoucherNumberDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipLastVoucherNumber' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'pointOfSale' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'comprobanteType' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'ComprobanteType' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipLastVoucherNumber' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'pointOfSale' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'pointOfSale' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'comprobanteType' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'comprobanteType' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetAfipLastVoucherNumberQuery,
+    GetAfipLastVoucherNumberQueryVariables
+>;
+export const GetAfipNextVoucherNumberDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'GetAfipNextVoucherNumber' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'pointOfSale' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'comprobanteType' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'ComprobanteType' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'afipNextVoucherNumber' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'pointOfSale' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'pointOfSale' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'comprobanteType' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'comprobanteType' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GetAfipNextVoucherNumberQuery,
+    GetAfipNextVoucherNumberQueryVariables
+>;
+export const CreateBillDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'CreateBill' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'BillInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'createBill' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bill' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comprobanteNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'totalAmount',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'caeData' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'code',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'expirationDate',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'status',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<CreateBillMutation, CreateBillMutationVariables>;
+export const UpdateBillDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateBill' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'input' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'BillInput' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateBill' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'input' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bill' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comprobanteNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'totalAmount',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'caeData' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'code',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'expirationDate',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'status',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdateBillMutation, UpdateBillMutationVariables>;
+export const DeleteBillDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'DeleteBill' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'deleteBill' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bill' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DeleteBillMutation, DeleteBillMutationVariables>;
+export const UpdateBillStatusDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'UpdateBillStatus' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: {
+                        kind: 'Variable',
+                        name: { kind: 'Name', value: 'status' },
+                    },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'BillStatus' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'updateBillStatus' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'status' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'status' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bill' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<UpdateBillStatusMutation, UpdateBillStatusMutationVariables>;
+export const EmitBillDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'EmitBill' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'emitBill' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'success' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'message' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bill' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'status' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comprobanteNumber',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'emissionDate',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'totalAmount',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'taxableNetAmount',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'ivaAmount',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'caeData' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'code',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'expirationDate',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'status',
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<EmitBillMutation, EmitBillMutationVariables>;
+export const DownloadBillPdfDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'DownloadBillPdf' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'NamedType',
+                            name: { kind: 'Name', value: 'String' },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'downloadBillPdf' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'id' },
+                                value: {
+                                    kind: 'Variable',
+                                    name: { kind: 'Name', value: 'id' },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<DownloadBillPdfQuery, DownloadBillPdfQueryVariables>;
 export const CreateBillingProfileDocument = {
     kind: 'Document',
     definitions: [
@@ -4944,20 +8276,6 @@ export const GetBillingProfileByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'serviceDate',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: {
-                                                    kind: 'Name',
-                                                    value: 'startDate',
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'dueDate' },
                                             },
                                             {
@@ -4968,23 +8286,28 @@ export const GetBillingProfileByIdDocument = {
                                                 kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
+                                                    value: 'totalAmount',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
                                                     value: 'pointOfSale',
                                                 },
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'caeData' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'comprobanteNumber',
-                                                            },
-                                                        },
-                                                    ],
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'emissionDate',
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comprobanteNumber',
                                                 },
                                             },
                                             {

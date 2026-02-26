@@ -9,12 +9,12 @@ type Props = {
 
 const ExpenseStatusBadge = ({ status }: Props) => {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-green-500': status === ExpenseStatus.Aprobado,
-        'h-2 w-2 rounded-full bg-yellow-500': status === ExpenseStatus.Enviado,
-        'h-2 w-2 rounded-full bg-red-500': status === ExpenseStatus.Rechazado,
+        'bg-green-500': status === ExpenseStatus.Aprobado,
+        'bg-yellow-500': status === ExpenseStatus.Enviado,
+        'bg-red-500': status === ExpenseStatus.Rechazado,
     });
     return (
-        <Badge variant="default" className="gap-2">
+        <Badge variant="default" className={contentStyle}>
             <span className={contentStyle}></span>
             <span>{status}</span>
         </Badge>

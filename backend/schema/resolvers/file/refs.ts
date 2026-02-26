@@ -19,6 +19,7 @@ export const FileRef = builder.prismaObject('File', {
                 const { url, urlExpire } = await getFileSignedUrl(
                     parent.key,
                     parent.mimeType,
+                    parent.filename,
                 );
                 await prisma.file.update({
                     where: { id: parent.id },

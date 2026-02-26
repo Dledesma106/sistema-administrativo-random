@@ -10,14 +10,14 @@ interface UserRoleBadgeProps {
 
 export function UserRoleBadge({ role }: UserRoleBadgeProps) {
     const contentStyle = clsx({
-        'h-2 w-2 rounded-full bg-blue-500': role === Role.AdministrativoContable,
-        'h-2 w-2 rounded-full bg-green-500': role === Role.AdministrativoTecnico,
-        'h-2 w-2 rounded-full bg-purple-500': role === Role.Auditor,
-        'h-2 w-2 rounded-full bg-yellow-500': role === Role.Tecnico,
+        'bg-blue-500': role === Role.AdministrativoContable,
+        'bg-green-500': role === Role.AdministrativoTecnico,
+        'bg-purple-500': role === Role.Auditor,
+        'bg-yellow-500': role === Role.Tecnico,
     });
 
     return (
-        <Badge className="gap-2" variant="default">
+        <Badge className={contentStyle} variant="default">
             <span className={contentStyle} />
             <span>{capitalizeFirstLetter(pascalCaseToSpaces(role))}</span>
         </Badge>

@@ -73,7 +73,7 @@ export function BillingTableRowActions({ bill }: Props) {
                 openModal={modal}
                 handleToggleModal={() => setModal(false)}
                 action={handleDelete}
-                msg={`¿Seguro que quiere eliminar la factura de ${bill.businessName}?`}
+                msg={`¿Seguro que quiere eliminar la factura de ${bill.business.name}?`}
             />
         </>
     );

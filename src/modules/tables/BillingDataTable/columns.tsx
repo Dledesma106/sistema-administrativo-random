@@ -2,30 +2,21 @@ import { createColumnHelper } from '@tanstack/react-table';
 
 import { BillingTableRowActions } from './billing-table-row-actions';
 
-import { BillStatus } from '@/api/graphql';
+import { GetBillsQuery } from '@/api/graphql';
 import { BillStatusBadge } from '@/components/ui/Badges/BillStatusBadge';
 
-export type Bill = {
-    id: string;
-    businessName: string;
-    contactName: string;
-    contactEmail: string;
-    billingEmail: string;
-    description: string;
-    status: BillStatus;
-    amount: number;
-};
+export type Bill = GetBillsQuery['bills'][number];
 
 const columnHelper = createColumnHelper<Bill>();
 
 export const useBillingTableColumns = () => [
-    columnHelper.accessor('businessName', {
+    columnHelper.accessor('business.name', {
         header: 'Empresa',
     }),
-    columnHelper.accessor('contactName', {
+    columnHelper.accessor('billingProfile.firstContact.fullName', {
         header: 'Nombre de contacto',
     }),
-    columnHelper.accessor('contactEmail', {
+    columnHelper.accessor('billingProfile.firstContact.email', {
         header: 'Email de contacto',
         cell: (info) => (
             <a
@@ -37,25 +28,33 @@ export const useBillingTableColumns = () => [
             </a>
         ),
     }),
-    columnHelper.accessor('billingEmail', {
-        header: 'Email de facturación',
+    columnHelper.accessor('billingProfile.billingEmails', {
+        header: 'Emails de facturación',
         cell: (info) => (
-            <a
-                href={`mailto:${info.getValue()}`}
-                className="text-primary hover:underline"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {info.getValue()}
-            </a>
+            <div className="flex flex-col gap-1">
+                {info.getValue().map((email) => (
+                    <a
+                        href={`mailto:${email}`}
+                        className="text-primary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                        key={email}
+                    >
+                        {email}
+                    </a>
+                ))}
+            </div>
         ),
     }),
     columnHelper.accessor('description', {
         header: 'Descripción',
         cell: (info) => {
             let description = info.getValue();
+            if (!description) {
+                return <span className="text-muted-foreground">-</span>;
+            }
             const maxLength = 50;
             if (description.length > maxLength) {
-                description = `${description.slice(0, maxLength)}...`;
+                description = `${description?.slice(0, maxLength)}...`;
             }
             return <p className="max-w-[250px] text-muted-foreground">{description}</p>;
         },
@@ -64,10 +63,10 @@ export const useBillingTableColumns = () => [
         header: 'Estado',
         cell: (info) => <BillStatusBadge status={info.getValue()} />,
     }),
-    columnHelper.accessor('amount', {
+    columnHelper.accessor('totalAmount', {
         header: 'Monto',
         cell: (info) =>
-            info.getValue().toLocaleString('es-AR', {
+            info?.getValue()?.toLocaleString('es-AR', {
                 style: 'currency',
                 currency: 'ARS',
             }),

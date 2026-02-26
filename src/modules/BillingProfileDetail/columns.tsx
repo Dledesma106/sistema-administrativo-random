@@ -10,11 +10,8 @@ export const billColumns: Column<Bill>[] = [
     {
         header: 'Número',
         cell: (bill) => {
-            if (bill.pointOfSale && bill.caeData?.comprobanteNumber) {
-                return `${bill.pointOfSale.toString().padStart(4, '0')}-${bill.caeData.comprobanteNumber.padStart(8, '0')}`;
-            }
-            if (bill.caeData?.comprobanteNumber) {
-                return bill.caeData.comprobanteNumber.padStart(8, '0');
+            if (bill.comprobanteNumber) {
+                return `#${bill.comprobanteNumber}`;
             }
             return `#${bill.id}`;
         },
@@ -23,11 +20,7 @@ export const billColumns: Column<Bill>[] = [
     {
         header: 'Monto',
         cell: (bill) => {
-            const total =
-                bill.details?.reduce(
-                    (sum, detail) => sum + detail.quantity * detail.unitPrice,
-                    0,
-                ) || 0;
+            const total = bill.totalAmount || 0;
             return `$${total.toLocaleString('es-AR')}`;
         },
         accessorKey: 'details' as const,
@@ -40,8 +33,10 @@ export const billColumns: Column<Bill>[] = [
     {
         header: 'Fecha de emisión',
         cell: (bill) =>
-            bill.startDate ? new Date(bill.startDate).toLocaleDateString('es-AR') : 'N/A',
-        accessorKey: 'startDate' as const,
+            bill.emissionDate
+                ? new Date(bill.emissionDate).toLocaleDateString('es-AR')
+                : 'N/A',
+        accessorKey: 'emissionDate' as const,
     },
     {
         header: 'Fecha de vencimiento',

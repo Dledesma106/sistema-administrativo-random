@@ -2,73 +2,282 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Factura {{billType}} {{billLetter}} - {{billNumber}}</title>
+  <title>{{billType}} {{billLetter}} - {{billNumber}}</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-    .container { width: 700px; margin: 0 auto; padding: 24px; border: 1px solid #ccc; }
-    .header { display: flex; justify-content: space-between; align-items: center; }
-    .company, .client { width: 48%; }
-    .title { text-align: center; font-size: 2em; margin: 16px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 24px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    .totals { margin-top: 24px; text-align: right; }
-    .qr { margin-top: 24px; text-align: right; }
-    .footer { margin-top: 32px; font-size: 0.9em; color: #666; text-align: center; }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      font-size: 12px;
+      color: #333;
+    }
+    .container { 
+      width: 210mm; 
+      margin: 0 auto; 
+      padding: 15mm; 
+      background: white;
+    }
+    .header { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-bottom: 20px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 15px;
+    }
+    .company, .client { 
+      width: 48%; 
+      font-size: 11px;
+    }
+    .company strong, .client strong {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .title { 
+      text-align: center; 
+      font-size: 20px; 
+      font-weight: bold;
+      margin: 20px 0 15px 0;
+      text-transform: uppercase;
+    }
+    .bill-info {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 11px;
+    }
+    .bill-info span {
+      margin: 0 10px;
+    }
+    .service-info {
+      margin-bottom: 15px;
+      font-size: 11px;
+      padding: 8px;
+      background: #f5f5f5;
+    }
+    .service-info div {
+      margin: 3px 0;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 15px;
+      font-size: 11px;
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 8px; 
+      text-align: left; 
+    }
+    th { 
+      background: #f0f0f0; 
+      font-weight: bold;
+      text-align: center;
+    }
+    td {
+      text-align: right;
+    }
+    td:first-child {
+      text-align: left;
+    }
+    .totals { 
+      margin-top: 20px; 
+      text-align: right;
+      font-size: 11px;
+    }
+    .totals-row {
+      display: flex;
+      justify-content: flex-end;
+      margin: 5px 0;
+    }
+    .totals-label {
+      width: 200px;
+      text-align: right;
+      padding-right: 10px;
+    }
+    .totals-value {
+      width: 120px;
+      text-align: right;
+      font-weight: bold;
+    }
+    .totals-total {
+      border-top: 2px solid #333;
+      padding-top: 8px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .totals-total .totals-value {
+      font-size: 15px;
+    }
+    .cae-info {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      font-size: 10px;
+    }
+    .cae-info div {
+      margin: 3px 0;
+    }
+    .qr { 
+      margin-top: 20px; 
+      text-align: center;
+    }
+    .qr img {
+      max-width: 120px;
+      height: auto;
+    }
+    .observations {
+      margin-top: 15px;
+      padding: 10px;
+      background: #fff9e6;
+      border-left: 3px solid #ffc107;
+      font-size: 10px;
+    }
+    .footer { 
+      margin-top: 30px; 
+      font-size: 9px; 
+      color: #666; 
+      text-align: center;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+    @media print {
+      .container {
+        padding: 10mm;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Encabezado con datos de empresa y cliente -->
     <div class="header">
       <div class="company">
-        <strong>{{company.name}}</strong><br>
-        CUIT: {{company.cuit}}<br>
-        {{company.address}}<br>
-        {{company.grossIncome}}<br>
-        {{company.ivaCondition}}
+        <strong>{{company.name}}</strong>
+        <div>CUIT: {{company.cuit}}</div>
+        {{#if company.address}}<div>{{company.address}}</div>{{/if}}
+        {{#if company.cuit}}<div>Ingresos Brutos: {{company.cuit}}</div>{{/if}}
+        <div>Condición IVA: {{company.ivaCondition}}</div>
       </div>
       <div class="client">
-        <strong>Cliente:</strong> {{client.name}}<br>
-        CUIT: {{client.cuit}}<br>
-        {{client.address}}<br>
-        {{client.ivaCondition}}
+        <strong>Cliente:</strong> {{client.name}}
+        <div>{{client.documentType}}: {{client.documentNumber}}</div>
+        {{#if client.address}}<div>{{client.address}}</div>{{/if}}
+        <div>Condición IVA: {{client.ivaCondition}}</div>
       </div>
     </div>
-    <div class="title">Factura {{billType}} {{billLetter}}</div>
-    <div><strong>N°:</strong> {{billNumber}} &nbsp; <strong>Fecha:</strong> {{billDate}}</div>
+    <!-- Título del comprobante -->
+    <div class="title">{{billType}}</div>
+    
+    <!-- Información del comprobante -->
+    <div class="bill-info">
+      <span><strong>N°:</strong> {{billNumber}}</span>
+      {{#if pointOfSale}}<span><strong>Punto de Venta:</strong> {{pointOfSale}}</span>{{/if}}
+      <span><strong>Fecha de Emisión:</strong> {{emissionDate}}</span>
+      {{#if emissionDate}}<span><strong>Fecha:</strong> {{billDate}}</span>{{/if}}
+    </div>
+
+    <!-- Información de servicio (si aplica) -->
+    
+    <div class="service-info">
+      {{#if serviceDate}}<div><strong>Fecha de Servicio:</strong> {{serviceDate}}</div>{{/if}}
+      {{#if servicePeriod}}<div><strong>Período:</strong> {{servicePeriod}}</div>{{/if}}
+      {{#if saleCondition}}<div><strong>Condición de Venta:</strong> {{saleCondition}}</div>{{/if}}
+      {{#if dueDate}}<div><strong>Fecha de Vencimiento:</strong> {{dueDate}}</div>{{/if}}
+      {{#if concepto}}<div><strong>Concepto:</strong> {{concepto}}</div>{{/if}}
+    </div>
+
+
+    <!-- Tabla de items -->
     <table>
       <thead>
         <tr>
-          <th>Descripción</th>
-          <th>Cantidad</th>
-          <th>Precio Unitario</th>
-          <th>Subtotal</th>
+          <th style="width: 50%;">Descripción</th>
+          <th style="width: 10%;">Cantidad</th>
+          <th style="width: 15%;">Precio Unitario</th>
+          <th style="width: 15%;">Subtotal</th>
+          {{#if (hasAlicuota items)}}<th style="width: 10%;">IVA</th>{{/if}}
+          <th style="width: 15%;">Monto IVA</th>
+          <th style="width: 15%;">Total</th>
         </tr>
       </thead>
       <tbody>
         {{#each items}}
         <tr>
           <td>{{description}}</td>
-          <td>{{quantity}}</td>
-          <td>{{unitPrice}}</td>
-          <td>{{subtotal}}</td>
+          <td style="text-align: center;">{{quantity}}</td>
+          <td>${{formatNumber unitPrice}}</td>
+          <td>${{formatNumber subtotal}}</td>
+          {{#if ../items.[0].alicuotaIVA}}<td style="text-align: center;">{{alicuotaIVA}}</td>{{/if}}
+          <td>${{formatNumber ivaAmount}}</td>
+          <td>${{formatNumber total}}</td>
         </tr>
         {{/each}}
       </tbody>
     </table>
+
+    <!-- Totales -->
     <div class="totals">
-      <strong>Total:</strong> {{total}}<br>
-      <strong>CAE:</strong> {{cae}}<br>
-      <strong>Vto. CAE:</strong> {{caeDueDate}}
-    </div>
-    <div class="qr">
-      {{#if qrDataUrl}}
-        <img src="{{qrDataUrl}}" alt="QR AFIP" width="120" height="120" />
+      {{#if nonTaxableNetAmount}}
+      <div class="totals-row">
+        <div class="totals-label">Importe Neto No Gravado:</div>
+        <div class="totals-value">${{formatNumber nonTaxableNetAmount}}</div>
+      </div>
       {{/if}}
+      {{#if taxableNetAmount}}
+      <div class="totals-row">
+        <div class="totals-label">Importe Neto Gravado:</div>
+        <div class="totals-value">${{formatNumber taxableNetAmount}}</div>
+      </div>
+      {{/if}}
+      {{#if exemptAmount}}
+      <div class="totals-row">
+        <div class="totals-label">Importe Exento:</div>
+        <div class="totals-value">${{formatNumber exemptAmount}}</div>
+      </div>
+      {{/if}}
+      {{#if ivaAmount}}
+      <div class="totals-row">
+        <div class="totals-label">IVA:</div>
+        <div class="totals-value">${{formatNumber ivaAmount}}</div>
+      </div>
+      {{/if}}
+      {{#if tributesAmount}}
+      <div class="totals-row">
+        <div class="totals-label">Tributos:</div>
+        <div class="totals-value">${{formatNumber tributesAmount}}</div>
+      </div>
+      {{/if}}
+      {{#if withholdingAmount}}
+      <div class="totals-row">
+        <div class="totals-label">Retenciones:</div>
+        <div class="totals-value">${{formatNumber withholdingAmount}}</div>
+      </div>
+      {{/if}}
+      <div class="totals-row totals-total">
+        <div class="totals-label">TOTAL:</div>
+        <div class="totals-value">${{formatNumber total}}</div>
+      </div>
     </div>
+
+    <!-- Información CAE -->
+    <div class="cae-info">
+      <div><strong>Código de Autorización Electrónico (CAE):</strong> {{cae}}</div>
+      <div><strong>Fecha de Vencimiento CAE:</strong> {{caeDueDate}}</div>
+    </div>
+
+    <!-- QR Code -->
+    {{#if qrDataUrl}}
+    <div class="qr">
+      <img src="{{qrDataUrl}}" alt="QR AFIP" />
+    </div>
+    {{/if}}
+    <!-- Pie de página -->
     <div class="footer">
-      Comprobante autorizado por AFIP. Para verificar autenticidad, escanee el QR.<br>
-      {{footerText}}
+      <div><strong>Comprobante autorizado por AFIP</strong></div>
+      <div>Para verificar la autenticidad de este comprobante, escanee el código QR</div>
+      {{#if footerText}}<div>{{footerText}}</div>{{/if}}
     </div>
   </div>
 </body>
