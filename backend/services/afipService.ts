@@ -16,7 +16,7 @@ import {
     AFIP_MONEDA_LABELS,
 } from './afip';
 import { getAfipCuit, isAfipProduction } from './afip/config';
-import { writeAfipCertAndKey, afipCertFilesExist } from './afipCertService';
+import { normalizePem } from './afipCertService';
 
 // Instancia lazy de AFIP (se crea solo cuando se necesita)
 // Esto es importante para Vercel/serverless donde /tmp es efímero
@@ -34,15 +34,11 @@ let afipInstance: Afip | null = null;
 function getAfipInstance(): Afip {
     // Si la instancia ya existe y los archivos existen, reutilizarla
     if (afipInstance) {
-        if (afipCertFilesExist()) {
-            return afipInstance;
-        }
-        // Si los archivos desaparecieron (p.ej., función serverless reiniciada), recrear
-        afipInstance = null;
+        return afipInstance;
     }
 
     // Asegurarse de que los archivos existan (los escribe si no existen)
-    const { certPath, keyPath } = writeAfipCertAndKey();
+    //const { certPath, keyPath } = writeAfipCertAndKey();
 
     // Obtener configuración de AFIP
     let afipCuit: number | undefined;
@@ -56,9 +52,14 @@ function getAfipInstance(): Afip {
     // Crear nueva instancia
     afipInstance = new Afip({
         CUIT: afipCuit,
-        cert: certPath,
-        key: keyPath,
+        cert: normalizePem(process.env.AFIP_CERT_CONTENT),
+        key: normalizePem(process.env.AFIP_KEY_CONTENT),
         production: isAfipProduction(),
+        // Permitir pasar un access token proporcionado por app.afipsdk.com
+        // El SDK puede esperar la propiedad `access_token` o `token` según la versión,
+        // así que incluimos ambas por compatibilidad.
+        access_token: process.env.AFIP_ACCESS_TOKEN,
+        token: process.env.AFIP_ACCESS_TOKEN,
     });
 
     return afipInstance;

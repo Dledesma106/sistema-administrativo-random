@@ -66,7 +66,7 @@ export const TotalsSection = () => {
     const totalToPay = totals.totalAmount - (withholdingAmount || 0);
 
     return (
-        <section className="space-y-4 rounded-lg border border-accent bg-muted/50 p-4">
+        <section className="space-y-4 rounded-lg border border-accent bg-muted p-4">
             <h3 className="text-lg font-semibold">Resumen de Importes</h3>
 
             <div className="space-y-3">
@@ -103,7 +103,7 @@ export const TotalsSection = () => {
 
                 {/* Desglose de IVA por alícuota (solo Factura A) */}
                 {showIvaBreakdown && totals.ivaBreakdown.length > 0 && (
-                    <div className="space-y-2 border-t border-border pt-2">
+                    <div className="space-y-2 border-t border-accent pt-2">
                         <span className="text-sm font-medium">IVA Discriminado:</span>
                         {totals.ivaBreakdown.map((item) => (
                             <div
@@ -143,7 +143,7 @@ export const TotalsSection = () => {
                 )}
 
                 {/* Línea separadora */}
-                <div className="border-t border-border"></div>
+                <div className="border-t border-accent"></div>
 
                 {/* Totales */}
                 {/* Subtotal antes de retenciones */}
@@ -163,7 +163,7 @@ export const TotalsSection = () => {
                                 - {formatCurrency(withholdingAmount)}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between border-t border-border pt-2">
+                        <div className="flex items-center justify-between pt-2">
                             <span className="text-lg font-bold">Total a Pagar</span>
                             <span className="text-right text-lg font-bold text-primary">
                                 {formatCurrency(totalToPay)}

@@ -15,9 +15,10 @@ import { ColumnBillingProfile } from '@/modules/tables/BillingProfilesTable/colu
 
 type Props = {
     billingProfiles: ColumnBillingProfile[];
+    disabled?: boolean;
 };
 
-export const ClientSection = ({ billingProfiles }: Props) => {
+export const ClientSection = ({ billingProfiles, disabled }: Props) => {
     const form = useFormContext();
     const billingProfileId = form.watch('billingProfileId');
     const selectedProfile = billingProfiles.find((p) => p.id === billingProfileId);
@@ -47,6 +48,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
 
             <FormField
                 control={form.control}
+                disabled={disabled}
                 name="billingProfileId"
                 render={({ field }) => (
                     <FormItem>
@@ -57,6 +59,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
                                     label: profile.legalName,
                                     value: profile.id,
                                 }))}
+                                disabled={disabled}
                                 value={field.value}
                                 onChange={field.onChange}
                                 selectPlaceholder="Seleccione un perfil"
@@ -71,6 +74,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
             <div className="grid grid-cols-2 gap-4">
                 <FormField
                     control={form.control}
+                    disabled={disabled}
                     name="legalName"
                     render={({ field }) => (
                         <FormItem>
@@ -85,6 +89,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
 
                 <FormField
                     control={form.control}
+                    disabled={disabled}
                     name="cuit"
                     render={({ field }) => (
                         <FormItem>
@@ -101,6 +106,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
 
                 <FormField
                     control={form.control}
+                    disabled={disabled}
                     name="businessAddress"
                     render={({ field }) => (
                         <FormItem className="col-span-2">
@@ -116,6 +122,7 @@ export const ClientSection = ({ billingProfiles }: Props) => {
                 <FormField
                     control={form.control}
                     name="ivaCondition"
+                    disabled={disabled}
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Condición IVA</FormLabel>

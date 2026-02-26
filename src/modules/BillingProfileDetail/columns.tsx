@@ -10,11 +10,8 @@ export const billColumns: Column<Bill>[] = [
     {
         header: 'Número',
         cell: (bill) => {
-            if (bill.pointOfSale && bill.caeData?.code) {
-                return `${bill.pointOfSale.toString().padStart(4, '0')}-${bill.caeData.code.padStart(8, '0')}`;
-            }
-            if (bill.caeData?.code) {
-                return bill.caeData.code.padStart(8, '0');
+            if (bill.comprobanteNumber) {
+                return `#${bill.comprobanteNumber}`;
             }
             return `#${bill.id}`;
         },

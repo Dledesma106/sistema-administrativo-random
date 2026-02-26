@@ -793,7 +793,11 @@ builder.mutationFields((t) => ({
                                       const size = expenseData.sizes?.[i] || 0;
 
                                       fileCreations.push({
-                                          ...(await getFileSignedUrl(fileKey, mimeType)),
+                                          ...(await getFileSignedUrl(
+                                              fileKey,
+                                              mimeType,
+                                              filename,
+                                          )),
                                           key: fileKey,
                                           filename,
                                           mimeType,

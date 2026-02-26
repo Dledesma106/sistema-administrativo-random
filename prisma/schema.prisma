@@ -145,10 +145,16 @@ enum ExpensePaySourceBank {
 
 enum IVACondition {
   ResponsableInscripto
-  Monotributo
-  Exento
+  SujetoExento
   ConsumidorFinal
-  NoResponsable // IVA No Responsable (código AFIP: 7)
+  ResponsableMonotributo
+  SujetoNoCategorizado
+  ProveedorDelExterior
+  ClienteDelExterior
+  IvaLiberadoLey19640
+  MonotributistaSocial
+  IvaNoAlcanzado
+  MonotributoTrabajadorIndependientePromovido
 }
 
 enum TipoDocumento {
@@ -337,8 +343,11 @@ model Task {
   priceHistory TaskPriceHistory[]
 
   // Factura asociada a esta tarea (una tarea solo puede pertenecer a una factura)
-  billId String? @db.ObjectId
+  billId String? @map("bill") @db.ObjectId
   bill   Bill?   @relation("BillTasks", fields: [billId], references: [id])
+
+  billDetailId String?     @map("billDetail") @db.ObjectId
+  billDetail   BillDetail?
 
   @@map("tasks")
 }
@@ -682,14 +691,21 @@ enum BillConcepto {
   ProductosYServicios
 }
 
-type BillDetail {
+model BillDetail {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
   description String
   quantity    Int
   unitPrice   Float
   alicuotaIVA AlicuotaIVA
+  deleted     Boolean     @default(false)
+  deletedAt   DateTime?   @db.Date
 
   // Tarea asociada a este detalle específico (opcional, una sola tarea por detalle)
-  taskId String?
+  taskId String? @unique @db.ObjectId
+  task   Task?   @relation(fields: [taskId], references: [id])
+
+  billId String? @db.ObjectId
+  bill   Bill?   @relation(fields: [billId], references: [id])
 }
 
 type CAEData {
@@ -699,20 +715,17 @@ type CAEData {
 }
 
 model Bill {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now()) @db.Date
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime  @default(now()) @db.Date
+  updatedAt DateTime  @updatedAt
+  deleted   Boolean   @default(false)
+  deletedAt DateTime? @db.Date
 
   businessId String   @map("business") @db.ObjectId
   business   Business @relation(fields: [businessId], references: [id])
 
   billingProfileId String         @map("billingProfile") @db.ObjectId
   billingProfile   BillingProfile @relation(fields: [billingProfileId], references: [id])
-
-  legalName      String
-  CUIT           String
-  billingAddress String
-  IVACondition   IVACondition
 
   status          BillStatus
   description     String?
@@ -746,17 +759,17 @@ model Bill {
   observations String?
 
   caeData           CAEData?
-  details           BillDetail[]
   withholdingAmount Float?
-  pdfId             String?      @db.ObjectId
-  pdf               File?        @relation(fields: [pdfId], references: [id])
+  pdfId             String?  @db.ObjectId
+  pdf               File?    @relation(fields: [pdfId], references: [id])
 
   // Orden de servicio asociada a la factura (opcional, máximo una)
   serviceOrderId String?       @db.ObjectId
   serviceOrder   ServiceOrder? @relation("BillServiceOrder", fields: [serviceOrderId], references: [id])
 
+  details BillDetail[]
   // Tareas asociadas a la factura (relación inversa, una factura puede tener múltiples tareas)
-  tasks Task[] @relation("BillTasks")
+  tasks   Task[]       @relation("BillTasks")
 
   @@map("bills")
 }

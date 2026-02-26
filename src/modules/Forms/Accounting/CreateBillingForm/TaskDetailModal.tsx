@@ -33,6 +33,9 @@ export const TaskDetailModal = ({
     if (!task) {
         return null;
     }
+
+    console.log('task in modal', task);
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-2xl">

@@ -4,6 +4,7 @@
 
 import {
     AlicuotaIVA,
+    BillingProfile,
     ComprobanteType,
     IVACondition,
     TipoDocumento,
@@ -23,6 +24,8 @@ import {
     AFIP_ALICUOTA_IVA,
     AFIP_ALICUOTA_IVA_PORCENTAJE,
     AFIP_MONEDA,
+    AFIP_CONDICION_IVA,
+    AfipCondicionIva,
 } from './types';
 
 // ============================================================================
@@ -38,9 +41,8 @@ interface BillDetail {
 interface BillFromDB {
     id: string;
     createdAt: Date;
+    billingProfile: BillingProfile;
     comprobanteType: ComprobanteType;
-    CUIT: string;
-    IVACondition: IVACondition;
     details: BillDetail[];
     punctualService: boolean;
     serviceDate?: Date | null;
@@ -128,6 +130,41 @@ export function getDocTipoFromIVACondition(condition: IVACondition): AfipDocTipo
     }
     // Resto de condiciones requieren CUIT
     return AFIP_DOC_TIPO.CUIT;
+}
+
+// ============================================================================
+// MAPEAR CONDICIÓN DE IVA (DB) -> Condicion IVA para AFIP
+// ============================================================================
+export function mapIvaConditionToAfipCondicion(
+    condition: IVACondition,
+): AfipCondicionIva {
+    switch (condition) {
+        case 'ResponsableInscripto':
+            return AFIP_CONDICION_IVA.RESPONSABLE_INSCRIPTO;
+        case 'ResponsableMonotributo':
+            return AFIP_CONDICION_IVA.RESPONSABLE_MONOTRIBUTO;
+        case 'SujetoExento':
+            return AFIP_CONDICION_IVA.SUJETO_EXENTO;
+        case 'ConsumidorFinal':
+            return AFIP_CONDICION_IVA.CONSUMIDOR_FINAL;
+        case 'SujetoNoCategorizado':
+            return AFIP_CONDICION_IVA.SUJETO_NO_CATEGORIZADO;
+        case 'ProveedorDelExterior':
+            return AFIP_CONDICION_IVA.PROVEEDOR_DEL_EXTERIOR;
+        case 'ClienteDelExterior':
+            return AFIP_CONDICION_IVA.CLIENTE_DEL_EXTERIOR;
+        case 'IvaLiberadoLey19640':
+            return AFIP_CONDICION_IVA.IVA_LIBERADO_LEY_19640;
+        case 'MonotributistaSocial':
+            return AFIP_CONDICION_IVA.MONOTRIBUTISTA_SOCIAL;
+        case 'IvaNoAlcanzado':
+            return AFIP_CONDICION_IVA.IVA_NO_ALCANZADO;
+        case 'MonotributoTrabajadorIndependientePromovido':
+            return AFIP_CONDICION_IVA.MONOTRIBUTO_TRABAJADOR_INDEPENDIENTE_PROMOVIDO;
+        default:
+            // Por defecto, marcar como Consumidor Final si no se reconoce
+            return AFIP_CONDICION_IVA.CONSUMIDOR_FINAL;
+    }
 }
 
 // ============================================================================
@@ -272,8 +309,13 @@ export function mapBillToAfipVoucher(
 ): AfipVoucherData {
     const concepto = getConceptoAfip(bill);
     const amounts = calculateBillAmounts(bill.details);
-    const docTipo = getDocTipoFromIVACondition(bill.IVACondition);
-    const docNro = docTipo === AFIP_DOC_TIPO.SIN_IDENTIFICAR ? 0 : cleanCuit(bill.CUIT);
+    const docTipo = getDocTipoFromIVACondition(bill.billingProfile.IVACondition);
+    const docNro =
+        docTipo === AFIP_DOC_TIPO.SIN_IDENTIFICAR
+            ? 0
+            : cleanCuit(bill.billingProfile.numeroDocumento);
+
+    console.log('DocNro para AFIP:', docNro);
 
     const voucherData: AfipVoucherData = {
         Concepto: concepto,
@@ -281,7 +323,8 @@ export function mapBillToAfipVoucher(
         DocNro: docNro,
         CbteDesde: nextVoucherNumber,
         CbteHasta: nextVoucherNumber,
-        CbteFch: formatDateForAfip(bill.createdAt),
+        // La fecha del comprobante debe ser la fecha de emisión en AFIP (hoy)
+        CbteFch: formatDateForAfip(new Date()),
         ImpTotal: amounts.impTotal,
         ImpTotConc: amounts.impTotConc,
         ImpNeto: amounts.impNeto,
@@ -290,6 +333,9 @@ export function mapBillToAfipVoucher(
         ImpTrib: amounts.impTrib,
         MonId: AFIP_MONEDA.PESO_ARGENTINO,
         MonCotiz: 1,
+        CondicionIVAReceptorId: mapIvaConditionToAfipCondicion(
+            bill.billingProfile.IVACondition,
+        ),
     };
 
     // Si es servicio, agregar fechas de servicio
@@ -330,7 +376,7 @@ export function mapBillToAfipVoucher(
     if (amounts.ivaItems.length > 0 && !isComprobanteC) {
         voucherData.Iva = amounts.ivaItems;
     }
-
+    console.log('Mapped AfipVoucherData:', voucherData);
     return voucherData;
 }
 
@@ -344,8 +390,11 @@ export function mapBillToQRData(
     emisorCuit: string,
 ): AfipQRData {
     const amounts = calculateBillAmounts(bill.details);
-    const docTipo = getDocTipoFromIVACondition(bill.IVACondition);
-    const docNro = docTipo === AFIP_DOC_TIPO.SIN_IDENTIFICAR ? 0 : cleanCuit(bill.CUIT);
+    const docTipo = getDocTipoFromIVACondition(bill.billingProfile.IVACondition);
+    const docNro =
+        docTipo === AFIP_DOC_TIPO.SIN_IDENTIFICAR
+            ? 0
+            : cleanCuit(bill.billingProfile.numeroDocumento);
 
     return {
         ver: 1,

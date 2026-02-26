@@ -58,6 +58,13 @@ export const TaskSelectionModal = ({
     const [selectedTasks, setSelectedTasks] = useState<SelectedTask[]>([]);
     const [viewingTask, setViewingTask] = useState<SelectedTask | null>(null);
 
+    console.log('Renderizando TaskSelectionModal con props:', {
+        open,
+        businessId,
+        alreadySelectedTaskIds,
+        multiSelect,
+    });
+
     // Obtener tareas sin factura (solo cuando el modal está abierto)
     const { data, isLoading } = useGetTasksWithoutBill({
         // Solo pasar businessId si existe y no es undefined
@@ -274,8 +281,12 @@ export const TaskSelectionModal = ({
                                             ? new Date(task.closedAt)
                                             : null,
                                         businessName: task.businessName,
-                                        clientName: task.clientName,
+                                        clientName:
+                                            task.clientName ??
+                                            task.branch?.client?.name ??
+                                            null,
                                         branch: task.branch,
+                                        customBranch: task.customBranch,
                                     };
 
                                     return (

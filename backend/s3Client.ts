@@ -54,12 +54,20 @@ export const createFileSignedUrlAsync = async (key: string) => {
     };
 };
 
-export const getFileSignedUrl = async (key: string, mimeType: string) => {
+export const getFileSignedUrl = async (
+    key: string,
+    mimeType: string,
+    filename?: string,
+) => {
+    const disposition = filename
+        ? `attachment; filename="${filename.replace(/\"/g, '')}"`
+        : 'attachment';
+
     const command = new GetObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME!,
         Key: key,
         ResponseContentType: mimeType,
-        ResponseContentDisposition: 'inline',
+        ResponseContentDisposition: disposition,
     });
 
     const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });

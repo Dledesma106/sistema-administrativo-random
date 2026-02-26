@@ -16,6 +16,7 @@ export * from './useUpdateBill';
 export * from './useDeleteBill';
 export * from './useUpdateBillStatus';
 export * from './useEmitBill';
+export * from './useDownloadBillPdf';
 
 // Mutations - Task Association
 export * from './useAssociateTaskToBill';

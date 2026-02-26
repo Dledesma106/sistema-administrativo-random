@@ -2,8 +2,17 @@ import fs from 'fs';
 import Handlebars from 'handlebars';
 import path from 'path';
 
-// Carpeta donde se guardan las plantillas (puedes cambiarla si lo prefieres)
-const TEMPLATES_DIR = path.join(__dirname, '../templates');
+// Carpeta donde se guardan las plantillas (puedes cambiarla si lo prefieras)
+// Preferimos la carpeta en el repo (`backend/templates`) cuando exista en runtime
+// (por ejemplo al ejecutar desde el proyecto). Si no existe, usamos la ruta
+// relativa al __dirname (útil cuando el código fue compilado/bundleado en .next).
+const candidateTemplateDirs = [
+    path.join(process.cwd(), 'backend', 'templates'),
+    path.join(__dirname, '../templates'),
+];
+
+const TEMPLATES_DIR =
+    candidateTemplateDirs.find((d) => fs.existsSync(d)) || candidateTemplateDirs[0];
 
 // Cache de plantillas compiladas para performance
 const templateCache: Record<string, Handlebars.TemplateDelegate> = {};
@@ -43,16 +52,16 @@ export interface InvoiceTemplateData {
     // Información del cliente/receptor
     client: {
         name: string;
-        cuit: string;
+        documentType: string;
+        documentNumber: string;
         address: string;
         ivaCondition: string;
     };
     // Información del comprobante
     billType: string; // Etiqueta legible del tipo (ej: "Factura A")
-    billLetter: string; // Letra del comprobante (ej: "A", "B", "C")
     billNumber: string; // Número de comprobante (formato: PPPP-NNNNNNNN)
-    billDate: string; // Fecha de emisión (formato localizado)
-    emissionDate?: string; // Fecha de emisión alternativa (si difiere de billDate)
+    billDate: string; // Fecha de la factura
+    emissionDate?: string; // Fecha de emisión
     pointOfSale?: number; // Punto de venta (4 dígitos)
     // Detalles/items de la factura
     items: Array<{
@@ -86,7 +95,6 @@ export interface InvoiceTemplateData {
     qrDataUrl?: string; // URL o data URL de la imagen QR de AFIP
     // Información adicional
     footerText?: string; // Texto adicional para el pie de página
-    observations?: string; // Observaciones de la factura
     concepto?: string; // Concepto AFIP (Productos, Servicios, Productos y Servicios)
     // Fechas y períodos de servicio
     /** Fecha del servicio (para servicios puntuales) */

@@ -26,6 +26,7 @@ export type SelectedTask = {
 
 // Detalle de factura con tarea opcional
 export type BillingDetail = {
+    id: string; // ID para identificar detalles existentes al actualizar
     description: string;
     quantity: number;
     unitPrice: number;
@@ -47,12 +48,25 @@ export type PaymentCondition =
     | 'CuentaCorriente'
     | 'Cheque'
     | 'Transferencia'
-    | '15dias'
-    | '30dias'
-    | '60dias'
-    | '90dias'
+    | '15Dias'
+    | '30Dias'
+    | '60Dias'
+    | '90Dias'
     | 'TarjetaCredito'
     | 'Otros';
+
+export const PaymentCondition = {
+    Contado: 'Contado' as PaymentCondition,
+    CuentaCorriente: 'CuentaCorriente' as PaymentCondition,
+    Cheque: 'Cheque' as PaymentCondition,
+    Transferencia: 'Transferencia' as PaymentCondition,
+    '15Dias': '15Dias' as PaymentCondition,
+    '30Dias': '30Dias' as PaymentCondition,
+    '60Dias': '60Dias' as PaymentCondition,
+    '90Dias': '90Dias' as PaymentCondition,
+    TarjetaCredito: 'TarjetaCredito' as PaymentCondition,
+    Otros: 'Otros' as PaymentCondition,
+};
 
 // Mapeo de condición de venta a días
 // null = usuario selecciona manualmente la fecha
@@ -62,10 +76,10 @@ export const PAYMENT_CONDITION_DAYS: Record<string, number | null> = {
     CuentaCorriente: null, // Usuario selecciona manualmente
     Cheque: null, // Usuario selecciona manualmente
     Transferencia: null, // Usuario selecciona manualmente
-    '15dias': 15, // Calcula automáticamente: fecha base + 15 días
-    '30dias': 30, // Calcula automáticamente: fecha base + 30 días
-    '60dias': 60, // Calcula automáticamente: fecha base + 60 días
-    '90dias': 90, // Calcula automáticamente: fecha base + 90 días
+    '15Dias': 15, // Calcula automáticamente: fecha base + 15 días
+    '30Dias': 30, // Calcula automáticamente: fecha base + 30 días
+    '60Dias': 60, // Calcula automáticamente: fecha base + 60 días
+    '90Dias': 90, // Calcula automáticamente: fecha base + 90 días
     TarjetaCredito: null, // Usuario selecciona manualmente
     Otros: null, // Usuario selecciona manualmente
 };

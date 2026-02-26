@@ -138,9 +138,6 @@ export type BankMovementCrudResult = {
 
 export type Bill = {
     __typename?: 'Bill';
-    CUIT: Scalars['String'];
-    IVACondition: IvaCondition;
-    billingAddress: Scalars['String'];
     billingProfile: BillingProfile;
     business: Business;
     caeData: Maybe<CaeData>;
@@ -156,9 +153,9 @@ export type Bill = {
     exemptAmount: Maybe<Scalars['Float']>;
     id: Scalars['ID'];
     ivaAmount: Maybe<Scalars['Float']>;
-    legalName: Scalars['String'];
     nonTaxableNetAmount: Maybe<Scalars['Float']>;
     observations: Maybe<Scalars['String']>;
+    pdf: Maybe<File>;
     pointOfSale: Maybe<Scalars['Int']>;
     punctualService: Scalars['Boolean'];
     saleCondition: Scalars['String'];
@@ -192,6 +189,7 @@ export type BillDetail = {
     __typename?: 'BillDetail';
     alicuotaIVA: AlicuotaIva;
     description: Scalars['String'];
+    id: Scalars['ID'];
     quantity: Scalars['Int'];
     task: Maybe<Task>;
     taskId: Maybe<Scalars['String']>;
@@ -201,15 +199,13 @@ export type BillDetail = {
 export type BillDetailInput = {
     alicuotaIVA: AlicuotaIva;
     description: Scalars['String'];
+    id: InputMaybe<Scalars['String']>;
     quantity: Scalars['Int'];
     taskId: InputMaybe<Scalars['String']>;
     unitPrice: Scalars['Float'];
 };
 
 export type BillInput = {
-    CUIT: InputMaybe<Scalars['String']>;
-    IVACondition: InputMaybe<IvaCondition>;
-    billingAddress: InputMaybe<Scalars['String']>;
     billingProfileId: Scalars['String'];
     businessId: Scalars['String'];
     comprobanteType: ComprobanteType;
@@ -220,7 +216,6 @@ export type BillInput = {
     endDate: InputMaybe<Scalars['DateTime']>;
     exemptAmount: InputMaybe<Scalars['Float']>;
     ivaAmount: InputMaybe<Scalars['Float']>;
-    legalName: InputMaybe<Scalars['String']>;
     nonTaxableNetAmount: InputMaybe<Scalars['Float']>;
     observations: InputMaybe<Scalars['String']>;
     pointOfSale: InputMaybe<Scalars['Int']>;
@@ -239,7 +234,6 @@ export type BillInput = {
 
 export const BillStatus = {
     Borrador: 'Borrador',
-    Emitida: 'Emitida',
     Pagada: 'Pagada',
     Pendiente: 'Pendiente',
     Vencida: 'Vencida',
@@ -718,11 +712,18 @@ export type GmailThreadsResult = {
 };
 
 export const IvaCondition = {
+    ClienteDelExterior: 'ClienteDelExterior',
     ConsumidorFinal: 'ConsumidorFinal',
-    Exento: 'Exento',
-    Monotributo: 'Monotributo',
-    NoResponsable: 'NoResponsable',
+    IvaLiberadoLey19640: 'IvaLiberadoLey19640',
+    IvaNoAlcanzado: 'IvaNoAlcanzado',
+    MonotributistaSocial: 'MonotributistaSocial',
+    MonotributoTrabajadorIndependientePromovido:
+        'MonotributoTrabajadorIndependientePromovido',
+    ProveedorDelExterior: 'ProveedorDelExterior',
     ResponsableInscripto: 'ResponsableInscripto',
+    ResponsableMonotributo: 'ResponsableMonotributo',
+    SujetoExento: 'SujetoExento',
+    SujetoNoCategorizado: 'SujetoNoCategorizado',
 } as const;
 
 export type IvaCondition = (typeof IvaCondition)[keyof typeof IvaCondition];
@@ -756,9 +757,6 @@ export type ManpowerInput = {
 
 export type Mutation = {
     __typename?: 'Mutation';
-    associateTaskToBill: BillCrudResult;
-    associateTaskToBillDetail: BillCrudResult;
-    associateTasksToBill: BillCrudResult;
     changePassword: AuthResult;
     createBankAccount: BankAccountCrudResult;
     createBill: BillCrudResult;
@@ -793,8 +791,6 @@ export type Mutation = {
     deleteProvince: ProvinceCrudResult;
     deleteTask: TaskCrudResult;
     deleteUser: UserCrudPothosRef;
-    dissociateTaskFromBill: BillCrudResult;
-    dissociateTaskFromBillDetail: BillCrudResult;
     downloadTaskPhotos: DownloadTaskPhotosResult;
     emitBill: BillCrudResult;
     finishTask: TaskCrudResult;
@@ -829,22 +825,6 @@ export type Mutation = {
     updateTaskPrice: TaskPriceCrudResult;
     updateTaskStatus: TaskCrudResult;
     updateUser: UserCrudPothosRef;
-};
-
-export type MutationAssociateTaskToBillArgs = {
-    billId: Scalars['String'];
-    taskId: Scalars['String'];
-};
-
-export type MutationAssociateTaskToBillDetailArgs = {
-    billId: Scalars['String'];
-    detailIndex: Scalars['Int'];
-    taskId: Scalars['String'];
-};
-
-export type MutationAssociateTasksToBillArgs = {
-    billId: Scalars['String'];
-    taskIds: Array<Scalars['String']>;
 };
 
 export type MutationChangePasswordArgs = {
@@ -988,17 +968,6 @@ export type MutationDeleteTaskArgs = {
 
 export type MutationDeleteUserArgs = {
     id: Scalars['String'];
-};
-
-export type MutationDissociateTaskFromBillArgs = {
-    billId: Scalars['String'];
-    taskId: Scalars['String'];
-};
-
-export type MutationDissociateTaskFromBillDetailArgs = {
-    billId: Scalars['String'];
-    detailIndex: Scalars['Int'];
-    taskId: Scalars['String'];
 };
 
 export type MutationDownloadTaskPhotosArgs = {
@@ -1313,6 +1282,7 @@ export type Query = {
     clients: Array<Client>;
     clientsByBusiness: Array<Client>;
     clientsCount: Scalars['Int'];
+    downloadBillPdf: Maybe<Scalars['String']>;
     expenseById: Maybe<Expense>;
     expenses: Array<Expense>;
     expensesCount: Scalars['Int'];
@@ -1560,6 +1530,10 @@ export type QueryClientsCountArgs = {
     search: InputMaybe<Scalars['String']>;
 };
 
+export type QueryDownloadBillPdfArgs = {
+    id: Scalars['String'];
+};
+
 export type QueryExpenseByIdArgs = {
     id: Scalars['String'];
 };
@@ -1737,18 +1711,14 @@ export type QueryTasksCountArgs = {
 };
 
 export type QueryTasksWithoutBillArgs = {
-    branchId: InputMaybe<Scalars['String']>;
     businessId: InputMaybe<Scalars['String']>;
-    clientId: InputMaybe<Scalars['String']>;
     skip: InputMaybe<Scalars['Int']>;
     status: InputMaybe<Scalars['String']>;
     take: InputMaybe<Scalars['Int']>;
 };
 
 export type QueryTasksWithoutBillCountArgs = {
-    branchId: InputMaybe<Scalars['String']>;
     businessId: InputMaybe<Scalars['String']>;
-    clientId: InputMaybe<Scalars['String']>;
     status: InputMaybe<Scalars['String']>;
 };
 
@@ -2126,10 +2096,6 @@ export type GetBillByIdQuery = {
         id: string;
         createdAt: any;
         updatedAt: any;
-        legalName: string;
-        CUIT: string;
-        billingAddress: string;
-        IVACondition: IvaCondition;
         status: BillStatus;
         description: string | null;
         comprobanteType: ComprobanteType;
@@ -2151,6 +2117,7 @@ export type GetBillByIdQuery = {
         concepto: BillConcepto | null;
         observations: string | null;
         withholdingAmount: number | null;
+        pdf: { __typename?: 'File'; url: string; key: string; filename: string } | null;
         serviceOrder: {
             __typename?: 'ServiceOrder';
             id: string;
@@ -2191,17 +2158,30 @@ export type GetBillByIdQuery = {
         } | null;
         details: Array<{
             __typename?: 'BillDetail';
+            id: string;
             description: string;
             quantity: number;
             unitPrice: number;
             alicuotaIVA: AlicuotaIva;
-            taskId: string | null;
             task: {
                 __typename?: 'Task';
                 id: string;
                 taskNumber: string;
                 description: string;
                 status: TaskStatus;
+                clientName: string | null;
+                customBranch: {
+                    __typename?: 'CustomBranch';
+                    name: string | null;
+                    number: number | null;
+                } | null;
+                branch: {
+                    __typename?: 'Branch';
+                    id: string;
+                    name: string | null;
+                    number: number | null;
+                    client: { __typename?: 'Client'; id: string; name: string };
+                } | null;
             } | null;
         }>;
         tasks: Array<{
@@ -2210,6 +2190,7 @@ export type GetBillByIdQuery = {
             taskNumber: string;
             description: string;
             closedAt: any | null;
+            clientName: string | null;
             status: TaskStatus;
             business: { __typename?: 'Business'; name: string } | null;
             customBranch: {
@@ -2230,8 +2211,6 @@ export type GetBillByIdQuery = {
 
 export type GetTasksWithoutBillQueryVariables = Exact<{
     businessId?: InputMaybe<Scalars['String']>;
-    clientId?: InputMaybe<Scalars['String']>;
-    branchId?: InputMaybe<Scalars['String']>;
     status?: InputMaybe<Scalars['String']>;
     skip?: InputMaybe<Scalars['Int']>;
     take?: InputMaybe<Scalars['Int']>;
@@ -2550,109 +2529,13 @@ export type EmitBillMutation = {
     };
 };
 
-export type AssociateTaskToBillMutationVariables = Exact<{
-    billId: Scalars['String'];
-    taskId: Scalars['String'];
+export type DownloadBillPdfQueryVariables = Exact<{
+    id: Scalars['String'];
 }>;
 
-export type AssociateTaskToBillMutation = {
-    __typename?: 'Mutation';
-    associateTaskToBill: {
-        __typename?: 'BillCrudResult';
-        success: boolean;
-        message: string | null;
-        bill: {
-            __typename?: 'Bill';
-            id: string;
-            tasks: Array<{ __typename?: 'Task'; id: string; taskNumber: string }>;
-        } | null;
-    };
-};
-
-export type AssociateTasksToBillMutationVariables = Exact<{
-    billId: Scalars['String'];
-    taskIds: Array<Scalars['String']>;
-}>;
-
-export type AssociateTasksToBillMutation = {
-    __typename?: 'Mutation';
-    associateTasksToBill: {
-        __typename?: 'BillCrudResult';
-        success: boolean;
-        message: string | null;
-        bill: {
-            __typename?: 'Bill';
-            id: string;
-            tasks: Array<{ __typename?: 'Task'; id: string; taskNumber: string }>;
-        } | null;
-    };
-};
-
-export type DissociateTaskFromBillMutationVariables = Exact<{
-    billId: Scalars['String'];
-    taskId: Scalars['String'];
-}>;
-
-export type DissociateTaskFromBillMutation = {
-    __typename?: 'Mutation';
-    dissociateTaskFromBill: {
-        __typename?: 'BillCrudResult';
-        success: boolean;
-        message: string | null;
-        bill: {
-            __typename?: 'Bill';
-            id: string;
-            tasks: Array<{ __typename?: 'Task'; id: string; taskNumber: string }>;
-        } | null;
-    };
-};
-
-export type AssociateTaskToBillDetailMutationVariables = Exact<{
-    billId: Scalars['String'];
-    detailIndex: Scalars['Int'];
-    taskId: Scalars['String'];
-}>;
-
-export type AssociateTaskToBillDetailMutation = {
-    __typename?: 'Mutation';
-    associateTaskToBillDetail: {
-        __typename?: 'BillCrudResult';
-        success: boolean;
-        message: string | null;
-        bill: {
-            __typename?: 'Bill';
-            id: string;
-            details: Array<{
-                __typename?: 'BillDetail';
-                description: string;
-                taskId: string | null;
-            }>;
-        } | null;
-    };
-};
-
-export type DissociateTaskFromBillDetailMutationVariables = Exact<{
-    billId: Scalars['String'];
-    detailIndex: Scalars['Int'];
-    taskId: Scalars['String'];
-}>;
-
-export type DissociateTaskFromBillDetailMutation = {
-    __typename?: 'Mutation';
-    dissociateTaskFromBillDetail: {
-        __typename?: 'BillCrudResult';
-        success: boolean;
-        message: string | null;
-        bill: {
-            __typename?: 'Bill';
-            id: string;
-            details: Array<{
-                __typename?: 'BillDetail';
-                description: string;
-                taskId: string | null;
-            }>;
-        } | null;
-    };
+export type DownloadBillPdfQuery = {
+    __typename?: 'Query';
+    downloadBillPdf: string | null;
 };
 
 export type CreateBillingProfileMutationVariables = Exact<{
@@ -2811,12 +2694,7 @@ export type GetBillingProfileByIdQuery = {
             totalAmount: number | null;
             pointOfSale: number | null;
             emissionDate: any | null;
-            caeData: {
-                __typename?: 'CAEData';
-                code: string;
-                expirationDate: any;
-                status: CaeStatus;
-            } | null;
+            comprobanteNumber: string | null;
             details: Array<{
                 __typename?: 'BillDetail';
                 quantity: number;
@@ -5113,19 +4991,6 @@ export const GetBillByIdDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalName' },
-                                },
-                                { kind: 'Field', name: { kind: 'Name', value: 'CUIT' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'billingAddress' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'IVACondition' },
-                                },
-                                {
-                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'status' },
                                 },
                                 {
@@ -5207,6 +5072,27 @@ export const GetBillByIdDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'withholdingAmount' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'pdf' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'url' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'key' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'filename' },
+                                            },
+                                        ],
+                                    },
                                 },
                                 {
                                     kind: 'Field',
@@ -5452,6 +5338,10 @@ export const GetBillByIdDocument = {
                                         selections: [
                                             {
                                                 kind: 'Field',
+                                                name: { kind: 'Name', value: 'id' },
+                                            },
+                                            {
+                                                kind: 'Field',
                                                 name: {
                                                     kind: 'Name',
                                                     value: 'description',
@@ -5474,10 +5364,6 @@ export const GetBillByIdDocument = {
                                                     kind: 'Name',
                                                     value: 'alicuotaIVA',
                                                 },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'taskId' },
                                             },
                                             {
                                                 kind: 'Field',
@@ -5513,6 +5399,98 @@ export const GetBillByIdDocument = {
                                                                 value: 'status',
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'clientName',
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'customBranch',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'number',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: {
+                                                                kind: 'Name',
+                                                                value: 'branch',
+                                                            },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'id',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'name',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'number',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'client',
+                                                                        },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'id',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'name',
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                     ],
                                                 },
                                             },
@@ -5546,6 +5524,13 @@ export const GetBillByIdDocument = {
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'closedAt' },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'clientName',
+                                                },
                                             },
                                             {
                                                 kind: 'Field',
@@ -5681,24 +5666,6 @@ export const GetTasksWithoutBillDocument = {
                     kind: 'VariableDefinition',
                     variable: {
                         kind: 'Variable',
-                        name: { kind: 'Name', value: 'clientId' },
-                    },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
-                    defaultValue: { kind: 'NullValue' },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'branchId' },
-                    },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
-                    defaultValue: { kind: 'NullValue' },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
                         name: { kind: 'Name', value: 'status' },
                     },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
@@ -5730,22 +5697,6 @@ export const GetTasksWithoutBillDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'businessId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'clientId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'clientId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'branchId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'branchId' },
                                 },
                             },
                             {
@@ -5966,22 +5917,6 @@ export const GetTasksWithoutBillDocument = {
                                 value: {
                                     kind: 'Variable',
                                     name: { kind: 'Name', value: 'businessId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'clientId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'clientId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'branchId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'branchId' },
                                 },
                             },
                             {
@@ -7392,34 +7327,17 @@ export const EmitBillDocument = {
         },
     ],
 } as unknown as DocumentNode<EmitBillMutation, EmitBillMutationVariables>;
-export const AssociateTaskToBillDocument = {
+export const DownloadBillPdfDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AssociateTaskToBill' },
+            operation: 'query',
+            name: { kind: 'Name', value: 'DownloadBillPdf' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'billId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'taskId' },
-                    },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
                     type: {
                         kind: 'NonNullType',
                         type: {
@@ -7434,603 +7352,23 @@ export const AssociateTaskToBillDocument = {
                 selections: [
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'associateTaskToBill' },
+                        name: { kind: 'Name', value: 'downloadBillPdf' },
                         arguments: [
                             {
                                 kind: 'Argument',
-                                name: { kind: 'Name', value: 'billId' },
+                                name: { kind: 'Name', value: 'id' },
                                 value: {
                                     kind: 'Variable',
-                                    name: { kind: 'Name', value: 'billId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'taskId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'taskId' },
+                                    name: { kind: 'Name', value: 'id' },
                                 },
                             },
                         ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'success' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'message' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bill' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'tasks' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'id',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'taskNumber',
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
                     },
                 ],
             },
         },
     ],
-} as unknown as DocumentNode<
-    AssociateTaskToBillMutation,
-    AssociateTaskToBillMutationVariables
->;
-export const AssociateTasksToBillDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AssociateTasksToBill' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'billId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'taskIds' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'ListType',
-                            type: {
-                                kind: 'NonNullType',
-                                type: {
-                                    kind: 'NamedType',
-                                    name: { kind: 'Name', value: 'String' },
-                                },
-                            },
-                        },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'associateTasksToBill' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'billId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'billId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'taskIds' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'taskIds' },
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'success' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'message' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bill' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'tasks' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'id',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'taskNumber',
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    AssociateTasksToBillMutation,
-    AssociateTasksToBillMutationVariables
->;
-export const DissociateTaskFromBillDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'DissociateTaskFromBill' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'billId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'taskId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'dissociateTaskFromBill' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'billId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'billId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'taskId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'taskId' },
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'success' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'message' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bill' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'tasks' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'id',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'taskNumber',
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    DissociateTaskFromBillMutation,
-    DissociateTaskFromBillMutationVariables
->;
-export const AssociateTaskToBillDetailDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AssociateTaskToBillDetail' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'billId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'detailIndex' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'taskId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'associateTaskToBillDetail' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'billId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'billId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'detailIndex' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'detailIndex' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'taskId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'taskId' },
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'success' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'message' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bill' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'details' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'description',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'taskId',
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    AssociateTaskToBillDetailMutation,
-    AssociateTaskToBillDetailMutationVariables
->;
-export const DissociateTaskFromBillDetailDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'DissociateTaskFromBillDetail' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'billId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'detailIndex' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: {
-                        kind: 'Variable',
-                        name: { kind: 'Name', value: 'taskId' },
-                    },
-                    type: {
-                        kind: 'NonNullType',
-                        type: {
-                            kind: 'NamedType',
-                            name: { kind: 'Name', value: 'String' },
-                        },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'dissociateTaskFromBillDetail' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'billId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'billId' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'detailIndex' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'detailIndex' },
-                                },
-                            },
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'taskId' },
-                                value: {
-                                    kind: 'Variable',
-                                    name: { kind: 'Name', value: 'taskId' },
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'success' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'message' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bill' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'id' },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'details' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'description',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'taskId',
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    DissociateTaskFromBillDetailMutation,
-    DissociateTaskFromBillDetailMutationVariables
->;
+} as unknown as DocumentNode<DownloadBillPdfQuery, DownloadBillPdfQueryVariables>;
 export const CreateBillingProfileDocument = {
     kind: 'Document',
     definitions: [
@@ -8967,32 +8305,9 @@ export const GetBillingProfileByIdDocument = {
                                             },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'caeData' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'code',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'expirationDate',
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: {
-                                                                kind: 'Name',
-                                                                value: 'status',
-                                                            },
-                                                        },
-                                                    ],
+                                                name: {
+                                                    kind: 'Name',
+                                                    value: 'comprobanteNumber',
                                                 },
                                             },
                                             {

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 
-import { BillConcepto } from '@prisma/client';
+import { BillConcepto, AlicuotaIVA } from '@prisma/client';
 
 import { FormSkeleton } from '@/components/ui/skeleton';
 import { useGetBillById } from '@/hooks/api/bill';
@@ -31,10 +31,10 @@ export default function EditBillingPage(): JSX.Element {
 
     const initialValues = {
         billingProfileId: bill.billingProfile?.id,
-        legalName: bill.legalName,
-        cuit: bill.CUIT,
-        businessAddress: bill.billingAddress,
-        ivaCondition: bill.IVACondition,
+        legalName: bill.billingProfile.legalName,
+        cuit: bill.billingProfile.numeroDocumento,
+        businessAddress: bill.billingProfile.comercialAddress,
+        ivaCondition: bill.billingProfile.IVACondition,
         comprobanteType: bill.comprobanteType,
         paymentCondition: bill.saleCondition as PaymentCondition,
         pointOfSale: bill.pointOfSale,
@@ -53,9 +53,10 @@ export default function EditBillingPage(): JSX.Element {
             const computed = calculateDetailIva(
                 d.quantity,
                 d.unitPrice,
-                d.alicuotaIVA as any,
+                d.alicuotaIVA as AlicuotaIVA,
             );
             return {
+                id: d.id,
                 description: d.description,
                 quantity: d.quantity,
                 unitPrice: d.unitPrice,
@@ -63,7 +64,7 @@ export default function EditBillingPage(): JSX.Element {
                 subtotal: computed.subtotal,
                 ivaAmount: computed.ivaAmount,
                 subtotalWithIva: computed.subtotalWithIva,
-                taskId: d.taskId ?? null,
+                taskId: d.task?.id ?? null,
                 task: d.task ?? null,
             };
         }),

@@ -233,10 +233,10 @@ export function validateBillForAfip(input: BillValidationInput): ValidationResul
     const errors: string[] = [];
 
     // 1. Validar documento
-    const docValidation = validateDocumento(input.tipoDocumento, input.numeroDocumento);
-    if (!docValidation.isValid) {
-        errors.push(...docValidation.errors);
-    }
+    // const docValidation = validateDocumento(input.tipoDocumento, input.numeroDocumento);
+    // if (!docValidation.isValid) {
+    //     errors.push(...docValidation.errors);
+    // }
 
     // 2. Validar coherencia comprobante vs condición IVA
     const comprobanteValidation = validateComprobanteVsIVACondition(

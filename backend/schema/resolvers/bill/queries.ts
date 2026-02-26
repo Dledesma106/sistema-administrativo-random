@@ -7,6 +7,8 @@ import {
     AfipSalesPointRef,
 } from './refs';
 
+import { getFileSignedUrl } from 'backend/s3Client';
+import { regenerateBillPdf } from 'backend/services/billService';
 import { prisma } from 'lib/prisma';
 
 import { AFIP_CBTE_TIPO, AfipCbteTipo } from '../../../services/afip';
@@ -170,7 +172,7 @@ builder.queryFields((t) => ({
             ],
         },
         resolve: async (_root, args, _ctx, _info) => {
-            return prisma.bill.findUnique({
+            return prisma.bill.findUniqueUndeleted({
                 where: { id: args.id },
                 include: {
                     business: true,
@@ -270,12 +272,29 @@ builder.queryFields((t) => ({
             ],
         },
         resolve: async (_root, _args, _ctx, _info) => {
-            // Mocked sales points for local testing (1..5)
-            return Array.from({ length: 5 }, (_, i) => ({
-                number: i + 1,
-                type: 'TEST',
-                blocked: false,
-            }));
+            if (process.env.AFIP_PRODUCTION === 'false') {
+                // En modo sandbox, retornar punto de venta fijo
+                return [
+                    {
+                        number: 1,
+                        type: 'Electronica',
+                        blocked: false,
+                    },
+                ];
+            }
+
+            try {
+                const pts = await AfipService.getSalesPoints();
+                return (pts || []).map((p) => ({
+                    number: p.Nro,
+                    type: p.EmisionTipo || String(p.EmisionTipo || ''),
+                    blocked: p.Bloqueado === 'S' || p.Bloqueado === '1',
+                }));
+            } catch (error) {
+                console.error('Error obteniendo puntos de venta desde AFIP:', error);
+                // En caso de error, retornar array vacío para que el frontend no rompa
+                return [];
+            }
         },
     }),
 
@@ -375,6 +394,55 @@ builder.queryFields((t) => ({
         },
     }),
 
+    /**
+     * Obtener URL firmada para descargar el PDF asociado a una factura
+     */
+    downloadBillPdf: t.field({
+        type: 'String',
+        nullable: true,
+        args: {
+            id: t.arg.string({ required: true }),
+        },
+        authz: {
+            compositeRules: [
+                { and: ['IsAuthenticated'] },
+                { or: ['IsAdministrativoContable'] },
+            ],
+        },
+        resolve: async (_root, args, _ctx, _info) => {
+            const { id } = args;
+            const bill = await prisma.bill.findUnique({
+                where: { id },
+                include: { pdf: true },
+            });
+            if (!bill) {
+                throw new Error('Factura no encontrada');
+            }
+            if (!bill.pdf) {
+                throw new Error('No hay PDF asociado a esta factura');
+            }
+
+            await regenerateBillPdf(id);
+
+            const { url, urlExpire } = await getFileSignedUrl(
+                bill.pdf.key,
+                bill.pdf.mimeType,
+                bill.pdf.filename,
+            );
+
+            // Actualizar metadatos del archivo en la BD
+            await prisma.file.update({
+                where: { id: bill.pdf.id },
+                data: {
+                    url,
+                    urlExpire,
+                },
+            });
+
+            return url;
+        },
+    }),
+
     // ============================================================================
     // QUERIES PARA TAREAS Y ÓRDENES DE TRABAJO
     // ============================================================================
@@ -387,8 +455,6 @@ builder.queryFields((t) => ({
         type: [TaskPothosRef],
         args: {
             businessId: t.arg.string({ required: false }),
-            clientId: t.arg.string({ required: false }),
-            branchId: t.arg.string({ required: false }),
             status: t.arg.string({ required: false }),
             skip: t.arg.int({ required: false }),
             take: t.arg.int({ required: false }),
@@ -400,13 +466,16 @@ builder.queryFields((t) => ({
             ],
         },
         resolve: async (_root, args, _ctx, _info) => {
-            const { businessId, clientId, branchId, status, skip = 0, take = 50 } = args;
-
+            const { businessId, status, skip = 0, take = 50 } = args;
+            console.log('Buscando tareas sin factura asociada con filtros:', {
+                status,
+                businessId,
+            });
             // Buscar tareas que no están en ninguna factura
-            // Construir el where clause dinámicamente
             const baseWhere: any = {
                 deleted: false,
-                bill: undefined, // Solo tareas que no están asociadas a ninguna factura
+                businessId,
+                // Solo tareas que no están asociadas a ninguna factura
             };
 
             // Si hay status, agregarlo al baseWhere
@@ -414,111 +483,24 @@ builder.queryFields((t) => ({
                 baseWhere.status = status as any;
             }
 
-            let tasks: any[] = [];
+            const tasks = await prisma.task.findMany({
+                where: {
+                    ...baseWhere,
+                },
+                skip: skip ?? 0,
+                take: take ?? 50,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    bill: true,
+                    billDetail: true,
+                },
+            });
 
-            // Si hay branchId, filtrar directamente por branch
-            if (branchId) {
-                const whereClause: any = {
-                    ...baseWhere,
-                    branchId: branchId,
-                };
-                // Si también hay businessId, filtrar por businessId directo de la tarea
-                if (businessId) {
-                    whereClause.businessId = businessId;
-                }
-                // Si hay clientId, agregarlo al filtro de branch
-                if (clientId) {
-                    whereClause.branch = {
-                        ...whereClause.branch,
-                        clientId,
-                    };
-                }
-                tasks = await prisma.task.findMany({
-                    where: whereClause,
-                    skip: skip ?? 0,
-                    take: take ?? 50,
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        branch: {
-                            include: {
-                                client: true,
-                            },
-                        },
-                        business: true,
-                        assigned: true,
-                    },
-                });
-            } else if (businessId) {
-                // Buscar tareas con businessId directo
-                // Solo buscamos tareas que tengan un business asociado directamente
-                const whereClause: any = {
-                    ...baseWhere,
-                    businessId: businessId,
-                };
-                // Si hay clientId, agregarlo al filtro de branch
-                if (clientId) {
-                    whereClause.branch = {
-                        clientId,
-                    };
-                }
-                tasks = await prisma.task.findMany({
-                    where: whereClause,
-                    skip: skip ?? 0,
-                    take: take ?? 50,
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        branch: {
-                            include: {
-                                client: true,
-                            },
-                        },
-                        business: true,
-                        assigned: true,
-                    },
-                });
-            } else if (clientId) {
-                // Solo clientId sin businessId ni branchId
-                const whereClause: any = {
-                    ...baseWhere,
-                    branch: {
-                        clientId,
-                    },
-                };
-                tasks = await prisma.task.findMany({
-                    where: whereClause,
-                    skip: skip ?? 0,
-                    take: take ?? 50,
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        branch: {
-                            include: {
-                                client: true,
-                            },
-                        },
-                        business: true,
-                        assigned: true,
-                    },
-                });
-            } else {
-                // Sin filtros específicos, solo baseWhere
-                tasks = await prisma.task.findMany({
-                    where: baseWhere,
-                    skip: skip ?? 0,
-                    take: take ?? 50,
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        branch: {
-                            include: {
-                                client: true,
-                            },
-                        },
-                        business: true,
-                        assigned: true,
-                    },
-                });
-            }
+            const filteredTasks = tasks.filter(
+                (t) => !t.bill && !t.billDetail && !t.billDetailId && !t.billId,
+            );
 
-            return tasks;
+            return filteredTasks;
         },
     }),
 
@@ -528,8 +510,6 @@ builder.queryFields((t) => ({
     tasksWithoutBillCount: t.int({
         args: {
             businessId: t.arg.string({ required: false }),
-            clientId: t.arg.string({ required: false }),
-            branchId: t.arg.string({ required: false }),
             status: t.arg.string({ required: false }),
         },
         authz: {
@@ -539,68 +519,29 @@ builder.queryFields((t) => ({
             ],
         },
         resolve: async (_root, args, _ctx, _info) => {
-            const { businessId, clientId, branchId, status } = args;
+            const { businessId, status } = args;
 
             const baseWhere: any = {
                 deleted: false,
-                billId: null,
+                OR: [
+                    { billId: null }, // cubre tanto null explícito como campo inexistente
+                    { billId: { equals: undefined } },
+                    { bill: null },
+                    { bill: { equals: undefined } },
+                ],
+                businessId,
+                // Solo tareas que no están asociadas a ninguna factura
             };
 
             if (status) {
                 baseWhere.status = status as any;
             }
 
-            // Si hay branchId, filtrar directamente por branch
-            if (branchId) {
-                const whereClause: any = {
+            return prisma.task.count({
+                where: {
                     ...baseWhere,
-                    branchId: branchId,
-                };
-                // Si también hay businessId, filtrar por businessId directo de la tarea
-                if (businessId) {
-                    whereClause.businessId = businessId;
-                }
-                if (clientId) {
-                    whereClause.branch = {
-                        clientId,
-                    };
-                }
-                return prisma.task.count({
-                    where: whereClause,
-                });
-            } else if (businessId) {
-                // Buscar tareas con businessId directo
-                // Solo buscamos tareas que tengan un business asociado directamente
-                const whereClause: any = {
-                    ...baseWhere,
-                    businessId: businessId,
-                };
-                // Si hay clientId, agregarlo al filtro de branch
-                if (clientId) {
-                    whereClause.branch = {
-                        clientId,
-                    };
-                }
-                return prisma.task.count({
-                    where: whereClause,
-                });
-            } else if (clientId) {
-                // Solo clientId sin businessId ni branchId
-                const whereClause: any = {
-                    ...baseWhere,
-                    branch: {
-                        clientId,
-                    },
-                };
-                return prisma.task.count({
-                    where: whereClause,
-                });
-            } else {
-                // Sin filtros específicos, solo baseWhere
-                return prisma.task.count({
-                    where: baseWhere,
-                });
-            }
+                },
+            });
         },
     }),
 

@@ -2,6 +2,8 @@ import { AlicuotaIVA } from '@prisma/client';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { PaymentCondition } from '@/modules/Forms/Accounting/CreateBillingForm/types';
+
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -46,6 +48,33 @@ export function pascalCaseToSpaces(input: string): string {
 
 export function capitalizeFirstLetter(input: string): string {
     return input.charAt(0).toUpperCase() + input.slice(1);
+}
+
+export function paymentConditionLabel(condition: PaymentCondition): string {
+    switch (condition) {
+        case 'Contado':
+            return 'Contado';
+        case 'CuentaCorriente':
+            return 'Cuenta Corriente';
+        case 'Cheque':
+            return 'Cheque';
+        case 'Transferencia':
+            return 'Transferencia';
+        case '15Dias':
+            return '15 días';
+        case '30Dias':
+            return '30 días';
+        case '60Dias':
+            return '60 días';
+        case '90Dias':
+            return '90 días';
+        case 'TarjetaCredito':
+            return 'Tarjeta de Crédito';
+        case 'Otros':
+            return 'Otros';
+        default:
+            return 'Desconocido';
+    }
 }
 
 export function AlicuotaIVALabel(alicuota: AlicuotaIVA): string {

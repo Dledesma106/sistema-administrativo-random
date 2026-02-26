@@ -9,7 +9,6 @@ import {
 import { prisma } from 'lib/prisma';
 
 import { builder } from '../../builder';
-import { IVAConditionPothosRef } from '../billingProfile/refs';
 import { TaskPothosRef } from '../task/refs';
 
 export const BillStatusPothosRef = builder.enumType('BillStatus', {
@@ -71,45 +70,38 @@ export const AfipSalesPointRef = builder
         }),
     });
 
-export const BillDetailPothosRef = builder
-    .objectRef<{
-        description: string;
-        quantity: number;
-        unitPrice: number;
-        alicuotaIVA: AlicuotaIVA;
-        taskId?: string | null;
-    }>('BillDetail')
-    .implement({
-        fields: (t) => ({
-            description: t.exposeString('description'),
-            quantity: t.exposeInt('quantity'),
-            unitPrice: t.exposeFloat('unitPrice'),
-            alicuotaIVA: t.field({
-                type: AlicuotaIVAPothosRef,
-                resolve: (root) => root.alicuotaIVA,
-            }),
-            taskId: t.string({
-                nullable: true,
-                resolve: (root) => root.taskId || null,
-            }),
-            // Resolver para obtener la tarea asociada a este detalle
-            task: t.field({
-                type: TaskPothosRef,
-                nullable: true,
-                resolve: async (root) => {
-                    if (!root.taskId) {
-                        return null;
-                    }
-                    return prisma.task.findFirst({
-                        where: {
-                            id: root.taskId,
-                            deleted: false,
-                        },
-                    });
-                },
-            }),
+export const BillDetailPothosRef = builder.prismaObject('BillDetail', {
+    fields: (t) => ({
+        id: t.exposeID('id'),
+        description: t.exposeString('description'),
+        quantity: t.exposeInt('quantity'),
+        unitPrice: t.exposeFloat('unitPrice'),
+        alicuotaIVA: t.field({
+            type: AlicuotaIVAPothosRef,
+            resolve: (root) => root.alicuotaIVA,
         }),
-    });
+        taskId: t.string({
+            nullable: true,
+            resolve: (root) => root.taskId || null,
+        }),
+        // Resolver para obtener la tarea asociada a este detalle
+        task: t.field({
+            type: TaskPothosRef,
+            nullable: true,
+            resolve: async (root) => {
+                if (!root.taskId) {
+                    return null;
+                }
+                return prisma.task.findFirst({
+                    where: {
+                        id: root.taskId,
+                        deleted: false,
+                    },
+                });
+            },
+        }),
+    }),
+});
 
 export const CAEDataPothosRef = builder
     .objectRef<{
@@ -144,13 +136,6 @@ export const BillPothosRef = builder.prismaObject('Bill', {
         }),
         business: t.relation('business'),
         billingProfile: t.relation('billingProfile'),
-        legalName: t.exposeString('legalName'),
-        CUIT: t.exposeString('CUIT'),
-        billingAddress: t.exposeString('billingAddress'),
-        IVACondition: t.field({
-            type: IVAConditionPothosRef,
-            resolve: (root) => root.IVACondition,
-        }),
         status: t.field({
             type: BillStatusPothosRef,
             resolve: (root) => root.status,
@@ -217,10 +202,7 @@ export const BillPothosRef = builder.prismaObject('Bill', {
             nullable: true,
             resolve: (root) => root.caeData,
         }),
-        details: t.field({
-            type: [BillDetailPothosRef],
-            resolve: (root) => root.details,
-        }),
+        details: t.relation('details'),
         withholdingAmount: t.exposeFloat('withholdingAmount', { nullable: true }),
 
         // Relación con tareas (una factura puede tener múltiples tareas)
@@ -228,6 +210,7 @@ export const BillPothosRef = builder.prismaObject('Bill', {
 
         // Relación con orden de servicio (opcional)
         serviceOrder: t.relation('serviceOrder', { nullable: true }),
+        pdf: t.relation('pdf', { nullable: true }),
     }),
 });
 
@@ -252,6 +235,7 @@ export const BillCrudResultPothosRef = builder
 
 export const BillDetailInputPothosRef = builder.inputType('BillDetailInput', {
     fields: (t) => ({
+        id: t.string({ required: false }), // ID opcional para identificar detalles existentes al actualizar
         description: t.string({ required: true }),
         quantity: t.int({ required: true }),
         unitPrice: t.float({ required: true }),
@@ -269,13 +253,6 @@ export const BillInputPothosRef = builder.inputType('BillInput', {
         // Identificador de la empresa y datos del perfil de facturación
         businessId: t.string({ required: true }),
         billingProfileId: t.string({ required: true }),
-        legalName: t.string({ required: false }),
-        CUIT: t.string({ required: false }),
-        billingAddress: t.string({ required: false }),
-        IVACondition: t.field({
-            type: IVAConditionPothosRef,
-            required: false,
-        }),
         comprobanteType: t.field({
             type: ComprobanteTypePothosRef,
             required: true,

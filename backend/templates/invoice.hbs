@@ -157,30 +157,29 @@
         <strong>{{company.name}}</strong>
         <div>CUIT: {{company.cuit}}</div>
         {{#if company.address}}<div>{{company.address}}</div>{{/if}}
-        {{#if company.grossIncome}}<div>Ingresos Brutos: {{company.grossIncome}}</div>{{/if}}
+        {{#if company.cuit}}<div>Ingresos Brutos: {{company.cuit}}</div>{{/if}}
         <div>Condición IVA: {{company.ivaCondition}}</div>
       </div>
       <div class="client">
         <strong>Cliente:</strong> {{client.name}}
-        <div>CUIT: {{client.cuit}}</div>
+        <div>{{client.documentType}}: {{client.documentNumber}}</div>
         {{#if client.address}}<div>{{client.address}}</div>{{/if}}
         <div>Condición IVA: {{client.ivaCondition}}</div>
       </div>
     </div>
-
     <!-- Título del comprobante -->
-    <div class="title">{{billType}} {{billLetter}}</div>
+    <div class="title">{{billType}}</div>
     
     <!-- Información del comprobante -->
     <div class="bill-info">
       <span><strong>N°:</strong> {{billNumber}}</span>
       {{#if pointOfSale}}<span><strong>Punto de Venta:</strong> {{pointOfSale}}</span>{{/if}}
-      <span><strong>Fecha de Emisión:</strong> {{billDate}}</span>
-      {{#if emissionDate}}<span><strong>Fecha:</strong> {{emissionDate}}</span>{{/if}}
+      <span><strong>Fecha de Emisión:</strong> {{emissionDate}}</span>
+      {{#if emissionDate}}<span><strong>Fecha:</strong> {{billDate}}</span>{{/if}}
     </div>
 
     <!-- Información de servicio (si aplica) -->
-    {{#if serviceDate}}
+    
     <div class="service-info">
       {{#if serviceDate}}<div><strong>Fecha de Servicio:</strong> {{serviceDate}}</div>{{/if}}
       {{#if servicePeriod}}<div><strong>Período:</strong> {{servicePeriod}}</div>{{/if}}
@@ -188,7 +187,7 @@
       {{#if dueDate}}<div><strong>Fecha de Vencimiento:</strong> {{dueDate}}</div>{{/if}}
       {{#if concepto}}<div><strong>Concepto:</strong> {{concepto}}</div>{{/if}}
     </div>
-    {{/if}}
+
 
     <!-- Tabla de items -->
     <table>
@@ -197,8 +196,10 @@
           <th style="width: 50%;">Descripción</th>
           <th style="width: 10%;">Cantidad</th>
           <th style="width: 15%;">Precio Unitario</th>
-          {{#if (hasAlicuota items)}}<th style="width: 10%;">IVA</th>{{/if}}
           <th style="width: 15%;">Subtotal</th>
+          {{#if (hasAlicuota items)}}<th style="width: 10%;">IVA</th>{{/if}}
+          <th style="width: 15%;">Monto IVA</th>
+          <th style="width: 15%;">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -207,8 +208,10 @@
           <td>{{description}}</td>
           <td style="text-align: center;">{{quantity}}</td>
           <td>${{formatNumber unitPrice}}</td>
-          {{#if ../items.[0].alicuotaIVA}}<td style="text-align: center;">{{alicuotaIVA}}</td>{{/if}}
           <td>${{formatNumber subtotal}}</td>
+          {{#if ../items.[0].alicuotaIVA}}<td style="text-align: center;">{{alicuotaIVA}}</td>{{/if}}
+          <td>${{formatNumber ivaAmount}}</td>
+          <td>${{formatNumber total}}</td>
         </tr>
         {{/each}}
       </tbody>
@@ -232,12 +235,6 @@
       <div class="totals-row">
         <div class="totals-label">Importe Exento:</div>
         <div class="totals-value">${{formatNumber exemptAmount}}</div>
-      </div>
-      {{/if}}
-      {{#if subtotal}}
-      <div class="totals-row">
-        <div class="totals-label">Subtotal:</div>
-        <div class="totals-value">${{formatNumber subtotal}}</div>
       </div>
       {{/if}}
       {{#if ivaAmount}}
@@ -276,15 +273,6 @@
       <img src="{{qrDataUrl}}" alt="QR AFIP" />
     </div>
     {{/if}}
-
-    <!-- Observaciones -->
-    {{#if observations}}
-    <div class="observations">
-      <strong>Observaciones:</strong><br>
-      {{observations}}
-    </div>
-    {{/if}}
-
     <!-- Pie de página -->
     <div class="footer">
       <div><strong>Comprobante autorizado por AFIP</strong></div>

@@ -264,7 +264,11 @@ export const ExpenseMutations = builder.mutationFields((t) => ({
                         const filename = expenseData.filenames?.[i] || 'file';
                         const size = expenseData.sizes?.[i] || 0;
 
-                        const fileData = await getFileSignedUrl(fileKey, mimeType);
+                        const fileData = await getFileSignedUrl(
+                            fileKey,
+                            mimeType,
+                            filename,
+                        );
                         fileConnections.push({
                             ...fileData,
                             key: fileKey,

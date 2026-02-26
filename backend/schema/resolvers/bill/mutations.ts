@@ -2,9 +2,14 @@ import { BillStatus } from '@prisma/client';
 
 import { BillCrudResultPothosRef, BillInputPothosRef, BillStatusPothosRef } from './refs';
 
+import { BillInput } from '@/api/graphql';
 import { prisma } from 'lib/prisma';
 
-import { emitirFacturaElectronica } from '../../../services/billService';
+import {
+    emitirFacturaElectronica,
+    handleTaskRelations,
+    linkTasksToBill,
+} from '../../../services/billService';
 import { builder } from '../../builder';
 
 builder.mutationFields((t) => ({
@@ -37,24 +42,11 @@ builder.mutationFields((t) => ({
                     };
                 }
 
-                // Mapear detalles
-                const mappedDetails = input.details.map((detail) => ({
-                    description: detail.description,
-                    quantity: detail.quantity,
-                    unitPrice: detail.unitPrice,
-                    alicuotaIVA: detail.alicuotaIVA,
-                    taskId: detail.taskId || null,
-                }));
-
                 // Crear la factura en la base de datos
                 const bill = await prisma.bill.create({
                     data: {
                         businessId: billingProfile.businessId,
                         billingProfileId: input.billingProfileId,
-                        legalName: billingProfile.legalName,
-                        CUIT: billingProfile.numeroDocumento,
-                        billingAddress: billingProfile.comercialAddress,
-                        IVACondition: billingProfile.IVACondition,
                         status: input.status,
                         description: input.description,
                         comprobanteType: input.comprobanteType,
@@ -64,7 +56,9 @@ builder.mutationFields((t) => ({
                         startDate: input.startDate,
                         endDate: input.endDate,
                         dueDate: input.dueDate,
-                        details: mappedDetails,
+                        tasks: input.taskIds
+                            ? { connect: input.taskIds.map((taskId) => ({ id: taskId })) }
+                            : undefined,
                         // Nuevos campos
                         pointOfSale: input.pointOfSale,
                         concepto: input.concepto,
@@ -78,6 +72,24 @@ builder.mutationFields((t) => ({
                         tributesAmount: input.tributesAmount,
                     },
                 });
+
+                // linkear detalles
+                input.details.forEach(async (detail) => {
+                    const createdDetail = await prisma.billDetail.create({
+                        data: {
+                            description: detail.description,
+                            quantity: detail.quantity,
+                            unitPrice: detail.unitPrice,
+                            alicuotaIVA: detail.alicuotaIVA,
+                            taskId: detail.taskId || null,
+                            billId: bill.id,
+                        },
+                    });
+                    console.log('Detalle creado:', createdDetail);
+                });
+
+                // Asociar tareas a la factura y sus detalles si se proporcionaron taskIds
+                await linkTasksToBill(bill.id, input as BillInput);
 
                 // Si el estado es Emitida, emitir la factura electrónica
                 if (input.status === BillStatus.Pendiente) {
@@ -133,22 +145,42 @@ builder.mutationFields((t) => ({
         resolve: async (_root, args, _ctx, _info) => {
             try {
                 const { id, input } = args;
-                const bill = await prisma.bill.findUnique({ where: { id } });
+                const bill = await prisma.bill.findUnique({
+                    where: { id },
+                    include: {
+                        tasks: true,
+                        details: true,
+                    },
+                });
                 if (!bill) {
                     return {
                         success: false,
                         message: 'Factura no encontrada',
                     };
                 }
+                await handleTaskRelations(id, input as BillInput);
 
-                // Mapear detalles
-                const mappedDetails = input.details.map((detail) => ({
-                    description: detail.description,
-                    quantity: detail.quantity,
-                    unitPrice: detail.unitPrice,
-                    alicuotaIVA: detail.alicuotaIVA,
-                    taskId: detail.taskId || null,
-                }));
+                const currentDetails = bill.details || [];
+                const detailsToDelete = currentDetails.filter((detail) => {
+                    return !input.details.some(
+                        (inputDetail) => inputDetail.id === detail.id,
+                    );
+                });
+
+                detailsToDelete.forEach(async (detail) => {
+                    await prisma.billDetail.softDeleteOne({ id: detail.id });
+                    await prisma.billDetail.update({
+                        where: { id: detail.id },
+                        data: {
+                            billId: null,
+                            taskId: null,
+                        },
+                    });
+                    await prisma.task.update({
+                        where: { id: detail.taskId ?? '' },
+                        data: { billDetailId: null },
+                    });
+                });
 
                 // Actualizar la factura en la base de datos
                 const updated = await prisma.bill.update({
@@ -164,7 +196,9 @@ builder.mutationFields((t) => ({
                         startDate: input.startDate,
                         endDate: input.endDate,
                         dueDate: input.dueDate,
-                        details: mappedDetails,
+                        tasks: input.taskIds
+                            ? { set: input.taskIds.map((taskId) => ({ id: taskId })) }
+                            : undefined,
                         // Nuevos campos
                         pointOfSale: input.pointOfSale,
                         concepto: input.concepto,
@@ -180,6 +214,36 @@ builder.mutationFields((t) => ({
                         withholdingAmount: input.withholdingAmount ?? null,
                     },
                 });
+                input.details.forEach(async (detail) => {
+                    console.log('Procesando detalle:', detail);
+                    if (detail.id) {
+                        // Actualizar detalle existente
+                        console.log('actualizando detalle', detail.id);
+                        await prisma.billDetail.update({
+                            where: { id: detail.id },
+                            data: {
+                                description: detail.description,
+                                quantity: detail.quantity,
+                                unitPrice: detail.unitPrice,
+                                alicuotaIVA: detail.alicuotaIVA,
+                                taskId: detail.taskId || null,
+                            },
+                        });
+                    } else {
+                        await prisma.billDetail.create({
+                            data: {
+                                description: detail.description,
+                                quantity: detail.quantity,
+                                unitPrice: detail.unitPrice,
+                                alicuotaIVA: detail.alicuotaIVA,
+                                taskId: detail.taskId || null,
+                                billId: id,
+                            },
+                        });
+                    }
+                });
+
+                handleTaskRelations(id, input as BillInput);
 
                 // Si el estado cambió a Emitida, emitir la factura electrónica
                 if (
@@ -376,445 +440,6 @@ builder.mutationFields((t) => ({
                     message:
                         'Error al emitir factura: ' +
                         (error instanceof Error ? error.message : String(error)),
-                };
-            }
-        },
-    }),
-
-    // ============================================================================
-    // MUTATIONS PARA ASOCIAR/DESASOCIAR TAREAS
-    // ============================================================================
-
-    /**
-     * Asociar tarea a factura (actualiza Task.billId)
-     */
-    associateTaskToBill: t.field({
-        type: BillCrudResultPothosRef,
-        args: {
-            billId: t.arg.string({ required: true }),
-            taskId: t.arg.string({ required: true }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
-            ],
-        },
-        resolve: async (_root, args, _ctx, _info) => {
-            try {
-                const { billId, taskId } = args;
-
-                // Verificar que la factura existe
-                const bill = await prisma.bill.findUnique({ where: { id: billId } });
-                if (!bill) {
-                    return {
-                        success: false,
-                        message: 'Factura no encontrada',
-                    };
-                }
-
-                // Verificar que la tarea existe
-                const task = await prisma.task.findUnique({ where: { id: taskId } });
-                if (!task) {
-                    return {
-                        success: false,
-                        message: 'Tarea no encontrada',
-                    };
-                }
-
-                // Verificar que la tarea no está ya asociada a otra factura
-                if (task.billId) {
-                    if (task.billId === billId) {
-                        return {
-                            success: false,
-                            message: 'La tarea ya está asociada a esta factura',
-                        };
-                    }
-                    return {
-                        success: false,
-                        message: 'La tarea ya está asociada a otra factura',
-                    };
-                }
-
-                // Asociar la tarea a la factura (actualizar Task.billId)
-                await prisma.task.update({
-                    where: { id: taskId },
-                    data: { billId },
-                });
-
-                // Obtener la factura actualizada con las tareas
-                const updatedBill = await prisma.bill.findUnique({
-                    where: { id: billId },
-                    include: { tasks: true },
-                });
-
-                return {
-                    success: true,
-                    bill: updatedBill,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error instanceof Error ? error.message : 'Unknown error',
-                };
-            }
-        },
-    }),
-
-    /**
-     * Asociar múltiples tareas a una factura
-     */
-    associateTasksToBill: t.field({
-        type: BillCrudResultPothosRef,
-        args: {
-            billId: t.arg.string({ required: true }),
-            taskIds: t.arg.stringList({ required: true }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
-            ],
-        },
-        resolve: async (_root, args, _ctx, _info) => {
-            try {
-                const { billId, taskIds } = args;
-
-                // Verificar que la factura existe
-                const bill = await prisma.bill.findUnique({ where: { id: billId } });
-                if (!bill) {
-                    return {
-                        success: false,
-                        message: 'Factura no encontrada',
-                    };
-                }
-
-                // Verificar que las tareas existen
-                const tasks = await prisma.task.findMany({
-                    where: { id: { in: taskIds } },
-                });
-                if (tasks.length !== taskIds.length) {
-                    return {
-                        success: false,
-                        message: 'Una o más tareas no fueron encontradas',
-                    };
-                }
-
-                // Verificar que ninguna tarea está ya asociada a otra factura
-                const tasksWithBill = tasks.filter(
-                    (t) => t.billId && t.billId !== billId,
-                );
-                if (tasksWithBill.length > 0) {
-                    return {
-                        success: false,
-                        message: `${tasksWithBill.length} tarea(s) ya están asociadas a otra factura`,
-                    };
-                }
-
-                // Filtrar tareas que ya están asociadas a esta factura
-                const newTaskIds = taskIds.filter(
-                    (id) => !tasks.find((t) => t.id === id && t.billId === billId),
-                );
-
-                if (newTaskIds.length === 0) {
-                    return {
-                        success: false,
-                        message: 'Todas las tareas ya están asociadas a esta factura',
-                    };
-                }
-
-                // Asociar las tareas a la factura
-                await prisma.task.updateMany({
-                    where: { id: { in: newTaskIds } },
-                    data: { billId },
-                });
-
-                // Obtener la factura actualizada con las tareas
-                const updatedBill = await prisma.bill.findUnique({
-                    where: { id: billId },
-                    include: { tasks: true },
-                });
-
-                return {
-                    success: true,
-                    bill: updatedBill,
-                    message: `${newTaskIds.length} tarea(s) asociada(s) correctamente`,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error instanceof Error ? error.message : 'Unknown error',
-                };
-            }
-        },
-    }),
-
-    /**
-     * Desasociar tarea de factura
-     */
-    dissociateTaskFromBill: t.field({
-        type: BillCrudResultPothosRef,
-        args: {
-            billId: t.arg.string({ required: true }),
-            taskId: t.arg.string({ required: true }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
-            ],
-        },
-        resolve: async (_root, args, _ctx, _info) => {
-            try {
-                const { billId, taskId } = args;
-
-                // Verificar que la factura existe
-                const bill = await prisma.bill.findUnique({ where: { id: billId } });
-                if (!bill) {
-                    return {
-                        success: false,
-                        message: 'Factura no encontrada',
-                    };
-                }
-
-                // Verificar que la tarea existe y está asociada a esta factura
-                const task = await prisma.task.findUnique({ where: { id: taskId } });
-                if (!task) {
-                    return {
-                        success: false,
-                        message: 'Tarea no encontrada',
-                    };
-                }
-
-                if (task.billId !== billId) {
-                    return {
-                        success: false,
-                        message: 'La tarea no está asociada a esta factura',
-                    };
-                }
-
-                // Desasociar la tarea de la factura
-                await prisma.task.update({
-                    where: { id: taskId },
-                    data: { billId: null },
-                });
-
-                // También limpiar el taskId del detalle si está asociada
-                const updatedDetails = bill.details.map((detail) => ({
-                    ...detail,
-                    taskId: detail.taskId === taskId ? null : detail.taskId,
-                }));
-
-                if (JSON.stringify(updatedDetails) !== JSON.stringify(bill.details)) {
-                    await prisma.bill.update({
-                        where: { id: billId },
-                        data: { details: updatedDetails },
-                    });
-                }
-
-                // Obtener la factura actualizada
-                const updatedBill = await prisma.bill.findUnique({
-                    where: { id: billId },
-                    include: { tasks: true },
-                });
-
-                return {
-                    success: true,
-                    bill: updatedBill,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error instanceof Error ? error.message : 'Unknown error',
-                };
-            }
-        },
-    }),
-
-    /**
-     * Asociar tarea a un detalle específico de la factura
-     */
-    associateTaskToBillDetail: t.field({
-        type: BillCrudResultPothosRef,
-        args: {
-            billId: t.arg.string({ required: true }),
-            detailIndex: t.arg.int({ required: true }),
-            taskId: t.arg.string({ required: true }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
-            ],
-        },
-        resolve: async (_root, args, _ctx, _info) => {
-            try {
-                const { billId, detailIndex, taskId } = args;
-
-                // Verificar que la factura existe
-                const bill = await prisma.bill.findUnique({ where: { id: billId } });
-                if (!bill) {
-                    return {
-                        success: false,
-                        message: 'Factura no encontrada',
-                    };
-                }
-
-                // Verificar que el índice del detalle es válido
-                if (detailIndex < 0 || detailIndex >= bill.details.length) {
-                    return {
-                        success: false,
-                        message: 'Índice de detalle inválido',
-                    };
-                }
-
-                // Verificar que la tarea existe
-                const task = await prisma.task.findUnique({ where: { id: taskId } });
-                if (!task) {
-                    return {
-                        success: false,
-                        message: 'Tarea no encontrada',
-                    };
-                }
-
-                // Verificar que el detalle no tiene ya una tarea asociada
-                const detail = bill.details[detailIndex];
-                if (detail.taskId) {
-                    if (detail.taskId === taskId) {
-                        return {
-                            success: false,
-                            message: 'La tarea ya está asociada a este detalle',
-                        };
-                    }
-                    return {
-                        success: false,
-                        message: 'Este detalle ya tiene una tarea asociada',
-                    };
-                }
-
-                // Verificar que la tarea no está ya asociada a otra factura
-                if (task.billId && task.billId !== billId) {
-                    return {
-                        success: false,
-                        message: 'La tarea ya está asociada a otra factura',
-                    };
-                }
-
-                // Actualizar el detalle con la tarea
-                const updatedDetails = bill.details.map((d, index) => {
-                    if (index === detailIndex) {
-                        return {
-                            ...d,
-                            taskId,
-                        };
-                    }
-                    return d;
-                });
-
-                // Actualizar la factura con los detalles modificados
-                await prisma.bill.update({
-                    where: { id: billId },
-                    data: { details: updatedDetails },
-                });
-
-                // Asociar la tarea a la factura si no lo está
-                if (task.billId !== billId) {
-                    await prisma.task.update({
-                        where: { id: taskId },
-                        data: { billId },
-                    });
-                }
-
-                // Obtener la factura actualizada
-                const updatedBill = await prisma.bill.findUnique({
-                    where: { id: billId },
-                    include: { tasks: true },
-                });
-
-                return {
-                    success: true,
-                    bill: updatedBill,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error instanceof Error ? error.message : 'Unknown error',
-                };
-            }
-        },
-    }),
-
-    /**
-     * Desasociar tarea de un detalle específico (sin removerla de la factura)
-     */
-    dissociateTaskFromBillDetail: t.field({
-        type: BillCrudResultPothosRef,
-        args: {
-            billId: t.arg.string({ required: true }),
-            detailIndex: t.arg.int({ required: true }),
-            taskId: t.arg.string({ required: true }),
-        },
-        authz: {
-            compositeRules: [
-                { and: ['IsAuthenticated'] },
-                { or: ['IsAdministrativoContable'] },
-            ],
-        },
-        resolve: async (_root, args, _ctx, _info) => {
-            try {
-                const { billId, detailIndex, taskId } = args;
-
-                // Verificar que la factura existe
-                const bill = await prisma.bill.findUnique({ where: { id: billId } });
-                if (!bill) {
-                    return {
-                        success: false,
-                        message: 'Factura no encontrada',
-                    };
-                }
-
-                // Verificar que el índice del detalle es válido
-                if (detailIndex < 0 || detailIndex >= bill.details.length) {
-                    return {
-                        success: false,
-                        message: 'Índice de detalle inválido',
-                    };
-                }
-
-                // Verificar que la tarea está asociada al detalle
-                const detail = bill.details[detailIndex];
-                if (detail.taskId !== taskId) {
-                    return {
-                        success: false,
-                        message: 'La tarea no está asociada a este detalle',
-                    };
-                }
-
-                // Actualizar el detalle removiendo la tarea
-                const updatedDetails = bill.details.map((d, index) => {
-                    if (index === detailIndex) {
-                        return {
-                            ...d,
-                            taskId: null,
-                        };
-                    }
-                    return d;
-                });
-
-                const updatedBill = await prisma.bill.update({
-                    where: { id: billId },
-                    data: { details: updatedDetails },
-                    include: { tasks: true },
-                });
-
-                return {
-                    success: true,
-                    bill: updatedBill,
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    message: error instanceof Error ? error.message : 'Unknown error',
                 };
             }
         },

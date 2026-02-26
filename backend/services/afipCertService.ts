@@ -7,6 +7,25 @@ const TMP_DIR = os.tmpdir();
 const CERT_PATH = path.join(TMP_DIR, 'afip-cert.crt');
 const KEY_PATH = path.join(TMP_DIR, 'afip-key.key');
 
+// Normalizar contenido de PEM en caso de que las variables de entorno
+// contengan secuencias escapadas (por ejemplo: "-----BEGIN...\nMIID...\n-----END...\n")
+export const normalizePem = (raw?: string) => {
+    if (!raw) {
+        return '';
+    }
+    let s = raw.trim();
+    // Quitar comillas envolventes si las hubiera
+    if (
+        (s.startsWith("'") && s.endsWith("'")) ||
+        (s.startsWith('"') && s.endsWith('"'))
+    ) {
+        s = s.slice(1, -1);
+    }
+    // Reemplazar secuencias literales de nueva línea "\\n" por saltos reales
+    s = s.replace(/\\r\\n/g, '\r\n').replace(/\\n/g, '\n');
+    return s;
+};
+
 /**
  * Escribe los certificados y claves de AFIP en archivos temporales del sistema.
  *
@@ -39,22 +58,31 @@ export function writeAfipCertAndKey(forceRewrite = false) {
         );
     }
 
+    const certContent = normalizePem(process.env.AFIP_CERT_CONTENT);
+    const keyContent = normalizePem(process.env.AFIP_KEY_CONTENT);
+
     // Escribir certificado (siempre en Vercel/serverless para asegurar que exista)
     const certExists = fs.existsSync(CERT_PATH);
     if (!certExists || forceRewrite) {
-        fs.writeFileSync(CERT_PATH, process.env.AFIP_CERT_CONTENT, { encoding: 'utf8' });
+        fs.writeFileSync(CERT_PATH, certContent, { encoding: 'utf8' });
         // Establecer permisos restrictivos (solo lectura para el propietario)
         // En Vercel (Linux) esto funciona correctamente
-        fs.chmodSync(CERT_PATH, 0o600);
+        try {
+            fs.chmodSync(CERT_PATH, 0o600);
+        } catch (err) {
+            // Windows no soporta chmod de la misma forma; ignorar si falla
+        }
     }
 
     // Escribir clave privada (siempre en Vercel/serverless para asegurar que exista)
     const keyExists = fs.existsSync(KEY_PATH);
     if (!keyExists || forceRewrite) {
-        fs.writeFileSync(KEY_PATH, process.env.AFIP_KEY_CONTENT, { encoding: 'utf8' });
-        // Establecer permisos restrictivos (solo lectura para el propietario)
-        // En Vercel (Linux) esto funciona correctamente
-        fs.chmodSync(KEY_PATH, 0o600);
+        fs.writeFileSync(KEY_PATH, keyContent, { encoding: 'utf8' });
+        try {
+            fs.chmodSync(KEY_PATH, 0o600);
+        } catch (err) {
+            // Ignorar errores de chmod en Windows
+        }
     }
 
     return {

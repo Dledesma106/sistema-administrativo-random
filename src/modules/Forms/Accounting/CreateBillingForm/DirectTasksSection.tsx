@@ -121,7 +121,14 @@ export const DirectTasksSection = ({ businessId }: Props) => {
                                             task.branch?.client?.name ||
                                             '-'}
                                     </TableCell>
-                                    <TableCell>{task.branch?.name || '-'}</TableCell>
+                                    <TableCell>
+                                        {task.branch?.name && `${task.branch?.name} `}
+                                        {task.branch?.number && `#${task.branch?.number}`}
+                                        {task.customBranch?.name &&
+                                            `${task.customBranch?.name} `}
+                                        {task.customBranch?.number &&
+                                            `#${task.customBranch?.number}`}
+                                    </TableCell>
                                     <TableCell>
                                         <TaskStatusBadge
                                             status={task.status as TaskStatus}

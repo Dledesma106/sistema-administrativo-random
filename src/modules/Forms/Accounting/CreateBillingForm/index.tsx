@@ -12,7 +12,7 @@ import { billingFormSchema } from './schema';
 import { TotalsSection } from './TotalsSection';
 import { FormValues, calculateBillTotals } from './types';
 
-import { BillConcepto, BillStatus, ComprobanteType, IvaCondition } from '@/api/graphql';
+import { BillConcepto, BillStatus, ComprobanteType } from '@/api/graphql';
 import { ButtonWithSpinner } from '@/components/ButtonWithSpinner';
 import Modal from '@/components/Modal';
 import { Button } from '@/components/ui/button';
@@ -66,6 +66,8 @@ export const CreateBillingForm = ({
     const selectedProfile = billingProfiles.find((p) => p.id === selectedProfileId);
     const effectiveBusinessId = businessId || selectedProfile?.business?.id;
 
+    const isEmitted =
+        initialValues?.status !== BillStatus.Borrador && !!initialValues?.status;
     // Preparar datos para enviar al backend
     const prepareFormData = (values: FormValues) => {
         const totals = calculateBillTotals(values.details);
@@ -73,11 +75,6 @@ export const CreateBillingForm = ({
         return {
             businessId: effectiveBusinessId!,
             billingProfileId: values.billingProfileId,
-            legalName: values.legalName,
-            // Normalizar CUIT para envío: eliminar guiones, puntos y espacios
-            CUIT: values.cuit ? values.cuit.replace(/[-.\s]/g, '') : values.cuit,
-            billingAddress: values.businessAddress,
-            IVACondition: values.ivaCondition as IvaCondition,
             comprobanteType: values.comprobanteType,
             saleCondition: values.paymentCondition,
             pointOfSale: values.pointOfSale ?? null,
@@ -93,6 +90,7 @@ export const CreateBillingForm = ({
             status: values.status,
             serviceOrderId: values.serviceOrderId ?? null,
             details: values.details.map((detail) => ({
+                id: detail.id ?? undefined, // Incluir ID para que el backend pueda identificar detalles existentes al actualizar
                 description: detail.description,
                 quantity: detail.quantity,
                 unitPrice: detail.unitPrice,
@@ -126,7 +124,7 @@ export const CreateBillingForm = ({
         try {
             const values = form.getValues();
             const data = prepareFormData(values);
-            data.status = BillStatus.Borrador;
+            data.status = values.status ? values.status : BillStatus.Borrador;
             if (billId) {
                 const result = await updateBillMutation.mutateAsync({
                     id: billId,
@@ -296,39 +294,57 @@ export const CreateBillingForm = ({
                         </TypographyH2>
                     </div>
 
-                    <ClientSection billingProfiles={billingProfiles} />
-                    <InvoiceSection />
-                    <DetailsSection businessId={effectiveBusinessId} />
+                    <ClientSection
+                        billingProfiles={billingProfiles}
+                        disabled={isEmitted}
+                    />
+                    <InvoiceSection disabled={isEmitted} />
+                    <DetailsSection
+                        businessId={effectiveBusinessId}
+                        disabled={isEmitted}
+                    />
                     <DirectTasksSection businessId={effectiveBusinessId} />
                     <TotalsSection />
 
-                    <div className="flex items-center justify-end gap-2 border-t pt-4">
+                    <div className="flex items-center justify-end gap-2 border-t border-accent pt-4">
                         <Button
                             type="button"
                             variant="outline"
-                            onClick={() =>
-                                router.push(routesBuilder.accounting.billing.list())
-                            }
+                            onClick={() => router.back()}
                         >
                             Cancelar
                         </Button>
-                        <ButtonWithSpinner
-                            type="button"
-                            variant="outline"
-                            onClick={handleSave}
-                            showSpinner={isSaving}
-                            disabled={isSaving || isEmitting}
-                        >
-                            Guardar Borrador
-                        </ButtonWithSpinner>
-                        <ButtonWithSpinner
-                            type="button"
-                            onClick={handleEmitClick}
-                            showSpinner={isEmitting}
-                            disabled={isSaving || isEmitting}
-                        >
-                            Emitir Factura
-                        </ButtonWithSpinner>
+                        {!isEmitted && (
+                            <ButtonWithSpinner
+                                type="button"
+                                variant="outline"
+                                onClick={handleSave}
+                                showSpinner={isSaving}
+                                disabled={isSaving || isEmitting}
+                            >
+                                Guardar Borrador
+                            </ButtonWithSpinner>
+                        )}
+                        {isEmitted && (
+                            <ButtonWithSpinner
+                                type="button"
+                                onClick={handleSave}
+                                showSpinner={isSaving}
+                                disabled={isSaving || isEmitting}
+                            >
+                                Guardar Cambios
+                            </ButtonWithSpinner>
+                        )}
+                        {!isEmitted && (
+                            <ButtonWithSpinner
+                                type="button"
+                                onClick={handleEmitClick}
+                                showSpinner={isEmitting}
+                                disabled={isSaving || isEmitting}
+                            >
+                                Emitir Factura
+                            </ButtonWithSpinner>
+                        )}
                     </div>
                 </form>
             </Form>

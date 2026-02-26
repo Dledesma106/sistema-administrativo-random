@@ -50,10 +50,6 @@ query GetBillById($id: String!) {
         id
         createdAt
         updatedAt
-        legalName
-        CUIT
-        billingAddress
-        IVACondition
         status
         description
         comprobanteType
@@ -75,6 +71,11 @@ query GetBillById($id: String!) {
         concepto
         observations
         withholdingAmount
+        pdf {
+            url
+            key
+            filename
+        }
         serviceOrder {
             id
             serviceOrderNumber
@@ -118,16 +119,30 @@ query GetBillById($id: String!) {
             status
         }
         details {
+            id
             description
             quantity
             unitPrice
             alicuotaIVA
-            taskId
             task {
                 id
                 taskNumber
                 description
                 status
+                clientName
+                customBranch{
+                    name
+                    number
+                }
+                branch {
+                    id
+                    name
+                    number
+                    client {
+                        id
+                        name
+                    }
+                }
             }
         }
         tasks {
@@ -135,6 +150,7 @@ query GetBillById($id: String!) {
             taskNumber
             description
             closedAt
+            clientName
             business{
                 name
             }
@@ -163,16 +179,12 @@ query GetBillById($id: String!) {
 # Tareas disponibles para facturar (sin factura asociada)
 query GetTasksWithoutBill(
     $businessId: String = null
-    $clientId: String = null
-    $branchId: String = null
     $status: String = null
     $skip: Int = null
     $take: Int = null
 ) {
     tasksWithoutBill(
         businessId: $businessId
-        clientId: $clientId
-        branchId: $branchId
         status: $status
         skip: $skip
         take: $take
@@ -218,8 +230,6 @@ query GetTasksWithoutBill(
     }
     tasksWithoutBillCount(
         businessId: $businessId
-        clientId: $clientId
-        branchId: $branchId
         status: $status
     )
 }
@@ -474,97 +484,6 @@ mutation EmitBill($id: String!) {
     }
 }
 
-# ============================================================================
-# MUTATIONS PARA ASOCIACIÓN DE TAREAS
-# ============================================================================
-
-# Asociar tarea a factura (sin detalle específico)
-mutation AssociateTaskToBill($billId: String!, $taskId: String!) {
-    associateTaskToBill(billId: $billId, taskId: $taskId) {
-        success
-        message
-        bill {
-            id
-            tasks {
-                id
-                taskNumber
-            }
-        }
-    }
-}
-
-# Asociar múltiples tareas a factura
-mutation AssociateTasksToBill($billId: String!, $taskIds: [String!]!) {
-    associateTasksToBill(billId: $billId, taskIds: $taskIds) {
-        success
-        message
-        bill {
-            id
-            tasks {
-                id
-                taskNumber
-            }
-        }
-    }
-}
-
-# Desasociar tarea de factura
-mutation DissociateTaskFromBill($billId: String!, $taskId: String!) {
-    dissociateTaskFromBill(billId: $billId, taskId: $taskId) {
-        success
-        message
-        bill {
-            id
-            tasks {
-                id
-                taskNumber
-            }
-        }
-    }
-}
-
-# Asociar tarea a detalle de factura
-mutation AssociateTaskToBillDetail(
-    $billId: String!
-    $detailIndex: Int!
-    $taskId: String!
-) {
-    associateTaskToBillDetail(
-        billId: $billId
-        detailIndex: $detailIndex
-        taskId: $taskId
-    ) {
-        success
-        message
-        bill {
-            id
-            details {
-                description
-                taskId
-            }
-        }
-    }
-}
-
-# Desasociar tarea de detalle de factura
-mutation DissociateTaskFromBillDetail(
-    $billId: String!
-    $detailIndex: Int!
-    $taskId: String!
-) {
-    dissociateTaskFromBillDetail(
-        billId: $billId
-        detailIndex: $detailIndex
-        taskId: $taskId
-    ) {
-        success
-        message
-        bill {
-            id
-            details {
-                description
-                taskId
-            }
-        }
-    }
+query DownloadBillPdf($id: String!) {
+       downloadBillPdf(id: $id)
 }

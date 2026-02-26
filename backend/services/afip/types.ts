@@ -3,6 +3,10 @@
  * Basado en el servicio WSFEv1 de AFIP
  */
 
+import { ComprobanteType } from '@prisma/client';
+
+import { mapComprobanteTypeToAfip } from './mapper';
+
 // ============================================================================
 // TIPOS DE DOCUMENTO (DocTipo)
 // ============================================================================
@@ -39,6 +43,43 @@ export const AFIP_DOC_TIPO_LABELS: Record<AfipDocTipo, string> = {
     [AFIP_DOC_TIPO.CI_BS_AS_RNP]: 'CI Bs. As. RNP',
     [AFIP_DOC_TIPO.SIN_IDENTIFICAR]: 'Sin Identificar / Consumidor Final',
     [AFIP_DOC_TIPO.OTRO]: 'Otro',
+};
+
+// ============================================================================
+// CONDICIÓN IVA (CondicionIVAReceptorId)
+// ============================================================================
+
+export const AFIP_CONDICION_IVA = {
+    RESPONSABLE_INSCRIPTO: 1,
+    SUJETO_EXENTO: 4,
+    CONSUMIDOR_FINAL: 5,
+    RESPONSABLE_MONOTRIBUTO: 6,
+    SUJETO_NO_CATEGORIZADO: 7,
+    PROVEEDOR_DEL_EXTERIOR: 8,
+    CLIENTE_DEL_EXTERIOR: 9,
+    IVA_LIBERADO_LEY_19640: 10,
+    MONOTRIBUTISTA_SOCIAL: 13,
+    IVA_NO_ALCANZADO: 15,
+    MONOTRIBUTO_TRABAJADOR_INDEPENDIENTE_PROMOVIDO: 16,
+} as const;
+
+export type AfipCondicionIva =
+    (typeof AFIP_CONDICION_IVA)[keyof typeof AFIP_CONDICION_IVA];
+
+//labels legibles para condición IVA
+export const AFIP_CONDICION_IVA_LABELS: Record<AfipCondicionIva, string> = {
+    [AFIP_CONDICION_IVA.RESPONSABLE_INSCRIPTO]: 'Responsable Inscripto',
+    [AFIP_CONDICION_IVA.SUJETO_EXENTO]: 'Sujeto Exento',
+    [AFIP_CONDICION_IVA.CONSUMIDOR_FINAL]: 'Consumidor Final',
+    [AFIP_CONDICION_IVA.RESPONSABLE_MONOTRIBUTO]: 'Responsable Monotributo',
+    [AFIP_CONDICION_IVA.SUJETO_NO_CATEGORIZADO]: 'Sujeto No Categorisado',
+    [AFIP_CONDICION_IVA.PROVEEDOR_DEL_EXTERIOR]: 'Proveedor del Exterior',
+    [AFIP_CONDICION_IVA.CLIENTE_DEL_EXTERIOR]: 'Cliente del Exterior',
+    [AFIP_CONDICION_IVA.IVA_LIBERADO_LEY_19640]: 'IVA Liberado Ley 19640',
+    [AFIP_CONDICION_IVA.MONOTRIBUTISTA_SOCIAL]: 'Monotributista Social',
+    [AFIP_CONDICION_IVA.IVA_NO_ALCANZADO]: 'IVA No Alcanzado',
+    [AFIP_CONDICION_IVA.MONOTRIBUTO_TRABAJADOR_INDEPENDIENTE_PROMOVIDO]:
+        'Monotributo Trabajador Independiente Promovido',
 };
 
 // ============================================================================
@@ -82,6 +123,12 @@ export const AFIP_CBTE_TIPO_LABELS: Record<AfipCbteTipo, string> = {
     [AFIP_CBTE_TIPO.NOTA_DEBITO_E]: 'Nota de Débito E',
     [AFIP_CBTE_TIPO.NOTA_CREDITO_E]: 'Nota de Crédito E',
 };
+
+export function getBillTypeLabel(cbteTipo: ComprobanteType): string {
+    const afipType = mapComprobanteTypeToAfip(cbteTipo);
+
+    return AFIP_CBTE_TIPO_LABELS[afipType] || cbteTipo;
+}
 
 // ============================================================================
 // CONCEPTO (Concepto)
@@ -270,6 +317,8 @@ export interface AfipVoucherData {
     Tributos?: AfipTributo[];
     /** Comprobantes asociados (para notas de crédito/débito) */
     CbtesAsoc?: AfipCbteAsoc[];
+    /** Condicion frente al iva del receptor */
+    CondicionIVAReceptorId?: number;
 }
 
 // ============================================================================

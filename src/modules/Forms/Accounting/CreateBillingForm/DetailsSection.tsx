@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { BsPlus, BsTrash, BsLink45Deg, BsX } from 'react-icons/bs';
 
+import { TaskDetailModal } from './TaskDetailModal';
 import { TaskSelectionModal } from './TaskSelectionModal';
 import { FormValues, SelectedTask, BillingDetail, calculateDetailIva } from './types';
 
@@ -30,9 +31,10 @@ const IVA_RATES: { value: AlicuotaIva; label: string }[] = Object.values(Alicuot
 
 type Props = {
     businessId?: string;
+    disabled?: boolean;
 };
 
-export const DetailsSection = ({ businessId }: Props) => {
+export const DetailsSection = ({ businessId, disabled }: Props) => {
     const form = useFormContext<FormValues>();
     const { fields, append, remove, update } = useFieldArray({
         control: form.control,
@@ -41,6 +43,7 @@ export const DetailsSection = ({ businessId }: Props) => {
 
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [selectedDetailIndex, setSelectedDetailIndex] = useState<number | null>(null);
+    const [viewingTask, setViewingTask] = useState<SelectedTask | null>(null);
 
     // Recalcular subtotales cuando cambian quantity, unitPrice o alicuotaIVA
     useEffect(() => {
@@ -152,14 +155,16 @@ export const DetailsSection = ({ businessId }: Props) => {
         <section className="space-y-4 rounded-lg border border-accent p-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Detalles</h3>
-                <Button
-                    type="button"
-                    onClick={handleAddDetail}
-                    className="flex items-center gap-1"
-                >
-                    <BsPlus size={20} />
-                    Agregar detalle
-                </Button>
+                {!disabled && (
+                    <Button
+                        type="button"
+                        onClick={handleAddDetail}
+                        className="flex items-center gap-1"
+                    >
+                        <BsPlus size={20} />
+                        Agregar detalle
+                    </Button>
+                )}
             </div>
 
             <div className="space-y-4">
@@ -180,7 +185,10 @@ export const DetailsSection = ({ businessId }: Props) => {
                         >
                             {/* Tarea asociada */}
                             {detail?.task ? (
-                                <div className="flex items-center gap-2 rounded-lg bg-muted p-2">
+                                <div
+                                    className="flex cursor-pointer items-center gap-2 rounded-lg bg-muted p-2 hover:bg-muted/80"
+                                    onClick={() => setViewingTask(detail.task ?? null)}
+                                >
                                     <BsLink45Deg className="text-primary" size={18} />
                                     <span className="text-sm">
                                         Tarea vinculada:{' '}
@@ -193,13 +201,22 @@ export const DetailsSection = ({ businessId }: Props) => {
                                                 - {detail.task.clientName}
                                             </span>
                                         )}
+                                        {detail.task.branch?.client?.name && (
+                                            <span className="text-muted-foreground">
+                                                {' '}
+                                                - {detail.task.branch.client.name}
+                                            </span>
+                                        )}
                                     </span>
                                     <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
                                         className="ml-auto size-6"
-                                        onClick={() => handleRemoveTaskFromDetail(index)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveTaskFromDetail(index);
+                                        }}
                                     >
                                         <BsX size={16} />
                                     </Button>
@@ -221,6 +238,7 @@ export const DetailsSection = ({ businessId }: Props) => {
                             {/* Campos del detalle */}
                             <div className="grid grid-cols-12 gap-4">
                                 <FormField
+                                    disabled={disabled}
                                     control={form.control}
                                     name={`details.${index}.description`}
                                     render={({ field }) => (
@@ -236,6 +254,7 @@ export const DetailsSection = ({ businessId }: Props) => {
 
                                 <FormField
                                     control={form.control}
+                                    disabled={disabled}
                                     name={`details.${index}.quantity`}
                                     render={({ field }) => (
                                         <FormItem className="col-span-2">
@@ -261,6 +280,7 @@ export const DetailsSection = ({ businessId }: Props) => {
 
                                 <FormField
                                     control={form.control}
+                                    disabled={disabled}
                                     name={`details.${index}.unitPrice`}
                                     render={({ field }) => (
                                         <FormItem className="col-span-2">
@@ -291,6 +311,7 @@ export const DetailsSection = ({ businessId }: Props) => {
                                         <FormItem className="col-span-2">
                                             <FormLabel>Alícuota IVA</FormLabel>
                                             <Combobox
+                                                disabled={disabled}
                                                 items={IVA_RATES}
                                                 value={field.value || ''}
                                                 onChange={(value) =>
@@ -306,14 +327,14 @@ export const DetailsSection = ({ businessId }: Props) => {
 
                                 <div className="col-span-2">
                                     <FormLabel>Subtotal</FormLabel>
-                                    <div className="mt-2 h-10 rounded-md border bg-muted px-3 py-2 text-sm">
+                                    <div className="mt-2 h-10 rounded-md border border-accent bg-muted px-3 py-2 text-sm">
                                         {formatCurrency(detail?.subtotal || 0)}
                                     </div>
                                 </div>
 
                                 <div className="col-span-2">
                                     <FormLabel>IVA</FormLabel>
-                                    <div className="mt-2 h-10 rounded-md border bg-muted px-3 py-2 text-sm">
+                                    <div className="mt-2 h-10 rounded-md border border-accent bg-muted px-3 py-2 text-sm">
                                         {formatCurrency(detail?.ivaAmount || 0)}
                                     </div>
                                 </div>
@@ -323,6 +344,7 @@ export const DetailsSection = ({ businessId }: Props) => {
                                         type="button"
                                         variant="destructive"
                                         size="icon"
+                                        disabled={disabled}
                                         onClick={() => remove(index)}
                                     >
                                         <BsTrash size={16} />
@@ -357,6 +379,12 @@ export const DetailsSection = ({ businessId }: Props) => {
                 businessId={businessId}
                 alreadySelectedTaskIds={getAlreadySelectedTaskIds()}
                 multiSelect={false}
+            />
+            <TaskDetailModal
+                open={!!viewingTask}
+                task={viewingTask}
+                onClose={() => setViewingTask(null)}
+                showSelectButton={false}
             />
         </section>
     );
