@@ -90,7 +90,7 @@ export const CreateBillingForm = ({
             status: values.status,
             serviceOrderId: values.serviceOrderId ?? null,
             details: values.details.map((detail) => ({
-                id: detail.id ?? undefined, // Incluir ID para que el backend pueda identificar detalles existentes al actualizar
+                id: detail.id ?? null, // Incluir ID para que el backend pueda identificar detalles existentes al actualizar
                 description: detail.description,
                 quantity: detail.quantity,
                 unitPrice: detail.unitPrice,

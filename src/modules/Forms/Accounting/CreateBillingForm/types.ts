@@ -26,7 +26,7 @@ export type SelectedTask = {
 
 // Detalle de factura con tarea opcional
 export type BillingDetail = {
-    id: string; // ID para identificar detalles existentes al actualizar
+    id?: string; // ID para identificar detalles existentes al actualizar
     description: string;
     quantity: number;
     unitPrice: number;
@@ -108,7 +108,7 @@ export type FormValues = {
     concepto?: BillConcepto;
 
     // Detalles
-    details: BillingDetail[];
+    details: BillingDetail[]; // Para creación se omite el ID, para edición se incluyen los IDs existentes
 
     // Tareas asociadas directamente a la factura (sin detalle específico)
     directTasks: SelectedTask[];
@@ -149,7 +149,9 @@ export type BillTotals = {
 };
 
 // Función para calcular los totales
-export function calculateBillTotals(details: BillingDetail[]): BillTotals {
+export function calculateBillTotals(
+    details: BillingDetail[] | Omit<BillingDetail, 'id'>[],
+): BillTotals {
     const ivaBreakdownMap = new Map<
         AlicuotaIva,
         { baseAmount: number; ivaAmount: number }

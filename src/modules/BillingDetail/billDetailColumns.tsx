@@ -67,7 +67,7 @@ export const billDetailColumns: Column<Detail>[] = [
     },
     {
         header: 'Tarea',
-        cell: (d) => (d.task ? `#${d.task.taskNumber}` : d.taskId || '-'),
-        accessorKey: 'taskId' as const,
+        cell: (d) => d.task && `#${d.task.taskNumber}`,
+        accessorKey: 'task' as const,
     },
 ];

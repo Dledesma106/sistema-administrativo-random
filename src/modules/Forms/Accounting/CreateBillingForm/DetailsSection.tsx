@@ -94,7 +94,7 @@ export const DetailsSection = ({ businessId, disabled }: Props) => {
     };
 
     const handleAddDetail = () => {
-        const newDetail: BillingDetail = {
+        const newDetail: Omit<BillingDetail, 'id'> = {
             description: '',
             quantity: 1,
             unitPrice: 0,
@@ -118,7 +118,7 @@ export const DetailsSection = ({ businessId, disabled }: Props) => {
             const task = tasks[0]; // Solo tomamos la primera tarea para un detalle
             const currentDetail = form.getValues(`details.${selectedDetailIndex}`);
 
-            const updatedDetail: BillingDetail = {
+            const updatedDetail: Omit<BillingDetail, 'id'> = {
                 ...currentDetail,
                 taskId: task.id,
                 task: task,
@@ -136,7 +136,7 @@ export const DetailsSection = ({ businessId, disabled }: Props) => {
 
     const handleRemoveTaskFromDetail = (index: number) => {
         const currentDetail = form.getValues(`details.${index}`);
-        const updatedDetail: BillingDetail = {
+        const updatedDetail: Omit<BillingDetail, 'id'> = {
             ...currentDetail,
             taskId: null,
             task: null,
