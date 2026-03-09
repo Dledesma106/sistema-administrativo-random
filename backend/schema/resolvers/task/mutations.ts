@@ -7,6 +7,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ExpenseStatus, TaskStatus, Task, PreventiveStatus } from '@prisma/client';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import ExcelJS from 'exceljs';
 import JSZip from 'jszip';
 
@@ -1225,15 +1226,17 @@ builder.mutationFields((t) => ({
 
                     // Formatear fechas y horas
                     const startDate = task.startedAt
-                        ? format(task.startedAt, 'dd/MM/yyyy')
+                        ? format(task.startedAt, 'dd/MM/yyyy', { locale: es })
                         : '';
                     const startTime = task.startedAt
-                        ? format(task.startedAt, 'HH:mm')
+                        ? format(task.startedAt, 'HH:mm', { locale: es })
                         : '';
                     const closeDate = task.closedAt
-                        ? format(task.closedAt, 'dd/MM/yyyy')
+                        ? format(task.closedAt, 'dd/MM/yyyy', { locale: es })
                         : '';
-                    const closeTime = task.closedAt ? format(task.closedAt, 'HH:mm') : '';
+                    const closeTime = task.closedAt
+                        ? format(task.closedAt, 'HH:mm', { locale: es })
+                        : '';
 
                     // Obtener nombre de empresa
                     const businessName = task.business?.name || task.businessName || '';

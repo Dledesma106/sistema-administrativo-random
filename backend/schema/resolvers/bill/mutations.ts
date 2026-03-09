@@ -2,7 +2,7 @@ import { BillCrudResultPothosRef, BillInputPothosRef } from './refs';
 
 import { prisma } from 'lib/prisma';
 
-import { emitirFacturaElectronica } from '../../../services/billService';
+//import { emitirFacturaElectronica } from '../../../services/billService';
 import { builder } from '../../builder';
 
 builder.mutationFields((t) => ({
@@ -60,10 +60,10 @@ builder.mutationFields((t) => ({
                 // Si el estado es Emitida, emitir la factura electrónica
                 if (input.status === 'Pendiente') {
                     try {
-                        const billEmitida = await emitirFacturaElectronica(bill.id);
+                        //const billEmitida = await emitirFacturaElectronica(bill.id);
                         return {
                             success: true,
-                            bill: billEmitida,
+                            //bill: billEmitida,
                         };
                     } catch (error) {
                         // Si falla la emisión, actualizar el estado a Borrador
@@ -139,10 +139,10 @@ builder.mutationFields((t) => ({
                 // Si el estado cambió a Emitida, emitir la factura electrónica
                 if (input.status === 'Pendiente' && bill.status !== 'Pendiente') {
                     try {
-                        const billEmitida = await emitirFacturaElectronica(id);
+                        //const billEmitida = await emitirFacturaElectronica(id);
                         return {
                             success: true,
-                            bill: billEmitida,
+                            //bill: billEmitida,
                         };
                     } catch (error) {
                         // Si falla la emisión, revertir el estado
